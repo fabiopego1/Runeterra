@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const SECTIONS = [
+  const SECTIONS_EN = [
     { id: 'planet', group: 'The World', title: 'The Planet', body: `
       <p>Runeterra shares many characteristics with Earth, but nothing is currently known about the other planets of its solar system. It is a naturally magical world, above all because the <b>World Runes</b> are foundations of the world itself: their resonance reaches every living being and grants them extraordinary abilities.</p>
       <p>The two continents we focus on are <b>Valoran</b> and <b>Shurima</b>, home to most of the regions, countries, city-states and other organised societies of living beings (not always human). Beyond these two continents lie <b>Ionia</b>, an island continent, and archipelagos such as <b>Bilgewater</b> and <b>the Shadow Isles</b>.</p>
@@ -189,22 +189,24 @@
           'Teemo, Tristana, Lulu, Veigar, Poppy, Heimerdinger, Gnar', '<b>Spirit-Blooded</b> origin; <b>Spirit Realm</b> or <b>Brilliant Inventor</b> sources; <em>Principle of Youth</em> or <em>Chaos</em>.']
       ].map(([n, d, ex, fit]) => `<div class="race"><h4>${n}</h4><p>${d}</p><p class="race-meta"><b>Examples:</b> ${ex}</p><p class="race-meta"><b>Fits in the builder:</b> ${fit}</p></div>`).join('')}` }
   ];
+  const SECTIONS = (window.LANG === 'pt' && window.LORE_SECTIONS_PT) || SECTIONS_EN;
+  const T = window.T || (x => x);
 
   const groups = [...new Set(SECTIONS.map(s => s.group))];
   const panel = document.createElement('aside');
   panel.id = 'lore';
   panel.className = 'drawer wide';
-  panel.setAttribute('aria-label', 'World lore');
+  panel.setAttribute('aria-label', T('World lore'));
   panel.setAttribute('aria-hidden', 'true');
   panel.innerHTML = `
     <div class="cs-head">
-      <div><div class="eyebrow">The world of the campaign</div><h2>Runeterra Lore</h2></div>
-      <button class="btn small" data-lore-close aria-label="Close lore">${window.ICO ? window.ICO('close') : '×'}</button>
+      <div><div class="eyebrow">${T('The world of the campaign')}</div><h2>${T('Runeterra Lore')}</h2></div>
+      <button class="btn small" data-lore-close aria-label="${T('Close lore')}">${window.ICO ? window.ICO('close') : '×'}</button>
     </div>
-    <input type="search" class="cs-search" placeholder="Search the lore… (e.g. Void, Azir, petricite)" aria-label="Search lore">
+    <input type="search" class="cs-search" placeholder="${T('Search the lore… (e.g. Void, Azir, petricite)')}" aria-label="${T('Search lore')}">
     <nav class="cs-index">${groups.map(g => `<div class="lore-group"><span>${g}</span>${SECTIONS.filter(s => s.group === g).map(s => `<a href="#lore-${s.id}" data-lore-jump="lore-${s.id}">${s.title.includes(' — ') ? s.title.split(' — ')[1] : s.title}</a>`).join('')}</div>`).join('')}</nav>
     <div class="cs-body">${groups.map(g => `<h2 class="lore-gh" data-group="${g}">${g}</h2>` + SECTIONS.filter(s => s.group === g).map(s => `<section class="cs-sec" id="lore-${s.id}" data-group="${g}"><h3>${s.title}</h3>${s.body}</section>`).join('')).join('')}
-      <p class="cs-empty" hidden>Nothing in the lore matches your search.</p>
+      <p class="cs-empty" hidden>${T('Nothing in the lore matches your search.')}</p>
     </div>`;
   const backdrop = document.createElement('div');
   backdrop.className = 'cs-backdrop';

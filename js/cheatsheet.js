@@ -5,7 +5,7 @@
   const effectChart = (head, rows) => `<table class="cs-table"><thead><tr><th>Effect die result</th><th>${head}</th></tr></thead><tbody>${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</tbody></table>`;
   const ic = a => `<span class="act-ic act-${a.toLowerCase()}">${{ Attack: 'ATK', Defend: 'DEF', Overcome: 'OVR', Boost: 'BST', Hinder: 'HIN', Recover: 'REC' }[a]}</span>`;
 
-  const SECTIONS = [
+  const SECTIONS_EN = [
     { id: 'turn-pc', title: 'How a Turn Works (Player Characters)', body: `
       <ol class="cs-steps">
         <li>The player whose turn it is <b>explains the action</b> they want to take.</li>
@@ -67,20 +67,22 @@
       <h4>Risky Action</h4>
       <p>When performing a Basic Action, you may make it a <b>Risky Action</b> instead: use part of the ongoing narrative to add an extra effect to your action. Taking a Risky Action also applies a <b>Minor Twist</b>.</p>` }
   ];
+  const SECTIONS = (window.LANG === 'pt' && window.CHEAT_SECTIONS_PT) || SECTIONS_EN;
+  const T = window.T || (x => x);
 
   const panel = document.createElement('aside');
   panel.id = 'cheatsheet';
-  panel.setAttribute('aria-label', 'Rules cheat sheet');
+  panel.setAttribute('aria-label', T('Rules cheat sheet'));
   panel.setAttribute('aria-hidden', 'true');
   panel.innerHTML = `
     <div class="cs-head">
-      <div><div class="eyebrow">Quick reference</div><h2>Rules Cheat Sheet</h2></div>
-      <button class="btn small" data-cs-close aria-label="Close cheat sheet">${window.ICO ? window.ICO('close') : '×'}</button>
+      <div><div class="eyebrow">${T('Quick reference')}</div><h2>${T('Rules Cheat Sheet')}</h2></div>
+      <button class="btn small" data-cs-close aria-label="${T('Close cheat sheet')}">${window.ICO ? window.ICO('close') : '×'}</button>
     </div>
-    <input type="search" class="cs-search" placeholder="Search rules… (e.g. minion, twist, mod)" aria-label="Search rules">
-    <nav class="cs-index">${SECTIONS.map(s => `<a href="#cs-${s.id}" data-cs-jump="cs-${s.id}">${s.title.replace(/ \(.*\)/, m => m.includes('Player') ? ' (PCs)' : ' (Enemies)')}</a>`).join('')}</nav>
+    <input type="search" class="cs-search" placeholder="${T('Search rules… (e.g. minion, twist, mod)')}" aria-label="${T('Search rules')}">
+    <nav class="cs-index">${SECTIONS.map(s => `<a href="#cs-${s.id}" data-cs-jump="cs-${s.id}">${s.nav || s.title.replace(/ \(.*\)/, m => m.includes('Player') ? ' (PCs)' : ' (Enemies)')}</a>`).join('')}</nav>
     <div class="cs-body">${SECTIONS.map(s => `<section class="cs-sec" id="cs-${s.id}"><h3>${s.title}</h3>${s.body}</section>`).join('')}
-      <p class="cs-empty" hidden>No rules match your search.</p>
+      <p class="cs-empty" hidden>${T('No rules match your search.')}</p>
     </div>`;
   const backdrop = document.createElement('div');
   backdrop.className = 'cs-backdrop';
