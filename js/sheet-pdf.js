@@ -106,7 +106,7 @@
       const doc = await PDFDocument.create();
       const T = window.T || (x => x);
       const heroName = fdoc.querySelector('.hs-name') ? fdoc.querySelector('.hs-name').textContent.trim() : '';
-      doc.setTitle(!heroName ? T('Hero Sheet') : window.LANG === 'pt' ? `Ficha de Herói de ${heroName}` : `${heroName} — Hero Sheet`);
+      doc.setTitle(heroName ? `Ficha de Herói de ${heroName}` : T('Hero Sheet'));
       doc.setCreator('Runeterra Champion Forge');
       let fonts = {}, fieldFont, fallback;
       if (!window.fontkit && fontkitSrc) await loadScript(fontkitSrc).catch(() => {});   // big: fetched only when exporting
