@@ -51,7 +51,7 @@
     arch: { id: null, base: null, assign: {}, principle: null, extra: {}, divMethod: null, minionQ: null, minionForms: [], notes: '' },
     pers: { id: null, qname: '', outTrait: null, upgrade: null },
     retcon: { type: null },
-    health: { trait: null, mode: 'fixed', roll: null },
+    health: { trait: null, mode: 'fixed', roll: null, rerolled: false },
     pch: {},
     sel: {},
     info: { name: '', alias: '', player: '', gender: '', age: '', height: '', eyes: '', hair: '', skin: '', build: '', costume: '', notes: '', portrait: null },
@@ -668,7 +668,10 @@
     return `<div class="cards">${list.map(it => {
       const v = rollKey ? isValid(rollKey, it.n) : null;
       const cls = ['card', it.id === selId ? 'selected' : '', v === true ? 'valid' : '', v === false && it.id !== selId ? 'invalid' : ''].join(' ');
-      return `<button class="${cls}" data-act="pick" data-kind="${kind}" data-id="${it.id}"${v === false ? ' data-locked="1"' : ''}${it.id === selId ? ' aria-pressed="true"' : ''}>${renderer(it)}</button>`;
+      // the card's details tooltip (from its empty .info span) goes on the whole card
+      let inner = renderer(it), tipAttr = '';
+      inner = inner.replace(/<span class="info"[^>]*?( data-tip="[^"]*")><\/span>/, (m, t) => { tipAttr = t; return ''; });
+      return `<button class="${cls}" data-act="pick" data-kind="${kind}" data-id="${it.id}"${v === false ? ' data-locked="1"' : ''}${it.id === selId ? ' aria-pressed="true"' : ''}${tipAttr}>${inner}</button>`;
     }).join('')}</div>`;
   }
   // Suggestion marks from the flavour chapters (People and Homeland): no rules effect.
@@ -681,14 +684,14 @@
   function assignHtml(slots, optionKeys, before, stepPrefix, label) {
     if (!slots || !slots.length) return '';
     const rows = slots.map(s => {
-      const takenBy = k => { const o = slots.find(x => x !== s && x.key === k); return o ? tr('on your {die}', { die: o.die }) : ''; };
-      const groups = traitGroups(optionKeys, k => traitItem(k, { after: before[k] ? tr('have {die}', { die: before[k].die }) : '', taken: takenBy(k) }));
+      const takenBy = k => { if (before[k] && s.key !== k) return tr('you already have {die}', { die: before[k].die }); const o = slots.find(x => x !== s && x.key === k); return o ? tr('on your {die}', { die: o.die }) : ''; };
+      const groups = traitGroups(optionKeys, k => traitItem(k, { taken: takenBy(k) }));
       let note = '';
       if (s.key) note = s.upgrade ? tr('Already had {trait} at {from}: it becomes {to} and the other die is freed below.', { trait: traitName(s.key), from: s.upgrade.from, to: s.upgrade.to }) : '';
       if (s.freed) note = note || tr('Freed die from {trait} (“I\'ve already got that” rule).', { trait: traitName(s.from) });
       return socket({ bind: `${stepPrefix}.assign.${s.id}`, d: s.die, cur: s.key, groups, empty: tr('Bind this {die} to a trait', { die: s.die }), note, freed: s.freed });
     }).join('');
-    return `<div class="assign"><div class="muted"${tip(tr('<h5>Assigning dice</h5>Only the die <b>size</b> matters. Each die becomes the rating of one power or quality. If you pick something you already have, the bigger die is kept and the smaller one is freed to assign elsewhere in the same step (the rulebook\'s <em>“I\'ve Already Got That”</em> rule).'))}>${label} <span class="term info-mark">${ico('info')}</span></div>${rows}</div>`;
+    return `<div class="assign"><div class="muted"${tip(tr('<h5>Assigning dice</h5>Only the die <b>size</b> matters. Each die becomes the rating of one power or quality. Powers and qualities you already have cannot be chosen again.'))}>${label}</div>${rows}</div>`;
   }
 
   function abilityCard(g, name, entry, picked, R, ctx = {}) {
@@ -775,7 +778,7 @@
         (needsEl ? `<label class="field"><span>${tr('Your element')}</span><select data-bind="pch.${slot}"><option value="">${tr('— choose —')}</option>${CATS['P:elemental'].items.map(i => `<option${st.pch[slot] === i[2] ? ' selected' : ''}>${esc(i[2])}</option>`).join('')}</select></label>` : '') +
         `<small class="muted">${tr('The twist questions are prompts the GM may ask when a twist happens. Record the questions, not answers.')}</small></div>`;
     }
-    const intro = `<p class="muted"${tip(`<h5>${esc(tr('{cat} principles', { cat: tr(cat) }))}</h5>${esc(pc)}<hr>` + tr('Each principle gives roleplaying guidance, a Minor and Major twist question, and a Green ability that earns hero points for the whole team.'))}>${esc(pc)} <span class="term info-mark">${ico('info')}</span></p>`;
+    const intro = `<p class="muted"${tip(`<h5>${esc(tr('{cat} principles', { cat: tr(cat) }))}</h5>${esc(pc)}<hr>` + tr('Each principle gives roleplaying guidance, a Minor and Major twist question, and a Green ability that earns hero points for the whole team.'))}>${esc(pc)}</p>`;
     const key = 'pr-' + slot;
     if (p && !ui.expand[key]) return `<div class="picked-bar"><span>${tr('Chosen:')} <b>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</b></span><button class="btn small change-btn" data-act="expand" data-key="${key}">${ico('reset')} ${tr('Change choice')}</button></div>${detail}`;
     return intro + (p ? `<div class="picked-bar muted-bar"><span>${tr('Pick a different principle below, or')}</span><button class="btn small ghost keep-btn" data-act="collapse" data-key="${key}">${ico('close')} ${tr('Keep the current choice')}</button></div>` : '') + `<div class="principles">${items}</div>${detail}`;
@@ -850,7 +853,7 @@
     if (!open && !cur && ui.socket == null && !socketAuto) { open = socketAuto = true; }
     const gem = d ? die(d) : `<span class="sock-mark">${esc(mark || '')}</span>`;
     const face = curItem
-      ? `<span class="sock-name">${esc(curItem.name)}</span><span class="sock-cat">${esc(TRAIT[cur] ? catName(TRAIT[cur].cat) : '')}${curItem.after ? ` · ${esc(curItem.after)}` : ''}</span>`
+      ? `<span class="sock-name"${TRAIT[cur] ? tip(traitTip(cur)) : ''}>${esc(curItem.name)}</span><span class="sock-cat">${esc(TRAIT[cur] ? catName(TRAIT[cur].cat) : '')}${curItem.after ? ` · ${esc(curItem.after)}` : ''}</span>`
       : `<span class="sock-empty">${esc(empty || tr('Choose'))}</span>`;
     const filter = all.length > 12 ? `<label class="tray-filter">${ico('mark')}<input type="search" data-filter="1" placeholder="${tr('Filter {n} options…', { n: all.length })}" aria-label="${tr('Filter options')}"></label>` : '';
     const tray = open ? `<div class="tray" role="group" aria-label="${esc(empty || tr('Options'))}">${filter}${groups.map(g => `<div class="tray-group"><div class="tray-label">${esc(g.label)}${g.sub ? `<span>${esc(g.sub)}</span>` : ''}</div><div class="tray-grid">${g.items.map(i => {
@@ -861,7 +864,7 @@
     return `<div class="socket${cur ? ' filled' : ''}${open ? ' open' : ''}${freed ? ' freed' : ''}">
       <div class="sock-row">${gem}<span class="sock-link" aria-hidden="true"></span>
       <button class="sock-slot" data-act="socketOpen" data-bind="${bind}" aria-expanded="${open}">${face}<span class="sock-cta">${tr(open ? 'Close' : cur ? 'Change' : 'Choose')}</span></button>
-      ${cur && TRAIT[cur] ? `<span class="term info-mark"${tip(traitTip(cur))}>${ico('info')}</span>` : ''}</div>
+</div>
       ${note ? `<div class="note">${esc(note)}</div>` : ''}${tray}</div>`;
   }
 
@@ -870,15 +873,16 @@
   let flowCurrent = null;           // "step:section" of the section the user should work on now
 
   // Renders a step's sections in order. Sections after the first unfinished one are locked.
-  function flowHtml(stepId, secs, H) {
+  // With open = true (the Legend chapter) nothing is sealed: every section can be filled in any order.
+  function flowHtml(stepId, secs, H, open = false) {
     let cur = -1;
     const n = secs.length;
     const parts = secs.map((s, i) => {
       const done = !s.issues.length;
-      const state = cur >= 0 ? 'locked' : done ? 'done' : 'current';
-      if (state === 'current') cur = i;
+      const state = cur >= 0 && !open ? 'locked' : done ? 'done' : 'current';
+      if (state === 'current' && cur < 0) cur = i;
       const head = `<div class="flow-head"><span class="flow-num">${state === 'done' ? ico('check') : state === 'locked' ? ico('lock') : i + 1}</span><h3>${esc(s.title)}</h3>` +
-        (state === 'current' ? `<span class="flow-here">${tr('You are here')}</span>` : '') +
+        (state === 'current' && i === cur ? `<span class="flow-here">${tr('You are here')}</span>` : '') +
         (state === 'done' ? `<span class="flow-state">${tr('Done')}</span>` : '') +
         (state === 'locked' ? `<span class="flow-lock">${tr('Sealed — finish the step above')}</span>` : '') + '</div>';
       if (state === 'locked') return `<section class="flow-sec locked">${head}</section>`;
@@ -970,7 +974,7 @@
     const H = {
       roll: () => rollerHtml('bg', ['d10', 'd10'], tr('Roll 2d10 for your Origin')),
       pick: () => pickSection('bg', b && chosenSummary(b.rt, b.sc, b.lore, b.champs),
-        (st.method !== 'guided' ? '' : `<p class="muted">${tr('Highlighted cards match your roll.')}</p>`) + cardsHtml(window.BACKGROUNDS, 'bg', st.bg.id, 'bg', x => `<span class="n">${pad2(x.n)}</span>${fitMark('bg', x.id)}<div class="t">${esc(x.rt)}</div><div class="d">${esc(x.sub)}</div><span class="info" aria-label="${tr('Details')}"${tip(bgTip(x))}>${ico('info')}</span>`)),
+        (st.method !== 'guided' ? '' : `<p class="muted">${tr('Highlighted cards match your roll.')}</p>`) + cardsHtml(window.BACKGROUNDS, 'bg', st.bg.id, 'bg', x => `<span class="n">${pad2(x.n)}</span>${fitMark('bg', x.id)}<div class="t">${esc(x.rt)}</div><div class="d">${esc(x.sub)}</div><span class="info" aria-label="${tr('Details')}"${tip(bgTip(x))}></span>`)),
       assign: () => `<p>${tr('Assign {dice} to {n} of: {opts}.', { dice: b.q.dice.map(d => die(d)).join(' '), n: b.q.count || 2, opts: optsText(b.q.opts) })}${b.q.mustInclude ? ' ' + tr('One die <b>must</b> go to {trait}.', { trait: traitSpan(b.q.mustInclude) }) : ''}</p>${assignHtml(R.slots.bg, expand(b.q.opts), R.before.background, 'bg', tr('Assign each die to a quality:'))}`,
       principle: () => principleHtml('bg', b.principle, R) + `<p class="muted" style="margin-top:10px">${tr('Next step: your Source of Power, rolled with {dice}.', { dice: b.psDice.map(d => die(d, 'sm')).join('') })}</p>`
     };
@@ -1007,7 +1011,7 @@
     const H = {
       roll: () => rollerHtml('ps', b.psDice, tr('Roll your Origin dice')),
       pick: () => pickSection('ps', p && chosenSummary(p.rt, p.sc, p.lore, p.champs),
-        cardsHtml(window.POWER_SOURCES, 'ps', st.ps.id, 'ps', x => `<span class="n">${pad2(x.n)}</span>${fitMark('ps', x.id)}<div class="t">${esc(x.rt)}</div><div class="d">${esc(x.sub)}</div><span class="info" aria-label="${tr('Details')}"${tip(psTip(x))}>${ico('info')}</span>`)),
+        cardsHtml(window.POWER_SOURCES, 'ps', st.ps.id, 'ps', x => `<span class="n">${pad2(x.n)}</span>${fitMark('ps', x.id)}<div class="t">${esc(x.rt)}</div><div class="d">${esc(x.sub)}</div><span class="info" aria-label="${tr('Details')}"${tip(psTip(x))}></span>`)),
       assign: () => {
         let optKeys = expand(p.opts);
         if (p.required && !optKeys.includes(p.required.key)) optKeys = [p.required.key].concat(optKeys);
@@ -1027,11 +1031,11 @@
     const H = {
       roll: () => rollerHtml('arch', p.archDice, tr('Roll your Source dice')),
       pick: () => pickSection('arch', a && chosenSummary(a.rt + ' · ' + a.role, a.sc, a.lore, a.champs),
-        cardsHtml(window.ARCHETYPES, 'arch', st.arch.id, 'arch', x => `<span class="n">${pad2(x.n)}</span>${fitMark('ar', x.id)}<div class="t">${esc(x.rt)}</div><div class="s">${esc(x.role)}${x.advanced ? ' · ' + tr('advanced') : ''}</div><div class="d">${esc(x.champs)}</div><span class="info" aria-label="${tr('Details')}"${tip(archTip(x))}>${ico('info')}</span>`)),
+        cardsHtml(window.ARCHETYPES, 'arch', st.arch.id, 'arch', x => `<span class="n">${pad2(x.n)}</span>${fitMark('ar', x.id)}<div class="t">${esc(x.rt)}</div><div class="s">${esc(x.role)}${x.advanced ? ' · ' + tr('advanced') : ''}</div><div class="d">${esc(x.champs)}</div><span class="info" aria-label="${tr('Details')}"${tip(archTip(x))}></span>`)),
       broll: () => rollerHtml('base', p.archDice, tr('Roll for your base Path')),
       base: () => `<p class="muted">${a.divided ? tr('Your full Path becomes “{name}”.', { name: esc(a.rt) + ' ' + (shape ? esc(shape.rt) : '…') }) : tr('You follow this Path\'s dice rules, but gain modes instead of its abilities.')}</p>` +
         pickSection('base', shape && chosenSummary(shape.rt + ' · ' + shape.role, shape.sc, shape.lore, shape.champs),
-          cardsHtml(window.ARCHETYPES.filter(x => !x.advanced), 'base', st.arch.base, 'base', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.role)}</div><span class="info" aria-label="${tr('Details')}"${tip(archTip(x))}>${ico('info')}</span>`)),
+          cardsHtml(window.ARCHETYPES.filter(x => !x.advanced), 'base', st.arch.base, 'base', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.role)}</div><span class="info" aria-label="${tr('Details')}"${tip(archTip(x))}></span>`)),
       assign: () => {
         const optKeys = expand((shape.req ? shape.req.any : []).concat(shape.powers, shape.quals));
         const rem = shape.remPowers === 'one' ? (shape.req ? 'exactly one' : 'Exactly one die') : shape.remPowers === 'any' ? (shape.req ? 'any number' : 'Any number of dice') : (shape.req ? 'one or more' : 'One or more dice');
@@ -1061,7 +1065,7 @@
     const cur = st.arch.minionQ;
     const max = cur && R.T[cur] ? dn(R.T[cur].die) : 0;
     const chosen = st.arch.minionForms || [];
-    return `<p class="muted"${tip(tr('<h5>Minion forms</h5>When you create a minion you may discard one bonus you have access to in order to add a form with that bonus value or higher. The number of forms you know equals the maximum value of a related quality.'))}>${tr('You know as many minion forms as the maximum value of a related quality.')} <span class="term info-mark">${ico('info')}</span></p>
+    return `<p class="muted"${tip(tr('<h5>Minion forms</h5>When you create a minion you may discard one bonus you have access to in order to add a form with that bonus value or higher. The number of forms you know equals the maximum value of a related quality.'))}>${tr('You know as many minion forms as the maximum value of a related quality.')}</p>
       <label class="field"><span>${tr('Related quality')}</span><select data-bind="arch.minionQ"><option value="">${tr('— choose —')}</option>${q.map(k => `<option value="${k}"${cur === k ? ' selected' : ''}>${esc(traitName(k))} (${R.T[k].die})</option>`).join('')}</select></label>
       ${q.length ? '' : `<small class="muted">${tr('You need {list}.', { list: ['creativity', 'magical-lore', 'otherworldly-mythos', 'science', 'technology'].map(traitName).join(', ') })}</small>`}
       <div class="ab-list">${window.MINION_FORMS.map(([n, d, b]) => `<label class="ab${chosen.includes(n) ? ' picked' : ''}"><div class="ab-top"><input type="checkbox" data-act="minionForm" data-name="${esc(n)}"${chosen.includes(n) ? ' checked' : ''}${!chosen.includes(n) && chosen.length >= max ? ' disabled' : ''}><span class="ab-name">${esc(abName(n))}</span><span class="ab-type"${tip(tr('Bonus needed to apply this form'))}>${tr('{b} or higher', { b: esc(b) })}</span></div><div class="ab-text">${rulesText(d)}</div></label>`).join('')}</div>
@@ -1090,13 +1094,13 @@
       pick: () => pickSection('pers', pe && chosenSummary(pe.rt, pe.sc, '', pe.champs,
         `<div class="status-row"${tip(tr('<h5>Status dice</h5>The third die of every roll. Which one you use depends on your current Health zone.'))}><span class="z g">${tr('Green')} ${die(R.status[0])}</span><span class="z y">${tr('Yellow')} ${die(R.status[1])}</span><span class="z r">${tr('Red')} ${die(R.status[2])}</span></div>` +
         (pe.healthAny ? `<p class="sc">${tr('When determining Health you may use <b>any</b> power or quality.')}</p>` : '')),
-        statusExplainer() + cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div>${statusTrend(x.status)}<span class="info" aria-label="${tr('Details')}"${tip(`<h5>${esc(x.rt)}</h5><b>${tr('Status:')}</b> ${tr('Green')} ${x.status[0]}, ${tr('Yellow')} ${x.status[1]}, ${tr('Red')} ${x.status[2]}<br><b>${tr('Out:')}</b> ${esc(ruleTip(x.out))}<hr><small>${esc(x.champs)}</small>`)}>${ico('info')}</span>`)),
+        statusExplainer() + cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div>${statusTrend(x.status)}<span class="info" aria-label="${tr('Details')}"${tip(`<h5>${esc(x.rt)}</h5><b>${tr('Status:')}</b> ${tr('Green')} ${x.status[0]}, ${tr('Yellow')} ${x.status[1]}, ${tr('Red')} ${x.status[2]}<br><b>${tr('Out:')}</b> ${esc(ruleTip(x.out))}<hr><small>${esc(x.champs)}</small>`)}></span>`)),
       qname: () => `<p class="muted"${tip(traitTip('rp-quality'))}>${tr('A {die} quality that sums up your champion — your “high concept”. Examples: <em>Hextech Prodigy of the Academy</em>, <em>Last Kinkou of the Eastern Isles</em>, <em>Bilgewater\'s Luckiest Liar</em>.', { die: die('d8', 'sm') })}</p>
         <input type="text" data-bind="pers.qname" data-live="1" data-commit="1" value="${esc(st.pers.qname)}" placeholder="${tr('Type your Signature Quality, then press Enter')}">`,
       out: () => {
         const rq = reqFromText(pe.out);
         const outKeys = sortTraits(owned(R, rq.kind)).map(t => t.key);
-        return `<p class="muted"${tip(`<h5>${tr('Out ability')}</h5>${window.COLOR_INFO.out}`)}>${tr('Used when your champion is knocked out.')} <span class="term info-mark">${ico('info')}</span></p><div class="ab out picked"><div class="ab-text">${rulesText(pe.out, { trait: st.pers.outTrait })}</div>
+        return `<p class="muted"${tip(`<h5>${tr('Out ability')}</h5>${window.COLOR_INFO.out}`)}>${tr('Used when your champion is knocked out.')}</p><div class="ab out picked"><div class="ab-text">${rulesText(pe.out, { trait: st.pers.outTrait })}</div>
           <div class="ab-cfg"><label>${tr('Uses')}<select data-bind="pers.outTrait">${traitOptions(outKeys, st.pers.outTrait)}</select></label></div></div>`;
       },
       reckless: () => {
@@ -1210,9 +1214,9 @@
     const H = {
       review: () => `<div class="grid2"><div class="detail">
         <label class="field"><span>${tr('Trait added to Health (highest by default)')}</span><select data-bind="health.trait">${h.elig.map(t => `<option value="${t.key}"${h.chosen && h.chosen.key === t.key ? ' selected' : ''}>${esc(traitName(t.key))} (${t.die})</option>`).join('')}${h.elig.length ? '' : `<option value="">${tr('none — use d4')}</option>`}</select></label>
-        <div class="method" role="group"><button class="${st.health.mode !== 'roll' ? 'on' : ''}" data-act="hmode" data-m="fixed">${tr('Take 4')}</button><button class="${st.health.mode === 'roll' ? 'on' : ''}" data-act="hmode" data-m="roll">${tr('Roll')} ${die('d8', 'sm')}</button></div>
-        ${st.health.mode === 'roll' ? ` <button class="btn small" data-act="hroll">${st.health.roll ? tr('Rolled {n} — roll again', { n: st.health.roll }) : tr('Roll d8')}</button>` : ''}
-        <p class="muted" style="margin-top:8px">${tr('Decide whether to roll <em>before</em> rolling.')}</p>
+        <div class="method" role="group"><button class="${st.health.mode !== 'roll' ? 'on' : ''}" data-act="hmode" data-m="fixed"${st.health.roll ? ' disabled' : ''}>${tr('Take 4')}</button><button class="${st.health.mode === 'roll' ? 'on' : ''}" data-act="hmode" data-m="roll"${st.health.roll ? ' disabled' : ''}>${tr('Roll')} ${die('d8', 'sm')}</button></div>
+        ${st.health.mode === 'roll' ? (st.health.rerolled ? ` <p class="muted">${tr('Rolled {n}. Re-roll already used.', { n: st.health.roll })}</p>` : ` <button class="btn small" data-act="hroll">${st.health.roll ? tr('Rolled {n}. Re-roll once', { n: st.health.roll }) : tr('Roll d8')}</button>`) : ''}
+        <p class="muted" style="margin-top:8px">${tr('Decide whether to roll <em>before</em> rolling. You may re-roll once, and then the result stays.')}</p>
       </div><div class="detail">
         <table style="width:100%;font-size:.95rem"><tbody>
         <tr><td>${tr('Base')}</td><td style="text-align:right">8</td></tr>
@@ -1647,15 +1651,15 @@
           <div class="gc-k">${esc(c.kicker)}</div><h4>${esc(c.title)}</h4>${c.text ? `<p>${c.text}</p>` : ''}
           <div class="gc-qs">${c.qs.filter(Boolean).map(q => `<button type="button" class="bio-q" data-act="bioQ" data-q="${esc(q)}">${ico('next')}<span>${esc(q)}</span></button>`).join('')}</div>
           ${c.link ? `<a class="gc-link" href="${c.link}">${tr('Read in the Lore')} ${ico('next')}</a>` : ''}</section>`).join('')}</div></div>`,
-      abilities: () => `<p class="muted"${tip(tr('The rulebook asks you to rename every ability to fit your hero. The original Sentinels name stays on the sheet in small print so you and your GM can look it up.'))}>${tr('Leave a box empty to keep the original name.')} <span class="term info-mark">${ico('info')}</span></p>
+      abilities: () => `<p class="muted"${tip(tr('The rulebook asks you to rename every ability to fit your hero. The original Sentinels name stays on the sheet in small print so you and your GM can look it up.'))}>${tr('Leave a box empty to keep the original name.')}</p>
         <div class="grid2">${abs.map(x => `<label class="field"><span>${esc(abName(x.name))} <span class="pill ${x.color}">${tr(x.color)}</span></span><input type="text" data-rename="${esc(x.iid)}" data-bind="renames" data-live="1" value="${esc(st.renames[x.iid] || '')}" placeholder="${esc(abName(x.name))}"></label>`).join('') || `<small class="muted">${tr('No abilities yet.')}</small>`}</div>`,
-      gear: () => `<p class="muted"${tip(tr('Signature Weapon and Mount are meant to be renamed (e.g. "Hextech Rifle", "Valor"). You can rename any other trait too, the way the rulebook renames Power Suit to "Power Arm".'))}>${tr('Leave a box empty to keep the original name.')} <span class="term info-mark">${ico('info')}</span></p>
+      gear: () => `<p class="muted"${tip(tr('Signature Weapon and Mount are meant to be renamed (e.g. "Hextech Rifle", "Valor"). You can rename any other trait too, the way the rulebook renames Power Suit to "Power Arm".'))}>${tr('Leave a box empty to keep the original name.')}</p>
         <div class="grid3">${renameTraits.map(k => `<label class="field"><span>${esc(TRAIT[k].rt)} ${die(R.T[k].die, 'sm')}</span><input type="text" data-bind="traitNames.${k}" data-live="1" value="${esc(st.traitNames[k] || '')}" placeholder="${esc(TRAIT[k].rt)}"></label>`).join('')}</div>`
     };
     const done = !stepIssues('finish', R).length;
     return `<div class="panel no-print">${chapterHead(tr('Legend'))}
       <p class="chapter-lede">${window.STEP_INTROS.finish}</p>
-      ${flowHtml('finish', sectionsFor('finish', R), H)}
+      ${flowHtml('finish', sectionsFor('finish', R), H, true)}
       <section class="flow-sec ${done ? 'current' : 'locked'}" id="flow-finish-export"><div class="flow-head"><span class="flow-num">${done ? ico('mark') : ico('lock')}</span><h3>${tr('Your hero sheet')}</h3>${done ? '' : `<span class="flow-lock">${tr('Sealed — name your champion first')}</span>`}</div>
       ${done ? `<div class="flow-body"><p class="muted">${tr('Your sheet is below, laid out like the official two-page <em>Sentinel Comics RPG</em> hero sheet. Hero points, back issues, collections and current Health can be ticked and edited right on it during play.')}</p><div id="pdf-status"></div><input id="template-file" type="file" accept="application/pdf,.pdf" hidden>
         <div class="export-row"><button class="btn primary" data-act="pdf">${ico('download')} ${tr('Export PDF hero sheet')}</button><button class="btn" data-act="print">${tr('Print')}</button><button class="btn" data-act="export">${tr('Export JSON')}</button></div></div>` : ''}</section>
@@ -1778,11 +1782,12 @@
     if (!st.tour || !st.tour.on || !t || st.tour.seen[st.step]) { if (box) box.remove(); return; }
     const target = document.querySelector(t[2] || '.flow-sec.current');
     if (target) target.classList.add('tour-focus');
-    if (!box) { box = document.createElement('div'); box.id = 'tour'; box.className = 'tour'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', tr('Guide')); document.body.appendChild(box); }
+    if (!box) { box = document.createElement('div'); box.id = 'tour'; box.className = 'tour-veil'; box.addEventListener('click', ev => { if (ev.target === box) { st.tour.seen[st.step] = true; save(); showTour(); } }); document.body.appendChild(box); }
     const i = stepIndex(st.step);
-    box.innerHTML = `<div class="tour-k">${ico('codex')} ${tr('Guide')} · ${i ? tr('Chapter') + ' ' + ROMAN[i] : esc(STEPS[0].name)}<span>${i + 1}/${STEPS.length}</span></div>
+    box.innerHTML = `<div class="tour" role="dialog" aria-modal="true" aria-label="${tr('Guide')}"><div class="tour-k">${ico('codex')} ${tr('Guide')} · ${i ? tr('Chapter') + ' ' + ROMAN[i] : esc(STEPS[0].name)}<span>${i + 1}/${STEPS.length}</span></div>
       <h4>${t[0]}</h4><p>${t[1]}</p>
-      <div class="tour-row"><button type="button" class="btn small primary" data-act="tourOk">${tr('Got it')}</button><button type="button" class="linkbtn" data-act="tourOff">${tr('Turn the guide off')}</button></div>`;
+      <div class="tour-row"><button type="button" class="btn small primary" data-act="tourOk">${tr('Got it')}</button><button type="button" class="linkbtn" data-act="tourOff">${tr('Turn the guide off')}</button></div></div>`;
+    const ok = box.querySelector('[data-act="tourOk"]'); if (ok && document.activeElement !== ok) ok.focus({ preventScroll: true });
   }
 
   function render() {
@@ -1986,8 +1991,8 @@
       if (was === 'extra-red' && st.sel.red && st.sel.red.length > 2) st.sel.red.length = 2;
       render(); return;
     }
-    if (act === 'hmode') { st.health.mode = el.dataset.m; if (el.dataset.m === 'roll' && !st.health.roll) st.health.roll = roll(['d8'])[0]; render(); return; }
-    if (act === 'hroll') { st.health.roll = roll(['d8'])[0]; render(); return; }
+    if (act === 'hmode') { if (st.health.roll) return; st.health.mode = el.dataset.m; if (el.dataset.m === 'roll') { st.health.roll = roll(['d8'])[0]; st.health.rerolled = false; } render(); return; }
+    if (act === 'hroll') { if (st.health.roll && st.health.rerolled) return; if (st.health.roll) st.health.rerolled = true; st.health.roll = roll(['d8'])[0]; render(); return; }
     if (act === 'hpStep') {   // table mode: − / + / full Health on the sheet
       const h = healthCalc(compute());
       if (!h) return;
@@ -2165,7 +2170,7 @@
   document.addEventListener('scroll', () => { if (tipTarget) hideTip(); }, { passive: true });
   // Touch: tap an info/term element to toggle its tooltip.
   document.addEventListener('touchstart', ev => {
-    const el = ev.target.closest('.term, .info, .die, .ab-type, .pill, .slot-chip');
+    const el = ev.target.closest('.term, .info, .die, .ab-type, .pill, .slot-chip, .muted[data-tip], .sock-name');
     if (el && el.dataset.tip) {
       if (tipTarget === el) { hideTip(); return; }
       tipTarget = el;
