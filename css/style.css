@@ -590,15 +590,28 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 /* ==========================================================================
    Title page (Prologue)
    ========================================================================== */
-.title-page { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(260px, .85fr); gap: 0 44px; }
+.title-page { display: grid; gap: 30px; }
+.tp-hero { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .8fr); gap: 56px; align-items: center; }
+.tp-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 24px; }
+.tp-links a { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--line-2); background: var(--ink-1); text-decoration: none; color: var(--text); transition: border-color .15s, background .15s; }
+.tp-links a:hover { border-color: var(--gold); background: var(--ink-2); }
+.tp-links .ico { color: var(--gold); margin-top: 3px; }
+.tp-links b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 1.08rem; color: var(--gold-hi); }
+.tp-links small { display: block; font-size: .82rem; color: var(--text-3); line-height: 1.35; }
+.tp-dice { align-self: stretch; align-content: center; }
+.tp-dice p { margin: 0; font-size: .92rem; color: var(--text-2); }
+.tp-aside-h { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
+.tp-start { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .8fr); gap: 56px; align-items: end; border-top: 1px solid var(--line); padding-top: 26px; }
+.tp-method-l { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .16em; text-transform: uppercase; color: var(--text-3); margin-bottom: 10px; }
+.tp-go { display: grid; gap: 10px; }
+.tp-go .tp-small { margin: 0; }
+.tp-go .btn.primary { width: 100%; justify-content: center; padding: 16px 20px; }
 .tp-kicker { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
 .tp-title { font-size: 3.9rem; line-height: .98; margin: 14px 0 20px; color: var(--text); letter-spacing: -.005em; }
 .tp-title span { display: block; font-size: .56em; color: var(--gold); margin-top: 8px; letter-spacing: .02em; }
 .tp-lede { font-size: 1.2rem; line-height: 1.5; color: var(--text); max-width: 46ch; }
 .tp-note { color: var(--text-2); max-width: 58ch; }
 .tp-note a { display: inline-flex; align-items: center; gap: 4px; }
-.tp-method { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--line); }
-.tp-method-l { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .16em; text-transform: uppercase; color: var(--text-3); margin-bottom: 10px; }
 .tp-options { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); }
 .tp-option { position: relative; text-align: left; background: var(--ink-0); border: 0; padding: 16px 18px; cursor: pointer; font: inherit; color: var(--text); }
 .tp-option:hover { background: var(--ink-2); }
@@ -608,17 +621,6 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .tp-option.on .tp-o-t { color: var(--gold-hi); }
 .tp-o-d { display: block; font-size: .92rem; color: var(--text-2); margin-top: 4px; }
 .tp-small { font-size: .82rem; color: var(--text-3); margin-top: 10px; }
-.tp-footer { border-top: 0; margin-top: 18px; padding-top: 0; }
-.tp-aside { border-left: 1px solid var(--line); padding-left: 28px; }
-.tp-aside-h { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin: 6px 0 10px; }
-.tp-chapters { list-style: none; margin: 0 0 30px; padding: 0; }
-.tp-chapters li { display: grid; grid-template-columns: 40px 1fr auto; align-items: baseline; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
-.tp-n { font-family: var(--font-display); color: var(--gold-lo); font-size: 1.05rem; }
-.tp-c b { font-family: var(--font-display); font-weight: 400; font-size: 1.05rem; color: var(--text); display: block; line-height: 1.2; }
-.tp-c span { font-size: .86rem; color: var(--text-2); }
-.tp-sc { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); text-align: right; }
-.tp-dice p { font-size: .92rem; color: var(--text-2); }
-.tp-dice-row { display: flex; gap: 8px; margin: 10px 0; }
 
 /* ==========================================================================
    Tooltip — a folded codex slip
@@ -917,9 +919,9 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
   .flow-head { margin-left: 0; flex-wrap: wrap; row-gap: 0; }
   .flow-head::after { display: none; }
   .flow-here, .flow-state, .flow-lock { flex-basis: 100%; padding-left: 46px; margin-top: -4px; }
-  .grid2, .grid3, .hs-top, .hs-prs, .hs-bottom, .hs-stats, .hs-3, .title-page, .tp-options, .hs-aux-grid, .hs-notes { grid-template-columns: minmax(0, 1fr); }
+  .grid2, .grid3, .hs-top, .hs-prs, .hs-bottom, .hs-stats, .hs-3, .tp-hero, .tp-start, .tp-links, .tp-options, .hs-aux-grid, .hs-notes { grid-template-columns: minmax(0, 1fr); }
   .tp-title { font-size: 2.7rem; }
-  .tp-aside { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); margin-top: 28px; padding-top: 12px; }
+  .tp-hero, .tp-start { gap: 24px; }
   .hs-pr + .hs-pr { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; }
   .hs-ab-t .ic { width: 40px; }
   .hs-ab-t th, .hs-ab-t td { padding-left: 4px; padding-right: 4px; }

@@ -759,23 +759,32 @@
 
   // ------------------------------------------------------------------ rendering: steps
   function renderIntro() {
-    const chapters = [
-      ['Homeland', 'The land that shaped you', ''],
-      ['Origin', 'Where you came from', 'Background'],
-      ['Source of Power', 'What changed you', 'Power Source'],
-      ['Path', 'How you fight', 'Archetype'],
-      ['Temperament', 'How you face pressure', 'Personality'],
-      ['Ultimates', 'What you unleash when all is lost', 'Red Abilities'],
-      ['Twist of Fate', 'One last tweak', 'Retcon'],
-      ['Health', 'How much you can endure', 'Health'],
-      ['Legend', 'Your name and your sheet', 'Finishing Touches']
-    ].map(([a, b]) => [tr(a), tr(b), '']);
+    // The chapters themselves are listed in the chronicle rail on the left; the welcome page sets the scene,
+    // shows how a roll works and asks for the creation method.
+    const rf = (d, label) => `<span class="rf-die">${die(d)}<small>${label}</small></span>`;
     return `<div class="panel title-page">
-      <section class="tp-main">
-        <div class="tp-kicker">${tr('A codex for the Sentinels roleplaying system')}</div>
-        <h2 class="tp-title">${tr('Forge a Champion <span>of Runeterra</span>')}</h2>
-        <p class="tp-lede">${tr('Nine chapters take you from a nameless wanderer to a champion ready for the table — where you were born, what gave you power, how you fight, and what you will become when everything is on the line.')}</p>
-        <p class="tp-note">${tr('Every Runeterran name hides the rule behind it:')} <span class="term"${tip(tr('<h5>Hover and learn</h5>Anything underlined like this explains itself. Runeterra names show the Sentinels RPG rule they stand for.'))}>${tr('hover anything underlined')}</span>. ${tr('New to the world? Read the')} <a href="#" data-act="lore">${ico('map')} ${tr('lore')}</a>. ${tr('New to the rules? Open the')} <a href="#" data-act="rules">${ico('codex')} ${tr('cheat sheet')}</a> (<kbd>?</kbd>).</p>
+      <section class="tp-hero">
+        <div class="tp-main">
+          <div class="tp-kicker">${tr('A codex for the Sentinels roleplaying system')}</div>
+          <h2 class="tp-title">${tr('Forge a Champion <span>of Runeterra</span>')}</h2>
+          <p class="tp-lede">${tr('Nine chapters take you from a nameless wanderer to a champion ready for the table — where you were born, what gave you power, how you fight, and what you will become when everything is on the line.')}</p>
+          <p class="tp-note">${tr('Every Runeterran name hides the rule behind it:')} <span class="term"${tip(tr('<h5>Hover and learn</h5>Anything underlined like this explains itself. Runeterra names show the Sentinels RPG rule they stand for.'))}>${tr('hover anything underlined')}</span>.</p>
+          <div class="tp-links">
+            <a href="#" data-act="lore">${ico('map')}<span><b>${tr('Lore')}</b><small>${tr('The world, its regions and peoples')}</small></span></a>
+            <a href="#" data-act="rules">${ico('codex')}<span><b>${tr('Rules')}</b><small>${tr('The table summary, key ?')}</small></span></a>
+            <a href="ficha.html">${ico('file')}<span><b>${tr('Sheet')}</b><small>${tr('Your finished champion, full screen')}</small></span></a>
+          </div>
+        </div>
+        <aside class="tp-dice roll-formula" aria-label="${tr('How a roll works')}">
+          <div class="tp-aside-h">${tr('How a roll works')}</div>
+          <div class="rf-row">${rf('d10', tr('Power'))}<span class="rf-op">+</span>${rf('d8', tr('Quality'))}<span class="rf-op">+</span>${rf('d6', tr('Status'))}</div>
+          <div class="rf-arrow">${tr('roll and sort')}</div>
+          <div class="rf-row rf-result"><span class="rf-slot">${tr('Min')}</span><span class="rf-slot on">${tr('Mid')}</span><span class="rf-slot">${tr('Max')}</span></div>
+          <p>${tr('The <b>Mid</b> die is the effect die, unless an ability says otherwise.')}</p>
+          <p>${tr('As {health} falls you pass from the {g} to the {y} and {r}, unlocking stronger abilities.', { health: rulesText(tr('Health')), g: rulesText(tr('Green zone')), y: rulesText(tr('Yellow zone')), r: rulesText(tr('Red zone')) })}</p>
+        </aside>
+      </section>
+      <section class="tp-start">
         <div class="tp-method">
           <div class="tp-method-l">${tr('Choose how fate is decided')}</div>
           <div class="tp-options" role="radiogroup" aria-label="${tr('Creation method')}">
@@ -785,18 +794,9 @@
           <p class="tp-small tp-which">${tr('<b>Which one?</b> Constructed is the most direct: you choose everything, ideal when you already have a champion in mind or are new to the game. Guided is for those who like surprises: at each chapter you roll the dice and pick among the options they unlock, with one re-roll per chapter.')}</p>
           <p class="tp-small">${tr('You can switch at any time. Progress is kept in this browser.')}</p>
         </div>
-        <div class="step-footer tp-footer"><span></span><div class="next-wrap"><button class="btn primary" data-act="next"><span class="btn-kicker">${tr('Chapter I')}</span>${tr('Begin the chronicle')} ${ico('next')}</button></div></div>
+        <div class="tp-go"><p class="tp-small">${tr('The chapters are listed in the chronicle: each one opens once the previous is complete.')}</p>
+          <button class="btn primary" data-act="next"><span class="btn-kicker">${tr('Chapter I')}</span>${tr('Begin the chronicle')} ${ico('next')}</button></div>
       </section>
-      <aside class="tp-aside">
-        <div class="tp-aside-h">${tr('The Chapters')}</div>
-        <ol class="tp-chapters">${chapters.map((c, i) => `<li><span class="tp-n">${ROMAN[i + 1]}</span><span class="tp-c"><b>${c[0]}</b><span>${c[1]}</span></span>${c[2] ? `<span class="tp-sc">${c[2]}</span>` : ''}</li>`).join('')}</ol>
-        <div class="tp-dice">
-          <div class="tp-aside-h">${tr('How a roll works')}</div>
-          <p>${tr('Every action rolls <b>three dice</b> —')} <span class="term"${tip(tr('<h5>Powers</h5>Exceptional traits — magic, Hextech, Ascended strength. Rated d6 (above average) to d12 (godlike).'))}>${tr('a power')}</span>, <span class="term"${tip(tr('<h5>Qualities</h5>Learned skills and knowledge. Rated d6 (solid competency) to d12 (world class).'))}>${tr('a quality')}</span> ${tr('and your')} <span class="term"${tip(window.GLOSSARY['status die'])}>${tr('status')}</span>${PT ? ',' : ' —'} ${tr('sorted into')} ${rulesText(tr('Min die, Mid die and Max die'))}.</p>
-          <div class="tp-dice-row">${['d4', 'd6', 'd8', 'd10', 'd12'].map(d => die(d)).join('')}</div>
-          <p>${tr('As {health} falls you pass from the {g} to the {y} and {r}, unlocking stronger abilities.', { health: rulesText(tr('Health')), g: rulesText(tr('Green zone')), y: rulesText(tr('Yellow zone')), r: rulesText(tr('Red zone')) })}</p>
-        </div>
-      </aside>
     </div>`;
   }
 
