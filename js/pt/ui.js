@@ -579,5 +579,6 @@ Object.assign(window.I18N.ui, {
  "Import": "Importar",
  "Start over": "Recomeçar",
  "Hero Sheet": "Ficha de Herói",
- "FOOTER": "Projeto de fã não oficial. Runeterra e League of Legends são © Riot Games. Regras adaptadas de <em>Sentinel Comics: The Roleplaying Game</em> © Greater Than Games. Uso pessoal e não comercial."
+ "GM Screen": "Escudo do Mestre",
+  "FOOTER": "Projeto de fã não oficial. Runeterra e League of Legends são © Riot Games. Regras adaptadas de <em>Sentinel Comics: The Roleplaying Game</em> © Greater Than Games. Uso pessoal e não comercial."
 });

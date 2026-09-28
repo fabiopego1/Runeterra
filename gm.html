@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>GM Screen · Runeterra Champion Forge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Barlow+Semi+Condensed:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body class="gm-page">
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" data-sigil="compass"></span>
+      <span class="brand-text"><span class="brand-kicker" data-t>Runeterra · Tabletop Chronicle</span><span class="brand-title" data-t>GM Screen</span></span>
+    </a>
+    <nav class="header-actions" aria-label="Tools">
+      <span class="lang-switch" role="group" aria-label="Language"><button class="lang" data-lang="en" title="English">EN</button><button class="lang" data-lang="pt" title="Português (Brasil)">PT-BR</button></span>
+      <span class="hsep" aria-hidden="true"></span>
+      <a class="hbtn" href="index.html"><span data-ico="prev"></span><span data-t>Champion Forge</span></a>
+      <button class="hbtn" data-gm-lock hidden><span data-ico="lock"></span><span data-t>Lock</span></button>
+    </nav>
+  </header>
+
+  <main class="gm-main">
+    <form class="gm-gate" id="gm-gate" autocomplete="off">
+      <span class="gm-seal" data-ico="lock" aria-hidden="true"></span>
+      <div class="eyebrow" data-t>Game Master only</div>
+      <h1 data-t>Behind the Screen</h1>
+      <p class="muted" data-t>Enter the GM password to open this page.</p>
+      <label class="gm-field"><span class="sr-only" data-t>Password</span>
+        <input type="password" id="gm-pass" required autocomplete="current-password" data-t-placeholder="Password" placeholder="Password"></label>
+      <button class="btn primary" type="submit"><span data-t>Unlock</span></button>
+      <p class="gm-error" id="gm-error" role="alert" hidden></p>
+    </form>
+
+    <section class="gm-room" id="gm-room" hidden aria-live="polite">
+      <div class="eyebrow" data-t>Game Master only</div>
+      <h1 data-t>Behind the Screen</h1>
+      <div class="gm-content" id="gm-content"></div>
+    </section>
+  </main>
+
+  <div id="tip" role="tooltip"></div>
+
+  <script src="js/i18n.js?v=dev"></script>
+  <script src="js/icons.js?v=dev"></script>
+  <script src="js/gm-vault.js?v=dev"></script>
+  <script src="js/gm.js?v=dev"></script>
+</body>
+</html>
