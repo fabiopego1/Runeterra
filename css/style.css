@@ -358,10 +358,63 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .assign { display: grid; }
 .assign > .muted { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); margin-bottom: 4px; }
 .assign-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) 24px; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); }
-.assign-row:first-of-type { border-top: 1px solid var(--line); }
-.assign-row.freed { background: linear-gradient(90deg, rgba(69, 184, 196, .06), transparent 60%); }
 .assign-row .die { justify-self: center; }
-.assign-row .note { grid-column: 2 / -1; font-family: var(--font-mono); font-size: .68rem; color: var(--hex); }
+
+/* Die sockets — a die waiting to be bound to a trait; its tray of runes opens beneath it */
+.socket { border-bottom: 1px solid var(--line); }
+.assign > .muted + .socket, p + .socket { border-top: 1px solid var(--line); }
+.sock-row { display: grid; grid-template-columns: 44px 22px minmax(0, 1fr) 24px; align-items: center; min-height: 56px; }
+.sock-row .die { justify-self: center; width: 32px; height: 32px; font-size: .72rem; }
+.sock-mark { position: relative; justify-self: center; display: grid; place-items: center; width: 34px; height: 34px; font: 500 .74rem var(--font-mono); color: var(--gold); }
+.sock-mark::before { content: ''; position: absolute; inset: 5px; border: 1px solid var(--gold-lo); transform: rotate(45deg); }
+.sock-link { height: 1px; background: var(--line-2); position: relative; }
+.sock-link::after { content: ''; position: absolute; right: -3px; top: -3px; width: 5px; height: 5px; border: 1px solid var(--line-2); background: var(--ink-0); transform: rotate(45deg); }
+.socket.filled .sock-link, .socket.filled .sock-link::after { background: var(--gold-lo); border-color: var(--gold); }
+.sock-slot {
+  display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; min-width: 0; text-align: left; font: inherit; color: var(--text); cursor: pointer;
+  background: none; border: 0; border-bottom: 1px dashed var(--line-2); padding: 10px 2px 8px 12px; margin: 0; transition: border-color .15s, background .15s;
+}
+.sock-slot:hover { border-bottom-color: var(--gold-lo); background: rgba(200, 164, 94, .04); }
+.socket.filled .sock-slot { border-bottom-style: solid; border-bottom-color: transparent; }
+.socket.filled .sock-slot:hover { border-bottom-color: var(--gold-lo); }
+.socket.open .sock-slot { border-bottom: 1px solid var(--hex); }
+.sock-empty { font-style: italic; color: var(--text-3); }
+.socket.open .sock-empty { color: var(--hex); font-style: normal; }
+.sock-name { font-family: var(--font-display); font-size: 1.12rem; color: var(--gold-hi); animation: bind .5s ease-out; }
+.sock-cat { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); }
+.sock-cta { margin-left: auto; font-family: var(--font-mono); font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+.socket.open .sock-cta { color: var(--text-3); }
+.sock-row .info-mark { justify-self: center; }
+.socket .note { margin: -4px 0 8px 66px; font-family: var(--font-mono); font-size: .68rem; color: var(--hex); }
+.socket.freed .sock-row { box-shadow: inset 2px 0 0 var(--hex); }
+@keyframes bind { from { color: var(--hex); letter-spacing: .04em; opacity: .4; } }
+
+.tray { margin: 0 0 14px 66px; padding: 14px 0 4px 16px; border-left: 1px solid var(--hex); display: grid; gap: 14px; animation: tray .18s ease-out; }
+@keyframes tray { from { opacity: 0; transform: translateY(-4px); } }
+.tray-filter { display: flex; align-items: center; gap: 8px; color: var(--text-3); border-bottom: 1px solid var(--line-2); max-width: 340px; }
+.tray-filter input { flex: 1; background: none; border: 0; padding: 6px 0; color: var(--text); font: inherit; outline: none; }
+.tray-filter:focus-within { border-bottom-color: var(--gold); color: var(--gold); }
+.tray-group[hidden], .rune[hidden] { display: none; }
+.tray-label { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; display: flex; gap: 10px; align-items: baseline; }
+.tray-label span { color: var(--text-3); letter-spacing: .08em; text-transform: none; }
+.tray-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+.rune {
+  position: relative; display: grid; align-content: start; gap: 2px; text-align: left; font: inherit; color: var(--text); cursor: pointer;
+  background: var(--ink-0); border: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 9px 12px 10px 24px; min-height: 48px; transition: background .12s;
+}
+.rune::before { content: ''; position: absolute; left: 9px; top: 15px; width: 6px; height: 6px; border: 1px solid var(--gold-lo); transform: rotate(45deg); transition: background .12s, border-color .12s; }
+.rune:hover { background: var(--ink-2); }
+.rune:hover::before { border-color: var(--gold); }
+.rune:focus-visible { outline: 1px solid var(--hex); outline-offset: -1px; }
+.rune.on { background: var(--ink-2); box-shadow: inset 0 0 0 1px var(--gold); }
+.rune.on::before { background: var(--gold); border-color: var(--gold); }
+.rune.off { cursor: not-allowed; color: var(--text-3); }
+.rune.off::before { border-style: dotted; }
+.rune-name { font-size: .95rem; line-height: 1.25; }
+.rune-sub { font-size: .76rem; color: var(--text-3); line-height: 1.3; }
+.rune-badge { justify-self: start; margin-top: 3px; font-family: var(--font-mono); font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--hex); }
+.rune-badge.taken { color: var(--text-3); }
+.tray-clear { justify-self: start; margin-bottom: 6px; }
 .info-mark { color: var(--text-3); display: inline-grid; vertical-align: -3px; }
 .info-mark:hover { color: var(--gold); }
 .rules-list { margin: 4px 0 14px; padding-left: 0; list-style: none; font-size: .95rem; }
@@ -676,7 +729,7 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
   .dossier .dos-fact { padding: 8px 10px !important; border-right: 1px solid var(--line); }
 }
 @media (max-width: 900px) {
-  .site-header { padding: 10px 16px; flex-wrap: wrap; gap: 6px; }
+  .site-header { position: relative; padding: 10px 16px; flex-wrap: wrap; gap: 6px; }
   .brand-title { font-size: 1.2rem; }
   .header-actions { width: 100%; flex-wrap: wrap; row-gap: 0; margin: 0 -8px; }
   .hsep { display: none; }
@@ -716,6 +769,9 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
   .cards, .cards.regions, .principles { grid-template-columns: minmax(0, 1fr); }
   .picked-bar { flex-direction: column; gap: 8px; }
   .assign-row { grid-template-columns: 40px minmax(0, 1fr) 22px; }
+  .sock-row { grid-template-columns: 40px 12px minmax(0, 1fr) 22px; }
+  .tray, .socket .note { margin-left: 20px; }
+  .tray-grid { grid-template-columns: 1fr 1fr; }
   .step-footer { flex-direction: column-reverse; align-items: stretch; }
   .next-wrap { justify-content: stretch; }
   .next-wrap .btn.primary { width: 100%; }
@@ -740,4 +796,8 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
   .hero-sheet input[type=checkbox] { border-color: #000; }
   .hero-sheet input[type=checkbox]:checked { background: #000 !important; }
   .hs-zone { background: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
