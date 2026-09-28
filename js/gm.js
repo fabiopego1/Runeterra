@@ -48,8 +48,9 @@
     const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(vault.iv) }, key, b64(vault.ct));
     return new TextDecoder().decode(plain);
   };
-  const show = html => {
+  const show = (html, rawKey) => {
     document.getElementById('gm-content').innerHTML = html;
+    if (window.GM_TOOLS) window.GM_TOOLS.mount(document.getElementById('gm-tools'), rawKey);
     if (window.GM_FLAVOUR) window.GM_FLAVOUR.render(document.getElementById('gm-flavour'));
     gate.hidden = true; room.hidden = false; lockBtn.hidden = false;
   };
@@ -63,7 +64,7 @@
   const saved = store.get();
   if (saved) {
     crypto.subtle.importKey('raw', b64(saved), 'AES-GCM', false, ['decrypt'])
-      .then(open).then(show).catch(() => store.clear());
+      .then(open).then(html => show(html, saved)).catch(() => store.clear());
   }
 
   gate.addEventListener('submit', async ev => {
@@ -73,9 +74,10 @@
     try {
       const key = await deriveKey(input.value);
       const html = await open(key);
-      store.set(toB64(await crypto.subtle.exportKey('raw', key)));
+      const raw = toB64(await crypto.subtle.exportKey('raw', key));
+      store.set(raw);
       input.value = '';
-      show(html);
+      show(html, raw);
     } catch (e) {
       fail('Wrong password.'); input.select();
     } finally { btn.textContent = T('Unlock'); }

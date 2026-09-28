@@ -236,6 +236,38 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.press('#gm-pass', 'Enter');
     await p.waitForSelector('#gm-room:not([hidden])', { timeout: 15000 }).catch(() => {});
     ok(await p.evaluate(() => !document.getElementById('gm-room').hidden && document.getElementById('gm-flavour').children.length > 0), 'GM Screen unlocks with the password');
+
+    // Table tools
+    await p.click('[data-gm=preset][data-p=standard]');
+    for (let k = 0; k < 2; k++) await p.click('[data-gm=advance]');
+    ok(await p.$eval('.gmt-status', e => e.textContent.includes('Amarela')), 'scene tracker turns Yellow after the two Green spaces');
+    await p.fill('[data-gm-form=turn] input[name=name]', 'Aldric'); await p.press('[data-gm-form=turn] input[name=name]', 'Enter');
+    await p.click('[data-gm=addTracker]');
+    await p.click('.gmt-list [data-gm=acted]');
+    ok(await p.$$eval('.gmt-list li.done', e => e.length) === 1, 'turn order marks who already acted');
+    await p.click('[data-gm=newRound]');
+    ok(await p.$$eval('.gmt-list li.done', e => e.length) === 0 && await p.$eval('.gmt-turns h3 small', e => e.textContent.includes('2')), 'new round clears the turn order');
+    await p.fill('[data-gm-form=challenge] input[name=name]', 'Vazamento'); await p.fill('[data-gm-form=challenge] input[name=timer]', '2'); await p.press('[data-gm-form=challenge] input[name=name]', 'Enter');
+    await p.click('[data-gm=chTick][data-i="1"]');
+    ok(await p.$eval('.gmt-challenges .gmt-card', e => e.classList.contains('bad')), 'a challenge fires when its timer runs out');
+    await p.fill('[data-gm-form=foe] input[name=name]', 'Capangas'); await p.press('[data-gm-form=foe] input[name=name]', 'Enter');
+    await p.fill('[data-dmg]', '99'); await p.click('[data-gm=foeHit]');
+    ok(await p.$$eval('.gmt-foe .gmt-die', e => e.length) === 2 && await p.$eval('.gmt-result', e => e.textContent.includes('derrotado')), 'a minion that fails its save is removed');
+    await p.selectOption('.gmt-foes select[name=kind]', 'lieutenant'); await p.selectOption('.gmt-foes select[name=die]', 'd10');
+    await p.fill('[data-gm-form=foe] input[name=name]', 'Gorn'); await p.press('[data-gm-form=foe] input[name=name]', 'Enter');
+    const lt = (await p.$$('[data-dmg]'))[1];
+    await lt.fill('20'); await (await p.$$('[data-gm=foeHit]'))[1].click();
+    ok(await p.$$eval('.gmt-result', e => e.some(x => x.textContent.includes('sem rolar'))), 'massive damage defeats a lieutenant without a roll');
+    await p.click('[data-gm=twist][data-t=major]');
+    ok(await p.$eval('.gmt-twist p', e => e.textContent.length > 10), 'twist generator draws a twist');
+    await p.fill('#gmt-notes', 'O Capataz trabalha para Singed.'); await p.waitForTimeout(1200);
+    const stored = await p.evaluate(() => localStorage.getItem('runeterra-gm-notes-v1'));
+    ok(stored && !stored.includes('Singed') && JSON.parse(stored).ct, 'GM notes are stored encrypted');
+    await p.reload(); await p.waitForSelector('#gmt-notes'); await p.waitForTimeout(800);
+    ok(await p.$eval('#gmt-notes', e => e.value) === 'O Capataz trabalha para Singed.' && await p.$$eval('.gmt-foe', e => e.length) === 2, 'notes and table come back after a reload');
+    const [bk] = await Promise.all([p.waitForEvent('download'), p.click('[data-gm=backup]')]);
+    const bkText = fs.readFileSync(await bk.path(), 'utf8');
+    ok(/runeterra-gm-backup/.test(bkText) && !bkText.includes('Singed'), 'backup is exported encrypted');
     await p.context().close();
   } else console.log('skip GM Screen unlock (GM_PASSWORD not set)');
 
