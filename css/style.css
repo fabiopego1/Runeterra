@@ -262,7 +262,7 @@ aside.sheet-side { position: sticky; top: 87px; align-self: start; max-height: c
 .card .t { font-family: var(--font-display); font-size: 1.1rem; line-height: 1.15; color: var(--text); }
 .card .s { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); margin-top: 4px; }
 .card .d { font-size: .88rem; color: var(--text-2); margin-top: 6px; line-height: 1.35; }
-.card .fit { position: absolute; right: 12px; top: 12px; display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--region); }
+.card .fit { display: flex; margin: -2px 0 4px; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--region); }
 .card .fit .ico { width: 11px; height: 11px; }
 .card .info { position: absolute; right: 10px; bottom: 10px; color: var(--text-3); cursor: help; display: grid; }
 .card .info:hover { color: var(--gold); }

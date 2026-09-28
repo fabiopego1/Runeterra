@@ -923,7 +923,7 @@
     const H = {
       roll: () => rollerHtml('bg', ['d10', 'd10'], tr('Roll 2d10 for your Origin')),
       pick: () => pickSection('bg', b && chosenSummary(b.rt, b.sc, b.lore, b.champs),
-        (st.method !== 'guided' ? '' : `<p class="muted">${tr('Highlighted cards match your roll.')}</p>`) + cardsHtml(window.BACKGROUNDS, 'bg', st.bg.id, 'bg', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="d">${esc(x.sub)}</div>${fitMark('bg', x.id)}<span class="info" aria-label="${tr('Details')}"${tip(bgTip(x))}>${ico('info')}</span>`)),
+        (st.method !== 'guided' ? '' : `<p class="muted">${tr('Highlighted cards match your roll.')}</p>`) + cardsHtml(window.BACKGROUNDS, 'bg', st.bg.id, 'bg', x => `<span class="n">${pad2(x.n)}</span>${fitMark('bg', x.id)}<div class="t">${esc(x.rt)}</div><div class="d">${esc(x.sub)}</div><span class="info" aria-label="${tr('Details')}"${tip(bgTip(x))}>${ico('info')}</span>`)),
       assign: () => `<p>${tr('Assign {dice} to {n} of: {opts}.', { dice: b.q.dice.map(d => die(d)).join(' '), n: b.q.count || 2, opts: optsText(b.q.opts) })}${b.q.mustInclude ? ' ' + tr('One die <b>must</b> go to {trait}.', { trait: traitSpan(b.q.mustInclude) }) : ''}</p>${assignHtml(R.slots.bg, expand(b.q.opts), R.before.background, 'bg', tr('Assign each die to a quality:'))}`,
       principle: () => principleHtml('bg', b.principle, R) + `<p class="muted" style="margin-top:10px">${tr('Next step: your Source of Power, rolled with {dice}.', { dice: b.psDice.map(d => die(d, 'sm')).join('') })}</p>`
     };
@@ -959,7 +959,7 @@
     const H = {
       roll: () => rollerHtml('ps', b.psDice, tr('Roll your Origin dice')),
       pick: () => pickSection('ps', p && chosenSummary(p.rt, p.sc, p.lore, p.champs),
-        cardsHtml(window.POWER_SOURCES, 'ps', st.ps.id, 'ps', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="d">${esc(x.sub)}</div>${fitMark('ps', x.id)}<span class="info" aria-label="${tr('Details')}"${tip(psTip(x))}>${ico('info')}</span>`)),
+        cardsHtml(window.POWER_SOURCES, 'ps', st.ps.id, 'ps', x => `<span class="n">${pad2(x.n)}</span>${fitMark('ps', x.id)}<div class="t">${esc(x.rt)}</div><div class="d">${esc(x.sub)}</div><span class="info" aria-label="${tr('Details')}"${tip(psTip(x))}>${ico('info')}</span>`)),
       assign: () => {
         let optKeys = expand(p.opts);
         if (p.required && !optKeys.includes(p.required.key)) optKeys = [p.required.key].concat(optKeys);
