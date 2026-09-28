@@ -1,3 +1,12 @@
+/* Fonts are served from the site itself (assets/fonts, subset WOFF2), not from Google. */
+@font-face { font-family: 'Marcellus'; src: url('../assets/fonts/Marcellus-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Barlow Semi Condensed'; src: url('../assets/fonts/BarlowSemiCondensed-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Barlow Semi Condensed'; src: url('../assets/fonts/BarlowSemiCondensed-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Barlow Semi Condensed'; src: url('../assets/fonts/BarlowSemiCondensed-Medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Barlow Semi Condensed'; src: url('../assets/fonts/BarlowSemiCondensed-SemiBold.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'IBM Plex Mono'; src: url('../assets/fonts/IBMPlexMono-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'IBM Plex Mono'; src: url('../assets/fonts/IBMPlexMono-Medium.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+
 /* ==========================================================================
    Runeterra Champion Forge — "The Codex of Champions"
    Art direction: a Runeterran archive dossier. Warm ink, hextech gold,
@@ -19,7 +28,7 @@
   /* text */
   --text: #e8dfca;
   --text-2: #a8a08d;
-  --text-3: #6d685d;
+  --text-3: #888378;   /* lightened to 4.5:1+ on every dark surface (was #6d685d, 3.3:1) */
   /* hextech gold: structure & primary */
   --gold: #c8a45e;
   --gold-hi: #ecd49c;
@@ -105,6 +114,42 @@ kbd { font-family: var(--font-mono); font-size: .7em; border: 1px solid var(--li
 .hbtn.key { color: var(--gold); }
 .hbtn.danger:hover { color: var(--danger); border-bottom-color: var(--danger); }
 .hsep { width: 1px; height: 20px; background: var(--line-2); margin: 0 8px; }
+
+/* "Arquivo" dropdown: export, import, print, start over */
+.file-menu { position: relative; }
+.hbtn .chev .ico { width: 12px; height: 12px; transition: transform .15s; }
+.hbtn[aria-expanded="true"] { color: var(--gold-hi); border-bottom-color: var(--gold-lo); }
+.hbtn[aria-expanded="true"] .chev .ico { transform: rotate(180deg); }
+.file-pop {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 40; width: 280px;
+  display: grid; padding: 6px; background: var(--ink-1); border: 1px solid var(--gold-lo); box-shadow: var(--shadow);
+}
+.file-pop[hidden] { display: none; }
+.file-pop [role="menuitem"] {
+  display: flex; align-items: flex-start; gap: 10px; width: 100%; text-align: left; cursor: pointer;
+  font: 500 .86rem var(--font-ui); color: var(--text); background: none; border: 0; padding: 9px 10px;
+}
+.file-pop [role="menuitem"] > span:last-child { display: grid; gap: 1px; }
+.file-pop [role="menuitem"] small { font-size: .74rem; color: var(--text-3); }
+.file-pop [role="menuitem"] .ico { color: var(--gold); margin-top: 2px; }
+.file-pop [role="menuitem"]:hover, .file-pop [role="menuitem"]:focus-visible { background: var(--ink-3); outline: none; }
+.file-pop .danger, .file-pop .danger .ico { color: var(--danger); }
+.file-pop hr { border: 0; border-top: 1px solid var(--line); margin: 4px 6px; }
+
+/* First-visit hint on touch screens */
+.touch-hint {
+  position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 60; max-width: 460px; margin: 0 auto;
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  background: var(--ink-2); border: 1px solid var(--gold-lo); box-shadow: var(--shadow);
+  animation: hint-in .3s ease-out; transition: opacity .3s, transform .3s;
+}
+.touch-hint p { margin: 0; font-size: .9rem; line-height: 1.4; }
+.touch-hint u { text-decoration-style: dotted; text-decoration-color: var(--gold); }
+.touch-hint > span { color: var(--gold); }
+.touch-hint button { background: none; border: 0; color: var(--text-2); font-size: 1rem; padding: 6px; cursor: pointer; }
+.touch-hint.out { opacity: 0; transform: translateY(10px); }
+@keyframes hint-in { from { opacity: 0; transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) { .touch-hint { animation: none; transition: none; } }
 
 /* ==========================================================================
    Buttons — primary is a solid hextech-cut plate; others are restrained

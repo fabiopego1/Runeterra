@@ -5,9 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Forja de Campeões · Runeterra</title>
   <meta name="description" content="Crie seu campeão de Runeterra passo a passo, com explicações de cada mecânica ao passar o mouse.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Barlow+Semi+Condensed:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#0c0d10">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:site_name" content="Forja de Campeões">
+  <meta property="og:title" content="Forja de Campeões · Runeterra">
+  <meta property="og:description" content="Crie seu campeão de Runeterra passo a passo, conheça o mundo e leve as regras para a mesa.">
+  <meta property="og:url" content="https://fabiopego1.github.io/Runeterra/">
+  <meta property="og:image" content="https://fabiopego1.github.io/Runeterra/assets/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preload" href="assets/fonts/BarlowSemiCondensed-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/Marcellus-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css?v=dev">
 </head>
 <body>
@@ -20,11 +30,17 @@
       <a class="hbtn key" href="lore.html" title="O mundo de Runeterra"><span data-ico="map"></span><span>Lore</span></a>
       <a class="hbtn key" href="regras.html" title="Resumo de regras (tecla ?)"><span data-ico="codex"></span><span>Regras</span><kbd>?</kbd></a>
       <span class="hsep" aria-hidden="true"></span>
-      <button class="hbtn" data-act="export"><span data-ico="download"></span><span data-t>Export</span></button>
-      <label class="hbtn" for="import-file"><span data-ico="upload"></span><span data-t>Import</span></label>
+      <div class="file-menu">
+        <button class="hbtn" id="file-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="file-pop"><span data-ico="file"></span><span>Arquivo</span><span class="chev" data-ico="chevron"></span></button>
+        <div class="file-pop" id="file-pop" role="menu" hidden>
+          <button role="menuitem" data-act="export"><span data-ico="download"></span><span>Exportar campeão<small>Salva um arquivo .json de backup</small></span></button>
+          <label role="menuitem" for="import-file" tabindex="0"><span data-ico="upload"></span><span>Importar campeão<small>Abre um arquivo .json salvo antes</small></span></label>
+          <button role="menuitem" data-act="print"><span data-ico="print"></span><span>Imprimir ficha</span></button>
+          <hr>
+          <button role="menuitem" class="danger" data-act="reset"><span data-ico="reset"></span><span>Recomeçar do zero<small>Apaga o campeão atual deste navegador</small></span></button>
+        </div>
+      </div>
       <input id="import-file" type="file" accept="application/json,.json" hidden>
-      <button class="hbtn" data-act="print"><span data-ico="print"></span><span data-t>Print</span></button>
-      <button class="hbtn danger" data-act="reset"><span data-ico="reset"></span><span data-t>Start over</span></button>
     </nav>
   </header>
 

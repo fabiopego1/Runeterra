@@ -1,54 +1,55 @@
-# Runeterra — Champion Forge
+# Runeterra · Forja de Campeões
 
-A fan-made tabletop RPG set in **Runeterra** (League of Legends), using the
-**Sentinel Comics: The Roleplaying Game** (SCRPG) rules as its engine.
+Um RPG de mesa feito por fãs, ambientado em **Runeterra** (League of Legends). Este repositório guarda o site da campanha: a Forja de Campeões (criação de personagem), as páginas de Lore e de Regras e o Escudo do Mestre.
 
-## Part 1: Character creation (web page)
+Site publicado: https://fabiopego1.github.io/Runeterra/
 
-Open `index.html` in a browser. There's no build step and nothing to install.
+## O que tem no site
 
-### Hosting
-`.github/workflows/pages.yml` publishes the site to GitHub Pages on every push to `main` (only the web files, not the rulebook PDF).
-One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**. The site is then at `https://fabiopego1.github.io/Runeterra/`.
+* **Forja** (`index.html`): cria o campeão em nove capítulos (Terra Natal, Origem, Fonte de Poder, Caminho, Temperamento, Supremas, Reviravolta do Destino, Vida e Lenda).
+  * Método **Construído** (você escolhe tudo) ou **Guiado** (rola os dados e escolhe entre o que eles liberam, com uma nova rolagem por capítulo).
+  * Todo termo sublinhado explica o que significa ao passar o mouse (ou tocar, no celular).
+  * O progresso fica salvo no navegador. O menu **Arquivo** exporta e importa o campeão em `.json`, imprime a ficha e recomeça do zero.
+  * **Ficha do campeão** na tela, para imprimir ou em **PDF** vetorial (`js/sheet-pdf.js`, com [pdf-lib](https://pdf-lib.js.org/) e fontkit em `js/vendor/`). Pontos, coleções e Vida atual continuam editáveis em qualquer leitor de PDF.
+* **Lore** (`lore.html`): o planeta, a linha do tempo, as regiões e os povos, com espaço para imagens.
+* **Regras** (`regras.html`): o resumo para a mesa, em três partes, com busca e glossário de A a Z. Na Forja, a tecla `?` abre essa página.
+* **Escudo do Mestre** (`gm.html`): página protegida por senha (veja abaixo).
 
-The builder walks through the rulebook's hero-creation chapter (ch. 3), re-skinned for Runeterra:
+Não há etapa de build: basta abrir `index.html` no navegador ou servir a pasta com `python3 -m http.server`.
 
-| Runeterra step | Sentinels step |
-|---|---|
-| Homeland (region; flavour only) | — |
-| Origin | Background |
-| Source of Power | Power Source |
-| Path | Archetype |
-| Temperament | Personality |
-| Ultimates | Red Abilities |
-| Twist of Fate | Retcon |
-| Health | Health |
-| Legend | Finishing Touches |
+## Arquivos
 
-* **Guided** (roll dice) or **Constructed** (choose freely) methods, with one re-roll per step.
-* Every Runeterra name, die, ability keyword and principle has a **hover** that explains what it means in the Sentinels rules.
-* Handles dice assignment (including the "I've Already Got That" rule), ability choices, principles, the advanced Divided/Modular Paths, minion forms, Health ranges and retcons.
-* Live champion summary and JSON export/import. Progress is saved in your browser.
-* **Hero sheet** laid out like the official two-page *Form Fillable Hero Sheet*: Player, physical attributes, portrait, Characteristics, principles with twists, hero points & rewards, Back Issues, Collections, Powers/Qualities, status dice, Health range + current Health, abilities by zone with action icons, and Out. Play-tracking boxes can be edited right on the sheet.
-* **Export PDF hero sheet**: a vector PDF that looks exactly like the on-screen sheet (`js/sheet-pdf.js`, with [pdf-lib](https://pdf-lib.js.org/) and fontkit in `js/vendor/`). Hero points, collections, back issues and current Health stay clickable in any PDF reader.
+* `js/app.js`: a Forja.
+* `js/data-tables.js`, `js/data-rules.js`, `js/data-lore.js`: tabelas, regras das habilidades e nomes de Runeterra.
+* `js/i18n.js` e `js/pt/*`: todos os textos em português.
+* `js/lore-page.js`, `js/pt/lore.js`, `js/lore-images.js`: a página de Lore. Para colocar uma imagem, salve o arquivo em `assets/lore/` e registre em `js/lore-images.js` (veja `assets/lore/README.md`).
+* `js/rules-page.js`, `js/pt/cheatsheet.js`: a página de Regras.
+* `assets/fonts/`: as fontes do site (WOFF2 recortado), servidas pelo próprio site.
+* `tests/`: testes automáticos (Playwright) que rodam no GitHub Actions a cada push.
 
-### Files
-* `js/data-rules.js`: ability and principle rules text taken from the rulebook.
-* `js/data-tables.js`: the Background, Power Source, Archetype, Personality and Red ability tables, with Runeterra names.
-* `js/data-lore.js`: Runeterra flavour: trait names, regions, glossary and principle notes.
-* `js/app.js`: the builder itself.
-* `lore.html` + `js/lore-page.js`: the Lore page (texts in `js/pt/lore.js`). Every section, region and people has an image slot; register artwork in `js/lore-images.js` and put the files in `assets/lore/` (see `assets/lore/README.md`).
-* `regras.html` + `js/rules-page.js`: the Rules page (texts in `js/pt/cheatsheet.js`) with an A–Z glossary built from the same definitions the builder shows on hover. Press `?` anywhere in the builder to open it.
-* `gm.html`, `js/gm.js`, `js/gm-vault.js`: the password-protected GM Screen (see below).
+## Publicação
 
-### GM Screen
-`gm.html` is a GM-only page. GitHub Pages has no server that could check a password, so the page content is published **encrypted** (AES-256-GCM, key derived from the password with PBKDF2) and decrypted in the browser only when the right password is typed. The password itself is never stored in the repo.
+`.github/workflows/pages.yml` publica o site no GitHub Pages a cada push na `main` (só os arquivos do site). Configuração única: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 
-Once unlocked, the GM Screen also shows the **Tradutor de Sabor** (`js/gm-flavour.js`): searchable tables showing how every Sentinels element (steps, terms, Backgrounds, Power Sources, Archetypes, Personalities, powers, qualities, principles, abilities, retcons, minion forms…) was renamed for Runeterra, with the Sentinels names kept in English. It is built from the app's own data, so it always matches what players see.
+## Escudo do Mestre
 
-To change the GM's private notes (or the password):
-1. Write the page content as HTML in `gm/content.html` (this file is git-ignored, so your notes stay private).
-2. Run `node tools/gm-seal.js`. It asks for the password and rewrites `js/gm-vault.js`.
-3. Commit `js/gm-vault.js`.
+O GitHub Pages não tem servidor para conferir senha, então o conteúdo do Escudo é publicado **criptografado** (AES-256-GCM, chave derivada da senha com PBKDF2) e só é aberto no navegador quando a senha certa é digitada. A senha nunca fica no repositório.
 
-*Unofficial fan project. Runeterra © Riot Games. SCRPG © Greater Than Games. For personal, non-commercial use.*
+Depois de aberto, o Escudo mostra também o **Tradutor de Sabor** (`js/gm-flavour.js`), com a correspondência entre os nomes do sistema original e os nomes de Runeterra.
+
+Para mudar as notas do Mestre (ou a senha):
+1. Escreva o conteúdo em HTML em `gm/content.html` (esse arquivo é ignorado pelo git, então as notas ficam privadas).
+2. Rode `node tools/gm-seal.js`. Ele pede a senha e regrava `js/gm-vault.js`.
+3. Faça commit de `js/gm-vault.js`.
+
+## Testes
+
+```
+npm install --no-save playwright
+python3 -m http.server 8765 &
+node tests/run.js
+```
+
+O teste do Escudo do Mestre só roda se a variável `GM_PASSWORD` estiver definida (no GitHub, como secret do repositório).
+
+*Projeto de fã não oficial. Runeterra e League of Legends são © Riot Games. Uso pessoal e não comercial.*
