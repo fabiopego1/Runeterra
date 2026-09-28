@@ -583,6 +583,7 @@
     if (id === 'finish') {
       add('name', tr('Name your champion'), st.info.name.trim() ? [] : [tr('Type your champion\'s name.')], tr('Type a hero name — you can fill in the rest below at your own pace.'));
       add('describe', tr('Describe them (optional)'), [], tr('Optional details for your hero sheet.'));
+      add('bio', tr('Biography (optional)'), [], tr('Tell your champion\'s story. The lore guide gathers questions from your choices; click one to add it to the text.'));
       add('abilities', tr('Name your abilities (optional)'), [], tr('Optional — give your abilities Runeterran names.'));
       add('gear', tr('Name your gear & gifts (optional)'), [], tr('Optional — rename your Signature Weapon, powers and so on.'));
     }
@@ -1162,6 +1163,29 @@
     return out.map(x => ({ ...x, p: PRINCIPLES.find(p => p.id === x.id) })).filter(x => x.p);
   }
 
+  // Chapter IX lore guide: one card per choice, each with questions that help write the biography.
+  function loreGuide() {
+    const r = regionDef(), b = bgDef(), p = psDef(), a = archDef(), pe = persDef();
+    const fill = (t, slot) => String(t || '').replace(/\[([^\]]+)\]/g, (m, k) => (k === 'energy/element' && st.pch[slot]) || tokenLabel(k));
+    const C = [];
+    if (r) C.push({ kicker: tr('Homeland'), title: r.name, text: esc(r.tag), color: r.color,
+      link: window.LORE_FOR_REGION && window.LORE_FOR_REGION[r.id] ? 'lore.html#' + window.LORE_FOR_REGION[r.id].replace(/^lore-/, '') : '',
+      qs: [...((window.BIO_REGION || {})[r.id] || []), r.champs ? tr('Which of these champions does your hero know, admire or fear? {c}.', { c: r.champs }) : ''] });
+    if (b) C.push({ kicker: tr('Origin'), title: b.rt, text: esc(b.lore),
+      qs: [tr('What from that life do you still carry, and who did you leave behind?'), tr('Who from those days would recognise you today?')] });
+    if (p) C.push({ kicker: tr('Source of Power'), title: p.rt, text: esc(p.lore),
+      qs: [tr('When did this power first show itself, and what did it cost you?'), tr('Who else knows where your power comes from?')] });
+    if (a) C.push({ kicker: tr('Path'), title: a.rt + (a.role ? ' · ' + a.role : ''), text: esc(a.lore),
+      qs: [tr('Who taught you to fight like this?'), tr('What was the first fight you could not win?')] });
+    if (pe) C.push({ kicker: tr('Temperament'), title: pe.rt, text: '',
+      qs: [tr('Where does this way of being come from?'), tr('Who clashes with you, or is won over, because of it?')] });
+    for (const x of principlesFinal()) C.push({ kicker: tr('Principle'), title: (window.PRINCIPLE_LORE[x.id] || [x.p.name])[0], text: esc(fill(x.p.rp, x.slot)),
+      qs: [fill(x.p.major, x.slot)] });
+    C.push({ kicker: tr('The campaign'), title: tr('The present day (994 DN)'), text: esc(tr('The story of the table starts now, in times of political unrest, returning gods and global threats.')),
+      link: 'lore.html#present', qs: [tr('Where is your hero when the campaign begins, and why?'), tr('What do they want that they cannot get alone?')] });
+    return C;
+  }
+
   function allAbilities(R) {
     const L = [];
     const srcName = { powersource: 'Source', archetype: 'Path' };
@@ -1344,8 +1368,14 @@
         <label class="field"><span>${tr('Costume / equipment')}</span><textarea data-bind="info.costume" data-live="1" placeholder="${tr('What do they wear and carry into battle?')}">${esc(i.costume)}</textarea></label>
         <div class="portrait-row"><div class="hs-portrait small">${i.portrait ? `<img src="${i.portrait}" alt="${tr('Portrait')}">` : `<span class="muted">${tr('No portrait')}</span>`}</div>
           <div><label class="btn small" for="portrait-file">${tr(i.portrait ? 'Change portrait' : 'Add portrait')}</label> ${i.portrait ? `<button class="btn small ghost" data-act="clearPortrait">${tr('Remove')}</button>` : ''}<input id="portrait-file" type="file" accept="image/*" hidden>
-          <p class="muted">${tr('Goes in the picture box of the hero sheet (and the PDF).')}</p></div></div>
-        <label class="field"><span>${tr('Backstory notes (auxiliary sheet)')}</span><textarea data-bind="info.notes" data-live="1" placeholder="${tr('Where did they come from? Who do they fight for?')}">${esc(i.notes)}</textarea></label>`,
+          <p class="muted">${tr('Goes in the picture box of the hero sheet (and the PDF).')}</p></div></div>`,
+      bio: () => `<div class="bio-grid">
+        <div class="bio-write"><label class="field"><span>${tr('Biography')}</span><textarea id="bio-text" data-bind="info.notes" data-live="1" placeholder="${tr('Where did they come from? Who do they fight for? What do they want?')}">${esc(i.notes)}</textarea></label>
+          <p class="muted">${tr('Goes on the auxiliary sheet of your hero sheet and in the PDF.')}</p></div>
+        <div class="bio-guide"><div class="bio-guide-h">${ico('map')} ${tr('Lore guide')}</div>${loreGuide().map(c => `<section class="guide-card"${c.color ? ` style="--rc:${c.color}"` : ''}>
+          <div class="gc-k">${esc(c.kicker)}</div><h4>${esc(c.title)}</h4>${c.text ? `<p>${c.text}</p>` : ''}
+          <div class="gc-qs">${c.qs.filter(Boolean).map(q => `<button type="button" class="bio-q" data-act="bioQ" data-q="${esc(q)}">${ico('next')}<span>${esc(q)}</span></button>`).join('')}</div>
+          ${c.link ? `<a class="gc-link" href="${c.link}">${tr('Read in the Lore')} ${ico('next')}</a>` : ''}</section>`).join('')}</div></div>`,
       abilities: () => `<p class="muted"${tip(tr('The rulebook asks you to rename every ability to fit your hero. The original Sentinels name stays on the sheet in small print so you and your GM can look it up.'))}>${tr('Leave a box empty to keep the original name.')} <span class="term info-mark">${ico('info')}</span></p>
         <div class="grid2">${abs.map(x => `<label class="field"><span>${esc(abName(x.name))} <span class="pill ${x.color}">${tr(x.color)}</span></span><input type="text" data-rename="${esc(x.iid)}" data-bind="renames" data-live="1" value="${esc(st.renames[x.iid] || '')}" placeholder="${esc(abName(x.name))}"></label>`).join('') || `<small class="muted">${tr('No abilities yet.')}</small>`}</div>`,
       gear: () => `<p class="muted"${tip(tr('Signature Weapon and Mount are meant to be renamed (e.g. "Hextech Rifle", "Valor"). You can rename any other trait too, the way the rulebook renames Power Suit to "Power Arm".'))}>${tr('Leave a box empty to keep the original name.')} <span class="term info-mark">${ico('info')}</span></p>
@@ -1580,6 +1610,15 @@
     if (act === 'export') { exportJson(); return; }
     if (act === 'pdf') { exportPdf(); return; }
     if (act === 'clearPortrait') { st.info.portrait = null; render(); return; }
+    if (act === 'bioQ') {   // add a guide question to the biography, ready to be answered
+      const ta = document.getElementById('bio-text');
+      if (!ta) return;
+      ta.value = (ta.value.trim() ? ta.value.replace(/\s+$/, '') + '\n\n' : '') + el.dataset.q + '\n';
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+      ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); ta.scrollTop = ta.scrollHeight;
+      el.classList.add('used');
+      return;
+    }
     if (act === 'print') {
       if (stepIndex('finish') > st.maxStep) { showTipFor(el, tr('<h5>Not yet</h5>Finish creating your champion first — the sheet is printed from the last step.')); setTimeout(hideTip, 2200); return; }
       st.step = 'finish'; render(); setTimeout(() => window.print(), 150); return;

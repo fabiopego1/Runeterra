@@ -269,6 +269,24 @@
   };
   for (const r of W.REGIONS) { const v = RG[r.id]; if (v) { r.name = v[0]; r.tag = v[1]; r.lore = v[2]; } }
 
+  // Perguntas de biografia por Terra Natal (Capítulo IX, Guia de lore).
+  W.BIO_REGION = {
+    bilgewater: ['Você nasceu nas docas de Águas de Sentina ou chegou fugindo de alguém?', 'A quem você deve dinheiro, um favor ou a própria vida?'],
+    bandle: ['O que te fez atravessar os caminhos invisíveis e deixar Bandópolis?', 'Que coisa do mundo material ainda te parece absurda ou encantadora?'],
+    demacia: ['Como você lida com a lei de Demacia contra a magia?', 'Que Grande Casa, ordem ou vilarejo você chama de seu?'],
+    'shadow-isles': ['O que a Névoa Negra tirou de você, ou o que ela te deu?', 'O que te prende às Ilhas das Sombras: uma promessa, uma maldição ou alguém que você perdeu?'],
+    ionia: ['A que ordem, seita ou vilarejo você pertence, e o que ele espera de você?', 'O que a invasão noxiana mudou na sua vida?'],
+    ixtal: ['Qual elemento a sua casa domina, e que lugar você ocupa nela?', 'Por que você saiu do isolamento das selvas de Ixtal?'],
+    nazumah: ['Que fera gigante, ou que deus guerreiro, marcou a história da sua família?', 'Quem você ajudou a escapar da servidão, ou quem te ajudou?'],
+    freljord: ['A que tribo você jurou lealdade: Avarosanos, Garra do Inverno ou Guarda Gélida?', 'Que semideus você honra, teme ou já encontrou pessoalmente?'],
+    noxus: ['Como você provou sua força para subir em Noxus?', 'Qual o seu lugar no Trifarix, na legião ou nas sombras da Rosa Negra?'],
+    piltover: ['Que clã mercante te patrocina, te deve ou te persegue?', 'Qual invenção ou descoberta você ainda sonha em concluir?'],
+    zaun: ['Em que nível de Zaun você cresceu, e o que ele te ensinou para sobreviver?', 'Que barão químico conhece o seu nome?'],
+    shurima: ['Você acredita que o Imperador voltou? O que isso significa para você?', 'Que ruína, oásis ou tesouro enterrado faz parte da sua história?'],
+    targon: ['Você chegou a escalar o Monte Targon? O que encontrou lá em cima?', 'Que Aspecto observa você, com ou sem o seu consentimento?'],
+    void: ['Como o Vazio te tocou e deixou você ainda de pé?', 'Quem sabe o que você realmente é?']
+  };
+
   W.STEP_INTROS = {
     region: 'Escolha a terra que moldou seu campeão. Esta escolha é puro sabor e <b>não muda nenhuma regra</b>, mas cada região destaca Origens, Fontes e Princípios que combinam com ela.',
     background: 'Sua <b>Origem</b> é de onde seu campeão veio antes de virar uma lenda. <span class="sc">Ela te dá qualidades, seu primeiro princípio e os dados da sua Fonte de Poder.</span>',
