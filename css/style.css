@@ -910,6 +910,19 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .rule-card p, .rule-card li { color: var(--text-2); }
 .rule-card b { color: var(--text); font-weight: 600; }
 .glossary { padding-top: 26px; }
+.rules-parts { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, auto); justify-content: start; gap: 8px; }
+.rules-parts a { display: flex; align-items: baseline; gap: 8px; text-decoration: none; color: var(--text); border: 1px solid var(--line-2); padding: 7px 12px; font-size: .92rem; }
+.rules-parts a:hover { border-color: var(--gold); color: var(--gold-hi); }
+.rules-parts a span { font: .66rem var(--font-mono); letter-spacing: .1em; color: var(--gold); }
+.rules-part { padding-top: 10px; }
+.rules-part .group-head { margin-top: 26px; }
+.rules-part:first-of-type .group-head { border-top: 0; margin-top: 0; }
+.page-toc .toc-n { font: .62rem var(--font-mono); color: var(--text-3); margin-right: 8px; }
+.page-toc li a.on .toc-n { color: var(--gold); }
+.part-next { display: inline-flex; align-items: center; gap: 6px; margin: 18px 0 8px; font: .7rem var(--font-mono); letter-spacing: .14em; text-transform: uppercase; text-decoration: none; }
+.part-next .ico { width: 12px; height: 12px; }
+.cs-list { margin: 6px 0 10px; padding-left: 20px; }
+.cs-list li { margin-bottom: 6px; }
 .gl-letter { display: grid; grid-template-columns: 3.4rem minmax(0, 1fr); gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
 .gl-l { font-family: var(--font-display); font-size: 2rem; color: var(--gold); line-height: 1; }
 .gl-letter dl { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 28px; }
@@ -938,11 +951,9 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
   .toc-group { margin: 0; }
   .page-toc { display: flex; flex-wrap: wrap; gap: 0 14px; }
   .page-search { flex-basis: 100%; }
-  .page-lore .page-toc ul, .page-rules .page-toc .toc-letters { display: none; }
-  .page-rules .page-toc .toc-group:first-of-type { flex-basis: 100%; min-width: 0; }
-  .page-rules .page-toc .toc-group:first-of-type .toc-head { display: none; }
-  .page-rules .page-toc ul { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0; padding: 0 0 4px; }
-  .page-rules .page-toc li a { white-space: nowrap; border: 1px solid var(--line-2); padding: 3px 8px; font-size: .8rem; }
+  .page-lore .page-toc ul, .page-rules .page-toc ul { display: none; }
+  .page-rules .toc-head { margin: 2px 0; }
+  .rules-parts { grid-template-columns: 1fr 1fr; }
   .page-lore .toc-head { margin: 2px 0; }
   .site-page [id] { scroll-margin-top: 120px; }
   .group-num { font-size: 2rem; min-width: 2.4rem; }
