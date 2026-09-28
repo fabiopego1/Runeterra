@@ -104,7 +104,8 @@
       // 2. PDF + fonts
       say('Embedding fonts…');
       const doc = await PDFDocument.create();
-      doc.setTitle(fdoc.querySelector('.hs-name') ? fdoc.querySelector('.hs-name').textContent.trim() + ' — Hero Sheet' : 'Hero Sheet');
+      const T = window.T || (x => x);
+      doc.setTitle(fdoc.querySelector('.hs-name') ? fdoc.querySelector('.hs-name').textContent.trim() + ' — ' + T('Hero Sheet') : T('Hero Sheet'));
       doc.setCreator('Runeterra Champion Forge');
       let fonts = {}, fieldFont, fallback;
       if (!window.fontkit && fontkitSrc) await loadScript(fontkitSrc).catch(() => {});   // big: fetched only when exporting

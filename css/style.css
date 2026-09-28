@@ -105,6 +105,11 @@ kbd { font-family: var(--font-mono); font-size: .7em; border: 1px solid var(--li
 .hbtn.key { color: var(--gold); }
 .hbtn.danger:hover { color: var(--danger); border-bottom-color: var(--danger); }
 .hsep { width: 1px; height: 20px; background: var(--line-2); margin: 0 8px; }
+.lang-switch { display: inline-flex; border: 1px solid var(--line-2); }
+.lang { font: 500 .64rem var(--font-mono); letter-spacing: .12em; color: var(--text-3); background: none; border: 0; padding: 5px 8px; cursor: pointer; }
+.lang + .lang { border-left: 1px solid var(--line-2); }
+.lang:hover { color: var(--gold-hi); }
+.lang[aria-pressed="true"] { color: var(--ink-0); background: var(--gold); cursor: default; }
 
 /* ==========================================================================
    Buttons — primary is a solid hextech-cut plate; others are restrained
@@ -436,9 +441,11 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .ab.picked { background: var(--ink-2); }
 .ab.picked::before { opacity: 1; top: 0; bottom: 0; }
 .ab.disabled { opacity: .38; }
-.ab-top { display: flex; align-items: center; gap: 12px; }
+.ab-top { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; }
+.ab-name { min-width: 0; }
 .ab-name { font-family: var(--font-display); font-size: 1.06rem; color: var(--text); }
 .ab.picked .ab-name { color: var(--gold-hi); }
+.ab-orig { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .06em; color: var(--text-3); }
 .ab-name .orig { font-family: var(--font-mono); font-size: .66rem; color: var(--text-3); margin-left: 6px; }
 .ab-type { margin-left: auto; font-family: var(--font-mono); font-size: .66rem; color: var(--text-3); cursor: help; }
 .ab-type::before { content: '['; } .ab-type::after { content: ']'; }
@@ -580,8 +587,8 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 /* ==========================================================================
    Hero sheet (mirrors the official two-page Sentinels sheet)
    ========================================================================== */
-.hero-sheet { display: grid; gap: 26px; }
-.hs-page { position: relative; background: var(--ink-1); padding: 22px; display: grid; gap: 14px; box-shadow: inset 0 0 0 1px var(--gold-lo); clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px); }
+.hero-sheet { display: grid; grid-template-columns: minmax(0, 1fr); gap: 26px; }
+.hs-page { position: relative; background: var(--ink-1); padding: 22px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; box-shadow: inset 0 0 0 1px var(--gold-lo); clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px); }
 .hs-card { border-top: 1px solid var(--line-2); padding: 8px 0 4px; }
 .hs-h { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .16em; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; }
 .hs-h small { text-transform: none; letter-spacing: 0; color: var(--text-3); }
@@ -767,6 +774,9 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
   .tp-aside { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); margin-top: 28px; padding-top: 12px; }
   .hs-pr + .hs-pr { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; }
   .hs-ab-t .ic { width: 40px; }
+  .hs-ab-t th, .hs-ab-t td { padding-left: 4px; padding-right: 4px; }
+  .hs-ab-t .gt, .hs-ab-t .nm { overflow-wrap: anywhere; }
+  .hs-page { padding: 16px 12px; }
   .cards, .cards.regions, .principles { grid-template-columns: minmax(0, 1fr); }
   .picked-bar { flex-direction: column; gap: 8px; }
   .assign-row { grid-template-columns: 40px minmax(0, 1fr) 22px; }

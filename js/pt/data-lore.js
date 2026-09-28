@@ -1,0 +1,283 @@
+// pt-BR: traços, categorias, dados, glossário, regiões e textos de passo.
+// Os nomes do Sentinels (sc) ficam em inglês para consulta ao livro; o resto é adaptado.
+(() => {
+  'use strict';
+  const W = window;
+
+  W.DICE_INFO = {
+    d4: { power: 'Quase nada', quality: 'Sem treino', status: '—', note: 'O menor dado. Normalmente só aparece por penalidades, modos do Mestre das Posturas ou quando você não tem poder/qualidade para usar (ex.: a Vida usa d4 se você não tiver poder Atlético nem qualidade Mental).' },
+    d6: { power: 'Acima da média', quality: 'Competência sólida', status: 'Vacilante' },
+    d8: { power: 'Impressionante', quality: 'Habilidoso', status: 'Firme' },
+    d10: { power: 'Excepcional', quality: 'Especialista', status: 'Determinado' },
+    d12: { power: 'Divino — coisa de Ascendentes e Aspectos', quality: 'Nível mundial', status: 'Disposto a dar tudo' }
+  };
+
+  // Categorias: nome runeterrano + nota. Itens: [nome, descrição, exemplo em Runeterra].
+  const CAT = {
+    'P:athletic': ['Corpo & Proeza', 'Capacidade física bruta, muito além do comum. Conta para a Vida inicial.'],
+    'P:elemental': ['Elementos & Energias', 'Domínio sobre um elemento ou tipo de energia. Muitas habilidades pedem que você escolha um ([energia/elemento]).'],
+    'P:hallmark': ['Equipamento Emblemático', 'Itens ou poderes que são só seus. Dê um nome a eles na ficha (ex.: "Rifle Hextec", "Rhaast", "Valor").'],
+    'P:intellectual': ['Mente & Sentidos'],
+    'P:materials': ['Matéria & Terra'],
+    'P:mobility': ['Movimento'],
+    'P:psychic': ['Magia Mental'],
+    'P:selfcontrol': ['Magia Corporal'],
+    'P:technological': ['Hextec & Quimtec'],
+    'Q:information': ['Conhecimento'],
+    'Q:mental': ['Vontade & Astúcia', 'Conta para a Vida inicial.'],
+    'Q:physical': ['Combate & Ofício'],
+    'Q:social': ['Presença & Carisma']
+  };
+  const ITEM = {
+    agility: ['Agilidade', 'Seus reflexos são afiados.', 'A Akali saltando entre suas cortinas de fumaça; o jogo de pés líquido da Nilah.'],
+    speed: ['Ligeireza', 'Você é rápido nos pés.', 'A investida Highlander do Master Yi; as arrancadas elétricas da Zeri.'],
+    strength: ['Força', 'Você é forte e não tem problema em levantar peso.', 'A investida imparável do Sion; o Braum erguendo uma porta-escudo como se fosse uma bandeja.'],
+    vitality: ['Vitalidade', 'Você está em ótima forma e saúde. Em níveis altos, pode até se regenerar.', 'O Dr. Mundo ignorando qualquer coisa; a cura movida a sangue do Warwick.'],
+    cold: ['Gelo & Gelo Verdadeiro', 'Você baixa a temperatura drasticamente e molda o gelo como quiser.', 'O Gelo Verdadeiro da Lissandra; as flechas congelantes da Ashe; a tempestade glacial da Anivia.'],
+    cosmic: ['Poder Celestial', 'As energias primordiais do próprio universo obedecem a você.', 'A forja estelar do Aurelion Sol; os Aspectos de Targon; as travessuras cintilantes da Zoe.'],
+    electricity: ['Relâmpago', 'Você comanda o raio.', 'O rifle-faísca da Zeri; as shurikens trovejantes do Kennen; as garras de tempestade do Volibear.'],
+    fire: ['Chama', 'Você faz tudo pegar fogo.', 'O fogo rúnico do Brand; a Annie e o Tibbers; o fogo de dragão da Shyvana.'],
+    infernal: ['Sombra & Névoa Negra', 'Você comanda energias sombrias e corruptoras do submundo.', 'A Névoa Negra das Ilhas das Sombras; a magia sombria da Morgana; a essência demoníaca da Evelynn.'],
+    nuclear: ['Energia Hextec Bruta', 'Você canaliza poder bruto, volátil, e radiação.', 'Cristais hextec instáveis; o raio da morte do Viktor; o brilho de um núcleo rachado.'],
+    radiant: ['Luz', 'A luz sagrada está na ponta dos seus dedos, pronta para expurgar o mal.', 'A luz prismática da Lux; o clarão solar da Leona; a luz da relíquia da Senna contra a Névoa.'],
+    sonic: ['Canção & Som', 'Ondas sonoras concentradas, destrutivas ou imitadoras.', 'O etwahl da Sona; a voz da Seraphine; os... barulhos do Kog\'Maw.'],
+    weather: ['Tempestade & Vento', 'Você controla o clima, tempestades e ventos.', 'As tempestades da Janna; a técnica do vento do Yasuo; o trovão do Volibear.'],
+    'sig-vehicle': ['Montaria / Veículo Emblemático', 'Um veículo personalizado quase sempre à mão. Dê a ele o nome que tiver.', 'A Valquíria do Corki, a águia Valor da Quinn, a javalina de guerra Bristle da Sejuani, o cavalo da Rell.'],
+    'sig-weapon': ['Arma Emblemática', 'Uma arma que é quase parte de você. Dê a ela o nome que tiver.', 'O rifle hextec da Caitlyn, a espada do Garen, a Sussurro do Jhin, uma lâmina Darkin.'],
+    invented: ['Poder Personalizado (aprovação do Mestre)', 'Um poder que não está na lista, adicionado com a permissão do Mestre.', 'Os sinos do Bard, as armas lunares do Aphelios — qualquer coisa única.'],
+    awareness: ['Sentidos Aguçados', 'Sentidos ampliados: sexto sentido para perigo, visão e audição superiores.', 'Os sentidos de caçador do Rengar; o olhar dos Kindred para quem está morrendo.'],
+    deduction: ['Dedução', 'Sua mente dá saltos lógicos analisando detalhes.', 'A Caitlyn resolvendo um caso de Piltover a partir de uma única pegada.'],
+    intuition: ['Intuição', 'Pressentimentos fortes que costumam se provar certos.', 'O senso de desequilíbrio de um Kinkou; a Ashe lendo o Freljord.'],
+    'lightning-calculator': ['Mente Calculista', 'Matemática intensa num piscar de olhos.', 'As trajetórias instantâneas do Heimerdinger; a precisão de relojoaria da Orianna.'],
+    presence: ['Presença Imponente', 'Você projeta sua personalidade com força sobre quem encontra.', 'O olhar do Swain; a postura imperial do Azir.'],
+    metal: ['Moldar Metal', 'Você comanda e molda metais.', 'O ferro do Mordekaiser; a arte da forja do Ornn.'],
+    plants: ['Crescimento Verdejante', 'As plantas respondem aos seus pensamentos e crescem como você quiser.', 'Os espinhos da Zyra; os amigos do Ivern; as mudas do Maokai.'],
+    stone: ['Moldar a Terra', 'Você molda a pedra para construir e destruir.', 'A pedra tecida da Taliyah; o próprio Malphite; a rocha da Qiyana.'],
+    toxic: ['Toxinas & Quimtec', 'Você manipula substâncias tóxicas e gases venenosos.', 'O rastro químico do Singed; a praga do Twitch; a Névoa Cinza de Zaun.'],
+    transmutation: ['Transmutação', 'Você transforma materiais não vivos de um tipo em outro.', 'Areia virando pedra em Shurima; o Zilean envelhecendo objetos.'],
+    flight: ['Voo', 'Você consegue voar.', 'As asas da Kayle; o Aurelion Sol cruzando os céus.'],
+    leaping: ['Salto', 'Você salta pelo ar com facilidade.', 'O salto-foguete da Tristana; o bote do Rengar.'],
+    momentum: ['Impulso', 'Você ganha impulso ao se mover e o canaliza com eficiência.', 'A bola de força do Rammus; o avanço devastador do Hecarim.'],
+    swimming: ['Natação', 'À vontade na água (em d8+ você respira debaixo d\'água).', 'A Nami dos Marai; o Fizz na baía de Águas de Sentina.'],
+    swinging: ['Gancho & Balanço', 'Com cordas ou engenhocas, você se balança pela cidade.', 'O gancho da Camille; a Jinx se balançando pelas profundezas de Zaun.'],
+    teleportation: ['Lampejo & Portal', 'Some e reaparece em outro lugar; dados maiores dão mais alcance e controle.', 'O salto arcano do Ezreal; a caminhada pela fenda do Kassadin; o Destino do Twisted Fate.'],
+    'wall-crawling': ['Escalada', 'Você gruda nas paredes e anda por elas rapidamente.', 'A Elise aranha; o Kha\'Zix correndo pelas ruínas.'],
+    'animal-control': ['Fala das Feras', 'Você conversa com animais não racionais e os comanda.', 'O vínculo da Nidalee com a selva; os bichinhos do Ivern.'],
+    illusions: ['Ilusões', 'Você tece imagens mentais convincentes.', 'As imagens espelhadas da LeBlanc; os disfarces da Neeko; a alucinação do Shaco.'],
+    postcognition: ['Ecos do Passado', 'Você vê visões do que aconteceu com uma pessoa, lugar ou objeto.', 'Ler as memórias deixadas nas ruínas de Shurima.'],
+    precognition: ['Presciência', 'Você vislumbra um futuro possível.', 'As visões da Karma; as profecias de Targon.'],
+    'remote-viewing': ['Visão Distante', 'Você projeta seus sentidos para outro lugar.', 'Uma jornada espiritual Kinkou; os Kindred observando de longe.'],
+    suggestion: ['Encanto & Compulsão', 'Você influencia mentes para que ajam segundo sua vontade.', 'O Encanto da Ahri; a sedução da Evelynn.'],
+    telekinesis: ['Telecinese', 'Você move coisas com a mente.', 'As Esferas Sombrias da Syndra; as lâminas flutuantes da Irelia.'],
+    telepathy: ['Fala Mental', 'Você envia pensamentos e lê mentes.', 'O Tahm Kench sussurrando barganhas; os sussurros do Vazio do Malzahar.'],
+    absorption: ['Absorção', 'Você absorve a energia lançada contra você e a canaliza em outras formas.', 'A esfera nula do Kassadin; o Sylas roubando feitiços.'],
+    'density-control': ['Controle de Densidade', 'Fique mais denso para resistir a danos, ou mais leve para flutuar.', 'O Galio endurecendo sua petricita; o escudo de granito do Malphite.'],
+    duplication: ['Duplicação', 'Você cria cópias de si mesmo.', 'As sombras vivas do Zed; o chamariz do Wukong; o mímico da LeBlanc.'],
+    elasticity: ['Elasticidade', 'Você consegue esticar o corpo inteiro.', 'O Zac, a Arma Secreta, quicando por Zaun.'],
+    intangibility: ['Intangibilidade', 'Você atravessa objetos sólidos.', 'Espíritos das Ilhas das Sombras; o Nocturne deslizando através de paredes.'],
+    invisibility: ['Camuflagem', 'Você se torna invisível.', 'A guerrilha do Teemo; a camuflagem do Vazio do Kha\'Zix; o Twitch.'],
+    'part-detachment': ['Partes Destacáveis', 'Você pode dar uma mão a alguém. Literalmente.', 'O Soco-Foguete do Blitzcrank; a âncora do Nautilus, mais ou menos.'],
+    shapeshifting: ['Metamorfose', 'Você muda para formas de tamanho parecido.', 'A forma de puma da Nidalee; o mimetismo da Neeko; a forma de aranha da Elise.'],
+    'size-changing': ['Mudança de Tamanho', 'Cresça até virar um gigante ou encolha até o tamanho de um inseto.', 'O Gnar virando Mega Gnar; o Cho\'Gath se banqueteando; o Crescimento Selvagem da Lulu.'],
+    gadgets: ['Engenhocas Hextec', 'Um monte de ferramentas úteis, geralmente feitas por outra pessoa.', 'As armadilhas de yordle da Caitlyn; o kit de um Xerife de Piltover.'],
+    inventions: ['Invenções', 'Você inventa as próprias ferramentas e sempre carrega algumas.', 'O Z-Drive do Ekko; as cargas explosivas do Ziggs.'],
+    'power-suit': ['Traje Hextec', 'Um traje tecnológico com muitas funções embutidas.', 'O mecha Tristy do Rumble; o corpo aprimorado do Viktor.'],
+    robotics: ['Constructos & Torretas', 'Você constrói seus próprios servos robóticos.', 'As torretas H-28G do Heimerdinger; a Bola da Orianna.'],
+    underworld: ['Contatos do Submundo', 'Você conhece um cara que conhece um cara — receptadores, contrabandistas, barões químicos.', 'As docas de Águas de Sentina; os antros químicos de Zaun; os sussurros da Rosa Negra.'],
+    'deep-space': ['Saber Celestial', 'Conhecimento dos céus e de seres além deste mundo.', 'A astrologia de Targon; os Celestiais e suas constelações.'],
+    history: ['História', 'Conhecimento profundo de fatos históricos do mundo todo.', 'As Guerras Rúnicas, a queda de Shurima, a Ruína.'],
+    'magical-lore': ['Saber Arcano', 'Tomos ocultos e os detalhes do místico e do arcano.', 'Runas Globais, a lore dos Darkin, a magia espiritual de Ionia.'],
+    medicine: ['Medicina', 'Treinamento para tratar doenças e ferimentos.', 'Cirurgia zaunita; herbalismo ioniano; a cura da Soraka.'],
+    'otherworldly-mythos': ['Mitos do Espírito & do Vazio', 'Conhecimento estranho, fruto de olhar para outros reinos.', 'O Reino Espiritual, o Vazio sob Icathia, as Ilhas das Sombras.'],
+    science: ['Filosofia Natural', 'Ciências físicas como física, biologia e química.', 'A teoria da Academia de Piltover; a química zaunita.'],
+    technology: ['Engenharia Hextec', 'Especialidade em engenharia e máquinas.', 'Cristais hextec, motores quimtec, mecanismos de relojoaria.'],
+    alertness: ['Prontidão', 'Seus sentidos estão treinados para ficar alertas o tempo todo.', 'Um batedor freljordiano sobre o gelo.'],
+    conviction: ['Convicção', 'Uma causa ou fé te leva a grandes alturas.', 'O fervor Solari; os ideais demacianos; a fé da Illaoi em Nagakabouros.'],
+    creativity: ['Criatividade', 'Você pratica uma arte criativa.', 'As canções da Seraphine; a... arte do Jhin.'],
+    investigation: ['Investigação', 'Coleta de provas, perícia, dedução em campo.', 'A Caitlyn e os Xerifes de Piltover.'],
+    'self-discipline': ['Autodisciplina', 'Meditação e força de vontade lapidada te dão domínio das emoções.', 'O equilíbrio Kinkou do Shen; o foco Wuju do Master Yi.'],
+    acrobatics: ['Acrobacia', 'Manobras de ginástica e aéreas.', 'A dança da Nilah; as piruetas com penas da Xayah.'],
+    'close-combat': ['Combate Corpo a Corpo', 'Luta de perto — lâminas, artes marciais ou punhos.', 'A réplica da Fiora; os chutes do Lee Sin; as manoplas da Vi.'],
+    finesse: ['Delicadeza', 'Mãos precisas: desarmar uma bomba, bater uma carteira.', 'Um batedor de carteiras zaunita; um relojoeiro de Piltover.'],
+    fitness: ['Resistência', 'Forma física de ponta; você corre quilômetros sem cansar.', 'Um legionário noxiano numa marcha forçada.'],
+    'ranged-combat': ['Combate à Distância', 'Atacar de longe — armas de fogo, arcos, lâminas arremessadas.', 'O arco da Ashe; as pistolas da Miss Fortune; as adagas da Katarina.'],
+    stealth: ['Furtividade', 'Esgueirar-se em qualquer ambiente.', 'A Akali na fumaça; o Talon pelos telhados.'],
+    banter: ['Lábia', 'Um dom para a conversa que irrita os inimigos (e os amigos).', 'As tiradas do Ezreal; o... gnar do Gnar.'],
+    imposing: ['Intimidação', 'Você sabe ser intimidador.', 'O olhar do Darius; a voz do Mordekaiser.'],
+    insight: ['Perspicácia', 'Ler as pessoas e o que elas escondem.', 'O olho demoníaco do Swain; a sabedoria da Karma.'],
+    leadership: ['Liderança', 'Liderar e dirigir aliados com eficiência.', 'O Jarvan IV reunindo Demacia; a Garra do Inverno da Sejuani.'],
+    persuasion: ['Persuasão', 'Convencer os outros de que é do interesse deles.', 'Os acordos da Renata Glasc; os golpes do Twisted Fate.']
+  };
+  for (const [c, def] of Object.entries(W.TRAIT_CATEGORIES)) {
+    const t = CAT[c];
+    if (t) { def.rt = t[0]; if (t[1]) def.note = t[1]; }
+    for (const it of def.items) { const p = ITEM[it[0]]; if (p) { it[2] = p[0]; it[3] = p[1]; it[4] = p[2]; } }
+  }
+  // ---------------------------------------------------------------- glossário (chaves em inglês, texto em pt)
+  W.GLOSSARY = Object.assign(W.GLOSSARY, {
+    'Attack': 'Ação básica: cause dano igual ao seu dado de efeito a um alvo. <em>Runeterra:</em> o golpe de um machado noxiano, uma rajada de fogo rúnico.',
+    'Defend': 'Ação básica: reduza o dano de um Ataque recebido pelo seu dado de efeito. <em>Runeterra:</em> o Inquebrável do Braum, uma barreira de petricita.',
+    'Overcome': 'Ação básica: lide com um obstáculo ou desafio da cena (uma ruína desabando, um cofre hextec trancado). Seu total define o quão bem você se sai.',
+    'Boost': 'Ação básica: crie um <b>bônus</b> (+1 a +4, conforme o dado de efeito) que você ou um aliado soma numa rolagem futura. <em>Runeterra:</em> o Olho da Tempestade da Janna, as travessuras da Lulu.',
+    'Hinder': 'Ação básica: crie uma <b>penalidade</b> (-1 a -4) nas rolagens de um alvo. <em>Runeterra:</em> o gelo da Ashe, a prisão sombria da Morgana.',
+    'Recover': 'Recupere Vida até o seu máximo. <em>Runeterra:</em> o chamado estelar da Soraka, um gole de estimulante zaunita.',
+    'Min die': 'Role sua reserva (poder + qualidade + status) e ordene os dados pelo resultado: o menor é o <b>Mín</b>, o do meio é o <b>Médio</b>, o maior é o <b>Máx</b>. As ações básicas normais usam o dado Médio como "efeito".',
+    'Mid die': 'O resultado do meio da sua reserva de três dados. As ações básicas usam ele por padrão.',
+    'Max die': 'O maior resultado da sua reserva de três dados. Habilidades que "usam seu dado Máx" são bem mais fortes que uma ação básica.',
+    'Max+Mid+Min': 'Some os três dados — o efeito mais poderoso possível, normalmente reservado às habilidades Vermelhas.',
+    'Max+Mid': 'Some seus resultados Máx e Médio para o efeito.',
+    'Max+Min': 'Some seus resultados Máx e Mín para o efeito.',
+    'Mid+Min': 'Some seus resultados Médio e Mín para o efeito.',
+    'persistent': 'Um bônus/penalidade persistente não se gasta depois de uma rolagem — fica até ser removido ou a cena acabar.',
+    'exclusive': 'Um bônus exclusivo só pode ser usado por você (não dá para passar a aliados).',
+    'irreducible': 'Dano irredutível não pode ser diminuído por Defesa nem por redução de dano.',
+    'bonus': 'Um modificador (+1 a +4) criado com Fortalecer e somado a uma rolagem futura.',
+    'penalty': 'Um modificador (-1 a -4) criado com Atrapalhar e subtraído das rolagens de um alvo.',
+    'minion': 'Inimigos (ou aliados) fracos representados por um único dado. Ao serem atingidos, rolam para "resistir"; se falharem, saem de cena; se passarem, o dado deles diminui.',
+    'lieutenant': 'Um inimigo mais duro que um lacaio, mas que não chega a ser um vilão de verdade.',
+    'Green zone': 'Seu status com Vida alta: você rola seu dado de status Verde e usa habilidades Verdes. <em>Runeterra:</em> descansado, começando a luta.',
+    'Yellow zone': 'Vida média: você rola seu dado de status Amarelo e libera as habilidades Amarelas (além das Verdes).',
+    'Red zone': 'Vida baixa: você rola seu dado de status Vermelho e libera suas habilidades Vermelhas, as mais poderosas. Heróis dão o seu melhor quando estão desesperados.',
+    'status die': 'O terceiro dado da sua reserva, definido pela sua personalidade e pela sua zona atual (Verde/Amarela/Vermelha).',
+    'minor twist': 'Uma complicação com consequências limitadas — o Mestre pode usar a pergunta de Reviravolta Menor do seu princípio.',
+    'major twist': 'Uma complicação que define a história — o Mestre pode usar a pergunta de Reviravolta Maior do seu princípio.',
+    'twist': 'Uma complicação narrativa que o Mestre introduz, muitas vezes inspirada nos seus princípios.',
+    'hero point': 'Um recurso ganho principalmente pelos princípios; gaste para rolar de novo, somar um bônus ou dobrar a cena a seu favor.',
+    'Reaction': 'Uma habilidade que dispara fora do seu turno, em resposta a algo. Normalmente uma Reação por turno.',
+    'doubles': 'Quando dois dados da sua reserva mostram o mesmo número. Algumas habilidades têm efeitos extras (bons ou ruins) com dados iguais.',
+    'nearby': 'Na mesma área geral da cena — perto o bastante para chegar rápido.',
+    'close': 'Colado no alvo, ao alcance do braço.',
+    'scene': 'Um único encontro ou situação, como uma página dupla de gibi: uma luta nas pontes de Piltover, uma negociação em Noxus.',
+    'collection': 'Um arco de história de várias edições. Seu herói evolui ao final das coleções.',
+    'Health': 'Seus pontos de vida. Conforme caem, você passa da zona Verde para a Amarela e depois para a Vermelha. Em 0 você fica incapacitado (e pode usar sua habilidade de Nocaute).',
+    'environment': 'A própria cena, que age no seu próprio turno (uma tempestade de areia em Shurima, a Névoa Negra avançando).'
+  });
+  W.I18N.glossLabel = {
+    'Attack': 'Atacar', 'Defend': 'Defender', 'Overcome': 'Superar', 'Boost': 'Fortalecer', 'Hinder': 'Atrapalhar', 'Recover': 'Recuperar',
+    'Min die': 'Dado Mín', 'Mid die': 'Dado Médio', 'Max die': 'Dado Máx', 'Max+Mid+Min': 'Máx+Médio+Mín', 'Max+Mid': 'Máx+Médio', 'Max+Min': 'Máx+Mín', 'Mid+Min': 'Médio+Mín',
+    'persistent': 'persistente', 'exclusive': 'exclusivo', 'irreducible': 'irredutível', 'bonus': 'bônus', 'penalty': 'penalidade', 'minion': 'lacaio', 'lieutenant': 'tenente',
+    'Green zone': 'Zona Verde', 'Yellow zone': 'Zona Amarela', 'Red zone': 'Zona Vermelha', 'status die': 'dado de status', 'minor twist': 'reviravolta menor', 'major twist': 'reviravolta maior',
+    'twist': 'reviravolta', 'hero point': 'ponto de herói', 'Reaction': 'Reação', 'doubles': 'dados iguais', 'nearby': 'próximo', 'close': 'colado', 'scene': 'cena',
+    'collection': 'coleção', 'Health': 'Vida', 'environment': 'ambiente'
+  };
+
+  W.ABILITY_TYPES = {
+    A: 'Ação — usada no seu turno, no lugar de uma ação básica.',
+    R: 'Reação — dispara em resposta a algo, mesmo fora do seu turno (normalmente uma vez por turno).',
+    I: 'Inerente — sempre ativa; não exige rolagem nem ação.',
+    'A/I': 'Uma Ação e também um efeito Inerente.'
+  };
+  W.COLOR_INFO = {
+    green: 'Habilidades Verdes podem ser usadas em qualquer zona. A maioria dos heróis tem várias: da fonte de poder, do arquétipo e dos dois princípios.',
+    yellow: 'Habilidades Amarelas liberam quando você cai para a zona Amarela (ou Vermelha) — você fica mais forte conforme a luta vira contra você.',
+    red: 'Habilidades Vermelhas só liberam na zona Vermelha. São suas supremas: desesperadas, dramáticas, decisivas.',
+    out: 'Sua habilidade de Nocaute é usada quando você está incapacitado (0 de Vida): mesmo nocauteado, você ainda ajuda o grupo uma vez por rodada.'
+  };
+  W.PRINCIPLE_CATEGORIES = {
+    Esoteric: 'Algo estranho e sobrenatural te define — destino, magia, os mortos, as estrelas.',
+    Expertise: 'Você é bom em alguma coisa — uma habilidade ou talento que você internalizou e que também aponta o que te preocupa.',
+    Ideals: 'Aquilo em que você acredita e pelo que luta.',
+    Identity: 'Como você se apresenta e quem você é por fora.',
+    Responsibility: 'O peso da sua vida fora da luta — família, uma guilda, uma dívida, uma máscara.'
+  };
+
+  // Nomes runeterranos dos princípios (sempre "Princípio" + artigo, para a ficha ficar natural).
+  const PL = {
+    destiny: ['Princípio do Destino', 'A profecia te segue como os Aspectos seguem os escolhidos. Ótimo para Targon ou Shurima.'],
+    'energy-element': ['Princípio do [Elemento]', 'Escolha seu elemento: Gelo (Verdadeiro), Chama, Luz, Tempestade... Você vive e respira isso.'],
+    exorcism: ['Princípio do Caçador da Névoa', 'Você sente a Névoa Negra, os espíritos e a mácula do Vazio — o instinto de um Sentinela da Luz.'],
+    fauna: ['Princípio da Fera', 'As criaturas selvagens de Ionia, do Freljord ou de Ixtal te reconhecem como parente.'],
+    flora: ['Princípio do Crescimento Selvagem', 'O dom do Ivern: toda raiz e toda flor te respondem.'],
+    future: ['Princípio do Futuro', 'Visões de futuros que ainda não vieram — o fardo do Zilean, o sonho da Karma.'],
+    immortality: ['Princípio do Imortal', 'Ascendente, Darkin ou espírito — você não envelhece e males comuns não te atingem.'],
+    'inner-demon': ['Princípio da Escuridão Interior', 'Uma voz Darkin, uma fome do Vazio, um demônio das Ilhas das Sombras — contido, por enquanto.'],
+    magic: ['Princípio do Arcano', 'Você sente o fluxo da magia em toda parte — o zumbido das Runas, as correntes do Reino Espiritual.'],
+    sea: ['Princípio das Profundezas', 'Escolhido de Nagakabouros, nascido entre os Marai ou sal de Águas de Sentina: o mar é o seu lar.'],
+    space: ['Princípio do Cume', 'Você aguenta as alturas mortais do Monte Targon e o vazio entre as estrelas.'],
+    'time-traveler': ['Princípio da Era Perdida', 'Você é de outra época — a Shurima imperial, as Guerras Rúnicas ou um futuro ainda não escrito.'],
+    undead: ['Princípio da Névoa Negra', 'Morto, mas não partido — um espectro da Ruína.'],
+    clockwork: ['Princípio da Relojoaria', 'Precisão piltovana: você vê como cada engrenagem deveria girar.'],
+    gearhead: ['Princípio do Inventor Hextec', 'Você sabe o que há de errado com qualquer máquina, de uma caixinha de música a um Portal Hextec.'],
+    history: ['Princípio do Saber', 'Arquivos, ruínas, línguas esquecidas: você conhece a história de Runeterra.'],
+    indestructible: ['Princípio do Indestrutível', 'Espadas ricocheteiam em você como granizo no Galio.'],
+    lab: ['Princípio da Oficina', 'Um laboratório em Piltover, um antro químico em Zaun, uma torre no Freljord — seu santuário.'],
+    mastery: ['Princípio da Maestria', 'Você estudou o próprio dom como o Ryze estuda as Runas.'],
+    mentor: ['Princípio do Mentor', 'Você ensina a próxima geração, como o Shen, a Karma ou o Master Yi.'],
+    powerless: ['Princípio dos Sem-Poder', 'Nada de magia, só garra — um Caçador de Magos ou Xerife que sabe como vencer magos.'],
+    science: ['Princípio da Filosofia Natural', 'A teoria da Academia e a química zaunita na ponta dos dedos.'],
+    speed: ['Princípio da Velocidade', 'Mais rápido que os corvos mensageiros de Noxus.'],
+    stealth: ['Princípio da Furtividade', 'Toda porta Kinkou e da Rosa Negra se abre para você.'],
+    strength: ['Princípio da Força', 'Força bruta nível Sion; você nunca rola para proezas comuns de força.'],
+    tactician: ['Princípio do Estrategista', 'As mesas de guerra do Jarvan, as tramas do Swain: sempre um plano, e um plano B.'],
+    whispers: ['Princípio dos Sussurros', 'Uma voz que ninguém mais ouve — uma arma Darkin, um murmúrio do Vazio, um ancestral morto.'],
+    chaos: ['Princípio do Caos', 'Imprevisibilidade nível Jinx.'],
+    compassion: ['Princípio da Compaixão', 'A Soraka chora por cada ferida.'],
+    defender: ['Princípio do Defensor', 'A porta do Braum, o escudo do Taric — você se coloca no caminho do perigo.'],
+    dependence: ['Princípio da Dependência', 'Você precisa de algo: um coração hextec, uma relíquia, Cintilante...'],
+    equality: ['Princípio da Igualdade', 'Pelos becos de Zaun, pelos nascidos com magia, pelos oprimidos.'],
+    'great-power': ['Princípio do Grande Poder', 'Sua magia assusta até você — a luz ofuscante da Lux, as esferas da Syndra.'],
+    hero: ['Princípio do Campeão', 'Você tem a vocação de proteger os outros.'],
+    honor: ['Princípio da Honra', 'Códigos demacianos, votos ionianos, juramentos freljordianos.'],
+    justice: ['Princípio da Justiça', 'Sempre atento à injustiça e a quem a cometeu.'],
+    liberty: ['Princípio da Liberdade', 'As correntes do Sylas foram quebradas; nenhuma mente consegue te prender.'],
+    order: ['Princípio da Ordem', 'Disciplina noxiana ou lei demaciana — você mantém a cabeça no lugar em meio ao caos.'],
+    'self-preservation': ['Princípio da Autopreservação', 'Primeiro sobreviver. Heroísmo depois.'],
+    zealot: ['Princípio do Fanático', 'O fogo Solari, a fé na Serpente Mãe, a crença na Evolução Gloriosa.'],
+    ambition: ['Princípio da Ambição', 'Noxus recompensa os fortes — e você pretende subir.'],
+    amnesia: ['Princípio da Amnésia', 'Seu passado se perdeu, e os outros têm dificuldade em te rastrear.'],
+    detachment: ['Princípio do Desapego', 'A calma Kinkou, a distância de um Aspecto.'],
+    discovery: ['Princípio da Descoberta', 'A sede de aventura do Ezreal; o eureca do Heimerdinger.'],
+    loner: ['Princípio do Solitário', 'Você dá o seu melhor quando ninguém está olhando.'],
+    nomad: ['Princípio do Nômade', 'Caravanas shurimanes, ronins errantes, as jornadas sem fim do Bard.'],
+    peace: ['Princípio da Paz', 'Equilíbrio ioniano: a violência raramente é a resposta.'],
+    rage: ['Princípio da Fúria', 'A fúria do Tryndamere, a loucura do Renekton — mirada no alvo certo.'],
+    split: ['Princípio da Cisão', 'Duas almas, duas visões: o Kayn e o Rhaast discutindo na mesma cabeça.'],
+    savagery: ['Princípio da Selvageria', 'As terras selvagens do Freljord e a selva de Ixtal — a civilização não te serve.'],
+    levity: ['Princípio do Bom Humor', 'Piadas diante da Ruína.'],
+    'spotless-mind': ['Princípio da Mente Limpa', 'Rancores escorregam em você como água em escama de Marai.'],
+    business: ['Princípio dos Negócios', 'Uma casa comercial de Piltover, uma taverna de Águas de Sentina, um império químico zaunita.'],
+    debtor: ['Princípio do Devedor', 'Você deve ao Tahm Kench, a um barão químico ou a coisa pior.'],
+    detective: ['Princípio do Detetive', 'Você sempre sabe quando algo está sendo escondido.'],
+    'double-agent': ['Princípio do Agente Duplo', 'A Rosa Negra, os Kinkou, os Caçadores de Magos — você serve a dois senhores.'],
+    everyman: ['Princípio da Pessoa Comum', 'Só uma pessoa normal metida em algo grande demais.'],
+    family: ['Princípio da Família', 'Grandes Casas, clãs e tribos — a família vem primeiro.'],
+    mask: ['Princípio da Máscara', 'Um mago escondido em Demacia jamais pode ser descoberto.'],
+    sidekick: ['Princípio do Parceiro', 'Sempre onde está a confusão — a turma do Ekko, a sombra da Jinx.'],
+    team: ['Princípio do Bando', 'Você tem um posto oficial: Xerifes de Piltover, Vanguarda Destemida, Garra do Inverno.'],
+    underworld: ['Princípio do Submundo', 'Contatos em toda espelunca de Águas de Sentina e todo antro químico de Zaun.'],
+    veteran: ['Princípio do Veterano', 'A invasão de Ionia, as Guerras Rúnicas, a Ruína: você já viu a guerra.'],
+    youth: ['Princípio da Juventude', 'Jovem, brilhante e subestimado — como a Zoe, a Lulu ou um yordle novinho.']
+  };
+  for (const [id, v] of Object.entries(PL)) if (W.PRINCIPLE_LORE[id]) W.PRINCIPLE_LORE[id] = v;
+
+  // Regiões — textos adaptados das notas de lore da campanha.
+  const RG = {
+    bilgewater: ['Águas de Sentina', 'Onde fortunas são feitas e ambições destruídas num piscar de olhos.', 'Um refúgio para contrabandistas, saqueadores e gente sem escrúpulos. Para quem foge da justiça, de dívidas ou de perseguição, é uma cidade de recomeços — ninguém nas ruas sinuosas liga para o seu passado. Quase tudo se compra por aqui, mas ao amanhecer os incautos aparecem boiando no porto.'],
+    bandle: ['Bandópolis', 'O lar atemporal dos yordles, além do reino material.', 'Uma terra de magia desenfreada, alcançada por caminhos invisíveis. Cada sensação é aguçada, a luz do sol é eternamente dourada — pelo menos é o que dizem os contadores de histórias, embora nenhum concorde sobre o que viu. Os mortais que voltam parecem ter envelhecido muito; muitos jamais voltam.'],
+    demacia: ['Demacia', 'Justiça, honra e dever — um reino orgulhoso em turbulência.', 'Um reino forte e regido pela lei, com uma história militar prestigiosa, erguido sobre a petricita, uma pedra branca que atenua a magia. Cada vez mais isolado, dilacerado pela Rebelião dos Magos e por uma sucessão disputada, Demacia pode não sobreviver à própria rigidez — e nem toda a petricita da terra a protegerá de si mesma.'],
+    'shadow-isles': ['As Ilhas das Sombras', 'Um reino outrora belo, envolto para sempre pela Névoa Negra.', 'Devastadas por um cataclismo mágico, as ilhas estão cobertas por uma Névoa Negra que drena a vida de quem vive ali. Quem morre na Névoa assombra a terra pela eternidade, e o poder dela cresce a cada ano, estendendo-se para ceifar almas por toda Runeterra.'],
+    ionia: ['Ionia', 'As Primeiras Terras — beleza intocada e magia natural.', 'Um povo espiritual que vive em harmonia e equilíbrio por um vasto arquipélago, com muitas ordens e seitas (frequentemente em conflito). Neutra por séculos até a invasão noxiana, Ionia agora enfrenta a militarização, o vigilantismo e uma sede crescente pelas artes das trevas.'],
+    ixtal: ['Ixtal', 'Mestres da magia elemental, escondidos nas profundezas da selva.', 'Uma cultura antiga da grande diáspora para o oeste, que sobreviveu ao Vazio e aos Darkin recolhendo-se atrás da selva selvagem. Da cidade-arcologia de Ixaocan, os ixtali veem todas as outras facções como usurpadoras e mantêm os intrusos à distância com magia poderosa.'],
+    nazumah: ['Nazumah', 'Caçadores livres de feras gigantes, que se libertaram dos deuses guerreiros.', 'Uma terra de guerreiros valorosos e caçadores de monstros que celebra a liberdade conquistada dos "deuses guerreiros". Um caldeirão de povos que fugiram da Guerra Darkin, com mercados onde circulam os melhores produtos de Shurima — e onde passar a perna num comerciante nazumita pode render banimento. Os nazumitas ajudam qualquer "irmão das areias" a escapar da servidão.'],
+    freljord: ['O Freljord', 'Uma terra implacável de guerreiros natos — e o único lar do Gelo Verdadeiro.', 'Tribos orgulhosas e ferozmente independentes, com forte cultura de pilhagem, estão sendo arrastadas para uma guerra civil entre três facções: uma honra as velhas tradições, outra segue o sonho de união de uma jovem idealista e a terceira venera um poder enigmático.'],
+    noxus: ['Noxus', 'Um império temível onde a força — em qualquer forma — é tudo.', 'Brutal e expansionista para quem está de fora, mas surpreendentemente inclusivo por dentro: qualquer um pode chegar ao poder e ao respeito se provar sua aptidão, não importa o berço, a terra natal ou a riqueza.'],
+    piltover: ['Piltover', 'A Cidade do Progresso.', 'Uma cidade próspera e progressista, centro cultural de Valoran, movida pelo comércio e pelo pensamento visionário em vez de exércitos. Seus portões marítimos trazem mercadorias do mundo todo, e seus clãs mercantes financiam arte, arquitetura e pesquisas esotéricas em hextecnologia.'],
+    zaun: ['Zaun', 'A Cidade de Ferro e Vidro.', 'Um vasto distrito subterrâneo nos cânions sob Piltover, vivendo num crepúsculo esfumaçado perpétuo. Vibrante e rica em cultura, acolhe as pesquisas perigosas que Piltover proíbe — e paga por elas com poluição e rios de lodo tóxico.'],
+    shurima: ['Shurima', 'Um império do deserto que caiu — e cuja capital ressurgiu.', 'Outrora uma civilização próspera, sua capital gloriosa virou mito depois da queda. Nômades sobrevivem ao redor dos oásis, caçam tesouros entre ruínas ou vendem suas espadas — e agora sussurros vindos do coração do deserto dizem que a capital ressuscitou.'],
+    targon: ['Targon', 'O pico mais alto de Runeterra — uma porta para o Reino Celestial.', 'Um farol para sonhadores, loucos e aventureiros. Os poucos que sobrevivem à escalada encontram um céu de corpos celestes cintilantes e voltam assombrados e vazios — ou transformados a ponto de ficarem irreconhecíveis.'],
+    void: ['O Vazio', 'O Reino do Nada, faminto além do Reino Material.', 'Uma força de fome insaciável, à espera de que seus mestres, os Observadores, marquem o momento final da destruição. Ser tocado por ele é vislumbrar a irrealidade eterna — o bastante para quebrar até a mente mais forte.']
+  };
+  for (const r of W.REGIONS) { const v = RG[r.id]; if (v) { r.name = v[0]; r.tag = v[1]; r.lore = v[2]; } }
+
+  W.STEP_INTROS = {
+    region: 'Escolha a terra que moldou seu campeão. Isto é puro sabor de Runeterra — <b>não tem mecânica do Sentinels</b>, mas cada região destaca Origens, Fontes e Princípios que combinam com ela.',
+    background: 'Sua <b>Origem</b> é de onde seu campeão veio antes de virar uma lenda. <span class="sc">Sentinels: <b>Step 1 – Background</b> (Antecedente). Dá suas qualidades, um princípio e os dados da sua Fonte de Poder.</span>',
+    powersource: 'Sua <b>Fonte de Poder</b> é o que te transformou e o que alimenta suas habilidades. <span class="sc">Sentinels: <b>Step 2 – Power Source</b> (Fonte de Poder). Atribua os dados do seu Antecedente a poderes, ganhe habilidades Amarelas e Verdes e os dados do seu Caminho.</span>',
+    archetype: 'Seu <b>Caminho</b> é como você luta e que papel cumpre no grupo. <span class="sc">Sentinels: <b>Step 3 – Archetype</b> (Arquétipo). Atribua os dados da sua Fonte de Poder a poderes/qualidades, ganhe habilidades Verdes (e Amarelas) e seu segundo princípio.</span>',
+    personality: 'Seu <b>Temperamento</b> é como você reage sob pressão. <span class="sc">Sentinels: <b>Step 4 – Personality</b> (Personalidade). Define seus dados de status Verde/Amarelo/Vermelho, sua habilidade de Nocaute e uma "qualidade de interpretação" personalizada em d8.</span>',
+    red: 'Escolha duas <b>técnicas Supremas</b> — o que você libera quando tudo está em jogo. <span class="sc">Sentinels: <b>Step 5 – Red Abilities</b> (Habilidades Vermelhas). Escolha duas de categorias em que você tenha um poder ou qualidade em d6 ou mais.</span>',
+    retcon: 'Uma <b>Reviravolta do Destino</b> deixa você ajustar sua lenda antes que ela comece. <span class="sc">Sentinels: <b>Step 6 – Retcon</b>. Escolha exatamente uma opção.</span>',
+    health: 'Quanto castigo você aguenta? <span class="sc">Sentinels: <b>Step 7 – Health</b> (Vida). 8 + máximo do dado de status Vermelho + máximo de um poder Atlético ou qualidade Mental (d4 se não tiver) + rolagem de d8 (ou 4).</span>',
+    finish: 'Dê nome ao seu campeão, descreva-o e dê nomes runeterranos de verdade às suas habilidades. <span class="sc">Sentinels: <b>Step 8 – Finishing Touches</b> (Toques Finais).</span>'
+  };
+})();

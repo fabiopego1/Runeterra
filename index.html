@@ -14,17 +14,19 @@
   <header class="site-header">
     <div class="brand">
       <span class="brand-mark" data-sigil="compass"></span>
-      <span class="brand-text"><span class="brand-kicker">Runeterra · Tabletop Chronicle</span><span class="brand-title">Champion Forge</span></span>
+      <span class="brand-text"><span class="brand-kicker" data-t>Runeterra · Tabletop Chronicle</span><span class="brand-title" data-t>Champion Forge</span></span>
     </div>
     <nav class="header-actions" aria-label="Tools">
-      <button class="hbtn key" data-act="lore" title="World lore"><span data-ico="map"></span>Lore</button>
-      <button class="hbtn key" data-act="rules" title="Rules cheat sheet (press ?)"><span data-ico="codex"></span>Rules<kbd>?</kbd></button>
+      <span class="lang-switch" role="group" aria-label="Language"><button class="lang" data-lang="en" title="English">EN</button><button class="lang" data-lang="pt" title="Português (Brasil)">PT-BR</button></span>
       <span class="hsep" aria-hidden="true"></span>
-      <button class="hbtn" data-act="export"><span data-ico="download"></span>Export</button>
-      <label class="hbtn" for="import-file"><span data-ico="upload"></span>Import</label>
+      <button class="hbtn key" data-act="lore" data-t-title="World lore" title="World lore"><span data-ico="map"></span><span data-t>Lore</span></button>
+      <button class="hbtn key" data-act="rules" data-t-title="Rules cheat sheet (press ?)" title="Rules cheat sheet (press ?)"><span data-ico="codex"></span><span data-t>Rules</span><kbd>?</kbd></button>
+      <span class="hsep" aria-hidden="true"></span>
+      <button class="hbtn" data-act="export"><span data-ico="download"></span><span data-t>Export</span></button>
+      <label class="hbtn" for="import-file"><span data-ico="upload"></span><span data-t>Import</span></label>
       <input id="import-file" type="file" accept="application/json,.json" hidden>
-      <button class="hbtn" data-act="print"><span data-ico="print"></span>Print</button>
-      <button class="hbtn danger" data-act="reset"><span data-ico="reset"></span>Start over</button>
+      <button class="hbtn" data-act="print"><span data-ico="print"></span><span data-t>Print</span></button>
+      <button class="hbtn danger" data-act="reset"><span data-ico="reset"></span><span data-t>Start over</span></button>
     </nav>
   </header>
 
@@ -36,18 +38,20 @@
 
   <footer class="foot">
     <span class="foot-rule" aria-hidden="true"></span>
-    <p>Unofficial fan project. Runeterra and League of Legends are © Riot Games. Rules adapted from
+    <p data-t-html="FOOTER">Unofficial fan project. Runeterra and League of Legends are © Riot Games. Rules adapted from
     <em>Sentinel Comics: The Roleplaying Game</em> © Greater Than Games — for personal, non-commercial use.</p>
   </footer>
 
   <div id="tip" role="tooltip"></div>
 
+  <script src="js/i18n.js?v=dev"></script>
   <script src="js/icons.js?v=dev"></script>
   <script src="js/vendor/pdf-lib.min.js?v=dev"></script>
   <script src="js/sheet-pdf.js?v=dev"></script>
   <script src="js/data-rules.js?v=dev"></script>
   <script src="js/data-tables.js?v=dev"></script>
   <script src="js/data-lore.js?v=dev"></script>
+  <script src="js/pt/load.js?v=dev"></script>
   <script src="js/app.js?v=dev"></script>
   <script src="js/cheatsheet.js?v=dev"></script>
   <script src="js/lore.js?v=dev"></script>
