@@ -42,7 +42,9 @@ The builder walks through the rulebook's hero-creation chapter (ch. 3), re-skinn
 ### GM Screen
 `gm.html` is a GM-only page. GitHub Pages has no server that could check a password, so the page content is published **encrypted** (AES-256-GCM, key derived from the password with PBKDF2) and decrypted in the browser only when the right password is typed. The password itself is never stored in the repo.
 
-To change what the GM page shows (or the password):
+Once unlocked, the GM Screen also shows the **Tradutor de Sabor** (`js/gm-flavour.js`): searchable tables showing how every Sentinels element (steps, terms, Backgrounds, Power Sources, Archetypes, Personalities, powers, qualities, principles, abilities, retcons, minion forms…) was renamed for Runeterra, with the Sentinels names kept in English. It is built from the app's own data, so it always matches what players see.
+
+To change the GM's private notes (or the password):
 1. Write the page content as HTML in `gm/content.html` (this file is git-ignored, so your notes stay private).
 2. Run `node tools/gm-seal.js`. It asks for the password and rewrites `js/gm-vault.js`.
 3. Commit `js/gm-vault.js`.

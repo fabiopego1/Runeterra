@@ -50,6 +50,7 @@
   };
   const show = html => {
     document.getElementById('gm-content').innerHTML = html;
+    if (window.GM_FLAVOUR) window.GM_FLAVOUR.render(document.getElementById('gm-flavour'));
     gate.hidden = true; room.hidden = false; lockBtn.hidden = false;
   };
 
