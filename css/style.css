@@ -337,7 +337,9 @@ label.field > span { display: block; margin-bottom: 3px; }
 .lore-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; width: 100%; }
 .lore-group > span { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--hex); width: 76px; }
 .lore-gh { font-size: 1.05rem; color: var(--hex); letter-spacing: .12em; text-transform: uppercase; margin: 22px 0 0; font-family: var(--font-body); }
-.lore-races { columns: 3; padding-left: 18px; }
+.race { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; margin: 10px 0; background: rgba(22, 33, 46, .6); }
+.race h4 { margin-top: 0 !important; color: var(--gold) !important; font-family: var(--font-head) !important; }
+.race-meta { font-size: .82rem !important; color: var(--muted); margin: 2px 0; }
 .lore-link { font-size: .85rem; }
 @media (max-width: 860px) { #lore .cs-index { max-height: 28vh; overflow-y: auto; } }
 .cs-head { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 18px 6px; }
