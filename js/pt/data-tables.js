@@ -116,8 +116,21 @@
     decisive: ['Decidido'], jovial: ['Bonachão'], cheerful: ['Radiante'], naive: ['Ingênuo'], apathetic: ['Indiferente'],
     jaded: ['Desiludido'], arrogant: ['Arrogante']
   }, (x, v) => { x.rt = v[0]; });
-  const jovial = W.PERSONALITIES.find(x => x.id === 'jovial');
-  if (jovial) jovial.champs = 'Gragas, Braum, Ornn (num dia bom)';
+  // Listas de campeões com comentários em inglês
+  const CHAMPS = {
+    "Amumu (a forgotten soul), Hecarim's lost riders": 'Amumu (uma alma esquecida), os cavaleiros perdidos do Hecarim',
+    "Caitlyn, Vi, Morgana's pursuers": 'Caitlyn, Vi, os perseguidores da Morgana',
+    "Jax, Graves, Tahm Kench's old marks": 'Jax, Graves, as antigas vítimas do Tahm Kench',
+    'Soraka, Milio, Dr. Mundo (as a warning)': 'Soraka, Milio, Dr. Mundo (como aviso)',
+    'Sett, Graves, a lapsed Black Rose agent': 'Sett, Graves, um ex-agente da Rosa Negra',
+    'Brand (touched a World Rune), Zeri': 'Brand (tocou uma Runa Global), Zeri',
+    "Rumble, Jayce's Mercury gear, Viktor's early rigs": 'Rumble, o equipamento de Mercúrio do Jayce, os primeiros protótipos do Viktor',
+    "Kayn (Rhaast), Varus, Aatrox's hosts": 'Kayn (Rhaast), Varus, os hospedeiros do Aatrox',
+    'Nocturne, Fiddlesticks, Bard (probably)': 'Nocturne, Fiddlesticks, Bard (provavelmente)',
+    'Zilean, Ryze, Ekko (rewound)': 'Zilean, Ryze, Ekko (rebobinado)',
+    'Gragas, Braum, Ornn (on a good day)': 'Gragas, Braum, Ornn (num dia bom)'
+  };
+  for (const list of [W.BACKGROUNDS, W.POWER_SOURCES, W.ARCHETYPES, W.PERSONALITIES]) for (const x of list) if (CHAMPS[x.champs]) x.champs = CHAMPS[x.champs];
 
   // Reviravoltas do Destino: nome + descrição em pt (sc continua sendo a regra em inglês)
   patch(W.RETCONS, {
