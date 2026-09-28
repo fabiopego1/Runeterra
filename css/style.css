@@ -105,11 +105,6 @@ kbd { font-family: var(--font-mono); font-size: .7em; border: 1px solid var(--li
 .hbtn.key { color: var(--gold); }
 .hbtn.danger:hover { color: var(--danger); border-bottom-color: var(--danger); }
 .hsep { width: 1px; height: 20px; background: var(--line-2); margin: 0 8px; }
-.lang-switch { display: inline-flex; border: 1px solid var(--line-2); }
-.lang { font: 500 .64rem var(--font-mono); letter-spacing: .12em; color: var(--text-3); background: none; border: 0; padding: 5px 8px; cursor: pointer; }
-.lang + .lang { border-left: 1px solid var(--line-2); }
-.lang:hover { color: var(--gold-hi); }
-.lang[aria-pressed="true"] { color: var(--ink-0); background: var(--gold); cursor: default; }
 
 /* ==========================================================================
    Buttons — primary is a solid hextech-cut plate; others are restrained
