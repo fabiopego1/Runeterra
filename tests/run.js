@@ -86,6 +86,35 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await dl.saveAs(pdf);
     ok(fs.statSync(pdf).size > 20000, `PDF generated (${fs.statSync(pdf).size} bytes)`);
 
+    // Table mode: − lowers Health, the zone follows and higher zones unlock
+    const zoneNow = () => p.$eval('#sheet-preview .hs-znow', e => e.className.replace(/.*z-/, ''));
+    ok(await zoneNow() === 'green', 'sheet starts in the green zone');
+    ok(await p.$$eval('#sheet-preview .hs-zone.locked', e => e.length) === 2, 'yellow and red abilities are locked at full Health');
+    await p.fill('#sheet-preview [data-bind="play.current"]', '5'); await p.waitForTimeout(100);
+    ok(await zoneNow() === 'red', 'typing a low Health moves to the red zone');
+    ok(await p.$$eval('#sheet-preview .hs-zone.locked', e => e.length) === 0, 'red zone unlocks every ability');
+    ok(await p.$eval('#sheet-preview .hs-sd.red', e => e.classList.contains('current')), 'red status die is highlighted');
+    for (let k = 0; k < 6; k++) await p.click('#sheet-preview [data-act=hpStep][data-d="-1"]');
+    ok(await zoneNow() === 'out' && await p.$eval('#sheet-preview .hs-out', e => e.classList.contains('on')), 'Health 0 puts the champion out of the fight');
+    await p.click('#sheet-preview [data-act=hpStep][data-d=max]');
+    ok(await zoneNow() === 'green', 'full Health button restores the green zone');
+    await p.click('#sheet-preview [data-act=hpStep][data-d="-1"]');
+    const saved = await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-forge-v1')).play.current);
+    ok(saved && Number(saved) > 0, `current Health is saved (${saved})`);
+    ok(await p.$$eval('#sheet-preview .hs-page', e => e.length) === 3, 'sheet has three pages');
+    await p.fill('#sheet-preview [data-bind="play.mname.0"]', 'Golem de sucata');
+    await p.fill('#sheet-preview [data-bind="play.notes.0"]', 'Deve um favor a Silco');
+    ok(await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-forge-v1')).play.notes[0] === 'Deve um favor a Silco'), 'table notes on page 3 are saved');
+    const [dl3] = await Promise.all([p.waitForEvent('download', { timeout: 60000 }), p.click('[data-act=pdf]')]);
+    await dl3.saveAs(pdf);
+    const info = await p.evaluate(async b64 => {   // read it back with the page's own pdf-lib
+      const doc = await window.PDFLib.PDFDocument.load(Uint8Array.from(atob(b64), c => c.charCodeAt(0)));
+      const f = doc.getForm().getFields();
+      return { pages: doc.getPageCount(), notes: f.filter(x => /play_notes_/.test(x.getName())).length, note0: (f.find(x => /play_notes_0$/.test(x.getName())) || { getText: () => '' }).getText() };
+    }, fs.readFileSync(pdf).toString('base64'));
+    ok(info.pages === 3, `PDF has three pages (${info.pages})`);
+    ok(info.notes === 10 && info.note0 === 'Deve um favor a Silco', 'PDF keeps the table notes as fillable fields');
+
     // Arquivo menu
     await p.evaluate(() => scrollTo(0, 0));
     await p.click('#file-btn');
