@@ -44,7 +44,7 @@
   // ------------------------------------------------------------------ state
   const STORE = 'runeterra-forge-v1';
   const blank = () => ({
-    v: 1, step: 'intro', maxStep: 0, method: 'guided', region: null,
+    v: 1, step: 'intro', maxStep: 0, method: 'constructed', region: null,   // Construído is the default method
     rolls: {}, rerolls: {},
     bg: { id: null, assign: {}, principle: null },
     ps: { id: null, assign: {}, extra: {} },
@@ -76,6 +76,8 @@
     if (s.info && s.info.pronouns && !out.info.gender) out.info.gender = s.info.pronouns;
     out.play = Object.assign(blank().play, s.play || {});
     out.maxStep = typeof s.maxStep === 'number' ? s.maxStep : -1;   // older saves: recomputed after load
+    // A save that never left the intro has not really started: open it on the default method (Construído).
+    if (out.step === 'intro' && !out.maxStep && !out.region) out.method = 'constructed';
     return out;
   }
   function save() { try { localStorage.setItem(STORE, JSON.stringify(st)); } catch (e) { /* ignore */ } }
