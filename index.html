@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Runeterra Champion Forge</title>
+  <meta name="description" content="Create a Runeterra champion using the Sentinel Comics RPG character creation rules — with hover explanations of every mechanic.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <div class="brand-mark"><span>R</span></div>
+      <div>
+        <h1>Runeterra Champion Forge</h1>
+        <div class="tag">Character creation · powered by the Sentinels RPG system</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn small primary" data-act="rules" title="Rules cheat sheet (press ?)">📖 Rules</button>
+      <button class="btn small" data-act="export">Export JSON</button>
+      <label class="btn small" for="import-file">Import</label>
+      <input id="import-file" type="file" accept="application/json,.json" hidden>
+      <button class="btn small" data-act="print">Print sheet</button>
+      <button class="btn small ghost" data-act="reset">Start over</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="steps-nav" id="nav" aria-label="Creation steps"></nav>
+    <main class="stage" id="stage"></main>
+    <aside class="sheet-side" id="side" aria-label="Champion summary"></aside>
+  </div>
+
+  <footer class="foot">
+    Unofficial fan project. Runeterra and League of Legends are © Riot Games. Rules adapted from
+    <em>Sentinel Comics: The Roleplaying Game</em> © Greater Than Games — for personal, non-commercial use.
+  </footer>
+
+  <div id="tip" role="tooltip"></div>
+
+  <script src="js/vendor/pdf-lib.min.js"></script>
+  <script src="js/data-rules.js"></script>
+  <script src="js/data-tables.js"></script>
+  <script src="js/data-lore.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/cheatsheet.js"></script>
+</body>
+</html>
