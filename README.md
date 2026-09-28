@@ -30,7 +30,7 @@ The builder walks through the rulebook's hero-creation chapter (ch. 3), re-skinn
 * Handles dice assignment (including the "I've Already Got That" rule), ability choices, principles, the advanced Divided/Modular Paths, minion forms, Health ranges and retcons.
 * Live champion summary and JSON export/import. Progress is saved in your browser.
 * **Hero sheet** laid out like the official two-page *Form Fillable Hero Sheet*: Player, physical attributes, portrait, Characteristics, principles with twists, hero points & rewards, Back Issues, Collections, Powers/Qualities, status dice, Health range + current Health, abilities by zone with action icons, and Out. Play-tracking boxes can be edited right on the sheet.
-* **Export PDF hero sheet** fills in the official form-fillable PDF (`assets/hero-sheet.pdf`) using the bundled [pdf-lib](https://pdf-lib.js.org/) (`js/vendor/`). If the page is opened straight from disk and the browser blocks loading the template, it asks you to pick the blank sheet PDF instead (or serve the folder, e.g. `python3 -m http.server`).
+* **Export PDF hero sheet**: a vector PDF that looks exactly like the on-screen sheet (`js/sheet-pdf.js`, with [pdf-lib](https://pdf-lib.js.org/) and fontkit in `js/vendor/`). Hero points, collections, back issues and current Health stay clickable in any PDF reader.
 
 ### Files
 * `js/data-rules.js`: ability and principle rules text taken from the rulebook.

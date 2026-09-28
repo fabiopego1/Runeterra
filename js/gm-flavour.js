@@ -96,6 +96,7 @@
               <div class="eyebrow">Ferramenta do Mestre</div>
               <h2>Tradutor de Sabor</h2>
               <p class="muted">Como cada elemento do <em>Sentinel Comics RPG</em> foi adaptado para Runeterra. A coluna <b>Sentinels</b> mantém o nome do livro, em inglês, para você conferir as regras; a coluna <b>Runeterra</b> é o que os jogadores veem no app. As regras não mudam, só o nome e o sabor.</p>
+              <p class="muted gm-fl-credit">Regras de <em>Sentinel Comics: The Roleplaying Game</em> © Greater Than Games. Runeterra e League of Legends © Riot Games.</p>
             </div>
             <input type="search" class="gm-fl-search" placeholder="Buscar em ${total} termos… (ex.: Speedster, Vazio, Retcon)" aria-label="Buscar no tradutor">
           </div>
