@@ -322,10 +322,10 @@
       if (useShapeAbilities) {
         if (shape.fixedGreen) G.push({ key: 'arch-fixed', step: 'archetype', color: 'green', fixed: true, count: shape.fixedGreen.length, list: shape.fixedGreen, label: 'Green ability (automatic)' });
         const g = shape.green;
-        G.push({ key: 'arch-green', step: 'archetype', color: 'green', count: g.count, list: g.list, diff: g.diff, fixed: g.fixed, note: g.note, label: `Green abilities (${g.fixed ? 'you gain both' : 'choose ' + g.count})` });
+        G.push({ key: 'arch-green', step: 'archetype', color: 'green', count: g.count, list: g.list, diff: g.diff, fixed: g.fixed, note: g.note, rules: g.rules, label: `Green abilities (${g.fixed ? 'you gain both' : 'choose ' + g.count})` });
         if (shape.yellow) {
           const y = shape.yellow;
-          G.push({ key: 'arch-yellow', step: 'archetype', color: 'yellow', count: y.count, list: y.fromGreen ? g.list : y.list, diff: y.diff, note: y.note, label: `Yellow ${y.count > 1 ? 'abilities' : 'ability'} (choose ${y.count})` });
+          G.push({ key: 'arch-yellow', step: 'archetype', color: 'yellow', count: y.count, list: y.fromGreen ? g.list : y.list, diff: y.diff, note: y.note || (y.rules && y.rules.notGreen ? 'Using a different power or quality than your Green abilities.' : ''), rules: y.rules, label: `Yellow ${y.count > 1 ? 'abilities' : 'ability'} (choose ${y.count})` });
         }
         if (shape.forms) {
           G.push({ key: 'arch-formgreen', step: 'archetype', color: 'green', count: 2, list: shape.forms.green, label: 'Green forms (choose 2 form abilities, one per form)', note: 'Each Green form gets a different ability usable only in that form. Record which powers/dice each form uses in your notes.' });
@@ -390,13 +390,21 @@
   // ------------------------------------------------------------------ validation, organised as guided sub-steps
   // Each step is a list of sections; a section is done when it has no issues.
   // stepIssues() is simply all section issues, so the flow, the Next button and the nav always agree.
+  // Traits a group's abilities may use, narrowed by the Path's own wording ("from the Speedster list", "Elemental/Energy powers"...).
+  function groupUse(g, R) {
+    const ru = g.rules;
+    if (!ru || !(ru.fromList || ru.cat || ru.kind)) return null;
+    const shape = shapeDef();
+    const list = ru.fromList && shape ? expand((shape.req ? shape.req.any : []).concat(shape.powers || [], shape.quals || [])) : null;
+    return Object.keys(R.T).filter(k => (!list || list.includes(k)) && (!ru.cat || TRAIT[k].cat === ru.cat) && (!ru.kind || TRAIT[k].kind === ru.kind));
+  }
   function groupIssues(g, R) {
     const I = [];
     const s = selOf(g);
     if (!g.fixed && s.length !== g.count) I.push(`Pick ${g.count} (${s.length}/${g.count} chosen).`);
     const used = [];
     for (const e of s) {
-      const al = allowedTraits(R, e.name, { powersOnly: g.powersOnly });
+      const al = allowedTraits(R, e.name, { powersOnly: g.powersOnly, use: groupUse(g, R) });
       if (al.req.kind !== 'none' && !al.req.fixed && !e.trait) I.push(`Choose which power/quality “${displayName(e.name)}” uses.`);
       if (al.req.fixed && !R.T[al.req.only[0]]) I.push(`“${displayName(e.name)}” requires ${traitName(al.req.only[0])}, which you don't have.`);
       if (e.trait && !R.T[e.trait]) I.push(`“${displayName(e.name)}” uses ${traitName(e.trait)}, which you no longer have.`);
@@ -405,6 +413,18 @@
       if (e.trait) used.push(e.trait);
     }
     if (g.diff && new Set(used).size !== used.length) I.push('Each ability must use a different power/quality.');
+    const ru = g.rules || {};
+    const full = s.length === g.count && used.length === s.length;
+    if (full && ru.minDistinct && new Set(used.filter(k => !ru.distinctKind || TRAIT[k].kind === ru.distinctKind)).size < ru.minDistinct) I.push(`Use at least ${ru.minDistinct} different ${ru.distinctKind || 'power/quality'}s across these abilities.`);
+    if (full && ru.needs) {
+      const fits = (k, n) => (n.any ? expand(n.any).includes(k) : true) && (n.kind ? TRAIT[k].kind === n.kind : true);
+      const cover = (i, left) => i === ru.needs.length || left.some((k, j) => fits(k, ru.needs[i]) && cover(i + 1, left.filter((_, x) => x !== j)));
+      if (!cover(0, used)) I.push(`These abilities must include: ${ru.needs.map(n => 'one using ' + n.label).join(', and ')}.`);
+    }
+    if (ru.notGreen) {
+      const greens = (st.sel['arch-green'] || []).map(e => e.trait).filter(Boolean);
+      for (const e of s) if (e.trait && greens.includes(e.trait)) I.push(`“${displayName(e.name)}” must use a different power or quality than your Green abilities (${traitName(e.trait)} is already used there).`);
+    }
     return I;
   }
   const slotIssues = slots => (slots || []).filter(s => !s.key).map(s => `Assign your ${s.die}${s.freed ? ' (freed die)' : ''}.`);
@@ -667,7 +687,7 @@
     return `<div class="${bare ? '' : 'subsec'}">${bare ? '' : `<h4>${esc(g.label)}</h4>`}${g.note ? `<p class="muted">${esc(g.note)}</p>` : ''}${!g.fixed ? `<p class="count-line"><b>${s.length}/${g.count}</b> chosen</p>` : ''}<div class="ab-list">` +
       g.list.map(n => {
         const i = s.findIndex(e => e.name === n);
-        return abilityCard(g, n, s[i], i >= 0, R, { idx: i, powersOnly: g.powersOnly });
+        return abilityCard(g, n, s[i], i >= 0, R, { idx: i, powersOnly: g.powersOnly, use: groupUse(g, R) });
       }).join('') + '</div></div>';
   }
 
