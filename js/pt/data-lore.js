@@ -287,6 +287,22 @@
     void: ['Como o Vazio te tocou e deixou você ainda de pé?', 'Quem sabe o que você realmente é?']
   };
 
+
+  // Guia da criação: [título, texto, seletor do que destacar]. Aparece uma vez por capítulo para um campeão novo.
+  W.TOUR = {
+    intro: ['Bem-vindo à Forja', 'Aqui você cria seu campeão em dez capítulos. Primeiro escolha como o destino será decidido: <b>Construído</b>, em que você escolhe tudo, ou <b>Guiado</b>, em que os dados sugerem. Depois é só clicar em <b>Começar a crônica</b>.', '.tp-options'],
+    people: ['Capítulo I: Povo', 'Só sabor, sem regras: escolha de que povo seu campeão é. As opções que combinam com ele ganham a marca ✦ nos próximos capítulos.', '.cards.regions'],
+    region: ['Capítulo II: Terra Natal', 'Também só sabor: a região de onde ele vem. As Origens, Fontes e Princípios que combinam com ela ganham a marca ✦.', '.cards.regions'],
+    background: ['Capítulo III: Origem', 'Aqui as regras começam. A Origem te dá <b>qualidades</b> (o que você sabe fazer), seu primeiro <b>princípio</b> e os dados da sua Fonte de Poder. Passe o mouse no ⓘ de cada cartão para ver o que ele dá.', ''],
+    powersource: ['Capítulo IV: Fonte de Poder', 'O que te deu poderes. Você liga cada dado a um <b>poder</b> (quanto maior o dado, melhor) e escolhe suas habilidades Amarelas e Verdes.', ''],
+    archetype: ['Capítulo V: Caminho', 'Como você luta. Você ganha mais poderes ou qualidades, habilidades Verdes e o seu segundo princípio.', ''],
+    personality: ['Capítulo VI: Temperamento', 'Como você reage sob pressão. Ele define os seus três <b>dados de status</b> (Verde, Amarelo e Vermelho), a sua qualidade marcante e a habilidade de <b>Nocaute</b>.', '.status-explain'],
+    red: ['Capítulo VII: Supremas', 'Duas habilidades <b>Vermelhas</b>, as mais fortes, liberadas quando você está por um fio. Só aparecem as categorias em que você tem um poder ou qualidade d6 ou maior.', ''],
+    retcon: ['Capítulo VIII: Reviravolta do Destino', 'Um último ajuste antes de fechar: trocar dados de lugar, ganhar um d6 novo, mudar um princípio ou outra opção.', ''],
+    health: ['Capítulo IX: Vida', 'Quanto dano você aguenta. A Forja faz a conta sozinha; você só escolhe qual poder ou qualidade entra nela.', ''],
+    finish: ['Capítulo X: Lenda', 'Nome, aparência e biografia. Com o nome preenchido, a ficha fica pronta para imprimir, exportar em PDF ou abrir na página <b>Ficha</b>.', '']
+  };
+
   W.STEP_INTROS = {
     people: 'Escolha o povo do seu campeão: humano, vastaya, yordle, espírito e outros. Assim como a Terra Natal, é puro sabor e <b>não muda nenhuma regra</b>, mas cada povo sugere terras natais, Origens, Fontes, Caminhos e Princípios que combinam com ele.',
     region: 'Escolha a terra que moldou seu campeão. Esta escolha é puro sabor e <b>não muda nenhuma regra</b>, mas cada região destaca Origens, Fontes e Princípios que combinam com ela.',

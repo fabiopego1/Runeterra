@@ -57,7 +57,8 @@
     info: { name: '', alias: '', player: '', gender: '', age: '', height: '', eyes: '', hair: '', skin: '', build: '', costume: '', notes: '', portrait: null },
     play: { hp: [], rw: [], issues: [], coll: [], cdone: [], current: null, notes: [] },
     renames: {}, traitNames: {},
-    evo: { traits: {}, principles: {}, abilities: {}, log: [] }   // changes between collections, laid over the creation choices
+    evo: { traits: {}, principles: {}, abilities: {}, log: [] },   // changes between collections, laid over the creation choices
+    tour: { on: true, seen: {} }   // guided popups for a new champion, one per chapter
   });
   let st = load();
 
@@ -77,6 +78,8 @@
     if (s.info && s.info.pronouns && !out.info.gender) out.info.gender = s.info.pronouns;
     out.play = Object.assign(blank().play, s.play || {});
     out.evo = Object.assign(blank().evo, s.evo || {});
+    // Champions made before the guide existed are already under way: keep the guide off for them.
+    out.tour = s.tour ? Object.assign({ on: true, seen: {} }, s.tour) : { on: !(out.maxStep > 1), seen: {} };
     out.maxStep = typeof s.maxStep === 'number' ? s.maxStep : -1;   // older saves: recomputed after load
     // Saves from before the People chapter: every chapter after the welcome moved one place down.
     if (!('people' in s) && out.maxStep >= 1) out.maxStep += 1;
@@ -408,15 +411,23 @@
     if (req.only) pool = pool.filter(k => req.only.includes(k));
     if (ctx.use) pool = pool.filter(k => ctx.use.includes(k));
     if (req.cat) pool = pool.filter(k => TRAIT[k].cat === req.cat);
-    if (ctx.cat) pool = pool.filter(k => TRAIT[k].cat === ctx.cat);
+    // An Ultimate's category narrows the trait of the same kind: for "[power] ... [quality]" in a quality
+    // category (e.g. Harmony, Mental qualities) it is the quality that must be Mental, not the power.
+    const catKind = ctx.cat ? (ctx.cat[0] === 'Q' ? 'quality' : 'power') : null;
+    const catOnSecond = !!(req.second && catKind === req.second);
+    if (ctx.cat && !catOnSecond) pool = pool.filter(k => TRAIT[k].cat === ctx.cat);
     if (req.kind !== 'any') pool = pool.filter(k => TRAIT[k].kind === req.kind);
     if (ctx.powersOnly && req.kind === 'any') pool = pool.filter(k => TRAIT[k].kind === 'power');
-    const keys2 = req.second ? Object.keys(R.T).filter(k => TRAIT[k].kind === req.second) : null;
+    const keys2 = req.second ? Object.keys(R.T).filter(k => TRAIT[k].kind === req.second && (!catOnSecond || TRAIT[k].cat === ctx.cat)) : null;
     return { req, keys: sortTraits(pool.map(k => R.T[k])).map(t => t.key), keys2 };
   }
 
-  function traitOptions(keys, sel, placeholder) {
-    return `<option value="">${esc(placeholder || tr('— choose —'))}</option>` + keys.map(k => `<option value="${k}"${k === sel ? ' selected' : ''}>${esc(traitName(k))} (${R0.T[k] ? R0.T[k].die : ''})</option>`).join('');
+  // block: { traitKey: why } for traits that this choice may not repeat (shown greyed out and not selectable).
+  function traitOptions(keys, sel, placeholder, block = {}) {
+    return `<option value="">${esc(placeholder || tr('— choose —'))}</option>` + keys.map(k => {
+      const no = block[k] && k !== sel;
+      return `<option value="${k}"${k === sel ? ' selected' : ''}${no ? ' disabled' : ''}>${esc(traitName(k))} (${R0.T[k] ? R0.T[k].die : ''})${no ? ' · ' + esc(block[k]) : ''}</option>`;
+    }).join('');
   }
 
   // ------------------------------------------------------------------ validation, organised as guided sub-steps
@@ -695,11 +706,12 @@
       const base = ctx.bind || `sel.${g.key}.${idx}`;
       if (al.req.kind !== 'none' && !reqFixed) {
         const what = al.req.kind === 'any' ? tr('power or quality') : al.req.cat ? tr(al.req.kind === 'power' ? '{cat} power' : '{cat} quality', { cat: catName(al.req.cat) }) : tr(al.req.kind);
-        cfg += `<label>${tr('Uses {what}', { what })}${ctx.cat ? ' (' + esc(catName(ctx.cat)) + ')' : ''}<select data-bind="${base}.trait">${traitOptions(al.keys, entry.trait)}</select></label>`;
+        const catOn2 = ctx.cat && al.req.second && (ctx.cat[0] === 'Q' ? 'quality' : 'power') === al.req.second;
+        cfg += `<label>${tr('Uses {what}', { what })}${ctx.cat && !catOn2 ? ' (' + esc(catName(ctx.cat)) + ')' : ''}<select data-bind="${base}.trait">${traitOptions(al.keys, entry.trait, '', ctx.block || {})}</select></label>`;
         if (!al.keys.length) cfg += `<small class="muted">${tr('You have no eligible trait yet.')}</small>`;
       }
       if (reqFixed) cfg += `<small class="muted">${tr('Uses {what}', { what: esc(traitName(reqFixed)) })}${unavailable ? tr(' — which you don\'t have!') : ''}</small>`;
-      if (al.keys2) cfg += `<label>${tr('Quality')}<select data-bind="${base}.trait2">${traitOptions(al.keys2, entry.trait2)}</select></label>`;
+      if (al.keys2) cfg += `<label>${tr('Quality')}${ctx.cat && al.req.second && ctx.cat[0] === 'Q' ? ' (' + esc(catName(ctx.cat)) + ')' : ''}<select data-bind="${base}.trait2">${traitOptions(al.keys2, entry.trait2)}</select></label>`;
       for (const t of choiceTokens(ab.text)) {
         const kind = CHOICE_TOKENS[t];
         const cur = (entry.ch || {})[t] || '';
@@ -729,7 +741,11 @@
     return `<div class="${bare ? '' : 'subsec'}">${bare ? '' : `<h4>${esc(g.label)}</h4>`}${g.note ? `<p class="muted">${esc(g.note)}</p>` : ''}${!g.fixed ? `<p class="count-line"><b>${s.length}/${g.count}</b> ${tr('chosen')}</p>` : ''}<div class="ab-list">` +
       g.list.map(n => {
         const i = s.findIndex(e => e.name === n);
-        return abilityCard(g, n, s[i], i >= 0, R, { idx: i, powersOnly: g.powersOnly, use: groupUse(g, R) });
+        // Groups that need a different power/quality per ability (or different from the Green ones) block repeats up front.
+        const block = {};
+        if (g.diff) s.forEach((e, j) => { if (j !== i && e.trait) block[e.trait] = tr('used by {ab}', { ab: abName(e.name) }); });
+        if (g.rules && g.rules.notGreen) (st.sel['arch-green'] || []).forEach(e => { if (e.trait) block[e.trait] = tr('used by {ab}', { ab: abName(e.name) }); });
+        return abilityCard(g, n, s[i], i >= 0, R, { idx: i, powersOnly: g.powersOnly, use: groupUse(g, R), block });
       }).join('') + '</div></div>';
   }
 
@@ -966,7 +982,8 @@
     if (ex.type === 'addTrait') {
       let keys = expand(ex.opts);
       if (ex.notInOpts) { const skip = expand(p.opts); keys = keys.filter(k => !skip.includes(k)); }
-      return `<p>${esc(ex.text)}</p>${socket({ bind: 'ps.extra.key', d: ex.die, cur: e.key, groups: traitGroups(keys, k => traitItem(k)), empty: tr('Bind this {die} to a trait', { die: ex.die }) })}`;
+      const have = R.before.psExtra || {};
+      return `<p>${esc(ex.text)}</p>${socket({ bind: 'ps.extra.key', d: ex.die, cur: e.key, groups: traitGroups(keys, k => traitItem(k, { taken: have[k] && dn(have[k].die) >= dn(ex.die) ? tr('you already have {die}', { die: have[k].die }) : '', after: have[k] && dn(have[k].die) < dn(ex.die) ? tr('have {die}', { die: have[k].die }) : '' })), empty: tr('Bind this {die} to a trait', { die: ex.die }) })}`;
     }
     if (ex.type === 'alien') {
       const B = Object.values(R.before.psExtra || {});
@@ -1051,6 +1068,19 @@
       <p class="muted">${chosen.length}/${max} ${tr('chosen')}.</p>`;
   }
 
+  // Temperament cards: what the three status dice mean, and the shape of each set (rising, steady, falling).
+  function statusTrend(ds) {
+    const [g, y, r] = ds.map(dn);
+    const t = g < r ? ['rise', tr('Grows under pressure'), tr('Starts modest and becomes more dangerous as the fight goes badly.')]
+      : g > r ? ['fall', tr('Strong from the start'), tr('Hits hard while things are calm and gets shakier under pressure.')]
+        : ['steady', tr('Steady'), tr('The same die in every zone: reliable from start to finish.')];
+    return `<div class="status-trend ${t[0]}"${tip(`<h5>${t[1]}</h5>${t[2]}`)}>${t[1]}</div>`;
+  }
+  const statusExplainer = () => `<div class="status-explain">
+      <div><b>${tr('What are these three dice?')}</b><p>${tr('They are your <b>status dice</b>. Every roll uses one of them, together with a power and a quality. Which one depends on your zone: <b>Green</b> while you are fine, <b>Yellow</b> when you start to get hurt (or the scene heats up) and <b>Red</b> when you are hanging by a thread.')}</p></div>
+      <div><b>${tr('How to choose')}</b><p>${tr('<b>Growing dice</b> (d6, d8, d10) start modest and shine when things go badly. <b>Equal dice</b> are steady. <b>Shrinking dice</b> (d10, d8, d6) are strong early and weaker under pressure. Your <b>Red</b> die also adds to your maximum Health, and each Temperament gives an <b>Out</b> ability for when you are knocked out.')}</p></div>
+    </div>`;
+
   function renderPersonality() {
     const R = R0, a = archDef(), pe = persDef();
     if (!a) return lockedPanel(tr('Temperament'), tr('Choose your Path first.'), 'archetype');
@@ -1060,7 +1090,7 @@
       pick: () => pickSection('pers', pe && chosenSummary(pe.rt, pe.sc, '', pe.champs,
         `<div class="status-row"${tip(tr('<h5>Status dice</h5>The third die of every roll. Which one you use depends on your current Health zone.'))}><span class="z g">${tr('Green')} ${die(R.status[0])}</span><span class="z y">${tr('Yellow')} ${die(R.status[1])}</span><span class="z r">${tr('Red')} ${die(R.status[2])}</span></div>` +
         (pe.healthAny ? `<p class="sc">${tr('When determining Health you may use <b>any</b> power or quality.')}</p>` : '')),
-        cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div><span class="info" aria-label="${tr('Details')}"${tip(`<h5>${esc(x.rt)}</h5><div class="sc-line">Sentinels: ${esc(x.sc)}</div><b>${tr('Status:')}</b> ${tr('Green')} ${x.status[0]}, ${tr('Yellow')} ${x.status[1]}, ${tr('Red')} ${x.status[2]}<br><b>${tr('Out:')}</b> ${esc(ruleTip(x.out))}<hr><small>${esc(x.champs)}</small>`)}>${ico('info')}</span>`)),
+        statusExplainer() + cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div>${statusTrend(x.status)}<span class="info" aria-label="${tr('Details')}"${tip(`<h5>${esc(x.rt)}</h5><b>${tr('Status:')}</b> ${tr('Green')} ${x.status[0]}, ${tr('Yellow')} ${x.status[1]}, ${tr('Red')} ${x.status[2]}<br><b>${tr('Out:')}</b> ${esc(ruleTip(x.out))}<hr><small>${esc(x.champs)}</small>`)}>${ico('info')}</span>`)),
       qname: () => `<p class="muted"${tip(traitTip('rp-quality'))}>${tr('A {die} quality that sums up your champion — your “high concept”. Examples: <em>Hextech Prodigy of the Academy</em>, <em>Last Kinkou of the Eastern Isles</em>, <em>Bilgewater\'s Luckiest Liar</em>.', { die: die('d8', 'sm') })}</p>
         <input type="text" data-bind="pers.qname" data-live="1" data-commit="1" value="${esc(st.pers.qname)}" placeholder="${tr('Type your Signature Quality, then press Enter')}">`,
       out: () => {
@@ -1740,6 +1770,21 @@
         ${ui.sheetTab === 'evolve' ? `<div class="sp-evolve">${evolveHtml()}</div>` : `<div class="sp-sheet" id="sheet-preview">${sheetHtml(R0)}</div>`}
       </main></div>`;
   }
+  // Guided tour: the first time a new champion reaches a chapter, a short popup explains it and the key area glows.
+  function showTour() {
+    const T = window.TOUR || {}, t = T[st.step];
+    document.querySelectorAll('.tour-focus').forEach(e => e.classList.remove('tour-focus'));
+    let box = document.getElementById('tour');
+    if (!st.tour || !st.tour.on || !t || st.tour.seen[st.step]) { if (box) box.remove(); return; }
+    const target = document.querySelector(t[2] || '.flow-sec.current');
+    if (target) target.classList.add('tour-focus');
+    if (!box) { box = document.createElement('div'); box.id = 'tour'; box.className = 'tour'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', tr('Guide')); document.body.appendChild(box); }
+    const i = stepIndex(st.step);
+    box.innerHTML = `<div class="tour-k">${ico('codex')} ${tr('Guide')} · ${i ? tr('Chapter') + ' ' + ROMAN[i] : esc(STEPS[0].name)}<span>${i + 1}/${STEPS.length}</span></div>
+      <h4>${t[0]}</h4><p>${t[1]}</p>
+      <div class="tour-row"><button type="button" class="btn small primary" data-act="tourOk">${tr('Got it')}</button><button type="button" class="linkbtn" data-act="tourOff">${tr('Turn the guide off')}</button></div>`;
+  }
+
   function render() {
     R0 = compute();
     if (SHEET_PAGE) {
@@ -1771,6 +1816,7 @@
     }
     lastFlow = flowCurrent;
     updateChangeLast();
+    showTour();
   }
   // Chapter change: fade the old chapter out, jump to the top while it is hidden, then fade the new one in,
   // so the page never swaps content under the reader mid-scroll. Focus moves to the new chapter title.
@@ -1905,7 +1951,7 @@
     if (act === 'socket') {
       if (el.getAttribute('aria-disabled') === 'true') {
         el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(0)' }], { duration: 220 });
-        showTipFor(el, tr('<h5>Already bound</h5>Another die holds this trait. Unbind it there first, or choose a different trait.')); setTimeout(hideTip, 1800); return;
+        showTipFor(el, tr('<h5>Not available</h5>You already have this trait here, so this die would be wasted. Choose a different trait, or unbind it where it is first.')); setTimeout(hideTip, 1800); return;
       }
       setPath(st, el.dataset.bind, el.dataset.val || null); ui.socket = null; hideTip(); render();
       const next = document.querySelector('.socket.open .rune');           // keyboard users land in the next tray
@@ -1969,6 +2015,9 @@
       el.classList.add('used');
       return;
     }
+    if (act === 'tourOk') { st.tour.seen[st.step] = true; save(); showTour(); return; }
+    if (act === 'tourOff') { st.tour.on = false; save(); showTour(); return; }
+    if (act === 'tourOn') { st.tour = { on: true, seen: {} }; save(); if (SHEET_PAGE) location.href = 'index.html'; else showTour(); return; }
     if (act === 'sheetTab') {
       ui.sheetTab = el.dataset.tab;
       history.replaceState(null, '', ui.sheetTab === 'evolve' ? '#evoluir' : location.pathname + location.search);
@@ -2160,6 +2209,9 @@
     });
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !filePop.hidden) setOpen(false, true); });
   }
+  document.addEventListener('keydown', ev => {   // Escape also closes the guide popup for this chapter
+    if (ev.key === 'Escape' && document.getElementById('tour') && st.tour) { st.tour.seen[st.step] = true; save(); showTour(); }
+  });
 
   // First visit on a touch screen: explain that underlined terms open their explanation with a tap.
   try {
