@@ -691,6 +691,7 @@
           <p class="muted" style="margin-top:10px"><b>Guided:</b> roll dice at each step; you may pick the entry matching any single die or the sum of any two. Great if you want the Runes to decide.<br>
           <b>Constructed:</b> pick whatever fits the champion you already imagine. You still use the same die sizes.</p>
           <p class="muted">You can switch at any time. Your progress is saved in this browser.</p>
+          <p class="muted">New to the system? Open the <a href="#" data-act="rules">📖 Rules cheat sheet</a> any time (or press <kbd>?</kbd>) for how turns, actions, minions and twists work.</p>
         </div>
       </div>
       <div class="subsec"><h3>The road ahead</h3><ol>
