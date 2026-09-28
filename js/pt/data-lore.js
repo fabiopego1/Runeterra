@@ -288,6 +288,7 @@
   };
 
   W.STEP_INTROS = {
+    people: 'Escolha o povo do seu campeão: humano, vastaya, yordle, espírito e outros. Assim como a Terra Natal, é puro sabor e <b>não muda nenhuma regra</b>, mas cada povo sugere terras natais, Origens, Fontes, Caminhos e Princípios que combinam com ele.',
     region: 'Escolha a terra que moldou seu campeão. Esta escolha é puro sabor e <b>não muda nenhuma regra</b>, mas cada região destaca Origens, Fontes e Princípios que combinam com ela.',
     background: 'Sua <b>Origem</b> é de onde seu campeão veio antes de virar uma lenda. <span class="sc">Ela te dá qualidades, seu primeiro princípio e os dados da sua Fonte de Poder.</span>',
     powersource: 'Sua <b>Fonte de Poder</b> é o que te transformou e o que alimenta suas habilidades. <span class="sc">Atribua os dados da sua Origem a poderes, ganhe habilidades Amarelas e Verdes e os dados do seu Caminho.</span>',

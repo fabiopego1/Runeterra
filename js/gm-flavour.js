@@ -17,6 +17,7 @@
     ['Retcon', 'Reviravolta do Destino', 'Passo 6'],
     ['Health', 'Vida', 'Passo 7'],
     ['Finishing Touches', 'Lenda', 'Nome, visual e a ficha'],
+    ['(não existe)', 'Povo', 'Passo extra, só de sabor: humano, vastaya, yordle, espírito e outros'],
     ['(não existe)', 'Terra Natal', 'Passo extra, só de sabor: a região de Runeterra'],
     ['Power', 'Poder', ''], ['Quality', 'Qualidade', ''], ['Principle', 'Princípio', ''],
     ['Ability', 'Habilidade', ''],

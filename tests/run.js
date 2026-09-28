@@ -10,7 +10,7 @@ try { playwright = require('playwright'); } catch (e) { playwright = require(req
 
 const BASE = (process.env.BASE_URL || 'http://localhost:8765').replace(/\/$/, '');
 const FIXTURE = fs.readFileSync(path.join(__dirname, 'fixtures', 'champion.json'), 'utf8');
-const STEPS = ['intro', 'region', 'background', 'powersource', 'archetype', 'personality', 'red', 'retcon', 'health', 'finish'];
+const STEPS = ['intro', 'people', 'region', 'background', 'powersource', 'archetype', 'personality', 'red', 'retcon', 'health', 'finish'];
 
 let failures = 0;
 const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if (!cond) failures++; };
@@ -47,6 +47,13 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('[data-act=method][data-m=constructed]', e => e.getAttribute('aria-pressed') === 'true' || e.classList.contains('on') || e.classList.contains('active')), 'Construído is the default method');
     ok(await p.$$eval('.rail-item.locked', e => e.length) > 0, 'later chapters are locked on a fresh start');
     await next();
+    const peopleStep = await step();
+    await next();
+    ok(await step() === peopleStep, 'cannot advance without picking a people');
+    await p.click('[data-kind=people][data-id=vastaya]');
+    ok(await p.$eval('.chosen-region', e => e.textContent.includes('Vastaya')), 'people chapter shows the chosen people');
+    await next();
+    ok(await p.$$eval('.region-card .fit', e => e.some(x => x.textContent.includes('Vastaya'))), 'homelands that suit the people are marked');
     const regionStep = await step();
     await next();
     ok(await step() === regionStep, 'cannot advance without picking a region');
