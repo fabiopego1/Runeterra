@@ -37,6 +37,8 @@ The builder walks through the rulebook's hero-creation chapter (ch. 3), re-skinn
 * `js/data-tables.js`: the Background, Power Source, Archetype, Personality and Red ability tables, with Runeterra names.
 * `js/data-lore.js`: Runeterra flavour: trait names, regions, glossary and principle notes.
 * `js/app.js`: the builder itself.
+* `lore.html` + `js/lore-page.js`: the Lore page (texts in `js/pt/lore.js`). Every section, region and people has an image slot; register artwork in `js/lore-images.js` and put the files in `assets/lore/` (see `assets/lore/README.md`).
+* `regras.html` + `js/rules-page.js`: the Rules page (texts in `js/pt/cheatsheet.js`) with an A–Z glossary built from the same definitions the builder shows on hover. Press `?` anywhere in the builder to open it.
 * `gm.html`, `js/gm.js`, `js/gm-vault.js`: the password-protected GM Screen (see below).
 
 ### GM Screen
