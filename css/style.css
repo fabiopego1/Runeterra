@@ -739,11 +739,37 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .hs-form b { font-family: var(--font-display); font-weight: 400; color: var(--gold-hi); }
 .hs-form small { font-family: var(--font-mono); font-size: .6rem; color: var(--text-3); }
 .hs-pre { font-size: .9rem; white-space: pre-wrap; color: var(--text-2); }
-.hs-mtab { width: 100%; border-collapse: collapse; }
-.hs-mtab th { text-align: left; font-family: var(--font-mono); font-size: .56rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); font-weight: 400; padding: 2px 4px; }
-.hs-mtab td { padding: 0 4px; }
-.hs-mtab .md { width: 52px; }
-.hs-mtab .hs-line { width: 100%; }
+.hs-aux-grid.solo { grid-template-columns: minmax(0, 1fr); }
+.hs-evo { font-size: .86rem; padding: 4px 0; border-bottom: 1px dotted var(--line-2); color: var(--text-2); }
+.hs-evo small { display: block; font-family: var(--font-mono); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); }
+
+/* Evolve your champion (Legend chapter) */
+.evo-ways { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 10px 0 16px; }
+.evo-ways > div { display: grid; gap: 4px; align-content: start; padding: 10px 12px; border: 1px solid var(--line); font-size: .88rem; color: var(--text-2); }
+.evo-ways > div.on { border-color: var(--gold-lo); background: var(--ink-2); }
+.evo-ways b { font-family: var(--font-display); font-weight: 400; color: var(--gold-hi); font-size: 1rem; }
+.evo-tabs { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid var(--line-2); margin-bottom: 12px; }
+.evo-tab { cursor: pointer; font: 500 .76rem var(--font-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--text-2); background: none; border: 0; border-bottom: 2px solid transparent; padding: 9px 14px; margin-bottom: -1px; }
+.evo-tab:hover { color: var(--gold-hi); }
+.evo-tab.on { color: var(--gold-hi); border-bottom-color: var(--gold); }
+.evo-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.evo-note { margin: 10px 0 4px; padding: 10px 12px; border-left: 2px solid var(--gold-lo); background: var(--ink-2); font-size: .92rem; color: var(--text-2); }
+.evo-note b { font-family: var(--font-display); font-weight: 400; color: var(--gold-hi); }
+.evo-why { color: var(--warn); font-size: .9rem; }
+.evo-h { margin-top: 22px; }
+.evo-log { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 0; }
+.evo-log li { display: grid; grid-template-columns: 110px 1fr auto; gap: 10px; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: .92rem; }
+.evo-log .ico { width: 12px; height: 12px; color: var(--gold); }
+.evo-k { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+.evo-log small { font-family: var(--font-mono); font-size: .6rem; color: var(--text-3); }
+.evo-rewrite { display: flex; gap: 16px; align-items: center; justify-content: space-between; margin-top: 22px; padding: 14px; border: 1px dashed var(--line-2); }
+.evo-rewrite p { margin: 2px 0 0; }
+.evo-rewrite b { font-family: var(--font-display); font-weight: 400; color: var(--text); }
+@media (max-width: 900px) {
+  .evo-ways { grid-template-columns: minmax(0, 1fr); }
+  .evo-log li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .evo-rewrite { flex-direction: column; align-items: stretch; }
+}
 .hs-notes { display: grid; grid-template-columns: 1fr 1fr; column-gap: 18px; }
 .hs-notes .hs-line { width: 100%; }
 #pdf-status:empty { display: none; }

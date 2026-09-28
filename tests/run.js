@@ -102,7 +102,6 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     const saved = await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-forge-v1')).play.current);
     ok(saved && Number(saved) > 0, `current Health is saved (${saved})`);
     ok(await p.$$eval('#sheet-preview .hs-page', e => e.length) === 3, 'sheet has three pages');
-    await p.fill('#sheet-preview [data-bind="play.mname.0"]', 'Golem de sucata');
     await p.fill('#sheet-preview [data-bind="play.notes.0"]', 'Deve um favor a Silco');
     ok(await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-forge-v1')).play.notes[0] === 'Deve um favor a Silco'), 'table notes on page 3 are saved');
     const [dl3] = await Promise.all([p.waitForEvent('download', { timeout: 60000 }), p.click('[data-act=pdf]')]);
@@ -115,6 +114,36 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(info.pages === 3, `PDF has three pages (${info.pages})`);
     ok(info.notes === 10 && info.note0 === 'Deve um favor a Silco', 'PDF keeps the table notes as fillable fields');
 
+    // Evolve: swap a power, an ability and a principle; undo; history on page 3
+    const stored = () => p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-forge-v1')));
+    await p.selectOption('[data-evo=from]', 'flight');
+    const to = await p.$eval('[data-evo=to]', s => { const o = [...s.options].find(x => x.value); return { v: o.value, t: o.textContent }; });
+    await p.selectOption('[data-evo=to]', to.v);
+    await p.click('[data-act=evoApply]');
+    ok((await stored()).evo.traits.flight === to.v, `power swap saved (Voo → ${to.t})`);
+    ok(await p.$eval('#sheet-preview', (e, t) => e.textContent.includes(t), to.t), 'swapped power shows on the sheet');
+    await p.click('[data-act=evoTab][data-tab=ability]');
+    await p.selectOption('[data-evo=from]', { index: 1 });
+    if (await p.$('[data-evo=to]')) {
+      await p.selectOption('[data-evo=to]', { index: 1 });
+      for (const inp of await p.$$('.evo-form input[data-evo]')) await inp.fill('fogo');
+      for (const s of await p.$$('.evo-form select[data-evo^="ch."]')) await s.selectOption({ index: 1 });
+      await p.click('[data-act=evoApply]');
+    }
+    const afterAb = (await stored()).evo.log.length;
+    ok(afterAb === 2, `ability swap recorded (${afterAb} changes)`);
+    await p.click('[data-act=evoUndo]');
+    ok((await stored()).evo.log.length === 1, 'undo removes the last change');
+    await p.click('[data-act=evoTab][data-tab=principle]');
+    await p.selectOption('[data-evo=from]', 'bg');
+    const pr = await p.$eval('[data-evo=to]', s => [...s.options].find(x => x.value && x.value !== 'energy-element').value);
+    await p.selectOption('[data-evo=to]', pr);
+    await p.click('[data-act=evoApply]');
+    ok((await stored()).evo.principles.bg === pr, 'principle swap saved');
+    ok(await p.$$eval('#sheet-preview .hs-evo', e => e.length) === 2, 'page 3 lists the evolution history');
+    const issues = await p.evaluate(() => document.querySelectorAll('.rail-item.locked').length);
+    ok(issues === 0, 'evolving keeps every chapter valid');
+
     // Arquivo menu
     await p.evaluate(() => scrollTo(0, 0));
     await p.click('#file-btn');
@@ -126,6 +155,12 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(/\.json$/.test(json.suggestedFilename()), 'Exportar campeão downloads a .json');
     await p.waitForTimeout(50);
     ok(await p.$eval('#file-pop', e => e.hidden), 'menu closes after an action');
+
+    // Major rewrite: back to the chapters with Construído, history kept
+    p.once('dialog', d => d.accept());
+    await p.click('[data-act=evoRewrite]'); await p.waitForTimeout(200);
+    const rw = await stored();
+    ok(rw.step === 'background' && rw.method === 'constructed' && rw.info.name === 'Bruxaria' && rw.evo.log.slice(-1)[0].kind === 'rewrite' && !rw.bg.id, 'rewrite restarts creation and keeps name and history');
     await p.context().close();
   }
 
