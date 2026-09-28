@@ -18,11 +18,14 @@ window.LORE_IMAGES = {
   // linha do tempo
   'primordial': { src: 'assets/lore/primordial-yordles.webp', credit: 'Riot Games' },
   'titans': { src: 'assets/lore/guerra-dos-titas.webp', credit: 'Riot Games', pos: '60% 50%' },
+  'migration': { src: 'assets/lore/mapa-runeterra.webp', credit: 'Riot Games' },
   'sisters': { src: 'assets/lore/tres-irmas.webp', credit: 'Riot Games', fit: 'contain' },
   'golden-age': { src: 'assets/lore/era-de-ouro-shurima.webp', credit: 'Riot Games', pos: '50% 30%' },
   'fall-shurima': { src: 'assets/lore/queda-de-shurima.webp', credit: 'Riot Games' },
+  'darkin': { src: 'assets/lore/guerra-darkin.webp', credit: 'Riot Games', pos: '60% 40%' },
   'revenant': { src: 'assets/lore/sahn-uzal.webp', credit: 'Riot Games', pos: '50% 22%' },
   'ruination': { src: 'assets/lore/ruina-ilhas-abencoadas.webp', credit: 'Riot Games', pos: '50% 35%' },
   'rune-wars': { src: 'assets/lore/guerras-runicas.webp', credit: 'Riot Games' },
-  'present': { src: 'assets/lore/mapa-regioes.webp', credit: 'Riot Games' },
+  'resurgence': { src: 'assets/lore/mapa-regioes.webp', credit: 'Riot Games' },
+  'demacia-noxus-war': { src: 'assets/lore/guerra-demacia-noxus.webp', credit: 'Riot Games', pos: '50% 35%' },
 };
