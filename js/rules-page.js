@@ -23,8 +23,9 @@
       <div class="hero-text">
         <div class="eyebrow">Referência rápida para a mesa</div>
         <h1>Regras</h1>
-        <p class="lede">Tudo o que você precisa durante o jogo, na ordem em que vai precisar: primeiro o básico, depois o que acontece numa cena de ação e, por fim, o que acontece entre as cenas.</p>
+        <p class="lede">Tudo o que você precisa durante o jogo, na ordem em que vai precisar: primeiro o básico, depois o que acontece numa cena de ação e o que acontece entre as cenas. A última parte é para o Mestre e termina com um exemplo de jogo.</p>
         <ol class="rules-parts">${GROUPS.map((g, i) => `<li><a href="#part-${i + 1}"><span>${ROMAN[i]}</span>${esc(g.name)}</a></li>`).join('')}<li><a href="#glossario"><span>A–Z</span>Glossário</a></li></ol>
+        <a class="btn rules-print" href="resumo.html">${window.ICO ? window.ICO('print') : ''} Resumo de uma página para imprimir</a>
       </div>
       <div class="roll-formula" aria-label="Como uma rolagem funciona">
         <div class="rf-row">${die('d10', 'Poder')}<span class="rf-op">+</span>${die('d8', 'Qualidade')}<span class="rf-op">+</span>${die('d6', 'Status')}</div>

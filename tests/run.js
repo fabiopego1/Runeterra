@@ -193,7 +193,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
   // 3. Every page loads, and none scrolls sideways on a phone.
   for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
     const p = await newPage(vp);
-    for (const page of ['index.html', 'lore.html', 'regras.html', 'gm.html']) {
+    for (const page of ['index.html', 'lore.html', 'regras.html', 'resumo.html', 'gm.html']) {
       await p.goto(`${BASE}/${page}`);
       if (page === 'index.html') { await p.evaluate(fx => { const o = JSON.parse(fx); o.step = 'finish'; localStorage.setItem('runeterra-forge-v1', JSON.stringify(o)); }, FIXTURE); await p.reload(); }
       await p.evaluate(() => document.fonts.ready); await p.waitForTimeout(200);
@@ -210,6 +210,19 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$$eval('.rule-card', e => e.length) > 10, 'Regras renders its sections');
     await p.fill('.page-search', 'lacaio');
     ok(await p.$$eval('.rule-card:not([hidden])', e => e.length) > 0, 'Regras search finds "lacaio"');
+    ok(await p.$$eval('.rules-part', e => e.length) === 4 && !!(await p.$('#cs-example')), 'Regras has Part IV (Para o Mestre) with the play example');
+    for (const pg of ['regras.html', 'resumo.html', 'lore.html']) {
+      await p.goto(`${BASE}/${pg}`);
+      const bad = await p.evaluate(() => { const t = document.body.innerText; const m = t.match(/—|Sentinel(?!as? da Luz)|SCRPG|Greater Than Games/); return m ? t.slice(Math.max(0, m.index - 40), m.index + 40) : ''; });
+      ok(!bad, `${pg} text has no "—" and no references to the original system${bad ? ` (…${bad}…)` : ''}`);
+    }
+    await p.goto(`${BASE}/resumo.html`);
+    await p.evaluate(() => document.fonts.ready);
+    await p.emulateMedia({ media: 'print' });
+    const a4 = await p.pdf({ format: 'A4', preferCSSPageSize: true });
+    const pages = (a4.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
+    ok(pages === 1, `the table summary prints on one A4 page (${pages})`);
+    await p.emulateMedia({ media: 'screen' });
     await p.goto(`${BASE}/lore.html`);
     ok(await p.$$eval('img', e => e.length) > 5, 'Lore shows its images');
     await p.context().close();
