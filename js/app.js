@@ -55,8 +55,9 @@
     pch: {},
     sel: {},
     info: { name: '', alias: '', player: '', gender: '', age: '', height: '', eyes: '', hair: '', skin: '', build: '', costume: '', notes: '', portrait: null },
-    play: { hp: [], rw: [], issues: [], coll: [], cdone: [], current: null, notes: [], mname: [], mdie: [], mnote: [] },
-    renames: {}, traitNames: {}
+    play: { hp: [], rw: [], issues: [], coll: [], cdone: [], current: null, notes: [] },
+    renames: {}, traitNames: {},
+    evo: { traits: {}, principles: {}, abilities: {}, log: [] }   // changes between collections, laid over the creation choices
   });
   let st = load();
 
@@ -75,6 +76,7 @@
     if (s.info && s.info.look && !out.info.costume) out.info.costume = s.info.look;
     if (s.info && s.info.pronouns && !out.info.gender) out.info.gender = s.info.pronouns;
     out.play = Object.assign(blank().play, s.play || {});
+    out.evo = Object.assign(blank().evo, s.evo || {});
     out.maxStep = typeof s.maxStep === 'number' ? s.maxStep : -1;   // older saves: recomputed after load
     // A save that never left the intro has not really started: open it on the default method (Construído).
     if (out.step === 'intro' && !out.maxStep && !out.region) out.method = 'constructed';
@@ -838,7 +840,7 @@
   }
 
   // ------------------------------------------------------------------ guided flow
-  const ui = { expand: {}, lastPick: {} };   // transient: re-opened choice grids; most recent choice per chapter
+  const ui = { expand: {}, lastPick: {}, evo: { tab: 'power', from: '', to: '', ch: {} } };   // transient: re-opened choice grids; most recent choice per chapter; the Evolve form
   let flowCurrent = null;           // "step:section" of the section the user should work on now
 
   // Renders a step's sections in order. Sections after the first unfinished one are locked.
@@ -1174,9 +1176,175 @@
     const bgP = st.bg.principle, arP = st.arch.principle;
     const rc = st.retcon;
     const pick = (slot, id) => (rc.type === 'change-principle' && rc.which === slot && rc.principle ? rc.principle : id);
-    if (bgP) out.push({ slot: 'bg', id: pick('bg', bgP) });
-    if (arP) out.push({ slot: 'arch', id: pick('arch', arP) });
+    if (bgP) out.push({ slot: 'bg', id: st.evo.principles.bg || pick('bg', bgP) });
+    if (arP) out.push({ slot: 'arch', id: st.evo.principles.arch || pick('arch', arP) });
     return out.map(x => ({ ...x, p: PRINCIPLES.find(p => p.id === x.id) })).filter(x => x.p);
+  }
+
+  // ------------------------------------------------------------------ evolution between collections
+  // Rulebook "Change details": swap a power or quality for another of the same die, a principle for another,
+  // or an ability for another of the same colour from the same lists. Stored as an overlay (st.evo) so the
+  // creation chapters stay as they were built; the sheet, the dossier and the PDF show the evolved champion.
+  const evoTrait = k => (k && st.evo.traits[k]) || k;
+  function evolvedR(R) {
+    const T = {};
+    for (const [k, t] of Object.entries(R.T)) { const nk = evoTrait(k); T[nk] = { ...t, key: nk }; }
+    return { ...R, T };
+  }
+  function evoAb(x) {
+    const e = x.entry || {};
+    const entry = { ...e, trait: evoTrait(e.trait), trait2: evoTrait(e.trait2) };
+    const o = st.evo.abilities[x.iid];
+    if (!o) return { ...x, entry };
+    return { ...x, name: o.name, orig: x.name, entry: { ...entry, ch: o.ch || {}, trait: o.trait || entry.trait } };
+  }
+  const prName = id => { const p = PRINCIPLES.find(x => x.id === id); return p ? (window.PRINCIPLE_LORE[id] || [p.name])[0] : id; };
+  // Abilities that can be swapped: the ones picked from a list (automatic, form and mode abilities are part of the Path itself).
+  const evoGroupKeys = () => groups().filter(g => !g.fixed && !/fixed|mod|form|div/.test(g.key)).map(g => g.key).concat('red');
+  const evoAbilityChoices = () => { const keys = evoGroupKeys(); return allAbilities(R0).filter(x => keys.includes(x.gkey)); };
+  // "Use the same power or quality for that ability."
+  function evoFits(name, entry, RT) {
+    const ab = A[name];
+    if (!ab) return false;
+    const req = reqFromText(ab.text);
+    if (req.kind === 'none') return true;
+    if (req.only) return req.only.some(k => RT[k]);
+    const t = entry.trait;
+    if (!t || !TRAIT[t]) return false;
+    if (req.kind !== 'any' && TRAIT[t].kind !== req.kind) return false;
+    if (req.cat && TRAIT[t].cat !== req.cat) return false;
+    if (req.second && !(entry.trait2 && RT[entry.trait2])) return false;
+    return true;
+  }
+  // Same colour, same Source/Path (or Ultimate category) list, not already on the sheet.
+  function evoAbilityOptions(x) {
+    let list = [];
+    if (x.gkey === 'red') {
+      const cat = x.entry.cat || '';
+      if (cat.startsWith('X:')) list = (shapeDef() && shapeDef().extraRed) || [];
+      else { const c = window.RED_ABILITIES.find(r => r.cat === cat); list = c ? c.list.filter(o => !o.use || o.use.includes(x.entry.trait)).map(o => o.a) : []; }
+    } else { const g = groups().find(y => y.key === x.gkey); list = g ? g.list : []; }
+    const RT = evolvedR(R0).T;
+    const taken = allAbilities(R0).filter(y => y.color === x.color).map(y => displayName(y.name));
+    return list.filter(n => !taken.includes(displayName(n)) && evoFits(n, x.entry, RT));
+  }
+  const evoSnapshot = () => JSON.parse(JSON.stringify({ traits: st.evo.traits, principles: st.evo.principles, abilities: st.evo.abilities, pch: st.pch, renames: st.renames }));
+  const lastCollection = () => (st.play.coll || []).filter(Boolean).slice(-1)[0] || '';
+
+  function evoApply() {
+    const E = ui.evo, RT = evolvedR(R0).T, undo = evoSnapshot();
+    let from = '', to = '';
+    if (E.tab === 'power' || E.tab === 'quality') {
+      if (!RT[E.from] || RT[E.to] || !TRAIT[E.to] || TRAIT[E.to].kind !== TRAIT[E.from].kind) return;
+      const orig = Object.keys(st.evo.traits).find(o => st.evo.traits[o] === E.from) || E.from;
+      from = `${sheetTraitName(E.from)} (${RT[E.from].die})`; to = traitName(E.to);
+      if (E.to === orig) delete st.evo.traits[orig]; else st.evo.traits[orig] = E.to;
+    } else if (E.tab === 'principle') {
+      const cur = principlesFinal().find(x => x.slot === E.from);
+      if (!cur || !E.to || principlesFinal().some(x => x.id === E.to)) return;
+      if (E.to === 'energy-element' && !(E.el || '').trim()) return;
+      from = prName(cur.id); to = prName(E.to);
+      st.evo.principles[E.from] = E.to;
+      if (E.to === 'energy-element') { st.pch[E.from] = E.el.trim(); to += ` (${st.pch[E.from]})`; }
+    } else if (E.tab === 'ability') {
+      const x = evoAbilityChoices().find(y => y.iid === E.from);
+      if (!x || !evoAbilityOptions(x).includes(E.to)) return;
+      if (choiceTokens(A[E.to].text).some(tk => !(E.ch[tk] || '').trim())) return;
+      from = st.renames[x.iid] || abName(x.name); to = abName(E.to);
+      const req = reqFromText(A[E.to].text);
+      if (E.to === (x.orig || x.name)) delete st.evo.abilities[x.iid];
+      else st.evo.abilities[x.iid] = { name: E.to, ch: { ...E.ch }, trait: req.only ? req.only.find(k => RT[k]) : undefined };
+      delete st.renames[x.iid];   // the old ability's custom name does not carry over
+    } else return;
+    st.evo.log.push({ kind: E.tab, from, to, coll: lastCollection(), t: Date.now(), undo });
+    ui.evo = { tab: E.tab, from: '', to: '', ch: {} };
+    render();
+  }
+  function evoUndo() {
+    const e = st.evo.log[st.evo.log.length - 1];
+    if (!e || !e.undo) return;
+    st.evo.log.pop();
+    Object.assign(st.evo, { traits: e.undo.traits, principles: e.undo.principles, abilities: e.undo.abilities });
+    st.pch = e.undo.pch; st.renames = e.undo.renames;
+    render();
+  }
+  // "Majorly rewrite": creation again with the Constructed method, keeping the champion's history.
+  function evoRewrite() {
+    if (!confirm(tr('Rewrite the champion? You go through creation again with the Constructed method. Name, description, portrait, biography, collections, back issues, notes and the change history are kept.'))) return;
+    const coll = lastCollection();
+    const keep = { info: st.info, play: { ...st.play, current: null }, region: st.region, log: st.evo.log.map(({ undo, ...e }) => e) };
+    st = blank();
+    Object.assign(st, { info: keep.info, play: keep.play, region: keep.region, method: 'constructed' });
+    st.evo.log = keep.log.concat({ kind: 'rewrite', from: '', to: '', coll, t: Date.now() });
+    st.maxStep = stepIndex('background'); st.step = 'background';
+    ui.evo = { tab: 'power', from: '', to: '', ch: {} };
+    render(); scrollTo(0, 0);
+  }
+
+  function evolveHtml() {
+    const RT = evolvedR(R0).T, E = ui.evo;
+    const opt = (v, label, cur) => `<option value="${esc(v)}"${v === cur ? ' selected' : ''}>${esc(label)}</option>`;
+    const sel = (field, label, options) => `<label class="field"><span>${label}</span><select data-evo="${esc(field)}"><option value="">${tr('— choose —')}</option>${options}</select></label>`;
+    let form = '', note = '', why = '', ok = false;
+    if (E.tab === 'power' || E.tab === 'quality') {
+      const mine = sortTraits(Object.values(RT).filter(t => TRAIT[t.key].kind === E.tab));
+      const from = RT[E.from] && TRAIT[E.from].kind === E.tab ? E.from : '';
+      const cands = Object.keys(TRAIT).filter(k => k !== 'rp-quality' && TRAIT[k].kind === E.tab && !RT[k]);
+      const byCat = {};
+      cands.forEach(k => (byCat[TRAIT[k].cat] = byCat[TRAIT[k].cat] || []).push(k));
+      form = sel('from', tr('Swap'), mine.map(t => opt(t.key, `${sheetTraitName(t.key)} (${t.die})`, from)).join(''))
+        + sel('to', tr('For'), Object.entries(byCat).map(([c, ks]) => `<optgroup label="${esc(catName(c))}">${ks.sort((a, b) => traitName(a).localeCompare(traitName(b))).map(k => opt(k, traitName(k), E.to)).join('')}</optgroup>`).join(''));
+      if (from) note = tr('The new trait keeps the {die}, and every ability that used {old} now uses it.', { die: RT[from].die, old: esc(sheetTraitName(from)) });
+      ok = !!(from && cands.includes(E.to));
+    } else if (E.tab === 'principle') {
+      const cur = principlesFinal();
+      const byCat = {};
+      PRINCIPLES.filter(p => !cur.some(x => x.id === p.id)).forEach(p => (byCat[p.cat] = byCat[p.cat] || []).push(p));
+      form = sel('from', tr('Swap'), cur.map(x => opt(x.slot, prName(x.id), E.from)).join(''))
+        + sel('to', tr('For'), Object.entries(byCat).map(([c, ps]) => `<optgroup label="${esc(tr(c))}">${ps.map(p => opt(p.id, prName(p.id), E.to)).join('')}</optgroup>`).join(''));
+      if (E.to === 'energy-element') form += `<label class="field"><span>${tr('Energy or element')}</span><input type="text" data-evo="el" value="${esc(E.el || '')}" placeholder="${tr('e.g. fire, Hextech, shadow')}"></label>`;
+      const p = PRINCIPLES.find(x => x.id === E.to);
+      if (p) note = `<b>${esc(prName(p.id))}</b> · ${esc(p.rp)}`;
+      ok = !!(cur.some(x => x.slot === E.from) && p && (E.to !== 'energy-element' || (E.el || '').trim()));
+    } else {
+      const list = evoAbilityChoices();
+      const from = list.find(x => x.iid === E.from);
+      form = sel('from', tr('Swap'), list.map(x => opt(x.iid, `${st.renames[x.iid] || abName(x.name)} · ${tr(x.color === 'green' ? 'Green' : x.color === 'yellow' ? 'Yellow' : 'Red')}`, E.from)).join(''));
+      if (from) {
+        const cands = evoAbilityOptions(from);
+        if (cands.length) form += sel('to', tr('For'), cands.map(n => opt(n, abName(n), E.to)).join(''));
+        else why = tr('No other ability of this colour, from the same list, fits the same power or quality.');
+        const toks = cands.includes(E.to) ? choiceTokens(A[E.to].text) : [];
+        toks.forEach(tk => {
+          const c = CHOICE_TOKENS[tk];
+          form += Array.isArray(c) ? sel('ch.' + tk, esc(tokenLabel(tk)), c.map(v => opt(v, tr(v), E.ch[tk])).join(''))
+            : `<label class="field"><span>${esc(tokenLabel(tk))}</span><input type="text" data-evo="ch.${esc(tk)}" value="${esc(E.ch[tk] || '')}"></label>`;
+        });
+        if (cands.includes(E.to)) note = `<b>${esc(abName(E.to))}</b> <span class="muted">${esc(A[E.to].type || '')}</span><div>${rulesText(A[E.to].text, { ...from.entry, ch: E.ch })}</div>`;
+        ok = cands.includes(E.to) && toks.every(tk => (E.ch[tk] || '').trim());
+      }
+    }
+    const KIND = { power: tr('Power'), quality: tr('Quality'), principle: tr('Principle'), ability: tr('Ability'), rewrite: tr('Full rewrite') };
+    const log = st.evo.log;
+    const canUndo = log.length && log[log.length - 1].undo;
+    const tabs = ['power', 'quality', 'principle', 'ability'].map(t => `<button type="button" role="tab" class="evo-tab${E.tab === t ? ' on' : ''}" aria-selected="${E.tab === t}" data-act="evoTab" data-tab="${t}">${KIND[t]}</button>`).join('');
+    return `<section class="flow-sec current evolve" id="flow-evolve"><div class="flow-head"><span class="flow-num">${ico('reset')}</span><h3>${tr('Evolve your champion')}</h3></div>
+      <div class="flow-body">
+        <p class="muted">${tr('Every six back issues become a collection, and a collection closes a storyline. Between collections your champion can change. Pick the size of the change:')}</p>
+        <div class="evo-ways">
+          <div><b>${tr('Cosmetic changes')}</b><span>${tr('New look, alias, costume or name. Just edit the fields above: no rules involved.')}</span></div>
+          <div class="on"><b>${tr('Change details')}</b><span>${tr('Swap one power or quality for another of the same die, one principle for another, or one ability for another of the same colour. Use the form below.')}</span></div>
+          <div><b>${tr('Major rewrite')}</b><span>${tr('When too much changed, go through creation again with the Constructed method, keeping the champion\'s history.')}</span></div>
+        </div>
+        <div class="evo-tabs" role="tablist" aria-label="${tr('What to change')}">${tabs}</div>
+        <div class="evo-form">${form}</div>
+        ${note ? `<div class="evo-note">${note}</div>` : ''}${why ? `<p class="evo-why">${why}</p>` : ''}
+        <div class="export-row"><button class="btn primary" data-act="evoApply"${ok ? '' : ' disabled'}>${ico('mark')} ${tr('Apply change')}</button>${lastCollection() ? `<small class="muted">${tr('Recorded under the collection “{c}”.', { c: esc(lastCollection()) })}</small>` : ''}</div>
+        <h4 class="evo-h">${tr('Change history')}</h4>
+        ${log.length ? `<ol class="evo-log">${log.slice().reverse().map(e => `<li><span class="evo-k">${esc(KIND[e.kind] || e.kind)}</span><span>${e.kind === 'rewrite' ? esc(tr('The champion was rewritten from scratch.')) : `${esc(e.from)} ${ico('next')} <b>${esc(e.to)}</b>`}</span>${e.coll ? `<small>${esc(e.coll)}</small>` : ''}</li>`).join('')}</ol>
+          <button class="btn small ghost" data-act="evoUndo"${canUndo ? '' : ' disabled'}>${ico('reset')} ${tr('Undo last change')}</button>` : `<p class="muted">${tr('No changes yet. They also appear on page 3 of the sheet.')}</p>`}
+        <div class="evo-rewrite"><div><b>${tr('Major rewrite')}</b><p class="muted">${tr('Starts the chapters again from the Origin with the Constructed method. Name, description, portrait, biography, collections, back issues, notes and this history stay.')}</p></div><button class="btn" data-act="evoRewrite">${ico('reset')} ${tr('Rewrite champion')}</button></div>
+      </div></section>`;
   }
 
   // Chapter IX lore guide: one card per choice, each with questions that help write the biography.
@@ -1206,14 +1374,14 @@
     const L = [];
     const srcName = { powersource: 'Source', archetype: 'Path' };
     for (const g of groups()) {
-      for (const e of selOf(g)) L.push({ iid: g.key + ':' + e.name, name: e.name, color: g.color, src: srcName[g.step], entry: e });
+      for (const e of selOf(g)) L.push(evoAb({ iid: g.key + ':' + e.name, gkey: g.key, name: e.name, color: g.color, src: srcName[g.step], entry: e }));
     }
     for (const x of principlesFinal()) {
       L.push({ iid: 'pr:' + x.slot, name: x.p.name, color: 'green', src: 'Principle', text: x.p.ability, type: x.p.type, entry: { ch: { 'energy/element': st.pch[x.slot] } } });
     }
-    for (const e of st.sel.red || []) L.push({ iid: 'red:' + e.cat + ':' + e.name, name: e.name, color: 'red', src: 'Ultimate', entry: e });
+    for (const e of st.sel.red || []) L.push(evoAb({ iid: 'red:' + e.cat + ':' + e.name, gkey: 'red', name: e.name, color: 'red', src: 'Ultimate', entry: e }));
     const pe = persDef();
-    if (pe) L.push({ iid: 'out', name: 'Out', color: 'out', src: 'Temperament', text: pe.out, type: PT ? '' : '—', entry: { trait: st.pers.outTrait } });
+    if (pe) L.push({ iid: 'out', name: 'Out', color: 'out', src: 'Temperament', text: pe.out, type: PT ? '' : '—', entry: { trait: evoTrait(st.pers.outTrait) } });
     return L;
   }
 
@@ -1272,9 +1440,9 @@
 
   function sheetHtml(R) {
     const bg = bgDef(), ps = psDef(), ar = archDef(), shape = shapeDef(), pe = persDef(), rg = regionDef();
-    const h = healthCalc(R);
-    const powers = sortTraits(owned(R, 'power'));
-    const quals = sortTraits(owned(R, 'quality'));
+    const h = healthCalc(R);   // Health stays as built; traits show any swaps made between collections
+    const powers = sortTraits(owned(evolvedR(R), 'power'));
+    const quals = sortTraits(owned(evolvedR(R), 'quality'));
     const i = st.info, pl = st.play;
     const pr = principlesFinal();
     const rows = sheetRows(R);
@@ -1351,19 +1519,16 @@
     const paras = (i.notes || '').split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
     const lines = n => Array.from({ length: n }, () => '<div class="hs-rule"></div>').join('');
     const line = (path, n, label) => `<input class="hs-line" type="text" data-bind="${path}.${n}" data-live="1" value="${esc((pl[path.split('.')[1]] || [])[n] || '')}" aria-label="${esc(label)}">`;
-    return `<div class="hs-page hs-aux">
-        <div class="hs-card hs-3"><div><div class="hs-h">${tr('Hero Name')}</div>${esc(i.name || '')}</div><div><div class="hs-h">${tr('Alias')}</div>${esc(i.alias || '')}</div><div><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}</div></div>
-        <div class="hs-aux-grid">
-          <div class="hs-card hs-bio"><div class="hs-h">${tr('Biography')}</div>${paras.length ? paras.map(p => `<p>${esc(p)}</p>`).join('') : lines(12)}</div>
-          <div class="hs-aux-side">
-            ${forms.length ? `<div class="hs-card"><div class="hs-h"${tip(tr('<h5>Minion forms</h5>When you create a minion you may discard one bonus you have access to in order to add a form with that bonus value or higher. The number of forms you know equals the maximum value of a related quality.'))}>${tr('Minion forms')}</div>
+    const log = st.evo.log;
+    const side = `${forms.length ? `<div class="hs-card"><div class="hs-h"${tip(tr('<h5>Minion forms</h5>When you create a minion you may discard one bonus you have access to in order to add a form with that bonus value or higher. The number of forms you know equals the maximum value of a related quality.'))}>${tr('Minion forms')}</div>
               ${forms.map(n => { const f = window.MINION_FORMS.find(x => x[0] === n) || [n, '', '']; return `<div class="hs-form"><b>${esc(abName(n))}</b> <small>${tr('{b} or higher', { b: esc(f[2]) })}</small><div>${rulesText(f[1])}</div></div>`; }).join('')}</div>` : ''}
             ${st.arch.notes ? `<div class="hs-card"><div class="hs-h">${tr('Forms and modes')}</div><div class="hs-pre">${esc(st.arch.notes)}</div></div>` : ''}
-            <div class="hs-card"><div class="hs-h"${tip(window.GLOSSARY.minion || '')}>${tr('Minions in play')}</div>
-              <table class="hs-mtab"><thead><tr><th>${tr('Name')}</th><th>${tr('Die')}</th><th>${tr('Notes')}</th></tr></thead><tbody>
-              ${[0, 1, 2, 3, 4, 5].map(n => `<tr><td>${line('play.mname', n, tr('Minion {n} name', { n: n + 1 }))}</td><td class="md">${line('play.mdie', n, tr('Minion {n} die', { n: n + 1 }))}</td><td>${line('play.mnote', n, tr('Minion {n} notes', { n: n + 1 }))}</td></tr>`).join('')}
-              </tbody></table></div>
-          </div>
+            ${log.length ? `<div class="hs-card"><div class="hs-h"${tip(tr('Changes made between collections (Legend chapter, “Evolve your champion”).'))}>${tr('Evolution')}</div>${log.map(e => `<div class="hs-evo">${e.coll ? `<small>${esc(e.coll)}</small>` : ''}${e.kind === 'rewrite' ? esc(tr('The champion was rewritten from scratch.')) : `${esc(e.from)} → ${esc(e.to)}`}</div>`).join('')}</div>` : ''}`.trim();
+    return `<div class="hs-page hs-aux">
+        <div class="hs-card hs-3"><div><div class="hs-h">${tr('Hero Name')}</div>${esc(i.name || '')}</div><div><div class="hs-h">${tr('Alias')}</div>${esc(i.alias || '')}</div><div><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}</div></div>
+        <div class="hs-aux-grid${side ? '' : ' solo'}">
+          <div class="hs-card hs-bio"><div class="hs-h">${tr('Biography')}</div>${paras.length ? paras.map(p => `<p>${esc(p)}</p>`).join('') : lines(12)}</div>
+          ${side ? `<div class="hs-aux-side">${side}</div>` : ''}
         </div>
         <div class="hs-card"><div class="hs-h">${tr('Table notes')}</div><div class="hs-notes">${Array.from({ length: 10 }, (_, n) => line('play.notes', n, tr('Note line {n}', { n: n + 1 }))).join('')}</div></div>
       </div>`;
@@ -1434,6 +1599,7 @@
       <section class="flow-sec ${done ? 'current' : 'locked'}" id="flow-finish-export"><div class="flow-head"><span class="flow-num">${done ? ico('mark') : ico('lock')}</span><h3>${tr('Your hero sheet')}</h3>${done ? '' : `<span class="flow-lock">${tr('Sealed — name your champion first')}</span>`}</div>
       ${done ? `<div class="flow-body"><p class="muted">${tr('Your sheet is below, laid out like the official two-page <em>Sentinel Comics RPG</em> hero sheet. Hero points, back issues, collections and current Health can be ticked and edited right on it during play.')}</p><div id="pdf-status"></div><input id="template-file" type="file" accept="application/pdf,.pdf" hidden>
         <div class="export-row"><button class="btn primary" data-act="pdf">${ico('download')} ${tr('Export PDF hero sheet')}</button><button class="btn" data-act="print">${tr('Print')}</button><button class="btn" data-act="export">${tr('Export JSON')}</button></div></div>` : ''}</section>
+      ${done ? evolveHtml() : ''}
       <div class="step-footer"><button class="btn ghost" data-act="back">${ico('prev')} ${tr('Back')}</button><span></span></div></div>
       <div class="panel" id="sheet-preview">${sheetHtml(R)}</div>`;
   }
@@ -1470,8 +1636,8 @@
   function renderSide() {
     const R = R0;
     const bg = bgDef(), ps = psDef(), ar = archDef(), shape = shapeDef(), pe = persDef(), rg = regionDef();
-    const powers = sortTraits(owned(R, 'power'));
-    const quals = sortTraits(owned(R, 'quality'));
+    const powers = sortTraits(owned(evolvedR(R), 'power'));
+    const quals = sortTraits(owned(evolvedR(R), 'quality'));
     const abs = allAbilities(R);
     const cnt = c => abs.filter(x => x.color === c).length;
     const h = healthCalc(R);
@@ -1706,6 +1872,10 @@
       if (again) again.focus();
       return;
     }
+    if (act === 'evoTab') { ui.evo = { tab: el.dataset.tab, from: '', to: '', ch: {} }; render(); return; }
+    if (act === 'evoApply') { evoApply(); return; }
+    if (act === 'evoUndo') { evoUndo(); return; }
+    if (act === 'evoRewrite') { evoRewrite(); return; }
     if (act === 'export') { exportJson(); return; }
     if (act === 'pdf') { exportPdf(); return; }
     if (act === 'clearPortrait') { st.info.portrait = null; render(); return; }
@@ -1737,6 +1907,13 @@
     const el = ev.target;
     if (el.id === 'import-file') { importJson(el.files[0]); el.value = ''; return; }
     if (el.id === 'portrait-file') { loadPortrait(el.files[0]); el.value = ''; return; }
+    if (el.dataset.evo) {   // Evolve form: picking what to swap resets what it becomes
+      const f = el.dataset.evo;
+      if (f.startsWith('ch.')) ui.evo.ch[f.slice(3)] = el.value;
+      else { ui.evo[f] = el.value; if (f === 'from') { ui.evo.to = ''; ui.evo.ch = {}; } if (f === 'to') ui.evo.ch = {}; }
+      if (el.tagName === 'SELECT') render();
+      return;
+    }
     if (!el.dataset.bind) return;
     bindValue(el);
     if (el.dataset.live && !el.dataset.commit) { renderSideOnly(!!el.closest('#sheet-preview')); document.getElementById('nav').innerHTML = renderNav(); return; }
@@ -1751,6 +1928,14 @@
       const q = el.value.trim().toLowerCase(), tray = el.closest('.tray');
       tray.querySelectorAll('.rune').forEach(r => { r.hidden = !!q && !r.dataset.q.includes(q); });
       tray.querySelectorAll('.tray-group').forEach(g => { g.hidden = !g.querySelector('.rune:not([hidden])'); });
+      return;
+    }
+    if (el.dataset.evo && el.tagName === 'INPUT') {   // typed choices (element, action…) enable Apply as you type
+      const f = el.dataset.evo;
+      if (f.startsWith('ch.')) ui.evo.ch[f.slice(3)] = el.value; else ui.evo[f] = el.value;
+      const texts = [...document.querySelectorAll('.evo-form input[data-evo]')];
+      const b = document.querySelector('[data-act="evoApply"]');
+      if (b && ui.evo.to) b.disabled = texts.some(t => !t.value.trim()) || [...document.querySelectorAll('.evo-form select[data-evo]')].some(s => !s.value);
       return;
     }
     if (!el.dataset.bind || !el.dataset.live) return;
