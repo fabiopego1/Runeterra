@@ -327,12 +327,21 @@ label.field > span { display: block; margin-bottom: 3px; }
 /* ---------- Rules cheat sheet drawer ---------- */
 .cs-backdrop { position: fixed; inset: 0; background: rgba(1, 10, 19, .55); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 60; }
 .cs-backdrop.open { opacity: 1; pointer-events: auto; }
-#cheatsheet {
+#cheatsheet, #lore {
   position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100vw); z-index: 70;
   background: linear-gradient(180deg, #111a24, #0a121b); border-left: 1px solid var(--gold-dim); box-shadow: var(--shadow);
   transform: translateX(105%); transition: transform .25s ease; display: flex; flex-direction: column;
 }
-#cheatsheet.open { transform: none; }
+#cheatsheet.open, #lore.open { transform: none; }
+#lore { width: min(760px, 100vw); }
+.lore-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; width: 100%; }
+.lore-group > span { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--hex); width: 76px; }
+.lore-gh { font-size: 1.05rem; color: var(--hex); letter-spacing: .12em; text-transform: uppercase; margin: 22px 0 0; font-family: var(--font-body); }
+.race { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; margin: 10px 0; background: rgba(22, 33, 46, .6); }
+.race h4 { margin-top: 0 !important; color: var(--gold) !important; font-family: var(--font-head) !important; }
+.race-meta { font-size: .82rem !important; color: var(--muted); margin: 2px 0; }
+.lore-link { font-size: .85rem; }
+@media (max-width: 860px) { #lore .cs-index { max-height: 28vh; overflow-y: auto; } }
 .cs-head { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 18px 6px; }
 .cs-head .eyebrow { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--hex); }
 .cs-search { margin: 4px 18px 8px; width: auto !important; }
@@ -379,7 +388,7 @@ label.field > span { display: block; margin-bottom: 3px; }
 /* ---------- Print: only the hero sheet ---------- */
 @media print {
   body { background: #fff; color: #000; }
-  #cheatsheet, .cs-backdrop, .site-header, .steps-nav, aside.sheet-side, .no-print, .foot, .step-head, .intro, .step-footer { display: none !important; }
+  #cheatsheet, #lore, .cs-backdrop, .site-header, .steps-nav, aside.sheet-side, .no-print, .foot, .step-head, .intro, .step-footer { display: none !important; }
   .layout { display: block; padding: 0; }
   .panel { box-shadow: none; border: 0; background: #fff; padding: 0; }
   .hs-page { background: #fff; border-color: #999; break-after: page; }

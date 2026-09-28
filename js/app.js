@@ -692,6 +692,7 @@
           <b>Constructed:</b> pick whatever fits the champion you already imagine. You still use the same die sizes.</p>
           <p class="muted">You can switch at any time. Your progress is saved in this browser.</p>
           <p class="muted">New to the system? Open the <a href="#" data-act="rules">📖 Rules cheat sheet</a> any time (or press <kbd>?</kbd>) for how turns, actions, minions and twists work.</p>
+          <p class="muted">Never played League of Legends? Read the <a href="#" data-act="lore">🌍 Runeterra lore</a> — the planet, its realms, its history and every region.</p>
         </div>
       </div>
       <div class="subsec"><h3>The road ahead</h3><ol>
@@ -710,7 +711,7 @@
     let detail = '';
     if (r) {
       const names = (list, arr) => arr.map(id => { const x = byId(list, id); return x ? x.rt : id; }).join(', ');
-      detail = `<div class="detail" style="border-color:${r.color}"><h3 style="color:${r.color}">${esc(r.name)}</h3><p class="lore">${esc(r.lore)}</p>
+      detail = `<div class="detail" style="border-color:${r.color}"><h3 style="color:${r.color}">${esc(r.name)}</h3><p class="lore">${esc(r.lore)}</p>${window.LORE_FOR_REGION && window.LORE_FOR_REGION[r.id] ? `<p class="lore-link"><a href="#" data-act="lore" data-section="${window.LORE_FOR_REGION[r.id]}">🌍 Read the full lore of ${esc(r.name)} →</a></p>` : ''}
         <p class="champs"><b>Champions:</b> ${esc(r.champs)}</p>
         <div class="grid3"><div><h4>Fitting Origins</h4><small>${esc(names(window.BACKGROUNDS, r.bg))}</small></div>
         <div><h4>Fitting Sources</h4><small>${esc(names(window.POWER_SOURCES, r.ps))}</small></div>
@@ -719,6 +720,7 @@
     }
     return `<div class="panel"><div class="step-head"><div><div class="eyebrow">Step 0 · Runeterra</div><h2>Homeland</h2></div></div>
       <p class="intro">${window.STEP_INTROS.region}</p>
+      <p class="muted">New to Runeterra? Start with the <a href="#" data-act="lore" data-section="lore-planet">🌍 world lore</a> for an overview of the planet and its history.</p>
       <div class="cards">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}><div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>
       ${detail}${navFooter('intro', 'background')}</div>`;
   }
