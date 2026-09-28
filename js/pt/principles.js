@@ -79,12 +79,87 @@
     youth: ['Você tem uma visão inocente e alegre da maioria das coisas, graças à sua personalidade animada e à falta de experiência. Você consegue entrar em muitas situações em que adultos teriam dificuldade.', 'Quem ficou chateado com seu excesso de confiança?', 'Que pessoa que você odiaria decepcionar agora está muito decepcionada com você?', 'Supere uma situação em que sua idade ou tamanho sejam uma vantagem e use seu dado Máx. ' + HP]
   });
 
+  // Reviravoltas escritas para o nome de Runeterra de cada princípio: [menor, maior].
+  // A menor é um incômodo resolvido na cena; a maior, uma complicação que dura a edição inteira.
+  const TW = {
+    // Esotérico
+    destiny: ['Que presságio de má sorte, um corvo, um eclipse ou uma estrela cadente, você acabou de testemunhar?', 'Que profecia sobre você acabou de se cumprir, do pior jeito possível?'],
+    'energy-element': ['Que elemento oposto ao seu está enfraquecendo seus poderes agora?', 'Que fonte de poder do seu elemento está sufocando você, ou fugindo do seu controle?'],
+    exorcism: ['Que rastro da Névoa Negra ou de outro reino te distraiu e te fez perder o foco?', 'Que espectro, espírito ou cria do Vazio atravessou para este mundo porque você falhou?'],
+    fauna: ['Que instinto de fera tomou conta de você na hora errada?', 'Que animal, espírito ou matilha agora te vê como rival, e não como parente?'],
+    flora: ['Que raiz, espinho ou flor está crescendo fora do seu controle?', 'Que floresta, jardim ou terra sagrada a natureza está tomando de volta, e quem sofre com isso?'],
+    future: ['Que visão do futuro te distraiu no pior momento?', 'Que futuro terrível você vislumbrou começou a se tornar realidade por causa das suas ações?'],
+    immortality: ['Você vê tudo em escala de séculos. Como isso te deixou lento ou distante demais agora?', 'Que mortal querido você está vendo envelhecer, se ferir ou partir, enquanto você continua igual?'],
+    'inner-demon': ['Que ato sombrio escapa de você quando a voz de dentro fala mais alto?', 'O que a escuridão dentro de você destrói quando assume o controle?'],
+    magic: ['Que magia instável reagiu ao seu toque do jeito errado?', 'Que contragolpe arcano, das Runas ou do Reino Espiritual, mudou sua vida?'],
+    sea: ['Que dificuldade a vida em terra firme, longe do mar, está te causando agora?', 'O mar veio cobrar o que é dele. Que tempestade, criatura ou maré está chegando por sua causa?'],
+    space: ['Que vertigem, frio ou falta de ar das alturas te pegou desprevenido?', 'Que força celestial ou Aspecto de Targon te arrastou para longe, ou está te chamando para o alto?'],
+    'time-traveler': ['Que costume desta era te deixou perdido, ou te fez passar vergonha?', 'Que eco da sua era perdida está bagunçando o presente, ou apagando você dele?'],
+    undead: ['Como sua natureza de espectro assustou quem estava por perto?', 'Como a Névoa Negra está te puxando de volta, e o que você perde do mundo dos vivos?'],
+    // Maestria
+    clockwork: ['Que engrenagem, mola ou ferramenta de precisão acabou de quebrar?', 'Que mecanismo que você construiu ou consertou foi parar nas mãos erradas?'],
+    gearhead: ['Que aparelho hextec acabou de soltar faísca e entrar em curto?', 'Que máquina hextec saiu de controle e agora ameaça todo mundo por perto?'],
+    history: ['Que detalhe histórico você lembrou errado, ou que costume antigo te fez tropeçar agora?', 'Que força ancestral, de uma ruína, relíquia ou era esquecida, despertou por causa do que você descobriu?'],
+    indestructible: ['O que atravessou suas defesas, ou que ponto fraco elas acabaram de revelar?', 'Quem saiu ferido no seu lugar, porque o golpe desviou de você?'],
+    lab: ['Que amostra, reagente ou peça rara você parou para coletar no pior momento?', 'O que deu terrivelmente errado na sua oficina enquanto você estava fora?'],
+    mastery: ['Como o seu dom falhou, ou respondeu de um jeito inesperado, bem agora?', 'Que preço o seu poder está cobrando do seu corpo ou da sua mente?'],
+    mentor: ['Que aprendiz ou novato acabou de te passar para trás?', 'Seu aluno seguiu um caminho que você nunca ensinou. O que ele fez?'],
+    powerless: ['Que ferimento, arranhão ou pancada você levou por enfrentar magia sem magia?', 'Que magia te atingiu de verdade, e que ferimento sério ela deixou?'],
+    science: ['Que efeito colateral inesperado a sua teoria causou nesta situação?', 'Que experimento, químico ou hextec, acabou de explodir, e o que ele levou junto?'],
+    speed: ['Que tropeço ou cansaço você sofreu por correr rápido demais?', 'Que detalhe crucial você atropelou na pressa e agora está voltando para te assombrar?'],
+    stealth: ['Que rastro da sua presença você acabou de deixar para trás?', 'Quem te viu e agora sabe exatamente quem você é e o que você faz?'],
+    strength: ['O que você acabou de quebrar sem querer?', 'Quem você acabou de machucar sem querer?'],
+    tactician: ['Que variável o seu plano não previu?', 'Que traição ou ameaça revelada joga fora todos os seus planos, até o plano B?'],
+    whispers: ['Como a voz na sua cabeça acabou de te distrair ou te enganar?', 'O que a voz exige de você agora, e o que acontece se você recusar?'],
+    // Ideais
+    chaos: ['Que regra ou ordem você teve que engolir para conseguir fazer algo?', 'Quem aprendeu a prever o seu caos, e está usando isso contra você?'],
+    compassion: ['Que sofrimento à sua volta pesou tanto que te atrapalhou agora?', 'Que dor alheia você teve que ignorar para seguir em frente, e o que isso fez com você?'],
+    defender: ['Como proteger alguém te deixou mais exposto do que antes?', 'Que grande sacrifício você fez para manter alguém em segurança?'],
+    dependence: ['Como a coisa de que você depende foi danificada, perdida ou roubada?', 'Como a falta dela está te impedindo de agir como campeão?'],
+    equality: ['Que injustiça contra os mais fracos você acabou de perceber no meio da cena?', 'O que você vai sacrificar para defender os oprimidos, mesmo contra os poderosos?'],
+    'great-power': ['Como você se segura para não liberar todo o seu poder, e o que isso te custa agora?', 'Que grande estrago o seu poder causou enquanto você salvava o dia?'],
+    hero: ['Sua necessidade de ajudar te fez deixar algo da vida pessoal cair. O que foi?', 'Você recebe um ultimato entre ser campeão e algo que você ama. Do que você abre mão?'],
+    honor: ['Quem desafiou a sua honra, e como você vai responder?', 'Manter a palavra agora vai custar caro. Você escolhe a honra ou a vida?'],
+    justice: ['Como você perdeu tempo tentando ser um exemplo perfeito de justiça?', 'Como a sua busca obstinada por justiça está deixando seus aliados desconfortáveis?'],
+    liberty: ['Que corrente, cela ou ordem te prendeu por um momento?', 'Como você mesmo virou prisioneiro, de alguém ou de uma promessa?'],
+    order: ['Que pedaço de desordem fez o seu plano desmoronar?', 'Como o caos arruinou a ordem que você tinha construído?'],
+    'self-preservation': ['Quem sofreu porque você hesitou para se proteger?', 'Você está disposto a arriscar a própria vida para salvar os outros?'],
+    zealot: ['Quem sofreu por causa do seu zelo fanático?', 'O que a sua fé te chamou a fazer que ninguém mais vai entender?'],
+    // Identidade
+    ambition: ['Como a busca pelo topo está te atrapalhando a ser campeão agora?', 'Que chance de finalmente alcançar o que você quer você acabou de deixar escapar?'],
+    amnesia: ['Que lampejo da sua vida esquecida te distraiu por um instante?', 'Que verdade chocante do seu passado acabou de vir à tona e muda tudo?'],
+    detachment: ['Quem você acabou de afastar com o seu jeito distante?', 'Que emoção você deixou de sentir para aguentar esta situação, e o que isso te custou?'],
+    discovery: ['Que nova descoberta te fez repensar o que está fazendo?', 'Que descoberta você agora precisa esconder a qualquer custo?'],
+    loner: ['Agora que você se separou do grupo, como vai voltar?', 'Como o seu jeito solitário afastou o resto do grupo?'],
+    nomad: ['Que problema a sua falta de raízes causou agora?', 'Que lar, caravana ou companhia de estrada você perdeu, e como?'],
+    peace: ['O que te fez perder a calma e o equilíbrio?', 'Que grande problema você criou ao se recusar a partir para a violência?'],
+    rage: ['O que a sua fúria acabou de estragar?', 'Quem você afastou de vez com os seus acessos de raiva?'],
+    split: ['Que lado seu tomou a decisão errada agora?', 'Que briga entre as suas duas almas te deixou completamente sem rumo?'],
+    savagery: ['Quem você machucou no seu frenesi selvagem?', 'Que grande estrago na cidade, ou entre os civilizados, é culpa sua?'],
+    levity: ['Quem você ofendeu com uma piada na hora errada?', 'O que aconteceu que finalmente acabou com o seu bom humor?'],
+    'spotless-mind': ['O que escorregou da sua memória antes e seria útil agora?', 'Que coisa importante você esqueceu, e como esquecer piorou muito a situação?'],
+    // Responsabilidade
+    business: ['Como o seu olho no lucro criou atrito com o grupo agora?', 'Seu negócio está em perigo. Quais são, de verdade, as suas prioridades?'],
+    debtor: ['Que chance de dinheiro fácil parece tentadora demais agora?', 'Quem veio cobrar a dívida, e o que ele quer em vez de moedas?'],
+    detective: ['Que pista importante você deixou passar?', 'Que segredo que você preferia manter escondido acabou de ser revelado?'],
+    'double-agent': ['O que você foi forçado a fazer pela sua outra lealdade que pareceu estranho aos seus aliados?', 'Você vai trair a confiança dos seus aliados ou abrir mão do que a sua outra lealdade oferece?'],
+    everyman: ['Que campeão você fez parecer bem à sua própria custa?', 'Como você está completa e totalmente fora da sua liga?'],
+    family: ['Que parente acabou de complicar a sua missão?', 'Do que você precisa abrir mão como campeão pelo bem da sua família, da sua casa ou do seu clã?'],
+    mask: ['Que pista sobre a sua verdadeira identidade você deixou para trás?', 'Quem da sua vida comum está agora em perigo por causa do seu segredo?'],
+    sidekick: ['Que campeão precisa te tirar da enrascada em que você se meteu?', 'Que conselho do seu parceiro você ignorou, e agora ele está te metendo em grandes apuros?'],
+    team: ['Que vexame você acabou de causar em nome do seu bando ou ordem?', 'Que punição o seu bando ou ordem vai te impor por causa das suas ações?'],
+    underworld: ['Que detalhe suspeito faz os outros desconfiarem de você?', 'Os guardas vieram te prender. Você é culpado do que te acusam?'],
+    veteran: ['Que lembrança da guerra esta luta despertou em você?', 'A guerra voltou para dentro da sua cabeça. Como você está saindo deste conflito?'],
+    youth: ['Quem ficou chateado com o seu excesso de confiança?', 'Que pessoa que você odiaria decepcionar agora está muito decepcionada com você?']
+  };
+
   // Aplica: interpretação e reviravoltas direto nos dados; a habilidade vai para I18N.text (o inglês segue valendo nas regras).
   for (const p of window.PRINCIPLES) {
     const v = window.__PR_PT[p.id];
     if (!v) continue;
     I.text[p.ability] = v[3];
     p.rp = v[0]; p.minor = v[1]; p.major = v[2];
+    if (TW[p.id]) { p.minor = TW[p.id][0]; p.major = TW[p.id][1]; }
   }
   delete window.__PR_PT;
 
