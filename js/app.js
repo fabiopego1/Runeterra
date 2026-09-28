@@ -598,12 +598,12 @@
     return `<div class="cards">${list.map(it => {
       const v = rollKey ? isValid(rollKey, it.n) : null;
       const cls = ['card', it.id === selId ? 'selected' : '', v === true ? 'valid' : '', v === false && it.id !== selId ? 'invalid' : ''].join(' ');
-      return `<button class="${cls}" data-act="pick" data-kind="${kind}" data-id="${it.id}"${v === false ? ' data-locked="1"' : ''}>${renderer(it)}</button>`;
+      return `<button class="${cls}" data-act="pick" data-kind="${kind}" data-id="${it.id}"${v === false ? ' data-locked="1"' : ''}${it.id === selId ? ' aria-pressed="true"' : ''}>${renderer(it)}</button>`;
     }).join('')}</div>`;
   }
   const fitMark = (arr, id) => {
     const r = regionDef();
-    return r && arr && r[arr] && r[arr].includes(id) ? `<span class="fit"${tip(`Fits ${esc(r.name)}`)}>★ ${esc(r.name)}</span>` : '';
+    return r && arr && r[arr] && r[arr].includes(id) ? `<span class="fit"${tip(`Suits a champion from ${esc(r.name)}`)}>${ico('mark')}${esc(r.name)}</span>` : '';
   };
 
   function assignHtml(slots, optionKeys, before, stepPrefix, label) {
@@ -624,9 +624,9 @@
       if (s.key) note = s.upgrade ? `Already had ${traitName(s.key)} at ${s.upgrade.from}: it becomes ${s.upgrade.to} and the other die is freed below.` : '';
       if (s.freed) note = note || `Freed die from ${traitName(s.from)} (“I've already got that” rule).`;
       return `<div class="assign-row${s.freed ? ' freed' : ''}">${die(s.die)}<select data-bind="${stepPrefix}.assign.${s.id}"><option value="">— assign this ${s.die} —</option>${opts}</select>` +
-        `${s.key ? `<span class="term"${tip(traitTip(s.key))}>ⓘ</span>` : '<span></span>'}${note ? `<div class="note">${esc(note)}</div>` : ''}</div>`;
+        `${s.key ? `<span class="term info-mark"${tip(traitTip(s.key))}>${ico('info')}</span>` : '<span></span>'}${note ? `<div class="note">${esc(note)}</div>` : ''}</div>`;
     }).join('');
-    return `<div class="assign"><div class="muted"${tip('<h5>Assigning dice</h5>Only the die <b>size</b> matters. Each die becomes the rating of one power or quality. If you pick something you already have, the bigger die is kept and the smaller one is freed to assign elsewhere in the same step (the rulebook\'s <em>“I\'ve Already Got That”</em> rule).')}>${label} <span class="term">ⓘ</span></div>${rows}</div>`;
+    return `<div class="assign"><div class="muted"${tip('<h5>Assigning dice</h5>Only the die <b>size</b> matters. Each die becomes the rating of one power or quality. If you pick something you already have, the bigger die is kept and the smaller one is freed to assign elsewhere in the same step (the rulebook\'s <em>“I\'ve Already Got That”</em> rule).')}>${label} <span class="term info-mark">${ico('info')}</span></div>${rows}</div>`;
   }
 
   function abilityCard(g, name, entry, picked, R, ctx = {}) {
@@ -692,7 +692,7 @@
       const t = `<h5>${esc(lore[0])}</h5><div class="sc-line">Sentinels: ${esc(p.name)} · ${esc(p.cat)}</div>` +
         `<b>During roleplaying:</b> ${esc(p.rp)}<hr><b>Minor twist:</b> ${esc(p.minor)}<br><b>Major twist:</b> ${esc(p.major)}<hr>` +
         `<b>Green ability (${p.type}):</b> ${esc(p.ability)}` + (lore[1] ? `<hr><em>In Runeterra:</em> ${esc(lore[1])}` : '');
-      const fits = r && r.pr.includes(p.id) ? ` <span class="po">★ ${esc(r.name)}</span>` : '';
+      const fits = r && r.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${esc(r.name)}</span>` : '';
       return `<button class="principle${p.id === cur ? ' selected' : ''}${p.id === other ? ' taken' : ''}" data-act="principle" data-slot="${slot}" data-id="${p.id}"${tip(t)}${p.id === other ? ' disabled' : ''}>` +
         `<div class="pn">${esc(lore[0])}${fits}</div><div class="po">${esc(p.name)}</div><div class="ph">${esc(lore[1])}</div></button>`;
     }).join('');
@@ -706,7 +706,7 @@
         (needsEl ? `<label class="field"><span>Your element</span><select data-bind="pch.${slot}"><option value="">— choose —</option>${CATS['P:elemental'].items.map(i => `<option${st.pch[slot] === i[2] ? ' selected' : ''}>${esc(i[2])}</option>`).join('')}</select></label>` : '') +
         '<small class="muted">The twist questions are prompts the GM may ask when a twist happens. Record the questions, not answers.</small></div>';
     }
-    const intro = `<p class="muted"${tip(`<h5>${esc(cat)} principles</h5>${esc(pc)}<hr>Each principle gives roleplaying guidance, a Minor and Major twist question, and a Green ability that earns hero points for the whole team.`)}>${esc(pc)} <span class="term">ⓘ</span></p>`;
+    const intro = `<p class="muted"${tip(`<h5>${esc(cat)} principles</h5>${esc(pc)}<hr>Each principle gives roleplaying guidance, a Minor and Major twist question, and a Green ability that earns hero points for the whole team.`)}>${esc(pc)} <span class="term info-mark">${ico('info')}</span></p>`;
     const key = 'pr-' + slot;
     if (p && !ui.expand[key]) return `<div class="picked-bar"><span>Chosen: <b>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</b></span><button class="btn small" data-act="expand" data-key="${key}">Change</button></div>${detail}`;
     return intro + (p ? `<div class="picked-bar muted-bar"><span>Pick a different principle below, or</span><button class="btn small" data-act="collapse" data-key="${key}">Keep current choice</button></div>` : '') + `<div class="principles">${items}</div>${detail}`;
@@ -716,39 +716,52 @@
 
   // ------------------------------------------------------------------ rendering: steps
   function renderIntro() {
-    const R = R0;
-    return `<div class="panel"><div class="step-head"><div><div class="eyebrow">Welcome, summoner</div><h2>Forge a Champion of Runeterra</h2></div></div>
-      <p class="intro">This builder walks you through character creation for a Runeterra campaign that uses the <span class="term"${tip('<h5>Sentinel Comics: The Roleplaying Game</h5>A superhero RPG by Greater Than Games. Its hero-creation chapter is reproduced here step by step, but every table is re-skinned for Runeterra. Hover anything underlined to see what it means in the Sentinels rules.')}>Sentinels RPG system</span>.
-      Every Runeterra name has a hover explaining the Sentinels mechanic behind it.</p>
-      <div class="grid2">
-        <div class="detail"><h3>How your champion works</h3>
-          <p>Every action you take rolls <b>three dice</b>: one <span class="term"${tip('<h5>Powers</h5>Exceptional traits — magic, Hextech, Ascended strength. Rated d6 (above average) to d12 (godlike).')}>power</span>, one <span class="term"${tip('<h5>Qualities</h5>Learned skills and knowledge. Rated d6 (solid competency) to d12 (world class).')}>quality</span> and your <span class="term"${tip(window.GLOSSARY['status die'])}>status die</span>.
-          Sort the results into ${rulesText('Min die, Mid die and Max die')}; abilities tell you which to use.</p>
-          <p>Traits are rated in dice: ${['d4', 'd6', 'd8', 'd10', 'd12'].map(d => die(d)).join(' ')} — hover them.</p>
-          <p>As you lose ${rulesText('Health')}, you move from the ${rulesText('Green zone')} to the ${rulesText('Yellow zone')} to the ${rulesText('Red zone')} — unlocking stronger abilities.</p>
-        </div>
-        <div class="detail"><h3>Choose your method</h3>
-          <div class="method" role="group" aria-label="Creation method">
-            <button class="${st.method === 'guided' ? 'on' : ''}" data-act="method" data-m="guided">Guided (roll)</button>
-            <button class="${st.method === 'constructed' ? 'on' : ''}" data-act="method" data-m="constructed">Constructed (choose)</button>
+    const chapters = [
+      ['Homeland', 'The land that shaped you', ''],
+      ['Origin', 'Where you came from', 'Background'],
+      ['Source of Power', 'What changed you', 'Power Source'],
+      ['Path', 'How you fight', 'Archetype'],
+      ['Temperament', 'How you face pressure', 'Personality'],
+      ['Ultimates', 'What you unleash when all is lost', 'Red Abilities'],
+      ['Twist of Fate', 'One last tweak', 'Retcon'],
+      ['Health', 'How much you can endure', 'Health'],
+      ['Legend', 'Your name and your sheet', 'Finishing Touches']
+    ];
+    return `<div class="panel title-page">
+      <section class="tp-main">
+        <div class="tp-kicker">A codex for the Sentinels roleplaying system</div>
+        <h2 class="tp-title">Forge a Champion <span>of Runeterra</span></h2>
+        <p class="tp-lede">Nine chapters take you from a nameless wanderer to a champion ready for the table — where you were born, what gave you power, how you fight, and what you will become when everything is on the line.</p>
+        <p class="tp-note">Every Runeterran name hides the rule behind it: <span class="term"${tip('<h5>Hover and learn</h5>Anything underlined like this explains itself. Runeterra names show the Sentinels RPG rule they stand for.')}>hover anything underlined</span>. New to the world? Read the <a href="#" data-act="lore">${ico('map')} lore</a>. New to the rules? Open the <a href="#" data-act="rules">${ico('codex')} cheat sheet</a> (<kbd>?</kbd>).</p>
+        <div class="tp-method">
+          <div class="tp-method-l">Choose how fate is decided</div>
+          <div class="tp-options" role="radiogroup" aria-label="Creation method">
+            <button class="tp-option${st.method === 'guided' ? ' on' : ''}" role="radio" aria-checked="${st.method === 'guided'}" data-act="method" data-m="guided"><span class="tp-o-t">Guided</span><span class="tp-o-d">Roll the dice at every chapter and choose among the paths they open. Let the Runes decide.</span></button>
+            <button class="tp-option${st.method === 'constructed' ? ' on' : ''}" role="radio" aria-checked="${st.method === 'constructed'}" data-act="method" data-m="constructed"><span class="tp-o-t">Constructed</span><span class="tp-o-d">Pick freely to build the champion you already imagine. Same dice, your choice.</span></button>
           </div>
-          <p class="muted" style="margin-top:10px"><b>Guided:</b> roll dice at each step; you may pick the entry matching any single die or the sum of any two. Great if you want the Runes to decide.<br>
-          <b>Constructed:</b> pick whatever fits the champion you already imagine. You still use the same die sizes.</p>
-          <p class="muted">You can switch at any time. Your progress is saved in this browser.</p>
-          <p class="muted">New to the system? Open the <a href="#" data-act="rules">📖 Rules cheat sheet</a> any time (or press <kbd>?</kbd>) for how turns, actions, minions and twists work.</p>
-          <p class="muted">Never played League of Legends? Read the <a href="#" data-act="lore">🌍 Runeterra lore</a> — the planet, its realms, its history and every region.</p>
+          <p class="tp-small">You can switch at any time. Progress is kept in this browser.</p>
         </div>
-      </div>
-      <div class="subsec"><h3>The road ahead</h3><ol>
-        <li><b>Homeland</b> — pure Runeterra flavour (no mechanics).</li>
-        <li><b>Origin</b> <small class="muted">(Background)</small> → qualities, a principle, dice for your Source.</li>
-        <li><b>Source of Power</b> <small class="muted">(Power Source)</small> → powers, Yellow &amp; Green abilities, dice for your Path.</li>
-        <li><b>Path</b> <small class="muted">(Archetype)</small> → more powers/qualities, Green abilities, your second principle.</li>
-        <li><b>Temperament</b> <small class="muted">(Personality)</small> → status dice, Out ability, Signature Quality.</li>
-        <li><b>Ultimates</b> <small class="muted">(Red abilities)</small>, <b>Twist of Fate</b> <small class="muted">(Retcon)</small>, <b>Health</b>, then your <b>Legend</b>.</li></ol>
-      </div>
-      <div class="step-footer"><span></span><button class="btn primary" data-act="next">Begin →</button></div></div>`;
+        <div class="step-footer tp-footer"><span></span><div class="next-wrap"><button class="btn primary" data-act="next"><span class="btn-kicker">Chapter I</span>Begin the chronicle ${ico('next')}</button></div></div>
+      </section>
+      <aside class="tp-aside">
+        <div class="tp-aside-h">The Chapters</div>
+        <ol class="tp-chapters">${chapters.map((c, i) => `<li><span class="tp-n">${ROMAN[i + 1]}</span><span class="tp-c"><b>${c[0]}</b><span>${c[1]}</span></span>${c[2] ? `<span class="tp-sc">${c[2]}</span>` : ''}</li>`).join('')}</ol>
+        <div class="tp-dice">
+          <div class="tp-aside-h">How a roll works</div>
+          <p>Every action rolls <b>three dice</b> — a <span class="term"${tip('<h5>Powers</h5>Exceptional traits — magic, Hextech, Ascended strength. Rated d6 (above average) to d12 (godlike).')}>power</span>, a <span class="term"${tip('<h5>Qualities</h5>Learned skills and knowledge. Rated d6 (solid competency) to d12 (world class).')}>quality</span> and your <span class="term"${tip(window.GLOSSARY['status die'])}>status</span> — sorted into ${rulesText('Min die, Mid die and Max die')}.</p>
+          <div class="tp-dice-row">${['d4', 'd6', 'd8', 'd10', 'd12'].map(d => die(d)).join('')}</div>
+          <p>As ${rulesText('Health')} falls you pass from the ${rulesText('Green zone')} to the ${rulesText('Yellow zone')} and ${rulesText('Red zone')}, unlocking stronger abilities.</p>
+        </div>
+      </aside>
+    </div>`;
   }
+
+
+  // ------------------------------------------------------------------ art-direction helpers
+  const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
+  const ico = (n, c) => (window.ICO ? window.ICO(n, c) : '');
+  const sigil = (id, c) => (window.SIGIL ? window.SIGIL(id, c) : '');
+  const pad2 = n => String(n).padStart(2, '0');
 
   // ------------------------------------------------------------------ guided flow
   const ui = { expand: {} };        // transient: which collapsed choice grids are re-opened
@@ -762,30 +775,31 @@
       const done = !s.issues.length;
       const state = cur >= 0 ? 'locked' : done ? 'done' : 'current';
       if (state === 'current') cur = i;
-      const head = `<div class="flow-head"><span class="flow-num">${state === 'done' ? '✓' : i + 1}</span><h3>${esc(s.title)}</h3>` +
+      const head = `<div class="flow-head"><span class="flow-num">${state === 'done' ? ico('check') : state === 'locked' ? ico('lock') : i + 1}</span><h3>${esc(s.title)}</h3>` +
         (state === 'current' ? '<span class="flow-here">You are here</span>' : '') +
-        (state === 'locked' ? '<span class="flow-lock">🔒 Finish the step above first</span>' : '') + '</div>';
+        (state === 'done' ? '<span class="flow-state">Done</span>' : '') +
+        (state === 'locked' ? '<span class="flow-lock">Sealed — finish the step above</span>' : '') + '</div>';
       if (state === 'locked') return `<section class="flow-sec locked">${head}</section>`;
       const fn = H[s.id] || (s.group && H.group) || null;
       const body = fn ? fn(s) : '';
-      const todo = state === 'current' && s.issues.length ? `<div class="flow-todo"><b>To do:</b><ul>${s.issues.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
+      const todo = state === 'current' && s.issues.length ? `<div class="flow-todo"><span class="flow-todo-l">Still to do</span><ul>${s.issues.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
       return `<section class="flow-sec ${state}" id="flow-${stepId}-${s.id}">${head}<div class="flow-body">${body}${todo}</div></section>`;
     });
     flowCurrent = cur >= 0 ? `${stepId}:${secs[cur].id}` : `${stepId}:done`;
     const idx = STEPS.findIndex(x => x.id === stepId);
     const next = STEPS[idx + 1];
     const guide = cur >= 0
-      ? `<div class="guide"><div class="guide-step">Step ${cur + 1} of ${n}</div><div><b>What to do now: ${esc(secs[cur].title)}.</b> <span>${secs[cur].hint}</span></div><button class="btn small" data-act="jump" data-target="flow-${stepId}-${secs[cur].id}">Show me ↓</button></div>`
-      : `<div class="guide done"><div class="guide-step">✓ Done</div><div><b>Everything on this page is complete.</b> ${next ? `Press <b>Next</b> to continue to <b>${esc(next.name)}</b>.` : ''}</div></div>`;
+      ? `<div class="guide"><span class="guide-label">Now</span><div class="guide-text"><b>${esc(secs[cur].title)}.</b> <span>${secs[cur].hint}</span></div><span class="guide-count">${cur + 1}<i>/</i>${n}</span><button class="linkbtn" data-act="jump" data-target="flow-${stepId}-${secs[cur].id}">Show me</button></div>`
+      : `<div class="guide done"><span class="guide-label">${ico('check')}</span><div class="guide-text"><b>This chapter is complete.</b> ${next ? `Continue to <b>${esc(next.name)}</b> when you are ready.` : ''}</div><span class="guide-count">${n}<i>/</i>${n}</span></div>`;
     return guide + parts.join('');
   }
 
   // Collapsible choice grid: once something is chosen, show a compact summary with a Change button.
   function pickSection(key, chosenHtml, gridHtml) {
-    if (chosenHtml && !ui.expand[key]) return `<div class="picked-bar">${chosenHtml}<button class="btn small" data-act="expand" data-key="${key}">Change</button></div>`;
-    return (chosenHtml ? `<div class="picked-bar muted-bar"><span>Pick a different option below, or</span><button class="btn small" data-act="collapse" data-key="${key}">Keep current choice</button></div>` : '') + gridHtml;
+    if (chosenHtml && !ui.expand[key]) return `<div class="picked-bar">${chosenHtml}<button class="linkbtn" data-act="expand" data-key="${key}">Change</button></div>`;
+    return (chosenHtml ? `<div class="picked-bar muted-bar"><span>Pick a different option below, or</span><button class="linkbtn" data-act="collapse" data-key="${key}">keep the current choice</button></div>` : '') + gridHtml;
   }
-  const chosenSummary = (title, sc, lore, champs, extra = '') => `<div class="chosen"><div class="chosen-t">${esc(title)} <small class="muted">— Sentinels: ${esc(sc)}</small></div>${lore ? `<p class="lore">${esc(lore)}</p>` : ''}${champs ? `<p class="champs"><b>Champions:</b> ${esc(champs)}</p>` : ''}${extra}</div>`;
+  const chosenSummary = (title, sc, lore, champs, extra = '') => `<div class="chosen"><div class="chosen-sc">Sentinels · ${esc(sc)}</div><div class="chosen-t">${esc(title)}</div>${lore ? `<p class="lore">${esc(lore)}</p>` : ''}${champs ? `<p class="champs"><span>Champions</span> ${esc(champs)}</p>` : ''}${extra}</div>`;
 
   function bgTip(b) {
     return `<h5>${esc(b.rt)}</h5><div class="sc-line">Sentinels: ${esc(b.sc)} background</div>${esc(b.lore)}<hr>` +
@@ -809,18 +823,25 @@
       (a.yellow ? `<br><b>Yellow:</b> ${esc(a.yellow.fromGreen ? 'one of the Green list' : a.yellow.list.join(', '))}` : '') +
       `<br><b>Principle:</b> ${esc(a.principle)}<hr><small>Champions: ${esc(a.champs)}</small>`;
   }
-  const stepPanel = (eyebrow, title, introKey, body, withMethod) => `<div class="panel"><div class="step-head"><div><div class="eyebrow">${eyebrow}</div><h2>${esc(title)}</h2></div>${withMethod ? methodToggle() : ''}</div>
-      <p class="intro">${window.STEP_INTROS[introKey]}</p>${body}${navFooter()}</div>`;
+  const chapterHead = (title, withMethod) => {
+    const i = stepIndex(st.step);
+    const sub = (STEPS[i].sub || '').replace('Sentinels: ', '');
+    return `<header class="chapter"><div class="chapter-num" aria-hidden="true">${ROMAN[i]}</div>
+      <div class="chapter-titles"><div class="chapter-kicker">Chapter ${ROMAN[i]} <span>of IX</span>${STEPS[i].sub.startsWith('Sentinels') ? `<span class="sc-tag">Sentinels · ${esc(sub)}</span>` : ''}</div><h2 class="chapter-title">${esc(title)}</h2></div>
+      ${withMethod ? methodToggle() : ''}</header>`;
+  };
+  const stepPanel = (eyebrow, title, introKey, body, withMethod) => `<div class="panel">${chapterHead(title, withMethod)}
+      <p class="chapter-lede">${window.STEP_INTROS[introKey]}</p>${body}${navFooter()}</div>`;
 
   function renderRegion() {
     const r = regionDef();
     const names = (list, arr) => arr.map(id => { const x = byId(list, id); return x ? x.rt : id; }).join(', ');
     const H = {
-      pick: () => pickSection('region', r && `<div class="chosen" style="border-left:3px solid ${r.color}"><div class="chosen-t" style="color:${r.color}">${esc(r.name)}</div><p class="lore">${esc(r.lore)}</p>${window.LORE_FOR_REGION && window.LORE_FOR_REGION[r.id] ? `<p class="lore-link"><a href="#" data-act="lore" data-section="${window.LORE_FOR_REGION[r.id]}">🌍 Read the full lore of ${esc(r.name)} →</a></p>` : ''}
+      pick: () => pickSection('region', r && `<div class="chosen chosen-region" style="--rc:${r.color}">${sigil(r.id, 'chosen-sigil')}<div class="chosen-sc">Homeland</div><div class="chosen-t">${esc(r.name)}</div><p class="lore">${esc(r.lore)}</p>${window.LORE_FOR_REGION && window.LORE_FOR_REGION[r.id] ? `<p class="lore-link"><a href="#" data-act="lore" data-section="${window.LORE_FOR_REGION[r.id]}">${ico('map')} Read the full lore of ${esc(r.name)}</a></p>` : ''}
           <p class="champs"><b>Champions:</b> ${esc(r.champs)}</p>
           <div class="grid3"><div><h4>Fitting Origins</h4><small>${esc(names(window.BACKGROUNDS, r.bg))}</small></div><div><h4>Fitting Sources</h4><small>${esc(names(window.POWER_SOURCES, r.ps))}</small></div><div><h4>Fitting Principles</h4><small>${esc(r.pr.map(id => (window.PRINCIPLE_LORE[id] || [id])[0]).join(', '))}</small></div></div>
-          <p class="sc">No rules effect. Options marked <b>★ ${esc(r.name)}</b> in later steps are only suggestions.</p></div>`,
-        `<p class="muted">New to Runeterra? Read the <a href="#" data-act="lore" data-section="lore-planet">🌍 world lore</a> first.</p><div class="cards">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}><div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
+          <p class="sc">No rules effect. Options marked ${ico('mark')} <b>${esc(r.name)}</b> in later steps are only suggestions.</p></div>`,
+        `<p class="muted">New to Runeterra? Read the <a href="#" data-act="lore" data-section="lore-planet">world lore</a> first.</p><div class="cards regions">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.id)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
     };
     return stepPanel('Step 1 · Runeterra', 'Homeland', 'region', flowHtml('region', sectionsFor('region', R0), H), false);
   }
@@ -830,7 +851,7 @@
     const H = {
       roll: () => rollerHtml('bg', ['d10', 'd10'], 'Roll 2d10 for your Origin'),
       pick: () => pickSection('bg', b && chosenSummary(b.rt, b.sc, b.lore, b.champs),
-        (st.method !== 'guided' ? '' : '<p class="muted">Highlighted cards match your roll.</p>') + cardsHtml(window.BACKGROUNDS, 'bg', st.bg.id, 'bg', x => `<span class="n">${x.n}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}</div><div class="d">${esc(x.sub)}</div>${fitMark('bg', x.id)}<span class="info"${tip(bgTip(x))}>i</span>`)),
+        (st.method !== 'guided' ? '' : '<p class="muted">Highlighted cards match your roll.</p>') + cardsHtml(window.BACKGROUNDS, 'bg', st.bg.id, 'bg', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}</div><div class="d">${esc(x.sub)}</div>${fitMark('bg', x.id)}<span class="info" aria-label="Details"${tip(bgTip(x))}>${ico('info')}</span>`)),
       assign: () => `<p>Assign ${b.q.dice.map(d => die(d)).join(' ')} to ${b.q.count || 2} of: ${optsText(b.q.opts)}.${b.q.mustInclude ? ` One die <b>must</b> go to ${traitSpan(b.q.mustInclude)}.` : ''}</p>${assignHtml(R.slots.bg, expand(b.q.opts), R.before.background, 'bg', 'Assign each die to a quality:')}`,
       principle: () => principleHtml('bg', b.principle, R) + `<p class="muted" style="margin-top:10px">Next step: your Source of Power, rolled with ${b.psDice.map(d => die(d, 'sm')).join('')}.</p>`
     };
@@ -866,7 +887,7 @@
     const H = {
       roll: () => rollerHtml('ps', b.psDice, 'Roll your Origin dice'),
       pick: () => pickSection('ps', p && chosenSummary(p.rt, p.sc, p.lore, p.champs),
-        cardsHtml(window.POWER_SOURCES, 'ps', st.ps.id, 'ps', x => `<span class="n">${x.n}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}</div><div class="d">${esc(x.sub)}</div>${fitMark('ps', x.id)}<span class="info"${tip(psTip(x))}>i</span>`)),
+        cardsHtml(window.POWER_SOURCES, 'ps', st.ps.id, 'ps', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}</div><div class="d">${esc(x.sub)}</div>${fitMark('ps', x.id)}<span class="info" aria-label="Details"${tip(psTip(x))}>${ico('info')}</span>`)),
       assign: () => {
         let optKeys = expand(p.opts);
         if (p.required && !optKeys.includes(p.required.key)) optKeys = [p.required.key].concat(optKeys);
@@ -885,11 +906,11 @@
     const H = {
       roll: () => rollerHtml('arch', p.archDice, 'Roll your Source dice'),
       pick: () => pickSection('arch', a && chosenSummary(a.rt + ' · ' + a.role, a.sc, a.lore, a.champs),
-        cardsHtml(window.ARCHETYPES, 'arch', st.arch.id, 'arch', x => `<span class="n">${x.n}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}${x.advanced ? ' · advanced' : ''}</div><div class="d">${esc(x.champs)}</div><span class="info"${tip(archTip(x))}>i</span>`)),
+        cardsHtml(window.ARCHETYPES, 'arch', st.arch.id, 'arch', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}${x.advanced ? ' · advanced' : ''}</div><div class="d">${esc(x.champs)}</div><span class="info" aria-label="Details"${tip(archTip(x))}>${ico('info')}</span>`)),
       broll: () => rollerHtml('base', p.archDice, 'Roll for your base Path'),
       base: () => `<p class="muted">${a.divided ? 'Your full Path becomes “' + esc(a.rt) + ' ' + (shape ? esc(shape.rt) : '…') + '”.' : 'You follow this Path\'s dice rules, but gain modes instead of its abilities.'}</p>` +
         pickSection('base', shape && chosenSummary(shape.rt + ' · ' + shape.role, shape.sc, shape.lore, shape.champs),
-          cardsHtml(window.ARCHETYPES.filter(x => !x.advanced), 'base', st.arch.base, 'base', x => `<span class="n">${x.n}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}</div><span class="info"${tip(archTip(x))}>i</span>`)),
+          cardsHtml(window.ARCHETYPES.filter(x => !x.advanced), 'base', st.arch.base, 'base', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}</div><span class="info" aria-label="Details"${tip(archTip(x))}>${ico('info')}</span>`)),
       assign: () => {
         const optKeys = expand((shape.req ? shape.req.any : []).concat(shape.powers, shape.quals));
         return `<p>Assign the dice from your Source (${p.archDice.map(d => die(d)).join(' ')}).</p><ul class="rules-list">
@@ -917,7 +938,7 @@
     const cur = st.arch.minionQ;
     const max = cur && R.T[cur] ? dn(R.T[cur].die) : 0;
     const chosen = st.arch.minionForms || [];
-    return `<p class="muted"${tip('<h5>Minion forms</h5>When you create a minion you may discard one bonus you have access to in order to add a form with that bonus value or higher. The number of forms you know equals the maximum value of a related quality.')}>You know as many minion forms as the maximum value of a related quality. <span class="term">ⓘ</span></p>
+    return `<p class="muted"${tip('<h5>Minion forms</h5>When you create a minion you may discard one bonus you have access to in order to add a form with that bonus value or higher. The number of forms you know equals the maximum value of a related quality.')}>You know as many minion forms as the maximum value of a related quality. <span class="term info-mark">${ico('info')}</span></p>
       <label class="field"><span>Related quality</span><select data-bind="arch.minionQ"><option value="">— choose —</option>${q.map(k => `<option value="${k}"${cur === k ? ' selected' : ''}>${esc(traitName(k))} (${R.T[k].die})</option>`).join('')}</select></label>
       ${q.length ? '' : '<small class="muted">You need Creativity, Arcane Lore, Spirit & Void Mythos, Natural Philosophy or Hextech Engineering.</small>'}
       <div class="ab-list">${window.MINION_FORMS.map(([n, d, b]) => `<label class="ab${chosen.includes(n) ? ' picked' : ''}"><div class="ab-top"><input type="checkbox" data-act="minionForm" data-name="${esc(n)}"${chosen.includes(n) ? ' checked' : ''}${!chosen.includes(n) && chosen.length >= max ? ' disabled' : ''}><span class="ab-name">${esc(n)}</span><span class="ab-type"${tip('Bonus needed to apply this form')}>${esc(b)} or higher</span></div><div class="ab-text">${rulesText(d)}</div></label>`).join('')}</div>
@@ -933,13 +954,13 @@
       pick: () => pickSection('pers', pe && chosenSummary(pe.rt, pe.sc, '', pe.champs,
         `<div class="status-row"${tip('<h5>Status dice</h5>The third die of every roll. Which one you use depends on your current Health zone.')}><span class="z g">Green ${die(R.status[0])}</span><span class="z y">Yellow ${die(R.status[1])}</span><span class="z r">Red ${die(R.status[2])}</span></div>` +
         (pe.healthAny ? '<p class="sc">When determining Health you may use <b>any</b> power or quality.</p>' : '')),
-        cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${x.n}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}</div><div class="dice-row status-row">${statusCell(x)}</div><span class="info"${tip(`<h5>${esc(x.rt)}</h5><div class="sc-line">Sentinels: ${esc(x.sc)}</div><b>Status:</b> Green ${x.status[0]}, Yellow ${x.status[1]}, Red ${x.status[2]}<br><b>Out:</b> ${esc(x.out)}<hr><small>${esc(x.champs)}</small>`)}>i</span>`)),
+        cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}</div><div class="dice-row status-row">${statusCell(x)}</div><span class="info" aria-label="Details"${tip(`<h5>${esc(x.rt)}</h5><div class="sc-line">Sentinels: ${esc(x.sc)}</div><b>Status:</b> Green ${x.status[0]}, Yellow ${x.status[1]}, Red ${x.status[2]}<br><b>Out:</b> ${esc(x.out)}<hr><small>${esc(x.champs)}</small>`)}>${ico('info')}</span>`)),
       qname: () => `<p class="muted"${tip(traitTip('rp-quality'))}>A ${die('d8', 'sm')} quality that sums up your champion — your “high concept”. Examples: <em>Hextech Prodigy of the Academy</em>, <em>Last Kinkou of the Eastern Isles</em>, <em>Bilgewater's Luckiest Liar</em>.</p>
         <input type="text" data-bind="pers.qname" data-live="1" data-commit="1" value="${esc(st.pers.qname)}" placeholder="Type your Signature Quality, then press Enter">`,
       out: () => {
         const rq = reqFromText(pe.out);
         const outKeys = sortTraits(owned(R, rq.kind)).map(t => t.key);
-        return `<p class="muted"${tip(`<h5>Out ability</h5>${window.COLOR_INFO.out}`)}>Used when your champion is knocked out. <span class="term">ⓘ</span></p><div class="ab out picked"><div class="ab-text">${rulesText(pe.out, { trait: st.pers.outTrait })}</div>
+        return `<p class="muted"${tip(`<h5>Out ability</h5>${window.COLOR_INFO.out}`)}>Used when your champion is knocked out. <span class="term info-mark">${ico('info')}</span></p><div class="ab out picked"><div class="ab-text">${rulesText(pe.out, { trait: st.pers.outTrait })}</div>
           <div class="ab-cfg"><label>Uses<select data-bind="pers.outTrait">${traitOptions(outKeys, st.pers.outTrait)}</select></label></div></div>`;
       },
       reckless: () => {
@@ -1339,7 +1360,7 @@
       a.download = (st.info.name || 'runeterra-champion').replace(/[^\w-]+/g, '_') + '_hero_sheet.pdf';
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-      say('✓ Hero sheet PDF downloaded.' + (over.length ? ` Note: your ${over.join(' & ')} zone has more abilities than the sheet has rows, so the extras were combined into the last row.` : ''));
+      say('Hero sheet PDF downloaded.' + (over.length ? ` Note: your ${over.join(' & ')} zone has more abilities than the sheet has rows, so the extras were combined into the last row.` : ''));
     } catch (e) {
       say('Could not fill the PDF: ' + esc(e.message), true);
     }
@@ -1360,24 +1381,24 @@
           <div><label class="btn small" for="portrait-file">${i.portrait ? 'Change portrait' : 'Add portrait'}</label> ${i.portrait ? '<button class="btn small ghost" data-act="clearPortrait">Remove</button>' : ''}<input id="portrait-file" type="file" accept="image/*" hidden>
           <p class="muted">Goes in the picture box of the hero sheet (and the PDF).</p></div></div>
         <label class="field"><span>Backstory notes (auxiliary sheet)</span><textarea data-bind="info.notes" data-live="1" placeholder="Where did they come from? Who do they fight for?">${esc(i.notes)}</textarea></label>`,
-      abilities: () => `<p class="muted"${tip('The rulebook asks you to rename every ability to fit your hero. The original Sentinels name stays on the sheet in small print so you and your GM can look it up.')}>Leave a box empty to keep the original name. <span class="term">ⓘ</span></p>
+      abilities: () => `<p class="muted"${tip('The rulebook asks you to rename every ability to fit your hero. The original Sentinels name stays on the sheet in small print so you and your GM can look it up.')}>Leave a box empty to keep the original name. <span class="term info-mark">${ico('info')}</span></p>
         <div class="grid2">${abs.map(x => `<label class="field"><span>${esc(displayName(x.name))} <span class="pill ${x.color}">${x.color}</span></span><input type="text" data-rename="${esc(x.iid)}" data-bind="renames" data-live="1" value="${esc(st.renames[x.iid] || '')}" placeholder="${esc(displayName(x.name))}"></label>`).join('') || '<small class="muted">No abilities yet.</small>'}</div>`,
-      gear: () => `<p class="muted"${tip('Signature Weapon and Mount are meant to be renamed (e.g. "Hextech Rifle", "Valor"). You can rename any other trait too, the way the rulebook renames Power Suit to "Power Arm".')}>Leave a box empty to keep the original name. <span class="term">ⓘ</span></p>
+      gear: () => `<p class="muted"${tip('Signature Weapon and Mount are meant to be renamed (e.g. "Hextech Rifle", "Valor"). You can rename any other trait too, the way the rulebook renames Power Suit to "Power Arm".')}>Leave a box empty to keep the original name. <span class="term info-mark">${ico('info')}</span></p>
         <div class="grid3">${renameTraits.map(k => `<label class="field"><span>${esc(TRAIT[k].rt)} ${die(R.T[k].die, 'sm')}</span><input type="text" data-bind="traitNames.${k}" data-live="1" value="${esc(st.traitNames[k] || '')}" placeholder="${esc(TRAIT[k].rt)}"></label>`).join('')}</div>`
     };
     const done = !stepIssues('finish', R).length;
-    return `<div class="panel no-print"><div class="step-head"><div><div class="eyebrow">Step 9 · Sentinels: Finishing Touches</div><h2>Legend</h2></div></div>
-      <p class="intro">${window.STEP_INTROS.finish}</p>
+    return `<div class="panel no-print">${chapterHead('Legend')}
+      <p class="chapter-lede">${window.STEP_INTROS.finish}</p>
       ${flowHtml('finish', sectionsFor('finish', R), H)}
-      <section class="flow-sec ${done ? 'current' : 'locked'}" id="flow-finish-export"><div class="flow-head"><span class="flow-num">★</span><h3>Your hero sheet</h3>${done ? '' : '<span class="flow-lock">🔒 Name your champion first</span>'}</div>
+      <section class="flow-sec ${done ? 'current' : 'locked'}" id="flow-finish-export"><div class="flow-head"><span class="flow-num">${done ? ico('mark') : ico('lock')}</span><h3>Your hero sheet</h3>${done ? '' : '<span class="flow-lock">Sealed — name your champion first</span>'}</div>
       ${done ? `<div class="flow-body"><p class="muted">Your sheet is below, laid out like the official two-page <em>Sentinel Comics RPG</em> hero sheet. Hero points, back issues, collections and current Health can be ticked and edited right on it during play.</p><div id="pdf-status"></div><input id="template-file" type="file" accept="application/pdf,.pdf" hidden>
-        <div class="export-row"><button class="btn primary" data-act="pdf">⬇ Export PDF hero sheet</button><button class="btn" data-act="print">Print</button><button class="btn" data-act="export">Export JSON</button></div></div>` : ''}</section>
-      <div class="step-footer"><button class="btn" data-act="back">← Back</button><span></span></div></div>
+        <div class="export-row"><button class="btn primary" data-act="pdf">${ico('download')} Export PDF hero sheet</button><button class="btn" data-act="print">Print</button><button class="btn" data-act="export">Export JSON</button></div></div>` : ''}</section>
+      <div class="step-footer"><button class="btn ghost" data-act="back">${ico('prev')} Back</button><span></span></div></div>
       <div class="panel" id="sheet-preview">${sheetHtml(R)}</div>`;
   }
 
   function lockedPanel(title, msg, step) {
-    return `<div class="panel"><h2>${esc(title)}</h2><p class="intro">${esc(msg)}</p><button class="btn primary" data-act="go" data-step="${step}">Go there →</button></div>`;
+    return `<div class="panel">${chapterHead(title)}<p class="chapter-lede">${esc(msg)}</p><button class="btn primary" data-act="go" data-step="${step}">Go there ${ico('next')}</button></div>`;
   }
   const stepIndex = id => STEPS.findIndex(x => x.id === id);
   // Back / Next. Next only works once the current step is complete.
@@ -1385,22 +1406,26 @@
     const i = stepIndex(st.step);
     const next = STEPS[i + 1];
     const ready = !stepIssues(st.step, R0).length;
-    return `<div class="step-footer"><button class="btn" data-act="back">← Back</button>
-      <div class="next-wrap">${ready ? '' : '<span class="next-hint">Finish the highlighted step to continue</span>'}<button class="btn primary${ready ? '' : ' is-disabled'}" data-act="next" aria-disabled="${!ready}">${next ? 'Next: ' + esc(next.name) + ' →' : 'Next →'}</button></div></div>`;
+    return `<div class="step-footer"><button class="btn ghost" data-act="back">${ico('prev')} Back</button>
+      <div class="next-wrap">${ready ? '' : '<span class="next-hint">Finish the step marked “You are here” to continue</span>'}<button class="btn primary${ready ? '' : ' is-disabled'}" data-act="next" aria-disabled="${!ready}"><span class="btn-kicker">${next ? 'Chapter ' + ROMAN[i + 1] : ''}</span>${next ? esc(next.name) : 'Next'} ${ico('next')}</button></div></div>`;
   }
-  const methodToggle = () => `<div class="method" role="group" aria-label="Creation method"${tip('<h5>Guided vs Constructed</h5>Guided: roll and choose among the allowed entries. Constructed: pick freely. Die sizes work the same either way.')}><button class="${st.method === 'guided' ? 'on' : ''}" data-act="method" data-m="guided">Guided</button><button class="${st.method === 'constructed' ? 'on' : ''}" data-act="method" data-m="constructed">Constructed</button></div>`;
+  const methodToggle = () => `<div class="method" role="group" aria-label="Creation method"${tip('<h5>Guided vs Constructed</h5>Guided: roll and choose among the allowed entries. Constructed: pick freely. Die sizes work the same either way.')}><span class="method-l">Method</span><button class="${st.method === 'guided' ? 'on' : ''}" data-act="method" data-m="guided" aria-pressed="${st.method === 'guided'}">Guided</button><button class="${st.method === 'constructed' ? 'on' : ''}" data-act="method" data-m="constructed" aria-pressed="${st.method === 'constructed'}">Constructed</button></div>`;
 
   // ------------------------------------------------------------------ nav + side
   function renderNav() {
     const R = R0;
-    return `<ol>${STEPS.map((s, i) => {
+    return `<div class="rail-title">The Chronicle</div><ol class="rail">${STEPS.map((s, i) => {
       const locked = i > st.maxStep;
       const I = s.id === 'intro' || locked ? [] : stepIssues(s.id, R);
-      const state = locked ? '<span class="state lock">🔒</span>' : s.id === 'intro' ? '' : I.length ? `<span class="state warn" title="${I.length} to do">●</span>` : '<span class="state ok">✓</span>';
-      return `<li><button class="${st.step === s.id ? 'active' : ''}${locked ? ' locked' : ''}" data-act="go" data-step="${s.id}"${locked ? ` disabled title="Complete the previous steps first"` : ''}><span class="num">${i}</span><span class="lbl">${esc(s.name)}<small>${esc(s.sub)}</small></span>${state}</button></li>`;
+      const cls = ['rail-item', st.step === s.id ? 'active' : '', locked ? 'locked' : I.length ? 'open' : 'done'].join(' ');
+      const status = locked ? 'Sealed' : st.step === s.id ? 'You are here' : s.id === 'intro' ? '' : I.length ? 'Unfinished' : 'Complete';
+      return `<li class="${cls}"><button data-act="go" data-step="${s.id}"${locked ? ' disabled title="Complete the previous chapters first"' : ''}${st.step === s.id ? ' aria-current="step"' : ''}>
+        <span class="rail-mark"><span>${i === 0 ? '·' : ROMAN[i]}</span></span>
+        <span class="rail-label"><span class="rail-name">${esc(s.name)}</span><span class="rail-sub">${esc(status || s.sub.replace('Sentinels: ', ''))}</span></span></button></li>`;
     }).join('')}</ol>`;
   }
 
+  // The Champion Dossier: identity first, mechanics second.
   function renderSide() {
     const R = R0;
     const bg = bgDef(), ps = psDef(), ar = archDef(), shape = shapeDef(), pe = persDef(), rg = regionDef();
@@ -1409,16 +1434,23 @@
     const abs = allAbilities(R);
     const cnt = c => abs.filter(x => x.color === c).length;
     const h = healthCalc(R);
-    const tline = t => `<div class="trait-line"><span>${t.key === 'rp-quality' && st.pers.qname ? `<span class="term"${tip(traitTip('rp-quality'))}>${esc(st.pers.qname)}</span>` : traitSpan(t.key)}</span>${die(t.die, 'sm')}</div>`;
-    return `<div class="panel mini"><h3>Champion</h3><div class="who">${esc(st.info.name || 'Unnamed Champion')}</div>
-      <div class="sub">${[rg && rg.name, bg && bg.rt, ps && ps.rt, ar && (ar.rt + (shape && shape !== ar ? ' ' + shape.rt : '')), pe && pe.rt].filter(Boolean).map(esc).join(' · ') || 'Your legend begins…'}</div>
-      <div class="mini-sec"><h4>Powers</h4>${powers.map(tline).join('') || '<small class="muted">none yet</small>'}</div>
-      <div class="mini-sec"><h4>Qualities</h4>${quals.map(tline).join('') || '<small class="muted">none yet</small>'}</div>
-      ${R.status ? `<div class="mini-sec"><h4>Status</h4><div class="status-row"><span class="z g">G ${die(R.status[0], 'sm')}</span><span class="z y">Y ${die(R.status[1], 'sm')}</span><span class="z r">R ${die(R.status[2], 'sm')}</span></div></div>` : ''}
-      <div class="mini-sec"><h4>Abilities</h4><div class="count-row"><span class="pill green">${cnt('green')} green</span><span class="pill yellow">${cnt('yellow')} yellow</span><span class="pill red">${cnt('red')} red</span>${pe ? '<span class="pill">out</span>' : ''}</div></div>
-      <div class="mini-sec"><h4>Principles</h4>${principlesFinal().map(x => `<div class="trait-line"><span class="term"${tip(`<h5>${esc(x.p.name)}</h5>${esc(x.p.rp)}`)}>${esc((window.PRINCIPLE_LORE[x.id] || [x.p.name])[0])}</span><small>${esc(x.p.cat)}</small></div>`).join('') || '<small class="muted">none yet</small>'}</div>
-      ${h ? `<div class="mini-sec"><h4>Health</h4><div class="trait-line"><span>Maximum</span><b>${h.max}</b></div></div>` : ''}
-      </div>`;
+    const i = st.info;
+    const row = t => `<li><span class="led-name">${t.key === 'rp-quality' && st.pers.qname ? `<span class="term"${tip(traitTip('rp-quality'))}>${esc(st.pers.qname)}</span>` : traitSpan(t.key)}</span><span class="led-dots"></span>${die(t.die, 'sm')}</li>`;
+    const fact = (label, d, extra) => `<div class="dos-fact${d ? '' : ' empty'}"><dt>${label}</dt><dd>${d ? esc(d.rt + (extra || '')) : '—'}</dd></div>`;
+    return `<div class="dossier" style="--rc:${rg ? rg.color : 'var(--gold)'}">
+      <div class="dos-band"><span class="dos-kicker">Champion Dossier</span><span class="dos-region">${rg ? esc(rg.name) : 'Homeland unknown'}</span></div>
+      <div class="dos-id">
+        <div class="dos-portrait">${i.portrait ? `<img src="${i.portrait}" alt="">` : sigil(rg ? rg.id : 'compass', 'dos-sigil')}</div>
+        <div class="dos-names"><div class="dos-name${i.name ? '' : ' unnamed'}">${esc(i.name || 'Unnamed Champion')}</div>
+        <div class="dos-epithet">${i.alias ? esc(i.alias) : pe ? 'the ' + esc(pe.rt) : 'an untold legend'}</div></div>
+      </div>
+      <dl class="dos-facts">${fact('Origin', bg)}${fact('Source', ps)}${fact('Path', ar, shape && shape !== ar ? ' ' + shape.rt : '')}${fact('Temperament', pe)}</dl>
+      <div class="dos-sec"><h4>Powers</h4>${powers.length ? `<ul class="ledger">${powers.map(row).join('')}</ul>` : '<p class="dos-empty">None yet — gained from your Source and Path.</p>'}</div>
+      <div class="dos-sec"><h4>Qualities</h4>${quals.length ? `<ul class="ledger">${quals.map(row).join('')}</ul>` : '<p class="dos-empty">None yet — gained from your Origin.</p>'}</div>
+      ${R.status ? `<div class="dos-sec"><h4>Status</h4><div class="dos-status"><span class="z g">${die(R.status[0])}<i>Green</i></span><span class="z y">${die(R.status[1])}<i>Yellow</i></span><span class="z r">${die(R.status[2])}<i>Red</i></span>${h ? `<span class="dos-hp"><b>${h.max}</b><i>Health</i></span>` : ''}</div></div>` : ''}
+      <div class="dos-sec"><h4>Abilities</h4><p class="dos-counts"><span class="c-g">${cnt('green')} Green</span><span class="c-y">${cnt('yellow')} Yellow</span><span class="c-r">${cnt('red')} Red</span>${pe ? '<span>Out</span>' : ''}</p></div>
+      <div class="dos-sec"><h4>Principles</h4>${principlesFinal().map(x => `<p class="dos-principle"><span class="term"${tip(`<h5>${esc(x.p.name)}</h5>${esc(x.p.rp)}`)}>${esc((window.PRINCIPLE_LORE[x.id] || [x.p.name])[0])}</span><small>${esc(x.p.cat)}</small></p>`).join('') || '<p class="dos-empty">None yet.</p>'}</div>
+    </div>`;
   }
 
   // ------------------------------------------------------------------ main render
@@ -1433,9 +1465,15 @@
   function render() {
     R0 = compute();
     flowCurrent = null;
+    const rg = regionDef();
+    document.body.dataset.region = rg ? rg.id : '';
+    document.body.style.setProperty('--region', rg ? rg.color : '');
     if (st.maxStep < 0) st.maxStep = reachedStep();
     if (stepIndex(st.step) > st.maxStep) st.step = STEPS[st.maxStep].id;
     document.getElementById('nav').innerHTML = renderNav();
+    // On narrow screens the rail scrolls sideways: keep the current chapter in view.
+    const rail = document.querySelector('.rail'), here = rail && rail.querySelector('.rail-item.active');
+    if (rail && here && rail.scrollWidth > rail.clientWidth) rail.scrollLeft = here.offsetLeft - (rail.clientWidth - here.offsetWidth) / 2;
     document.getElementById('stage').innerHTML = (RENDER[st.step] || renderIntro)();
     document.getElementById('side').innerHTML = renderSide();
     save();

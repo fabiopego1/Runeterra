@@ -75,7 +75,7 @@
   panel.innerHTML = `
     <div class="cs-head">
       <div><div class="eyebrow">Quick reference</div><h2>Rules Cheat Sheet</h2></div>
-      <button class="btn small" data-cs-close aria-label="Close cheat sheet">✕</button>
+      <button class="btn small" data-cs-close aria-label="Close cheat sheet">${window.ICO ? window.ICO('close') : '×'}</button>
     </div>
     <input type="search" class="cs-search" placeholder="Search rules… (e.g. minion, twist, mod)" aria-label="Search rules">
     <nav class="cs-index">${SECTIONS.map(s => `<a href="#cs-${s.id}" data-cs-jump="cs-${s.id}">${s.title.replace(/ \(.*\)/, m => m.includes('Player') ? ' (PCs)' : ' (Enemies)')}</a>`).join('')}</nav>

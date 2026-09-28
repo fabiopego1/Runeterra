@@ -199,7 +199,7 @@
   panel.innerHTML = `
     <div class="cs-head">
       <div><div class="eyebrow">The world of the campaign</div><h2>Runeterra Lore</h2></div>
-      <button class="btn small" data-lore-close aria-label="Close lore">✕</button>
+      <button class="btn small" data-lore-close aria-label="Close lore">${window.ICO ? window.ICO('close') : '×'}</button>
     </div>
     <input type="search" class="cs-search" placeholder="Search the lore… (e.g. Void, Azir, petricite)" aria-label="Search lore">
     <nav class="cs-index">${groups.map(g => `<div class="lore-group"><span>${g}</span>${SECTIONS.filter(s => s.group === g).map(s => `<a href="#lore-${s.id}" data-lore-jump="lore-${s.id}">${s.title.includes(' — ') ? s.title.split(' — ')[1] : s.title}</a>`).join('')}</div>`).join('')}</nav>
