@@ -107,7 +107,7 @@
       const T = window.T || (x => x);
       const heroName = fdoc.querySelector('.hs-name') ? fdoc.querySelector('.hs-name').textContent.trim() : '';
       doc.setTitle(heroName ? `Ficha de Herói de ${heroName}` : T('Hero Sheet'));
-      doc.setCreator('Runeterra Champion Forge');
+      doc.setCreator('Forja de Campeões · Runeterra');
       let fonts = {}, fieldFont, fallback;
       if (!window.fontkit && fontkitSrc) await loadScript(fontkitSrc).catch(() => {});   // big: fetched only when exporting
       if (window.fontkit) doc.registerFontkit(window.fontkit);

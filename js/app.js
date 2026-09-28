@@ -113,7 +113,7 @@
 
   function dieTip(d) {
     const i = window.DICE_INFO[d] || {};
-    return `<h5>${d.toUpperCase()}</h5><div class="sc-line">${tr('Sentinels die size')}</div>` +
+    return `<h5>${d.toUpperCase()}</h5>` +
       tr('In the Sentinels system every trait is a die — bigger is better (d4 → d6 → d8 → d10 → d12). ') +
       tr('Each roll uses a pool of <b>one power + one quality + your status die</b>.') +
       `<ul><li>${tr('As a power:')} ${esc(i.power || (PT ? 'não se aplica' : '—'))}</li><li>${tr('As a quality:')} ${esc(i.quality || (PT ? 'não se aplica' : '—'))}</li><li>${tr('As a status die:')} ${esc(i.status || (PT ? 'não se aplica' : '—'))}</li></ul>` +
@@ -125,7 +125,7 @@
     const t = TRAIT[k];
     if (!t) return esc(k);
     const c = CATS[t.cat];
-    return `<h5>${esc(traitName(k))}</h5><div class="sc-line">Sentinels: ${esc(t.sc)} · ${kindWord(t.kind)} · ${esc(catSc(t.cat))}</div>` +
+    return `<h5>${esc(traitName(k))}</h5><div class="sc-line">${kindWord(t.kind)} · ${esc(catName(t.cat))}</div>` +
       `${esc(t.desc)}<hr><em>${tr('In Runeterra:')}</em> ${esc(t.lore)}` +
       (c && c.note ? `<hr><small>${esc(c.note)}</small>` : '') +
       (t.kind === 'power' ? `<hr><small>${tr('Powers are what makes you exceptional — the first die in your pool.')}</small>` : `<hr><small>${tr('Qualities are how you use your powers — the second die in your pool.')}</small>`);
@@ -138,7 +138,7 @@
       if (o === 'Q:*') return tr('any quality');
       if (o.includes(':')) {
         const c = CATS[o];
-        const span = `<span class="term"${tip(`<h5>${esc(c.rt)}</h5><div class="sc-line">Sentinels: ${esc(c.sc)} ${c.kind}s</div>` + c.items.map(i => esc(i[2])).join(', '))}>${esc(c.rt)}</span>`;
+        const span = `<span class="term"${tip(`<h5>${esc(c.rt)}</h5><div class="sc-line">${tr(c.kind === 'power' ? 'Powers' : 'Qualities')}</div>` + c.items.map(i => esc(i[2])).join(', '))}>${esc(c.rt)}</span>`;
         return tr(c.kind === 'power' ? 'any {cat} power' : 'any {cat} quality', { cat: span });
       }
       return TRAIT[o] ? traitSpan(o) : esc(o);
@@ -248,7 +248,7 @@
     return out;
   }
   const displayName = n => n.replace(/ \((PS|Hallmark|Quality|Self Control)\)$/, '');
-  // Name shown to the player: pt-BR name when Portuguese is on (the Sentinels name is kept for rulebook look-ups).
+  // Name shown to the player (pt-BR); the rulebook name is only used internally and on the GM Screen.
   const abName = n => (PT && window.I18N.names[n]) || displayName(n);
 
   // ------------------------------------------------------------------ core computation
@@ -601,13 +601,13 @@
   const STEPS = [
     { id: 'intro', name: tr('Welcome'), sub: tr('How it works') },
     { id: 'region', name: tr('Homeland'), sub: tr('Runeterra flavour') },
-    { id: 'background', name: tr('Origin'), sub: 'Sentinels: Background' },
-    { id: 'powersource', name: tr('Source of Power'), sub: 'Sentinels: Power Source' },
-    { id: 'archetype', name: tr('Path'), sub: 'Sentinels: Archetype' },
-    { id: 'personality', name: tr('Temperament'), sub: 'Sentinels: Personality' },
-    { id: 'red', name: tr('Ultimates'), sub: 'Sentinels: Red Abilities' },
-    { id: 'retcon', name: tr('Twist of Fate'), sub: 'Sentinels: Retcon' },
-    { id: 'health', name: tr('Health'), sub: 'Sentinels: Health' },
+    { id: 'background', name: tr('Origin'), sub: '' },
+    { id: 'powersource', name: tr('Source of Power'), sub: '' },
+    { id: 'archetype', name: tr('Path'), sub: '' },
+    { id: 'personality', name: tr('Temperament'), sub: '' },
+    { id: 'red', name: tr('Ultimates'), sub: '' },
+    { id: 'retcon', name: tr('Twist of Fate'), sub: '' },
+    { id: 'health', name: tr('Health'), sub: '' },
     { id: 'finish', name: tr('Legend'), sub: tr('Finishing Touches & Sheet') }
   ];
 
@@ -702,9 +702,9 @@
     const typeTip = `<h5>${tr('Type: {t}', { t: ab.type })}</h5>${window.ABILITY_TYPES[ab.type] || ''}`;
     const colorTip = `<h5>${tr(color[0].toUpperCase() + color.slice(1) + ' ability')}</h5>${window.COLOR_INFO[color] || ''}`;
     const inputType = g.count === 1 && !g.fixed ? 'radio' : 'checkbox';
-    const control = g.fixed ? '' : `<input type="checkbox" data-act="toggleAb" data-g="${g.key}" data-name="${esc(name)}"${ctx.cat ? ` data-cat="${esc(ctx.cat)}"` : ''}${picked ? ' checked' : ''}${unavailable ? ' disabled' : ''} aria-label="${tr(inputType === 'radio' ? 'Select' : 'Toggle')} ${esc(orig)}">`;
+    const control = g.fixed ? '' : `<input type="checkbox" data-act="toggleAb" data-g="${g.key}" data-name="${esc(name)}"${ctx.cat ? ` data-cat="${esc(ctx.cat)}"` : ''}${picked ? ' checked' : ''}${unavailable ? ' disabled' : ''} aria-label="${tr(inputType === 'radio' ? 'Select' : 'Toggle')} ${esc(abName(name))}">`;
     return `<div class="ab ${color}${picked ? ' picked' : ''}${unavailable ? ' disabled' : ''}">` +
-      `<div class="ab-top">${control}<span class="ab-name">${esc(abName(name))}</span>${PT && abName(name) !== orig ? `<small class="ab-orig">${esc(orig)}</small>` : ''}<span class="pill ${color}"${tip(colorTip)}>${tr(color)}</span><span class="ab-type"${tip(typeTip)}>${ab.type}</span></div>` +
+      `<div class="ab-top">${control}<span class="ab-name">${esc(abName(name))}</span><span class="pill ${color}"${tip(colorTip)}>${tr(color)}</span><span class="ab-type"${tip(typeTip)}>${ab.type}</span></div>` +
       (mode ? `<div class="ab-text"><em>${tr('Mode:')}</em> ${esc(mode.text)}</div>` : '') +
       `<div class="ab-text">${rulesText(ab.text, picked ? entry : null)}</div>` +
       (cfg ? `<div class="ab-cfg">${cfg}</div>` : '') + '</div>';
@@ -727,12 +727,12 @@
     const r = regionDef();
     const items = list.map(p => {
       const lore = window.PRINCIPLE_LORE[p.id] || [p.name, ''];
-      const t = `<h5>${esc(lore[0])}</h5><div class="sc-line">Sentinels: ${esc(p.name)} · ${esc(tr(p.cat))}</div>` +
+      const t = `<h5>${esc(lore[0])}</h5><div class="sc-line">${esc(tr(p.cat))}</div>` +
         `<b>${tr('During roleplaying:')}</b> ${esc(p.rp)}<hr><b>${tr('Minor twist:')}</b> ${esc(p.minor)}<br><b>${tr('Major twist:')}</b> ${esc(p.major)}<hr>` +
         `<b>${tr('Green ability ({t}):', { t: p.type })}</b> ${esc(ruleTip(p.ability))}` + (lore[1] ? `<hr><em>${tr('In Runeterra:')}</em> ${esc(lore[1])}` : '');
       const fits = r && r.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${esc(r.name)}</span>` : '';
       return `<button class="principle${p.id === cur ? ' selected' : ''}${p.id === other ? ' taken' : ''}" data-act="principle" data-slot="${slot}" data-id="${p.id}"${tip(t)}${p.id === other ? ' disabled' : ''}>` +
-        `<div class="pn">${esc(lore[0])}${fits}</div><div class="po">${esc(p.name)}</div><div class="ph">${esc(lore[1])}</div></button>`;
+        `<div class="pn">${esc(lore[0])}${fits}</div><div class="po">${esc(tr(p.cat))}</div><div class="ph">${esc(lore[1])}</div></button>`;
     }).join('');
     let detail = '';
     const p = PRINCIPLES.find(x => x.id === cur);
@@ -740,7 +740,7 @@
       const needsEl = p.id === 'energy-element';
       detail = `<div class="detail"><h4>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</h4>` +
         `<p><b>${tr('During roleplaying:')}</b> ${esc(p.rp)}</p><p><b>${tr('Minor twist:')}</b> <em>${esc(p.minor)}</em><br><b>${tr('Major twist:')}</b> <em>${esc(p.major)}</em></p>` +
-        `<div class="ab green picked"><div class="ab-top"><span class="ab-name">${esc(abName(p.name))}</span><span class="pill green">${tr('green')}</span><span class="ab-type"${tip(`<h5>${tr('Type: {t}', { t: p.type })}</h5>${window.ABILITY_TYPES[p.type]}`)}>${p.type}</span></div><div class="ab-text">${rulesText(p.ability, { ch: { 'energy/element': st.pch[slot] } })}</div></div>` +
+        `<div class="ab green picked"><div class="ab-top"><span class="ab-name">${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</span><span class="pill green">${tr('green')}</span><span class="ab-type"${tip(`<h5>${tr('Type: {t}', { t: p.type })}</h5>${window.ABILITY_TYPES[p.type]}`)}>${p.type}</span></div><div class="ab-text">${rulesText(p.ability, { ch: { 'energy/element': st.pch[slot] } })}</div></div>` +
         (needsEl ? `<label class="field"><span>${tr('Your element')}</span><select data-bind="pch.${slot}"><option value="">${tr('— choose —')}</option>${CATS['P:elemental'].items.map(i => `<option${st.pch[slot] === i[2] ? ' selected' : ''}>${esc(i[2])}</option>`).join('')}</select></label>` : '') +
         `<small class="muted">${tr('The twist questions are prompts the GM may ask when a twist happens. Record the questions, not answers.')}</small></div>`;
     }
@@ -764,7 +764,7 @@
       ['Twist of Fate', 'One last tweak', 'Retcon'],
       ['Health', 'How much you can endure', 'Health'],
       ['Legend', 'Your name and your sheet', 'Finishing Touches']
-    ].map(([a, b, c]) => [tr(a), tr(b), c]);
+    ].map(([a, b]) => [tr(a), tr(b), '']);
     return `<div class="panel title-page">
       <section class="tp-main">
         <div class="tp-kicker">${tr('A codex for the Sentinels roleplaying system')}</div>
@@ -808,9 +808,9 @@
   const traitGroups = (keys, item) => {
     const G = {};
     for (const k of keys) { const c = TRAIT[k].cat; (G[c] = G[c] || []).push(item(k)); }
-    return Object.entries(G).map(([c, items]) => ({ label: catName(c), sub: CATS[c] ? `${catSc(c)} ${CATS[c].kind === 'quality' ? 'qualities' : 'powers'}` : catSc(c), items }));   // Sentinels names stay English: rulebook look-ups
+    return Object.entries(G).map(([c, items]) => ({ label: catName(c), items }));
   };
-  const traitItem = (k, extra = {}) => ({ k, name: traitName(k), sub: TRAIT[k].rt !== TRAIT[k].sc ? TRAIT[k].sc : '', ...extra });
+  const traitItem = (k, extra = {}) => ({ k, name: traitName(k), ...extra });
   function socket({ bind, d, mark, cur, groups, empty, note, freed }) {
     const all = groups.flatMap(g => g.items);
     const curItem = all.find(i => i.k === cur);
@@ -869,17 +869,17 @@
     if (chosenHtml && !ui.expand[key]) return `<div class="picked-bar">${chosenHtml}<button class="linkbtn" data-act="expand" data-key="${key}">${tr('Change')}</button></div>`;
     return (chosenHtml ? `<div class="picked-bar muted-bar"><span>${tr('Pick a different option below, or')}</span><button class="linkbtn" data-act="collapse" data-key="${key}">${tr('keep the current choice')}</button></div>` : '') + gridHtml;
   }
-  const chosenSummary = (title, sc, lore, champs, extra = '') => `<div class="chosen"><div class="chosen-sc">Sentinels · ${esc(sc)}</div><div class="chosen-t">${esc(title)}</div>${lore ? `<p class="lore">${esc(lore)}</p>` : ''}${champs ? `<p class="champs"><span>${tr('Champions')}</span> ${esc(champs)}</p>` : ''}${extra}</div>`;
+  const chosenSummary = (title, sc, lore, champs, extra = '') => `<div class="chosen"><div class="chosen-t">${esc(title)}</div>${lore ? `<p class="lore">${esc(lore)}</p>` : ''}${champs ? `<p class="champs"><span>${tr('Champions')}</span> ${esc(champs)}</p>` : ''}${extra}</div>`;
 
-  // Option lists in hover cards: Sentinels names in English, Runeterra names in Portuguese.
+  // Option lists in hover cards.
   const optName = o => (PT ? (o.includes(':') ? tr('any {cat}', { cat: catName(o) }) : traitName(o)) : (o.includes(':') ? 'any ' + CATS[o].sc : TRAIT[o].sc));
   function bgTip(b) {
-    return `<h5>${esc(b.rt)}</h5><div class="sc-line">${tr('Sentinels: {sc} background', { sc: esc(b.sc) })}</div>${esc(b.lore)}<hr>` +
+    return `<h5>${esc(b.rt)}</h5>${esc(b.lore)}<hr>` +
       `<b>${tr('Qualities:')}</b> ${tr('assign {dice} to {n} of:', { dice: b.q.dice.join(' + '), n: b.q.count || 2 })} ${esc(b.q.opts.map(optName).join(', '))}` +
       `<br><b>${tr('Principle:')}</b> ${esc(tr(b.principle))}<br><b>${tr('Power Source dice:')}</b> ${b.psDice.join(' ')}<hr><small>${tr('Champions:')} ${esc(b.champs)}</small>`;
   }
   function psTip(p) {
-    return `<h5>${esc(p.rt)}</h5><div class="sc-line">${tr('Sentinels: {sc} power source', { sc: esc(p.sc) })}</div>${esc(p.lore)}<hr>` +
+    return `<h5>${esc(p.rt)}</h5>${esc(p.lore)}<hr>` +
       `<b>${tr('Powers:')}</b> ${esc(p.opts.map(optName).join(', '))}` +
       (p.required ? `<br><b>${tr('Required:')}</b> ${tr('one die to {trait}', { trait: esc(optName(p.required.key)) })}` : '') +
       `<br><b>${tr('Yellow (choose 2):')}</b> ${esc(p.yellow.list.map(abName).join(', '))}` +
@@ -887,8 +887,8 @@
       `<br><b>${tr('Path dice:')}</b> ${p.archDice.join(' ')}<hr><small>${tr('Champions:')} ${esc(p.champs)}</small>`;
   }
   function archTip(a) {
-    if (a.advanced) return `<h5>${esc(a.rt)}</h5><div class="sc-line">${tr('Sentinels: {sc} archetype (advanced)', { sc: esc(a.sc) })}</div>${esc(a.lore)}<hr>${tr(a.divided ? 'Pick a second Path as your base; you gain a civilian and a heroic form plus a transformation method. Principle: Responsibility.' : 'Pick a base Path for your dice, but instead of its abilities you gain switchable modes (Green, Yellow and Red). Principle: from the base Path.')}<hr><small>${tr('Champions:')} ${esc(a.champs)}</small>`;
-    return `<h5>${esc(a.rt)} <small>(${esc(a.role)})</small></h5><div class="sc-line">${tr('Sentinels: {sc} archetype', { sc: esc(a.sc) })}</div>${esc(a.lore)}<hr>` +
+    if (a.advanced) return `<h5>${esc(a.rt)}</h5><div class="sc-line">${tr('advanced')}</div>${esc(a.lore)}<hr>${tr(a.divided ? 'Pick a second Path as your base; you gain a civilian and a heroic form plus a transformation method. Principle: Responsibility.' : 'Pick a base Path for your dice, but instead of its abilities you gain switchable modes (Green, Yellow and Red). Principle: from the base Path.')}<hr><small>${tr('Champions:')} ${esc(a.champs)}</small>`;
+    return `<h5>${esc(a.rt)} <small>(${esc(a.role)})</small></h5>${esc(a.lore)}<hr>` +
       (a.req ? `<b>${tr('Required:')}</b> ${esc(tr(a.req.label))}<br>` : '') +
       `<b>${tr('Powers:')}</b> ${esc(a.powers.map(optName).join(', '))}<br><b>${tr('Qualities:')}</b> ${esc(a.quals.map(optName).join(', '))}` +
       `<br><b>${tr('Green:')}</b> ${esc((a.fixedGreen || []).concat(a.green.list).map(abName).join(', '))}` +
@@ -897,9 +897,8 @@
   }
   const chapterHead = (title, withMethod) => {
     const i = stepIndex(st.step);
-    const sub = (STEPS[i].sub || '').replace('Sentinels: ', '');
     return `<header class="chapter"><div class="chapter-num" aria-hidden="true">${ROMAN[i]}</div>
-      <div class="chapter-titles"><div class="chapter-kicker">${tr('Chapter')} ${ROMAN[i]} <span>${tr('of IX')}</span>${STEPS[i].sub.startsWith('Sentinels') ? `<span class="sc-tag">Sentinels · ${esc(sub)}</span>` : ''}</div><h2 class="chapter-title">${esc(title)}</h2></div>
+      <div class="chapter-titles"><div class="chapter-kicker">${tr('Chapter')} ${ROMAN[i]} <span>${tr('of IX')}</span></div><h2 class="chapter-title">${esc(title)}</h2></div>
       ${withMethod ? methodToggle() : ''}</header>`;
   };
   const stepPanel = (eyebrow, title, introKey, body, withMethod) => `<div class="panel">${chapterHead(title, withMethod)}
@@ -923,7 +922,7 @@
     const H = {
       roll: () => rollerHtml('bg', ['d10', 'd10'], tr('Roll 2d10 for your Origin')),
       pick: () => pickSection('bg', b && chosenSummary(b.rt, b.sc, b.lore, b.champs),
-        (st.method !== 'guided' ? '' : `<p class="muted">${tr('Highlighted cards match your roll.')}</p>`) + cardsHtml(window.BACKGROUNDS, 'bg', st.bg.id, 'bg', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}</div><div class="d">${esc(x.sub)}</div>${fitMark('bg', x.id)}<span class="info" aria-label="${tr('Details')}"${tip(bgTip(x))}>${ico('info')}</span>`)),
+        (st.method !== 'guided' ? '' : `<p class="muted">${tr('Highlighted cards match your roll.')}</p>`) + cardsHtml(window.BACKGROUNDS, 'bg', st.bg.id, 'bg', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="d">${esc(x.sub)}</div>${fitMark('bg', x.id)}<span class="info" aria-label="${tr('Details')}"${tip(bgTip(x))}>${ico('info')}</span>`)),
       assign: () => `<p>${tr('Assign {dice} to {n} of: {opts}.', { dice: b.q.dice.map(d => die(d)).join(' '), n: b.q.count || 2, opts: optsText(b.q.opts) })}${b.q.mustInclude ? ' ' + tr('One die <b>must</b> go to {trait}.', { trait: traitSpan(b.q.mustInclude) }) : ''}</p>${assignHtml(R.slots.bg, expand(b.q.opts), R.before.background, 'bg', tr('Assign each die to a quality:'))}`,
       principle: () => principleHtml('bg', b.principle, R) + `<p class="muted" style="margin-top:10px">${tr('Next step: your Source of Power, rolled with {dice}.', { dice: b.psDice.map(d => die(d, 'sm')).join('') })}</p>`
     };
@@ -959,7 +958,7 @@
     const H = {
       roll: () => rollerHtml('ps', b.psDice, tr('Roll your Origin dice')),
       pick: () => pickSection('ps', p && chosenSummary(p.rt, p.sc, p.lore, p.champs),
-        cardsHtml(window.POWER_SOURCES, 'ps', st.ps.id, 'ps', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}</div><div class="d">${esc(x.sub)}</div>${fitMark('ps', x.id)}<span class="info" aria-label="${tr('Details')}"${tip(psTip(x))}>${ico('info')}</span>`)),
+        cardsHtml(window.POWER_SOURCES, 'ps', st.ps.id, 'ps', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="d">${esc(x.sub)}</div>${fitMark('ps', x.id)}<span class="info" aria-label="${tr('Details')}"${tip(psTip(x))}>${ico('info')}</span>`)),
       assign: () => {
         let optKeys = expand(p.opts);
         if (p.required && !optKeys.includes(p.required.key)) optKeys = [p.required.key].concat(optKeys);
@@ -979,11 +978,11 @@
     const H = {
       roll: () => rollerHtml('arch', p.archDice, tr('Roll your Source dice')),
       pick: () => pickSection('arch', a && chosenSummary(a.rt + ' · ' + a.role, a.sc, a.lore, a.champs),
-        cardsHtml(window.ARCHETYPES, 'arch', st.arch.id, 'arch', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}${x.advanced ? ' · ' + tr('advanced') : ''}</div><div class="d">${esc(x.champs)}</div><span class="info" aria-label="${tr('Details')}"${tip(archTip(x))}>${ico('info')}</span>`)),
+        cardsHtml(window.ARCHETYPES, 'arch', st.arch.id, 'arch', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.role)}${x.advanced ? ' · ' + tr('advanced') : ''}</div><div class="d">${esc(x.champs)}</div><span class="info" aria-label="${tr('Details')}"${tip(archTip(x))}>${ico('info')}</span>`)),
       broll: () => rollerHtml('base', p.archDice, tr('Roll for your base Path')),
       base: () => `<p class="muted">${a.divided ? tr('Your full Path becomes “{name}”.', { name: esc(a.rt) + ' ' + (shape ? esc(shape.rt) : '…') }) : tr('You follow this Path\'s dice rules, but gain modes instead of its abilities.')}</p>` +
         pickSection('base', shape && chosenSummary(shape.rt + ' · ' + shape.role, shape.sc, shape.lore, shape.champs),
-          cardsHtml(window.ARCHETYPES.filter(x => !x.advanced), 'base', st.arch.base, 'base', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}</div><span class="info" aria-label="${tr('Details')}"${tip(archTip(x))}>${ico('info')}</span>`)),
+          cardsHtml(window.ARCHETYPES.filter(x => !x.advanced), 'base', st.arch.base, 'base', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.role)}</div><span class="info" aria-label="${tr('Details')}"${tip(archTip(x))}>${ico('info')}</span>`)),
       assign: () => {
         const optKeys = expand((shape.req ? shape.req.any : []).concat(shape.powers, shape.quals));
         const rem = shape.remPowers === 'one' ? (shape.req ? 'exactly one' : 'Exactly one die') : shape.remPowers === 'any' ? (shape.req ? 'any number' : 'Any number of dice') : (shape.req ? 'one or more' : 'One or more dice');
@@ -999,7 +998,7 @@
           ${shape.healthAlt ? `<p class="sc">${tr('When determining Health you may use a {cat} power instead of an Athletic power or Mental quality.', { cat: esc(shape.healthAlt.map(catName).join(tr(' or '))) })}</p>` : ''}
           ${shape.extraRed ? `<p class="sc">${tr('As a {path}, the Red abilities {list} are added to your options in the Ultimates step.', { path: esc(shape.rt), list: esc(shape.extraRed.map(abName).join(', ')) })}</p>` : ''}`;
       },
-      divm: () => `<div class="principles">${window.DIVIDED.methods.map(m => `<button class="principle${st.arch.divMethod === m.id ? ' selected' : ''}" data-act="divMethod" data-id="${m.id}"${tip(`<h5>${esc(m.rt)}</h5><div class="sc-line">Sentinels: ${esc(m.name)}</div>${esc(m.text)}`)}><div class="pn">${esc(m.rt)}</div><div class="po">${esc(m.name)}</div><div class="ph">${esc(m.text)}</div></button>`).join('')}</div>`,
+      divm: () => `<div class="principles">${window.DIVIDED.methods.map(m => `<button class="principle${st.arch.divMethod === m.id ? ' selected' : ''}" data-act="divMethod" data-id="${m.id}"${tip(`<h5>${esc(m.rt)}</h5>${esc(m.text)}`)}><div class="pn">${esc(m.rt)}</div><div class="ph">${esc(m.text)}</div></button>`).join('')}</div>`,
       group: s => groupHtml(s.group, R, true),
       minions: () => minionFormsHtml(R),
       notes: () => `<p class="muted">${tr(a.modular ? 'Record which powers/dice each mode uses (this goes on your auxiliary sheet).' : 'Record which powers/dice each form uses (this goes on your auxiliary sheet).')}</p><textarea data-bind="arch.notes" data-live="1">${esc(st.arch.notes)}</textarea>`,
@@ -1029,7 +1028,7 @@
       pick: () => pickSection('pers', pe && chosenSummary(pe.rt, pe.sc, '', pe.champs,
         `<div class="status-row"${tip(tr('<h5>Status dice</h5>The third die of every roll. Which one you use depends on your current Health zone.'))}><span class="z g">${tr('Green')} ${die(R.status[0])}</span><span class="z y">${tr('Yellow')} ${die(R.status[1])}</span><span class="z r">${tr('Red')} ${die(R.status[2])}</span></div>` +
         (pe.healthAny ? `<p class="sc">${tr('When determining Health you may use <b>any</b> power or quality.')}</p>` : '')),
-        cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.sc)}</div><div class="dice-row status-row">${statusCell(x)}</div><span class="info" aria-label="${tr('Details')}"${tip(`<h5>${esc(x.rt)}</h5><div class="sc-line">Sentinels: ${esc(x.sc)}</div><b>${tr('Status:')}</b> ${tr('Green')} ${x.status[0]}, ${tr('Yellow')} ${x.status[1]}, ${tr('Red')} ${x.status[2]}<br><b>${tr('Out:')}</b> ${esc(ruleTip(x.out))}<hr><small>${esc(x.champs)}</small>`)}>${ico('info')}</span>`)),
+        cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div><span class="info" aria-label="${tr('Details')}"${tip(`<h5>${esc(x.rt)}</h5><div class="sc-line">Sentinels: ${esc(x.sc)}</div><b>${tr('Status:')}</b> ${tr('Green')} ${x.status[0]}, ${tr('Yellow')} ${x.status[1]}, ${tr('Red')} ${x.status[2]}<br><b>${tr('Out:')}</b> ${esc(ruleTip(x.out))}<hr><small>${esc(x.champs)}</small>`)}>${ico('info')}</span>`)),
       qname: () => `<p class="muted"${tip(traitTip('rp-quality'))}>${tr('A {die} quality that sums up your champion — your “high concept”. Examples: <em>Hextech Prodigy of the Academy</em>, <em>Last Kinkou of the Eastern Isles</em>, <em>Bilgewater\'s Luckiest Liar</em>.', { die: die('d8', 'sm') })}</p>
         <input type="text" data-bind="pers.qname" data-live="1" data-commit="1" value="${esc(st.pers.qname)}" placeholder="${tr('Type your Signature Quality, then press Enter')}">`,
       out: () => {
@@ -1059,7 +1058,7 @@
       const inCat = isX ? [] : Object.values(R.T).filter(t => TRAIT[t.key].cat === c.cat && dn(t.die) >= 6);
       const eligible = isX || inCat.length > 0;
       const label = isX ? c.label : catLabel(c.cat);
-      const sub = isX ? '' : ` <small class="muted">Sentinels: ${esc(catSc(c.cat))} ${CATS[c.cat].kind}s</small>`;
+      const sub = '';
       const cards = c.list.map(({ a, use }) => {
         const idx = s.findIndex(e => e.name === a && e.cat === c.cat);
         const picked = idx >= 0;
@@ -1088,7 +1087,7 @@
     const B = R.before.retcon;
     const traitsOf = kind => sortTraits(Object.values(B).filter(t => TRAIT[t.key].kind === kind)).map(t => t.key);
     const H = {
-      pick: () => `<div class="principles">${window.RETCONS.map(x => `<button class="principle${rc.type === x.id ? ' selected' : ''}" data-act="retcon" data-id="${x.id}"${tip(`<h5>${esc(x.rt)}</h5><div class="sc-line">${tr('Sentinels retcon')}</div>${esc(x.desc || x.sc)}`)}><div class="pn">${esc(x.rt)}</div><div class="ph">${esc(x.desc || x.sc)}</div></button>`).join('')}</div>`,
+      pick: () => `<div class="principles">${window.RETCONS.map(x => `<button class="principle${rc.type === x.id ? ' selected' : ''}" data-act="retcon" data-id="${x.id}"${tip(`<h5>${esc(x.rt)}</h5>${esc(x.desc || x.sc)}`)}><div class="pn">${esc(x.rt)}</div><div class="ph">${esc(x.desc || x.sc)}</div></button>`).join('')}</div>`,
       cfg: () => {
         if (rc.type === 'swap-powers' || rc.type === 'swap-quals') {
           const keys = traitsOf(rc.type === 'swap-powers' ? 'power' : 'quality');
@@ -1239,19 +1238,19 @@
     const i = st.info, pl = st.play;
     const pr = principlesFinal();
     const rows = sheetRows(R);
-    const charLine = (label, d, extra = '') => `<div class="hs-f"><span class="hs-l">${label}</span>${d ? `<span${tip(`<div class="sc-line">Sentinels: ${esc(d.sc)}</div>${esc(d.lore || '')}`)} class="term">${esc(d.rt + extra)}</span> <small class="muted">(${esc(d.sc)})</small>` : BLANK}</div>`;
+    const charLine = (label, d, extra = '') => `<div class="hs-f"><span class="hs-l">${label}</span>${d ? `<span${tip(`${esc(d.lore || '')}`)} class="term">${esc(d.rt + extra)}</span>` : BLANK}</div>`;
     const attr = (label, v) => `<div class="hs-f"><span class="hs-l">${label}</span>${esc(v || '')}</div>`;
     const traitRows = (list, n) => {
       const out = list.map(t => `<tr><td>${t.key === 'rp-quality' && st.pers.qname ? `<span class="term"${tip(traitTip('rp-quality'))}>${esc(st.pers.qname)}</span>` : traitSpan(t.key)}</td><td class="dt">${die(t.die, 'sm')}</td></tr>`);
       while (out.length < n) out.push('<tr><td>&nbsp;</td><td class="dt"></td></tr>');
       return out.join('');
     };
-    const abRow = (r, zone) => `<tr><td class="ic">${iconHtml(r.text)}</td><td class="nm">${esc(r.name)}${r.name !== r.orig ? `<small>${esc(r.orig)}</small>` : ''}</td><td class="ty"${tip(window.ABILITY_TYPES[r.type] || '')}>${esc(r.type)}</td><td class="gt">${rulesText(r.text, r.entry)}</td></tr>`;
+    const abRow = (r, zone) => `<tr><td class="ic">${iconHtml(r.text)}</td><td class="nm">${esc(r.name)}</td><td class="ty"${tip(window.ABILITY_TYPES[r.type] || '')}>${esc(r.type)}</td><td class="gt">${rulesText(r.text, r.entry)}</td></tr>`;
     const emptyRows = (n, have) => Array.from({ length: Math.max(0, n - have) }, () => '<tr><td class="ic"></td><td class="nm">&nbsp;</td><td class="ty"></td><td class="gt"></td></tr>').join('');
     const prRow = (x, r) => `<tr class="pr-row"><td class="ic">${iconHtml(x.p.ability)}</td><td class="nm"><small class="po-lbl">${tr('Principle of')}</small> ${esc(principleShort(x))}</td><td class="ty">${esc(x.p.type)}</td><td class="gt">${rulesText(x.p.ability, { ch: { 'energy/element': st.pch[x.slot] } })}</td></tr>`;
     const check = (path, val, label) => `<input type="checkbox" class="hs-chk" data-bind="${path}" data-live="1"${val ? ' checked' : ''} aria-label="${esc(label)}">`;
     const zone = (cls, label, body) => `<div class="hs-zone ${cls}"><div class="zlbl">${label}</div><table class="hs-ab-t"><thead><tr><th>${tr('Icon')}</th><th>${tr('Name')}</th><th>${tr('Type')}</th><th>${tr('Game text')}</th></tr></thead><tbody>${body}</tbody></table></div>`;
-    const principleCol = x => x ? `<div class="hs-pr"><div class="hs-pr-h">${tr('Principle of')} <b>${esc(principleShort(x))}</b> <small class="muted">${esc(tr(x.p.cat))} · ${esc(x.p.name)}</small></div>
+    const principleCol = x => x ? `<div class="hs-pr"><div class="hs-pr-h">${tr('Principle of')} <b>${esc(principleShort(x))}</b> <small class="muted">${esc(tr(x.p.cat))}</small></div>
       <div class="hs-pr-s"><span class="hs-l">${tr('During roleplaying')}</span>${esc(principleText(x, x.p.rp))}</div>
       <div class="hs-pr-s"><span class="hs-l">${tr('Minor twist')}</span>${esc(x.p.minor)}</div>
       <div class="hs-pr-s"><span class="hs-l">${tr('Major twist')}</span>${esc(x.p.major)}</div></div>` : `<div class="hs-pr"><div class="hs-pr-h">${tr('Principle of')} …</div></div>`;
@@ -1300,95 +1299,7 @@
     </div>`;
   }
 
-  // ------------------------------------------------------------------ official PDF export (Form Fillable Hero Sheet)
-  const pdfSafe = s => String(s == null ? '' : s)
-    .replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, '-')
-    .replace(/…/g, '...').replace(/★/g, '*').replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, '');
-
-  function sheetFieldValues(R) {
-    const F = {}, D = {}, C = {}, sizes = {};
-    const bg = bgDef(), ps = psDef(), ar = archDef(), shape = shapeDef(), pe = persDef();
-    const i = st.info, pl = st.play;
-    const both = d => (d ? `${d.rt} (${d.sc})` : '');
-    Object.assign(F, {
-      'Player': i.player, 'Hero Name': i.name, 'Alias': i.alias, 'Gender': i.gender, 'Age': i.age, 'Height': i.height,
-      'Eyes': i.eyes, 'Hair': i.hair, 'Skin': i.skin, 'Build': i.build,
-      'Costume/Equipment': [i.costume, regionDef() ? tr('Homeland') + ': ' + regionDef().name : ''].filter(Boolean).join('\n'),
-      'Background': both(bg), 'Power Source': both(ps),
-      'Archetype': ar ? (shape && shape !== ar ? `${ar.rt} ${shape.rt} (${ar.sc} ${shape.sc})` : both(ar)) : '',
-      'Personality': both(pe)
-    });
-    for (const k of ['Background', 'Power Source', 'Archetype', 'Personality']) {
-      const n = (F[k] || '').length;
-      if (n > 16) sizes[k] = n > 34 ? 5 : n > 26 ? 6 : 7;
-    }
-    const pr = principlesFinal();
-    pr.forEach((x, n) => {
-      const sfx = n ? ' 2' : '';
-      F['Principle' + sfx] = principleShort(x);
-      F['During Roleplaying' + sfx] = principleText(x, x.p.rp);
-      F['Minor Twist' + sfx] = x.p.minor;
-      F['Major Twist' + sfx] = x.p.major;
-    });
-    const fillTraits = (list, fieldBase, dieStart) => {
-      const rows = list.slice(0, 6);
-      if (list.length > 6) rows[5] = { merged: list.slice(5) };
-      rows.forEach((t, n) => {
-        const f = n ? `${fieldBase} ${n + 1}` : fieldBase;
-        if (t.merged) { F[f] = t.merged.map(x => `${sheetTraitName(x.key)} ${x.die}`).join(', '); sizes[f] = 6; }
-        else { F[f] = sheetTraitName(t.key); D['Die Type ' + (dieStart + n)] = t.die; }
-      });
-    };
-    fillTraits(sortTraits(owned(R, 'power')), 'Powers', 1);
-    fillTraits(sortTraits(owned(R, 'quality')), 'Qualities', 7);
-    if (R.status) R.status.forEach((d, n) => { D['Die Type ' + (13 + n)] = d; });
-    const h = healthCalc(R);
-    if (h) {
-      F['Health Range 1'] = `${h.green[0]}-${h.green[1]}`;
-      F['Health Range 2'] = `${h.yellow[0]}-${h.yellow[1]}`;
-      F['Health Range 3'] = `${h.redR[0]}-1`;
-      F['Health Range 4'] = String(pl.current == null || pl.current === '' ? h.max : pl.current);
-    }
-    const rows = sheetRows(R);
-    const put = (slot, r) => {
-      const sfx = slot === 1 ? '' : ' ' + slot;
-      F['Icon' + sfx] = actionIcons(r.text).slice(0, 2).map(a => ICONS[a][0]).join(' ');
-      F['Name' + sfx] = r.name;
-      D['Type' + sfx] = r.type === 'A/I' ? 'A' : r.type;
-      F['Text' + sfx] = r.textPlain;
-      sizes['Text' + sfx] = r.textPlain.length > 230 ? 5 : r.textPlain.length > 150 ? 6 : 7;
-      sizes['Icon' + sfx] = 4.5;
-    };
-    const zoneFill = (list, first, count) => {
-      const L = list.map(r => ({ ...r, textPlain: plainText(r.text, r.entry) }));
-      if (L.length > count) {
-        const extra = L.slice(count - 1);
-        L.splice(count - 1, L.length, { name: extra.map(r => r.name).join(' / '), type: extra[0].type, text: '', textPlain: extra.map(r => `${r.name}: ${r.textPlain}`).join(' | ') });
-      }
-      L.forEach((r, n) => put(first + n, r));
-      return list.length > count;
-    };
-    const over = [];
-    if (zoneFill(rows.green, 1, 5)) over.push(tr('Green'));
-    pr.forEach((x, n) => {
-      const slot = 6 + n;
-      F['Icon ' + slot] = actionIcons(x.p.ability).slice(0, 2).map(a => ICONS[a][0]).join(' ');
-      sizes['Icon ' + slot] = 4.5;
-      F['Name ' + slot] = principleShort(x);
-      D['Type ' + slot] = x.p.type;
-      F['Text ' + slot] = principleText(x, ruleSrc(x.p.ability));
-      sizes['Text ' + slot] = 7;
-    });
-    if (zoneFill(rows.yellow, 8, 5)) over.push(tr('Yellow'));
-    if (zoneFill(rows.red, 13, 3)) over.push(tr('Red'));
-    if (rows.out) F['Out'] = plainText(rows.out.text, rows.out.entry);
-    for (let n = 0; n < 5; n++) C['Check Box ' + (n + 1)] = !!pl.hp[n];
-    for (let n = 0; n < 16; n++) C['Check Box ' + (n + 6)] = !!pl.rw[n];
-    ['Back Issues', 'Back Issues 2', 'Back Issues 3', 'Back Issues 4', 'Back Issues 5', 'Back Issues 6'].forEach((f, n) => { F[f] = pl.issues[n] || ''; });
-    for (let n = 0; n < 8; n++) F[n ? 'Collected Trades ' + (n + 1) : 'Collected Trades'] = (pl.cdone[n] ? '[X] ' : '') + (pl.coll[n] || '');
-    return { F, D, C, sizes, over };
-  }
-
+  // ------------------------------------------------------------------ PDF export
   const downloadPdf = (bytes, suffix) => {
     const blob = new Blob([bytes], { type: 'application/pdf' });
     const a = document.createElement('a');
@@ -1420,57 +1331,6 @@
     }
   }
 
-  let pdfTemplate = null; // ArrayBuffer chosen by the user when fetch is unavailable (file://)
-  async function exportOfficialPdf() {
-    const status = document.getElementById('pdf-status');
-    const say = (msg, isErr) => { if (status) { status.innerHTML = msg; status.className = isErr ? 'issues' : 'okbox'; } };
-    if (!window.PDFLib) { say(tr('The PDF library failed to load.'), true); return; }
-    let bytes = pdfTemplate;
-    if (!bytes) {
-      try {
-        const r = await fetch('assets/hero-sheet.pdf');
-        if (!r.ok) throw new Error(r.status);
-        bytes = await r.arrayBuffer();
-      } catch (e) {
-        say(tr('Your browser blocked loading <code>assets/hero-sheet.pdf</code> (this happens when opening the page straight from disk). <label class="btn small" for="template-file">Choose the blank Form Fillable Hero Sheet PDF</label> and the export will continue — or serve the folder with any web server.'), true);
-        return;
-      }
-    }
-    try {
-      say(tr('Filling your hero sheet…'));
-      const { PDFDocument, StandardFonts } = window.PDFLib;
-      const doc = await PDFDocument.load(bytes);
-      const form = doc.getForm();
-      const font = await doc.embedFont(StandardFonts.Helvetica);
-      const R = compute();
-      const { F, D, C, sizes, over } = sheetFieldValues(R);
-      for (const [name, val] of Object.entries(F)) {
-        try {
-          const f = form.getTextField(name);
-          f.setText(pdfSafe(val));
-          f.setFontSize(sizes[name] || (f.isMultiline() ? 8 : 9));
-        } catch (e) { /* field missing in this template */ }
-      }
-      for (const [name, val] of Object.entries(D)) {
-        try { const f = form.getDropdown(name); if (f.getOptions().includes(val)) f.select(val); } catch (e) { /* ignore */ }
-      }
-      for (const [name, val] of Object.entries(C)) {
-        try { const f = form.getCheckBox(name); if (val) f.check(); else f.uncheck(); } catch (e) { /* ignore */ }
-      }
-      if (st.info.portrait) {
-        try {
-          const img = st.info.portrait.startsWith('data:image/png') ? await doc.embedPng(st.info.portrait) : await doc.embedJpg(st.info.portrait);
-          form.getButton('Character Image').setImage(img);
-        } catch (e) { /* ignore image problems */ }
-      }
-      form.updateFieldAppearances(font);
-      downloadPdf(await doc.save(), '_official_sheet.pdf');
-      say(tr('Official Sentinels hero sheet downloaded.') + (over.length ? ' ' + tr('Note: your {zones} zone has more abilities than the sheet has rows, so the extras were combined into the last row.', { zones: over.join(' & ') }) : ''));
-    } catch (e) {
-      say(tr('Could not fill the PDF:') + ' ' + esc(e.message), true);
-    }
-  }
-
   function renderFinish() {
     const R = R0;
     const i = st.info;
@@ -1497,8 +1357,7 @@
       ${flowHtml('finish', sectionsFor('finish', R), H)}
       <section class="flow-sec ${done ? 'current' : 'locked'}" id="flow-finish-export"><div class="flow-head"><span class="flow-num">${done ? ico('mark') : ico('lock')}</span><h3>${tr('Your hero sheet')}</h3>${done ? '' : `<span class="flow-lock">${tr('Sealed — name your champion first')}</span>`}</div>
       ${done ? `<div class="flow-body"><p class="muted">${tr('Your sheet is below, laid out like the official two-page <em>Sentinel Comics RPG</em> hero sheet. Hero points, back issues, collections and current Health can be ticked and edited right on it during play.')}</p><div id="pdf-status"></div><input id="template-file" type="file" accept="application/pdf,.pdf" hidden>
-        <div class="export-row"><button class="btn primary" data-act="pdf">${ico('download')} ${tr('Export PDF hero sheet')}</button><button class="btn" data-act="print">${tr('Print')}</button><button class="btn" data-act="export">${tr('Export JSON')}</button></div>
-        <p class="muted" style="margin-top:10px">${tr('Need the official Sentinels layout instead?')} <button class="linkbtn" data-act="pdfOfficial">${tr('Download the official form-fillable sheet')}</button></p></div>` : ''}</section>
+        <div class="export-row"><button class="btn primary" data-act="pdf">${ico('download')} ${tr('Export PDF hero sheet')}</button><button class="btn" data-act="print">${tr('Print')}</button><button class="btn" data-act="export">${tr('Export JSON')}</button></div></div>` : ''}</section>
       <div class="step-footer"><button class="btn ghost" data-act="back">${ico('prev')} ${tr('Back')}</button><span></span></div></div>
       <div class="panel" id="sheet-preview">${sheetHtml(R)}</div>`;
   }
@@ -1527,7 +1386,7 @@
       const status = tr(locked ? 'Sealed' : st.step === s.id ? 'You are here' : s.id === 'intro' ? '' : I.length ? 'Unfinished' : 'Complete');
       return `<li class="${cls}"><button data-act="go" data-step="${s.id}"${locked ? ` disabled title="${tr('Complete the previous chapters first')}"` : ''}${st.step === s.id ? ' aria-current="step"' : ''}>
         <span class="rail-mark"><span>${i === 0 ? '·' : ROMAN[i]}</span></span>
-        <span class="rail-label"><span class="rail-name">${esc(s.name)}</span><span class="rail-sub">${esc(status || s.sub.replace('Sentinels: ', ''))}</span></span></button></li>`;
+        <span class="rail-label"><span class="rail-name">${esc(s.name)}</span><span class="rail-sub">${esc(status || s.sub)}</span></span></button></li>`;
     }).join('')}</ol>`;
   }
 
@@ -1555,7 +1414,7 @@
       <div class="dos-sec"><h4>${tr('Qualities')}</h4>${quals.length ? `<ul class="ledger">${quals.map(row).join('')}</ul>` : `<p class="dos-empty">${tr('None yet — gained from your Origin.')}</p>`}</div>
       ${R.status ? `<div class="dos-sec"><h4>${tr('Status')}</h4><div class="dos-status"><span class="z g">${die(R.status[0])}<i>${tr('Green')}</i></span><span class="z y">${die(R.status[1])}<i>${tr('Yellow')}</i></span><span class="z r">${die(R.status[2])}<i>${tr('Red')}</i></span>${h ? `<span class="dos-hp"><b>${h.max}</b><i>${tr('Health')}</i></span>` : ''}</div></div>` : ''}
       <div class="dos-sec"><h4>${tr('Abilities')}</h4><p class="dos-counts"><span class="c-g">${cnt('green')} ${tr(cnt('green') === 1 ? 'Green' : 'Greens')}</span><span class="c-y">${cnt('yellow')} ${tr(cnt('yellow') === 1 ? 'Yellow' : 'Yellows')}</span><span class="c-r">${cnt('red')} ${tr(cnt('red') === 1 ? 'Red' : 'Reds')}</span>${pe ? `<span>${tr('Out')}</span>` : ''}</p></div>
-      <div class="dos-sec"><h4>${tr('Principles')}</h4>${principlesFinal().map(x => `<p class="dos-principle"><span class="term"${tip(`<h5>${esc(x.p.name)}</h5>${esc(x.p.rp)}`)}>${esc((window.PRINCIPLE_LORE[x.id] || [x.p.name])[0])}</span><small>${esc(tr(x.p.cat))}</small></p>`).join('') || `<p class="dos-empty">${tr('None yet.')}</p>`}</div>
+      <div class="dos-sec"><h4>${tr('Principles')}</h4>${principlesFinal().map(x => `<p class="dos-principle"><span class="term"${tip(`<h5>${esc((window.PRINCIPLE_LORE[x.id] || [x.p.name])[0])}</h5>${esc(x.p.rp)}`)}>${esc((window.PRINCIPLE_LORE[x.id] || [x.p.name])[0])}</span><small>${esc(tr(x.p.cat))}</small></p>`).join('') || `<p class="dos-empty">${tr('None yet.')}</p>`}</div>
     </div>`;
   }
 
@@ -1720,7 +1579,6 @@
     if (act === 'hroll') { st.health.roll = roll(['d8'])[0]; render(); return; }
     if (act === 'export') { exportJson(); return; }
     if (act === 'pdf') { exportPdf(); return; }
-    if (act === 'pdfOfficial') { exportOfficialPdf(); return; }
     if (act === 'clearPortrait') { st.info.portrait = null; render(); return; }
     if (act === 'print') {
       if (stepIndex('finish') > st.maxStep) { showTipFor(el, tr('<h5>Not yet</h5>Finish creating your champion first — the sheet is printed from the last step.')); setTimeout(hideTip, 2200); return; }
@@ -1741,11 +1599,6 @@
     const el = ev.target;
     if (el.id === 'import-file') { importJson(el.files[0]); el.value = ''; return; }
     if (el.id === 'portrait-file') { loadPortrait(el.files[0]); el.value = ''; return; }
-    if (el.id === 'template-file') {
-      const f = el.files[0]; el.value = '';
-      if (f) f.arrayBuffer().then(b => { pdfTemplate = b; exportOfficialPdf(); });
-      return;
-    }
     if (!el.dataset.bind) return;
     bindValue(el);
     if (el.dataset.live && !el.dataset.commit) { renderSideOnly(!!el.closest('#sheet-preview')); document.getElementById('nav').innerHTML = renderNav(); return; }

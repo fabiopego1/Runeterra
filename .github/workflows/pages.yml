@@ -29,7 +29,6 @@ jobs:
           mkdir -p _site/assets
           cp index.html gm.html _site/
           cp -r css js _site/
-          cp assets/hero-sheet.pdf _site/assets/
           cp -r assets/fonts _site/assets/
           touch _site/.nojekyll
           # Cache-bust: stamp CSS/JS URLs with the commit so browsers never mix old and new files.

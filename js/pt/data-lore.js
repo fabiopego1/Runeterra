@@ -1,5 +1,5 @@
 // pt-BR: traços, categorias, dados, glossário, regiões e textos de passo.
-// Os nomes do Sentinels (sc) ficam em inglês para consulta ao livro; o resto é adaptado.
+// Os nomes do livro (sc) ficam em inglês só para uso interno e para o Escudo do Mestre; o resto é adaptado.
 (() => {
   'use strict';
   const W = window;
@@ -138,7 +138,7 @@
     'Green zone': 'Seu status com Vida alta: você rola seu dado de status Verde e usa habilidades Verdes. <em>Runeterra:</em> descansado, começando a luta.',
     'Yellow zone': 'Vida média: você rola seu dado de status Amarelo e libera as habilidades Amarelas (além das Verdes).',
     'Red zone': 'Vida baixa: você rola seu dado de status Vermelho e libera suas habilidades Vermelhas, as mais poderosas. Heróis dão o seu melhor quando estão desesperados.',
-    'status die': 'O terceiro dado da sua reserva, definido pela sua personalidade e pela sua zona atual (Verde/Amarela/Vermelha).',
+    'status die': 'O terceiro dado da sua reserva, definido pelo seu Temperamento e pela sua zona atual (Verde/Amarela/Vermelha).',
     'minor twist': 'Uma complicação com consequências limitadas. O Mestre pode se inspirar na pergunta de Reviravolta Menor do seu princípio.',
     'major twist': 'Uma complicação que muda os rumos da história. O Mestre pode se inspirar na pergunta de Reviravolta Maior do seu princípio.',
     'twist': 'Uma complicação narrativa que o Mestre introduz, muitas vezes inspirada nos seus princípios.',
@@ -168,7 +168,7 @@
     'A/I': 'Uma Ação e também um efeito Inerente.'
   };
   W.COLOR_INFO = {
-    green: 'Habilidades Verdes podem ser usadas em qualquer zona. A maioria dos heróis tem várias: da fonte de poder, do arquétipo e dos dois princípios.',
+    green: 'Habilidades Verdes podem ser usadas em qualquer zona. A maioria dos heróis tem várias: da Fonte de Poder, do Caminho e dos dois princípios.',
     yellow: 'Habilidades Amarelas são liberadas quando você cai para a zona Amarela (ou Vermelha). Quanto mais a luta vira contra você, mais forte você fica.',
     red: 'Habilidades Vermelhas só liberam na zona Vermelha. São suas supremas: desesperadas, dramáticas, decisivas.',
     out: 'Sua habilidade de Nocaute é usada quando você está incapacitado (0 de Vida): mesmo nocauteado, você ainda ajuda o grupo uma vez por rodada.'
@@ -270,14 +270,14 @@
   for (const r of W.REGIONS) { const v = RG[r.id]; if (v) { r.name = v[0]; r.tag = v[1]; r.lore = v[2]; } }
 
   W.STEP_INTROS = {
-    region: 'Escolha a terra que moldou seu campeão. Esta escolha é puro sabor de Runeterra e <b>não tem mecânica do Sentinels</b>, mas cada região destaca Origens, Fontes e Princípios que combinam com ela.',
-    background: 'Sua <b>Origem</b> é de onde seu campeão veio antes de virar uma lenda. <span class="sc">Sentinels: <b>Step 1 – Background</b> (Antecedente). Dá suas qualidades, um princípio e os dados da sua Fonte de Poder.</span>',
-    powersource: 'Sua <b>Fonte de Poder</b> é o que te transformou e o que alimenta suas habilidades. <span class="sc">Sentinels: <b>Step 2 – Power Source</b> (Fonte de Poder). Atribua os dados do seu Antecedente a poderes, ganhe habilidades Amarelas e Verdes e os dados do seu Caminho.</span>',
-    archetype: 'Seu <b>Caminho</b> é como você luta e que papel cumpre no grupo. <span class="sc">Sentinels: <b>Step 3 – Archetype</b> (Arquétipo). Atribua os dados da sua Fonte de Poder a poderes/qualidades, ganhe habilidades Verdes (e Amarelas) e seu segundo princípio.</span>',
-    personality: 'Seu <b>Temperamento</b> é como você reage sob pressão. <span class="sc">Sentinels: <b>Step 4 – Personality</b> (Personalidade). Define seus dados de status Verde/Amarelo/Vermelho, sua habilidade de Nocaute e uma "qualidade de interpretação" personalizada em d8.</span>',
-    red: 'Escolha duas <b>técnicas Supremas</b>, aquilo que você libera quando tudo está em jogo. <span class="sc">Sentinels: <b>Step 5 – Red Abilities</b> (Habilidades Vermelhas). Escolha duas de categorias em que você tenha um poder ou qualidade em d6 ou mais.</span>',
-    retcon: 'Uma <b>Reviravolta do Destino</b> deixa você ajustar sua lenda antes que ela comece. <span class="sc">Sentinels: <b>Step 6 – Retcon</b>. Escolha exatamente uma opção.</span>',
-    health: 'Quanto castigo você aguenta? <span class="sc">Sentinels: <b>Step 7 – Health</b> (Vida). 8 + máximo do dado de status Vermelho + máximo de um poder Atlético ou qualidade Mental (d4 se não tiver) + rolagem de d8 (ou 4).</span>',
-    finish: 'Dê nome ao seu campeão, descreva-o e dê nomes runeterranos de verdade às suas habilidades. <span class="sc">Sentinels: <b>Step 8 – Finishing Touches</b> (Toques Finais).</span>'
+    region: 'Escolha a terra que moldou seu campeão. Esta escolha é puro sabor e <b>não muda nenhuma regra</b>, mas cada região destaca Origens, Fontes e Princípios que combinam com ela.',
+    background: 'Sua <b>Origem</b> é de onde seu campeão veio antes de virar uma lenda. <span class="sc">Ela te dá qualidades, seu primeiro princípio e os dados da sua Fonte de Poder.</span>',
+    powersource: 'Sua <b>Fonte de Poder</b> é o que te transformou e o que alimenta suas habilidades. <span class="sc">Atribua os dados da sua Origem a poderes, ganhe habilidades Amarelas e Verdes e os dados do seu Caminho.</span>',
+    archetype: 'Seu <b>Caminho</b> é como você luta e que papel cumpre no grupo. <span class="sc">Atribua os dados da sua Fonte de Poder a poderes e qualidades, ganhe habilidades Verdes (e às vezes Amarelas) e seu segundo princípio.</span>',
+    personality: 'Seu <b>Temperamento</b> é como você reage sob pressão. <span class="sc">Ele define seus dados de status Verde, Amarelo e Vermelho, sua habilidade de Nocaute e sua Qualidade Marcante em d8.</span>',
+    red: 'Escolha duas <b>técnicas Supremas</b>, aquilo que você libera quando tudo está em jogo. <span class="sc">Escolha entre categorias em que você tenha um poder ou qualidade em d6 ou mais.</span>',
+    retcon: 'Uma <b>Reviravolta do Destino</b> deixa você ajustar sua lenda antes que ela comece. <span class="sc">Escolha exatamente uma opção.</span>',
+    health: 'Quanto castigo você aguenta? <span class="sc">Sua Vida é 8 + o valor máximo do seu dado de status Vermelho + o valor máximo de um poder Atlético ou qualidade Mental (d4 se não tiver) + uma rolagem de d8 (ou 4).</span>',
+    finish: 'Dê nome ao seu campeão, descreva-o e dê nomes runeterranos de verdade às suas habilidades.'
   };
 })();
