@@ -45,7 +45,7 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
-html { font-size: 120%; }             /* reading size: everything is sized in rem, so this scales the whole interface */
+html { font-size: 108%; }             /* reading size: everything is sized in rem, so this scales the whole interface */
 body {
   font-family: var(--font-ui);
   font-size: 1rem;
@@ -143,9 +143,9 @@ kbd { font-family: var(--font-mono); font-size: .7em; border: 1px solid var(--li
    Layout — chronicle rail | open stage | champion dossier
    ========================================================================== */
 .layout { display: grid; grid-template-columns: 13rem minmax(0, 1fr) 20rem; max-width: 1960px; margin: 0 auto; padding: 36px 32px 72px; }
-.steps-nav { position: sticky; top: 92px; align-self: start; padding-right: 24px; }
+.steps-nav { position: sticky; top: 87px; align-self: start; padding-right: 24px; }
 main.stage { min-width: 0; padding: 0 44px; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
-aside.sheet-side { position: sticky; top: 92px; align-self: start; max-height: calc(100vh - 110px); overflow: auto; padding-left: 28px; scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+aside.sheet-side { position: sticky; top: 87px; align-self: start; max-height: calc(100vh - 105px); overflow: auto; padding-left: 28px; scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 .panel { position: relative; }
 .panel + .panel { margin-top: 40px; }
 
@@ -761,7 +761,7 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 
 /* Chapter IX: biography + lore guide */
 .bio-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 26px; align-items: start; }
-.bio-write { position: sticky; top: 84px; }
+.bio-write { position: sticky; top: 76px; }
 .bio-write textarea { min-height: 24rem; resize: vertical; line-height: 1.6; }
 .bio-guide { display: grid; gap: 12px; }
 .bio-guide-h { display: flex; align-items: center; gap: 8px; font: .66rem var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--gold); }
@@ -782,7 +782,7 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 /* ==========================================================================
    Site pages: Lore (lore.html) and Regras (regras.html)
    ========================================================================== */
-.site-page { --hdr: 64px; }
+.site-page { --hdr: 59px; }
 .site-nav a[aria-current="page"] { color: var(--gold-hi); border-bottom-color: var(--gold); }
 .page { max-width: 1320px; margin: 0 auto; padding: 0 28px 60px; }
 .page .eyebrow { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); }
