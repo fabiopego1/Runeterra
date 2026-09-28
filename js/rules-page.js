@@ -6,6 +6,8 @@
   // Parts read in order (O básico → Na cena de ação → Entre as cenas); sections are numbered straight through.
   const GROUPS = (window.CHEAT_GROUPS_PT || [{ name: 'Regras', lede: '' }]).map(g => ({ ...g, items: SECTIONS.filter(s => (s.group || 'Regras') === g.name) }));
   const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
+  // On wide screens rule cards sit two by two; the long ones (tables, step-by-step) keep the full width.
+  const WIDE = ['actions', 'mods', 'twists', 'enemies', 'gm-scene', 'gm-tracker', 'gm-challenges', 'gm-minions', 'example'];
   const numOf = s => String(SECTIONS.indexOf(s) + 1).padStart(2, '0');
   const G = window.GLOSSARY || {};
   const LABEL = (window.I18N && window.I18N.glossLabel) || {};
@@ -46,7 +48,7 @@
         ${GROUPS.map((g, gi) => `<section class="rules-part" id="part-${gi + 1}">
           <header class="group-head"><div><div class="eyebrow">Parte ${ROMAN[gi]}</div><h2>${esc(g.name)}</h2>${g.lede ? `<p>${esc(g.lede)}</p>` : ''}</div></header>
           <div class="rule-list">${g.items.map(s => `
-            <section class="cs-sec rule-card" id="cs-${s.id}">
+            <section class="cs-sec rule-card${WIDE.includes(s.id) ? ' wide' : ''}" id="cs-${s.id}">
               <header class="rule-head"><span class="group-num">${numOf(s)}</span><h2>${esc(s.title)}</h2></header>
               ${s.body}</section>`).join('')}
           </div>

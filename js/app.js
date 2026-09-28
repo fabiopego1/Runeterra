@@ -1278,6 +1278,7 @@
     st.evo.log = keep.log.concat({ kind: 'rewrite', from: '', to: '', coll, t: Date.now() });
     st.maxStep = stepIndex('background'); st.step = 'background';
     ui.evo = { tab: 'power', from: '', to: '', ch: {} };
+    if (SHEET_PAGE) { save(); location.href = 'index.html'; return; }   // the chapters live in the Forge
     render(); scrollTo(0, 0);
   }
 
@@ -1332,7 +1333,7 @@
       <div class="flow-body">
         <p class="muted">${tr('Every six back issues become a collection, and a collection closes a storyline. Between collections your champion can change. Pick the size of the change:')}</p>
         <div class="evo-ways">
-          <div><b>${tr('Cosmetic changes')}</b><span>${tr('New look, alias, costume or name. Just edit the fields above: no rules involved.')}</span></div>
+          <div><b>${tr('Cosmetic changes')}</b><span>${tr('New look, alias, costume or name: edit them in the Legend chapter of the Forge. No rules involved.')}</span></div>
           <div class="on"><b>${tr('Change details')}</b><span>${tr('Swap one power or quality for another of the same die, one principle for another, or one ability for another of the same colour. Use the form below.')}</span></div>
           <div><b>${tr('Major rewrite')}</b><span>${tr('When too much changed, go through creation again with the Constructed method, keeping the champion\'s history.')}</span></div>
         </div>
@@ -1468,7 +1469,7 @@
       <div class="hs-pr-s"><span class="hs-l">${tr('Minor twist')}</span>${esc(x.p.minor)}</div>
       <div class="hs-pr-s"><span class="hs-l">${tr('Major twist')}</span>${esc(x.p.major)}</div></div>` : `<div class="hs-pr"><div class="hs-pr-h">${tr('Principle of')} …</div></div>`;
     return `<div class="hero-sheet">
-      <div class="hs-page">
+      <div class="hs-page" id="hs-p1">
         <div class="hs-top">
           <div class="hs-portrait">${i.portrait ? `<img src="${i.portrait}" alt="${tr('Portrait of {name}', { name: esc(i.name || tr('your champion')) })}">` : `<span class="muted">${tr('Portrait')}</span>`}</div>
           <div class="hs-idblock">
@@ -1492,7 +1493,7 @@
           <div class="hs-card"><div class="hs-h"${tip(window.GLOSSARY.collection + ' ' + tr('Tick a collection when it is complete — that is when your champion advances.'))}>${tr('Collections')}</div>${[0, 1, 2, 3, 4, 5, 6, 7].map(n => `<div class="hs-coll">${check(`play.cdone.${n}`, pl.cdone[n], tr('Collection {n} complete', { n: n + 1 }))}<input class="hs-line" type="text" data-bind="play.coll.${n}" data-live="1" value="${esc(pl.coll[n] || '')}" aria-label="${tr('Collection {n}', { n: n + 1 })}"></div>`).join('')}</div>
         </div>
       </div>
-      <div class="hs-page">
+      <div class="hs-page" id="hs-p2">
         <div class="hs-card hs-3"><div><div class="hs-h">${tr('Hero Name')}</div>${esc(i.name || '')}</div><div><div class="hs-h">${tr('Alias')}</div>${esc(i.alias || '')}</div><div><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}</div></div>
         <div class="hs-stats">
           <table class="hs-traits"><thead><tr><th>${tr('Powers')}</th><th>${tr('Die')}</th></tr></thead><tbody>${traitRows(powers, 6)}</tbody></table>
@@ -1523,8 +1524,8 @@
     const side = `${forms.length ? `<div class="hs-card"><div class="hs-h"${tip(tr('<h5>Minion forms</h5>When you create a minion you may discard one bonus you have access to in order to add a form with that bonus value or higher. The number of forms you know equals the maximum value of a related quality.'))}>${tr('Minion forms')}</div>
               ${forms.map(n => { const f = window.MINION_FORMS.find(x => x[0] === n) || [n, '', '']; return `<div class="hs-form"><b>${esc(abName(n))}</b> <small>${tr('{b} or higher', { b: esc(f[2]) })}</small><div>${rulesText(f[1])}</div></div>`; }).join('')}</div>` : ''}
             ${st.arch.notes ? `<div class="hs-card"><div class="hs-h">${tr('Forms and modes')}</div><div class="hs-pre">${esc(st.arch.notes)}</div></div>` : ''}
-            ${log.length ? `<div class="hs-card"><div class="hs-h"${tip(tr('Changes made between collections (Legend chapter, “Evolve your champion”).'))}>${tr('Evolution')}</div>${log.map(e => `<div class="hs-evo">${e.coll ? `<small>${esc(e.coll)}</small>` : ''}${e.kind === 'rewrite' ? esc(tr('The champion was rewritten from scratch.')) : `${esc(e.from)} → ${esc(e.to)}`}</div>`).join('')}</div>` : ''}`.trim();
-    return `<div class="hs-page hs-aux">
+            ${log.length ? `<div class="hs-card"><div class="hs-h"${tip(tr('Changes made between collections (Sheet page, “Evolve your champion” tab).'))}>${tr('Evolution')}</div>${log.map(e => `<div class="hs-evo">${e.coll ? `<small>${esc(e.coll)}</small>` : ''}${e.kind === 'rewrite' ? esc(tr('The champion was rewritten from scratch.')) : `${esc(e.from)} → ${esc(e.to)}`}</div>`).join('')}</div>` : ''}`.trim();
+    return `<div class="hs-page hs-aux" id="hs-p3">
         <div class="hs-card hs-3"><div><div class="hs-h">${tr('Hero Name')}</div>${esc(i.name || '')}</div><div><div class="hs-h">${tr('Alias')}</div>${esc(i.alias || '')}</div><div><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}</div></div>
         <div class="hs-aux-grid${side ? '' : ' solo'}">
           <div class="hs-card hs-bio"><div class="hs-h">${tr('Biography')}</div>${paras.length ? paras.map(p => `<p>${esc(p)}</p>`).join('') : lines(12)}</div>
@@ -1599,7 +1600,8 @@
       <section class="flow-sec ${done ? 'current' : 'locked'}" id="flow-finish-export"><div class="flow-head"><span class="flow-num">${done ? ico('mark') : ico('lock')}</span><h3>${tr('Your hero sheet')}</h3>${done ? '' : `<span class="flow-lock">${tr('Sealed — name your champion first')}</span>`}</div>
       ${done ? `<div class="flow-body"><p class="muted">${tr('Your sheet is below, laid out like the official two-page <em>Sentinel Comics RPG</em> hero sheet. Hero points, back issues, collections and current Health can be ticked and edited right on it during play.')}</p><div id="pdf-status"></div><input id="template-file" type="file" accept="application/pdf,.pdf" hidden>
         <div class="export-row"><button class="btn primary" data-act="pdf">${ico('download')} ${tr('Export PDF hero sheet')}</button><button class="btn" data-act="print">${tr('Print')}</button><button class="btn" data-act="export">${tr('Export JSON')}</button></div></div>` : ''}</section>
-      ${done ? evolveHtml() : ''}
+      ${done ? `<div class="sheet-cta"><div><b>${tr('Your sheet has its own page')}</b><p class="muted">${tr('Full screen, with the Health tracker always at hand for play and the Evolve your champion tools.')}</p></div>
+        <div class="export-row"><a class="btn primary" href="ficha.html">${ico('file')} ${tr('Open the sheet')}</a><a class="btn" href="ficha.html#evoluir">${ico('reset')} ${tr('Evolve your champion')}</a></div></div>` : ''}
       <div class="step-footer"><button class="btn ghost" data-act="back">${ico('prev')} ${tr('Back')}</button><span></span></div></div>
       <div class="panel" id="sheet-preview">${sheetHtml(R)}</div>`;
   }
@@ -1670,8 +1672,53 @@
   }
   let lastFlow = null;
   let lastStep = null;
+  // ficha.html: the finished champion's sheet on its own page (no chapters), with a play rail and the Evolve tab.
+  const SHEET_PAGE = document.body.classList.contains('page-sheet');
+  const zoneName = z => ({ green: tr('Green zone'), yellow: tr('Yellow zone'), red: tr('Red zone'), out: tr('Out of the fight') }[z] || '');
+  function sheetRailHtml() {
+    const h = healthCalc(R0), z = zoneOf(h), rg = regionDef(), i = st.info, pe = persDef();
+    return `<div class="sp-id">
+        <div class="sp-portrait">${i.portrait ? `<img src="${i.portrait}" alt="">` : sigil(rg ? rg.id : 'compass', 'dos-sigil')}</div>
+        <div><div class="sp-name">${esc(i.name || tr('Unnamed Champion'))}</div><div class="sp-sub">${esc([i.alias, rg && rg.name].filter(Boolean).join(' · '))}</div></div></div>
+      ${h ? `<div class="sp-block sp-hp"><div class="sp-h">${tr('Health')}</div>
+        <div class="sp-hp-n"><b>${curHealth(h)}</b><span>/ ${h.max}</span></div>
+        <div class="hs-track" role="group" aria-label="${tr('Adjust Health')}"><button type="button" data-act="hpStep" data-d="-1" aria-label="${tr('Lose 1 Health')}">−</button><button type="button" data-act="hpStep" data-d="1" aria-label="${tr('Recover 1 Health')}">+</button><button type="button" data-act="hpStep" data-d="max" aria-label="${tr('Back to full Health')}"${tip(tr('Back to full Health'))}>${ico('reset')}</button></div>
+        <div class="hs-znow z-${z}">${zoneName(z)}</div>
+        ${R0.status ? `<div class="sp-status">${['green', 'yellow', 'red'].map((c, n) => `<span class="${c}${z === c ? ' current' : ''}"${tip(zoneName(c))}>${die(R0.status[n])}</span>`).join('')}</div>` : ''}
+        ${pe ? `<p class="sp-note">${z === 'out' ? tr('Only your Out action is available.') : tr('Abilities above your zone are dimmed on the sheet.')}</p>` : ''}</div>` : ''}
+      ${ui.sheetTab === 'evolve' ? '' : `<nav class="sp-nav" aria-label="${tr('Sheet pages')}"><a href="#hs-p1"><span>1</span>${tr('Identity and principles')}</a><a href="#hs-p2"><span>2</span>${tr('Powers and abilities')}</a><a href="#hs-p3"><span>3</span>${tr('Auxiliary sheet')}</a></nav>`}
+      <div class="sp-actions"><button class="btn primary" data-act="pdf">${ico('download')} ${tr('Export PDF hero sheet')}</button><button class="btn" data-act="print">${ico('print')} ${tr('Print')}</button><button class="btn" data-act="export">${ico('file')} ${tr('Export JSON')}</button><a class="btn ghost" href="index.html">${ico('prev')} ${tr('Edit in the Forge')}</a></div>
+      <div id="pdf-status"></div>`;
+  }
+  function renderSheetPage() {
+    const app = document.getElementById('sheet-app');
+    const ready = st.maxStep >= stepIndex('finish') && !stepIssues('finish', R0).length;
+    if (!ready) {
+      app.innerHTML = `<div class="sp-empty"><span class="gm-seal" aria-hidden="true">${ico('file')}</span><h1>${tr('Your sheet is not ready yet')}</h1>
+        <p class="muted">${tr('Finish creating your champion in the Forge (the last chapter asks for a name) and the complete sheet appears here.')}</p>
+        <a class="btn primary" href="index.html">${ico('prev')} ${tr('Go to the Forge')}</a></div>`;
+      return;
+    }
+    if (!ui.sheetTab) ui.sheetTab = location.hash === '#evoluir' ? 'evolve' : 'sheet';
+    const n = st.evo.log.length;
+    app.innerHTML = `<div class="sp">
+      <aside class="sp-rail no-print" id="sp-rail" aria-label="${tr('Champion at the table')}">${sheetRailHtml()}</aside>
+      <main class="sp-main">
+        <div class="sp-tabs no-print" role="tablist">
+          <button type="button" role="tab" class="sp-tab${ui.sheetTab === 'sheet' ? ' on' : ''}" aria-selected="${ui.sheetTab === 'sheet'}" data-act="sheetTab" data-tab="sheet">${ico('file')} ${tr('Sheet')}</button>
+          <button type="button" role="tab" class="sp-tab${ui.sheetTab === 'evolve' ? ' on' : ''}" aria-selected="${ui.sheetTab === 'evolve'}" data-act="sheetTab" data-tab="evolve">${ico('reset')} ${tr('Evolve your champion')}${n ? `<span class="sp-count">${n}</span>` : ''}</button>
+        </div>
+        ${ui.sheetTab === 'evolve' ? `<div class="sp-evolve">${evolveHtml()}</div>` : `<div class="sp-sheet" id="sheet-preview">${sheetHtml(R0)}</div>`}
+      </main></div>`;
+  }
   function render() {
     R0 = compute();
+    if (SHEET_PAGE) {
+      const rg = regionDef();
+      document.body.style.setProperty('--region', rg ? rg.color : '');
+      if (st.maxStep < 0) st.maxStep = reachedStep();
+      renderSheetPage(); save(); return;
+    }
     flowCurrent = null;
     socketAuto = false;
     if (lastStep !== st.step) { ui.socket = null; lastStep = st.step; }
@@ -1732,7 +1779,10 @@
 
   function renderSideOnly(fromSheet) {
     R0 = compute();
-    document.getElementById('side').innerHTML = renderSide();
+    if (SHEET_PAGE) {
+      const rail = document.getElementById('sp-rail');
+      if (rail) rail.innerHTML = sheetRailHtml();
+    } else document.getElementById('side').innerHTML = renderSide();
     const sheet = document.getElementById('sheet-preview');
     if (sheet && !fromSheet) sheet.innerHTML = sheetHtml(R0);
     save();
@@ -1867,8 +1917,9 @@
       if (!h) return;
       const d = el.dataset.d;
       st.play.current = String(d === 'max' ? h.max : Math.max(0, Math.min(h.max, curHealth(h) + Number(d))));
+      const where = el.closest('#sp-rail') ? '#sp-rail' : '#sheet-preview';
       renderSideOnly(false);
-      const again = document.querySelector(`#sheet-preview [data-act="hpStep"][data-d="${d}"]`);
+      const again = document.querySelector(`${where} [data-act="hpStep"][data-d="${d}"]`);
       if (again) again.focus();
       return;
     }
@@ -1887,6 +1938,17 @@
       ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); ta.scrollTop = ta.scrollHeight;
       el.classList.add('used');
       return;
+    }
+    if (act === 'sheetTab') {
+      ui.sheetTab = el.dataset.tab;
+      history.replaceState(null, '', ui.sheetTab === 'evolve' ? '#evoluir' : location.pathname + location.search);
+      render(); window.scrollTo({ top: 0, behavior: 'instant' });
+      const t = document.querySelector(`[data-act="sheetTab"][data-tab="${ui.sheetTab}"]`); if (t) t.focus();
+      return;
+    }
+    if (act === 'print' && SHEET_PAGE) {
+      if (ui.sheetTab !== 'sheet') { ui.sheetTab = 'sheet'; render(); }
+      setTimeout(() => window.print(), 150); return;
     }
     if (act === 'print') {
       if (stepIndex('finish') > st.maxStep) { showTipFor(el, tr('<h5>Not yet</h5>Finish creating your champion first — the sheet is printed from the last step.')); setTimeout(hideTip, 2200); return; }
@@ -1916,7 +1978,7 @@
     }
     if (!el.dataset.bind) return;
     bindValue(el);
-    if (el.dataset.live && !el.dataset.commit) { renderSideOnly(!!el.closest('#sheet-preview')); document.getElementById('nav').innerHTML = renderNav(); return; }
+    if (el.dataset.live && !el.dataset.commit) { renderSideOnly(!!el.closest('#sheet-preview')); if (!SHEET_PAGE) document.getElementById('nav').innerHTML = renderNav(); return; }
     render();
   });
   document.addEventListener('keydown', ev => {
