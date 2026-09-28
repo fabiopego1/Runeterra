@@ -1,5 +1,5 @@
 // pt-BR: nomes e textos das habilidades. O texto em inglês continua sendo a fonte das regras (ícones,
-// exigências de poder/qualidade); aqui só fica o que o jogador lê. Os [marcadores] ficam em inglês —
+// exigências de poder/qualidade); aqui só fica o que o jogador lê. Os [marcadores] ficam em inglês, e
 // o app mostra cada um traduzido.
 (() => {
   'use strict';
