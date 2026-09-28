@@ -22,7 +22,9 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     const ctx = await browser.newContext({ viewport, acceptDownloads: true });
     const p = await ctx.newPage();
     p.on('pageerror', e => errors.push(`${p.url()}: ${e.message}`));
-    p.on('requestfailed', r => { if (r.url().startsWith(BASE)) errors.push(`404/failed: ${r.url()}`); });
+    p.on('requestfailed', r => {   // requests cancelled by leaving the page (lazy images) are not missing files
+      if (r.url().startsWith(BASE) && !/ERR_ABORTED/.test((r.failure() || {}).errorText || '')) errors.push(`failed: ${r.url()} ${(r.failure() || {}).errorText}`);
+    });
     p.on('response', r => { if (r.url().startsWith(BASE) && r.status() >= 400) errors.push(`${r.status()}: ${r.url()}`); });
     return p;
   };
