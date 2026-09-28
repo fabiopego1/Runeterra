@@ -22,6 +22,7 @@ window.LORE_IMAGES = {
   'sisters': { src: 'assets/lore/tres-irmas.webp', credit: 'Riot Games', fit: 'contain' },
   'golden-age': { src: 'assets/lore/era-de-ouro-shurima.webp', credit: 'Riot Games', pos: '50% 30%' },
   'fall-shurima': { src: 'assets/lore/queda-de-shurima.webp', credit: 'Riot Games' },
+  'icathia': { src: 'assets/lore/icathia.webp', credit: 'Riot Games', pos: '55% 40%' },
   'darkin': { src: 'assets/lore/guerra-darkin.webp', credit: 'Riot Games', pos: '60% 40%' },
   'revenant': { src: 'assets/lore/sahn-uzal.webp', credit: 'Riot Games', pos: '50% 22%' },
   'ruination': { src: 'assets/lore/ruina-ilhas-abencoadas.webp', credit: 'Riot Games', pos: '50% 35%' },
