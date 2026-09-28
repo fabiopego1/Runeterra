@@ -842,6 +842,7 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .tl-card h4 { font-size: 1.05rem; color: var(--text); margin: 14px 0 4px; }
 .tl-card p { color: var(--text-2); }
 .lore-fig.thumb { float: right; width: 150px; margin: 2px 0 10px 20px; }
+.lore-fig.tl-banner { margin: -16px -20px 16px; }
 
 /* regions */
 .region-list { display: grid; gap: 34px; padding-top: 6px; }

@@ -14,7 +14,8 @@
     const img = IMAGES[id];
     const style = `--ar:${ratio};${color ? `--rc:${color};` : ''}`;
     if (img && img.src) {
-      return `<figure class="lore-fig has-img ${cls}" style="${style}"><img src="${esc(img.src)}" alt="${esc(img.alt || alt)}" loading="lazy">` +
+      const fit = `object-fit:${img.fit === 'contain' ? 'contain' : 'cover'};${img.pos ? `object-position:${img.pos};` : ''}`;
+      return `<figure class="lore-fig has-img ${cls}" style="${style}"><img src="${esc(img.src)}" alt="${esc(img.alt || alt)}" loading="lazy" style="${fit}">` +
         (img.credit ? `<figcaption>${esc(img.credit)}</figcaption>` : '') + '</figure>';
     }
     return `<figure class="lore-fig empty ${cls}" style="${style}" title="Espaço para imagem: ${esc(id)}" data-slot="${esc(id)}" aria-hidden="true">${sigil(sigilId)}</figure>`;
@@ -25,6 +26,7 @@
     return m ? { date: m[1], name: m[2] } : { date: '', name: title };
   };
 
+  const UNDATED = { primordial: 'Antes da história', present: '994 DN · hoje' };   // timeline entries without a date in the title
   const groups = [...new Set(SECTIONS.map(s => s.group))];
   const GROUP_INFO = {
     'O Mundo': { id: 'mundo', lede: 'O planeta, as Runas Globais e os reinos que existem além dele.' },
@@ -40,8 +42,8 @@
   const timelineItem = s => {
     const { date, name } = splitDate(s.title);
     return `<li class="tl-item" id="${s.id}" data-group="${esc(s.group)}">
-      <div class="tl-date">${date ? esc(date) : '·'}</div>
-      <article class="tl-card">${figure(s.id, { ratio: '1 / 1', cls: 'thumb', alt: name })}<h3>${esc(name)}</h3>${s.body}</article></li>`;
+      <div class="tl-date">${esc(date || UNDATED[s.id] || '')}</div>
+      <article class="tl-card">${IMAGES[s.id] ? figure(s.id, { ratio: '21 / 9', cls: 'tl-banner', alt: name }) : figure(s.id, { ratio: '1 / 1', cls: 'thumb', alt: name })}<h3>${esc(name)}</h3>${s.body}</article></li>`;
   };
 
   const region = s => {
