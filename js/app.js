@@ -1703,5 +1703,18 @@
     } else if (tipTarget) hideTip();
   }, { passive: true });
 
+  // Lore and Regras are their own pages. Links in the texts use data-act="lore" (with an optional
+  // data-section="lore-<id>") and data-act="rules"; "?" opens the rules from anywhere in the Forge.
+  window.LORE_FOR_REGION = Object.fromEntries((window.LORE_SECTIONS_PT || []).filter(s => s.region).map(s => [s.region, 'lore-' + s.id]));
+  document.addEventListener('click', ev => {
+    const a = ev.target.closest('[data-act="lore"], [data-act="rules"]');
+    if (!a) return;
+    ev.preventDefault();
+    location.href = a.dataset.act === 'rules' ? 'regras.html' : 'lore.html' + (a.dataset.section ? '#' + a.dataset.section.replace(/^lore-/, '') : '');
+  });
+  document.addEventListener('keydown', ev => {
+    if (ev.key === '?' && !/^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName || '')) location.href = 'regras.html';
+  });
+
   render();
 })();
