@@ -478,7 +478,7 @@
         const dice = (R.slots.arch || []).length;
         if (shape.remPowers === 'one' && nonReq > 1) I.push('Only one of the remaining dice may go to a power (the rest go to qualities).');
         if (shape.remPowers === 'one' && nonReq < 1 && archSlots.length === dice && dice > 1) I.push('One of the remaining dice must go to a power.');
-        if (shape.remPowers === 'oneOrMore' && nonReq < 1 && archSlots.length === dice && dice > 1) I.push('At least one of the remaining dice must go to a power.');
+        if (shape.remPowers === 'oneOrMore' && nonReq < 1 && archSlots.length === dice && dice > 1) I.push('At least one die must go to a power.');
         if (shape.extra && shape.extra.type === 'addTrait' && !st.arch.extra.key) I.push(shape.extra.text);
         if (ar.modular) for (let i = 0; i < (R.modExtra || 0); i++) if (!st.arch.extra['m' + i]) I.push('Add a d6 power (Stance Masters need four powers).');
       }
@@ -760,7 +760,7 @@
   const traitGroups = (keys, item) => {
     const G = {};
     for (const k of keys) { const c = TRAIT[k].cat; (G[c] = G[c] || []).push(item(k)); }
-    return Object.entries(G).map(([c, items]) => ({ label: catName(c), sub: CATS[c] ? `${catSc(c)} ${CATS[c].kind}s` : catSc(c), items }));
+    return Object.entries(G).map(([c, items]) => ({ label: catName(c), sub: CATS[c] ? `${catSc(c)} ${CATS[c].kind === 'quality' ? 'qualities' : 'powers'}` : catSc(c), items }));
   };
   const traitItem = (k, extra = {}) => ({ k, name: traitName(k), sub: TRAIT[k].rt !== TRAIT[k].sc ? TRAIT[k].sc : '', ...extra });
   function socket({ bind, d, mark, cur, groups, empty, note, freed }) {
@@ -913,7 +913,7 @@
       assign: () => {
         let optKeys = expand(p.opts);
         if (p.required && !optKeys.includes(p.required.key)) optKeys = [p.required.key].concat(optKeys);
-        return `<p>Assign the dice from your Origin (${b.psDice.map(d => die(d)).join(' ')}) to: ${optsText(p.opts)}.${p.required ? ` One die <b>must</b> go to ${traitSpan(p.required.key)}.` : ''}</p>
+        return `<p>${p.required ? `Assign one of the dice from your Origin (${b.psDice.map(d => die(d)).join(' ')}) to ${traitSpan(p.required.key)} — this one is required. Every other die goes to a power: ${optsText(p.opts)}.` : `Every die from your Origin (${b.psDice.map(d => die(d)).join(' ')}) goes to a power: ${optsText(p.opts)}.`}</p>
           <p class="muted">Signature Weapon / Mount can be renamed in the last step (e.g. “Hextech Rifle”, “Valor”).</p>${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', 'Assign each die to a power:')}`;
       },
       extra: () => psExtraBody(p, R),
@@ -936,9 +936,9 @@
       assign: () => {
         const optKeys = expand((shape.req ? shape.req.any : []).concat(shape.powers, shape.quals));
         return `<p>Assign the dice from your Source (${p.archDice.map(d => die(d)).join(' ')}).</p><ul class="rules-list">
-            ${shape.req ? `<li>One die ${shape.req.count ? '(at least two dice)' : ''} <b>must</b> go to <b>${esc(shape.req.label)}</b> — if you already have it you may skip that.</li>` : ''}
-            <li>${shape.remPowers === 'one' ? '<b>Exactly one</b> of the remaining dice' : shape.remPowers === 'any' ? 'Any number of the remaining dice' : '<b>At least one</b> remaining die'} goes to powers: ${optsText(shape.powers)}.</li>
-            <li>Any remaining dice go to qualities: ${optsText(shape.quals)}.</li></ul>
+            ${shape.req ? (shape.req.count ? `<li>You <b>must</b> end this step with <b>${esc(shape.req.label)}</b> — ones you already have count, so put dice there only until you have two.</li>` : `<li>First, one die <b>must</b> go to <b>${esc(shape.req.label)}</b>. If you already have it, you may skip this and use the die below instead.</li>`) : ''}
+            <li>${shape.req ? 'Of the other dice, ' : ''}${shape.remPowers === 'one' ? `<b>${shape.req ? 'exactly one' : 'Exactly one die'}</b> goes` : shape.remPowers === 'any' ? `<b>${shape.req ? 'any number' : 'Any number of dice'}</b> (even none) go` : `<b>${shape.req ? 'one or more' : 'One or more dice'}</b> go`} to powers: ${optsText(shape.powers)}.</li>
+            <li>Every die left over goes to qualities: ${optsText(shape.quals)}.${shape.remPowers !== 'one' ? ' <span class="muted">It is fine to put every die into powers and take no quality here.</span>' : ''}</li></ul>
           ${assignHtml(R.slots.arch, optKeys, R.before.archetype, 'arch', 'Assign each die:')}
           ${p.id === 'training' ? `<p style="margin-top:12px">From your <b>${esc(p.rt)}</b> source: one extra quality from this Path's list at ${die('d8')}.</p>${assignHtml(R.slots.training, expand(shape.quals), R.before.archetype, 'arch', 'Training bonus quality:')}` : ''}
           ${shape.extra ? `<p style="margin-top:12px">${esc(shape.extra.text)}</p>${socket({ bind: 'arch.extra.key', d: shape.extra.die, cur: st.arch.extra.key, groups: traitGroups(expand(shape.extra.opts).filter(k => !R.before.archetype[k]), k => traitItem(k)), empty: `Bind this ${shape.extra.die} to a trait` })}` : ''}
