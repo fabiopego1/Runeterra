@@ -1352,8 +1352,39 @@
     return { F, D, C, sizes, over };
   }
 
-  let pdfTemplate = null; // ArrayBuffer chosen by the user when fetch is unavailable (file://)
+  const downloadPdf = (bytes, suffix) => {
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (st.info.name || 'runeterra-champion').replace(/[^\w-]+/g, '_') + suffix;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+
+  // The sheet exactly as previewed, drawn into a PDF with clickable hero points and editable play fields.
   async function exportPdf() {
+    const status = document.getElementById('pdf-status');
+    const say = (msg, isErr) => { if (status) { status.innerHTML = msg; status.className = isErr ? 'issues' : 'okbox'; } };
+    if (!window.PDFLib || !window.SheetPDF) { say('The PDF library failed to load.', true); return; }
+    const link = sel => { const l = document.querySelector(sel); return l ? l.href : ''; };
+    try {
+      const bytes = await window.SheetPDF.render({
+        html: sheetHtml(compute()),
+        cssHref: link('link[href*="style.css"]'),
+        fontBase: new URL('assets/fonts/', location.href).href,
+        fontkitSrc: 'js/vendor/fontkit.umd.min.js',
+        pageBg: getComputedStyle(document.body).backgroundColor,
+        onStatus: m => say(esc(m))
+      });
+      downloadPdf(bytes, '_hero_sheet.pdf');
+      say('Hero sheet PDF downloaded — hero points, collections, back issues and current Health can be clicked and typed into in any PDF reader.');
+    } catch (e) {
+      say('Could not build the PDF: ' + esc(e.message), true);
+    }
+  }
+
+  let pdfTemplate = null; // ArrayBuffer chosen by the user when fetch is unavailable (file://)
+  async function exportOfficialPdf() {
     const status = document.getElementById('pdf-status');
     const say = (msg, isErr) => { if (status) { status.innerHTML = msg; status.className = isErr ? 'issues' : 'okbox'; } };
     if (!window.PDFLib) { say('The PDF library failed to load (js/vendor/pdf-lib.min.js).', true); return; }
@@ -1396,14 +1427,8 @@
         } catch (e) { /* ignore image problems */ }
       }
       form.updateFieldAppearances(font);
-      const out = await doc.save();
-      const blob = new Blob([out], { type: 'application/pdf' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = (st.info.name || 'runeterra-champion').replace(/[^\w-]+/g, '_') + '_hero_sheet.pdf';
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-      say('Hero sheet PDF downloaded.' + (over.length ? ` Note: your ${over.join(' & ')} zone has more abilities than the sheet has rows, so the extras were combined into the last row.` : ''));
+      downloadPdf(await doc.save(), '_official_sheet.pdf');
+      say('Official Sentinels hero sheet downloaded.' + (over.length ? ` Note: your ${over.join(' & ')} zone has more abilities than the sheet has rows, so the extras were combined into the last row.` : ''));
     } catch (e) {
       say('Could not fill the PDF: ' + esc(e.message), true);
     }
@@ -1435,7 +1460,8 @@
       ${flowHtml('finish', sectionsFor('finish', R), H)}
       <section class="flow-sec ${done ? 'current' : 'locked'}" id="flow-finish-export"><div class="flow-head"><span class="flow-num">${done ? ico('mark') : ico('lock')}</span><h3>Your hero sheet</h3>${done ? '' : '<span class="flow-lock">Sealed — name your champion first</span>'}</div>
       ${done ? `<div class="flow-body"><p class="muted">Your sheet is below, laid out like the official two-page <em>Sentinel Comics RPG</em> hero sheet. Hero points, back issues, collections and current Health can be ticked and edited right on it during play.</p><div id="pdf-status"></div><input id="template-file" type="file" accept="application/pdf,.pdf" hidden>
-        <div class="export-row"><button class="btn primary" data-act="pdf">${ico('download')} Export PDF hero sheet</button><button class="btn" data-act="print">Print</button><button class="btn" data-act="export">Export JSON</button></div></div>` : ''}</section>
+        <div class="export-row"><button class="btn primary" data-act="pdf">${ico('download')} Export PDF hero sheet</button><button class="btn" data-act="print">Print</button><button class="btn" data-act="export">Export JSON</button></div>
+        <p class="muted" style="margin-top:10px">Need the official Sentinels layout instead? <button class="linkbtn" data-act="pdfOfficial">Download the official form-fillable sheet</button></p></div>` : ''}</section>
       <div class="step-footer"><button class="btn ghost" data-act="back">${ico('prev')} Back</button><span></span></div></div>
       <div class="panel" id="sheet-preview">${sheetHtml(R)}</div>`;
   }
@@ -1657,6 +1683,7 @@
     if (act === 'hroll') { st.health.roll = roll(['d8'])[0]; render(); return; }
     if (act === 'export') { exportJson(); return; }
     if (act === 'pdf') { exportPdf(); return; }
+    if (act === 'pdfOfficial') { exportOfficialPdf(); return; }
     if (act === 'clearPortrait') { st.info.portrait = null; render(); return; }
     if (act === 'print') {
       if (stepIndex('finish') > st.maxStep) { showTipFor(el, '<h5>Not yet</h5>Finish creating your champion first — the sheet is printed from the last step.'); setTimeout(hideTip, 2200); return; }
@@ -1679,7 +1706,7 @@
     if (el.id === 'portrait-file') { loadPortrait(el.files[0]); el.value = ''; return; }
     if (el.id === 'template-file') {
       const f = el.files[0]; el.value = '';
-      if (f) f.arrayBuffer().then(b => { pdfTemplate = b; exportPdf(); });
+      if (f) f.arrayBuffer().then(b => { pdfTemplate = b; exportOfficialPdf(); });
       return;
     }
     if (!el.dataset.bind) return;

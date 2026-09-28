@@ -45,9 +45,10 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
+html { font-size: 120%; }             /* reading size: everything is sized in rem, so this scales the whole interface */
 body {
   font-family: var(--font-ui);
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.5;
   color: var(--text);
   background-color: var(--ink-0);
@@ -141,7 +142,7 @@ kbd { font-family: var(--font-mono); font-size: .7em; border: 1px solid var(--li
 /* ==========================================================================
    Layout — chronicle rail | open stage | champion dossier
    ========================================================================== */
-.layout { display: grid; grid-template-columns: 208px minmax(0, 1fr) 336px; max-width: 1640px; margin: 0 auto; padding: 36px 32px 72px; }
+.layout { display: grid; grid-template-columns: 13rem minmax(0, 1fr) 20rem; max-width: 1960px; margin: 0 auto; padding: 36px 32px 72px; }
 .steps-nav { position: sticky; top: 92px; align-self: start; padding-right: 24px; }
 main.stage { min-width: 0; padding: 0 44px; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
 aside.sheet-side { position: sticky; top: 92px; align-self: start; max-height: calc(100vh - 110px); overflow: auto; padding-left: 28px; scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
@@ -314,10 +315,10 @@ aside.sheet-side { position: sticky; top: 92px; align-self: start; max-height: c
    ========================================================================== */
 .die {
   --c: var(--gold);
-  display: inline-grid; place-items: center; width: 28px; height: 28px; vertical-align: middle;
+  display: inline-grid; place-items: center; width: 1.75rem; height: 1.75rem; vertical-align: middle;
   font: 700 .66rem var(--font-ui); color: #111; background: var(--c); margin: 0 2px; cursor: help; position: relative; flex: none;
 }
-.die.sm { width: 21px; height: 21px; font-size: .58rem; }
+.die.sm { width: 1.32rem; height: 1.32rem; font-size: .58rem; }
 .die.d4 { --c: #7d848e; clip-path: polygon(50% 4%, 97% 94%, 3% 94%); padding-top: 8px; }
 .die.d6 { --c: #d8ccb0; clip-path: inset(9%); }
 .die.d8 { --c: #7fb3a2; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
@@ -364,7 +365,7 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .socket { border-bottom: 1px solid var(--line); }
 .assign > .muted + .socket, p + .socket { border-top: 1px solid var(--line); }
 .sock-row { display: grid; grid-template-columns: 44px 22px minmax(0, 1fr) 24px; align-items: center; min-height: 56px; }
-.sock-row .die { justify-self: center; width: 32px; height: 32px; font-size: .72rem; }
+.sock-row .die { justify-self: center; width: 2rem; height: 2rem; font-size: .72rem; }
 .sock-mark { position: relative; justify-self: center; display: grid; place-items: center; width: 34px; height: 34px; font: 500 .74rem var(--font-mono); color: var(--gold); }
 .sock-mark::before { content: ''; position: absolute; inset: 5px; border: 1px solid var(--gold-lo); transform: rotate(45deg); }
 .sock-link { height: 1px; background: var(--line-2); position: relative; }
@@ -720,8 +721,8 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 /* ==========================================================================
    Responsive — recompose, don't shrink
    ========================================================================== */
-@media (max-width: 1320px) {
-  .layout { grid-template-columns: 200px minmax(0, 1fr); padding: 30px 24px 60px; }
+@media (max-width: 1520px) {
+  .layout { grid-template-columns: 12.5rem minmax(0, 1fr); padding: 30px 24px 60px; }
   main.stage { border-right: 0; padding-right: 0; }
   aside.sheet-side { grid-column: 2; position: static; max-height: none; overflow: visible; padding: 40px 0 0 44px; }
   .dossier { max-width: 720px; }
