@@ -55,7 +55,7 @@
     pch: {},
     sel: {},
     info: { name: '', alias: '', player: '', gender: '', age: '', height: '', eyes: '', hair: '', skin: '', build: '', costume: '', notes: '', portrait: null },
-    play: { hp: [], rw: [], issues: [], coll: [], cdone: [], current: null },
+    play: { hp: [], rw: [], issues: [], coll: [], cdone: [], current: null, notes: [], mname: [], mdie: [], mnote: [] },
     renames: {}, traitNames: {}
   });
   let st = load();
@@ -1131,6 +1131,19 @@
     const row = window.HEALTH_TABLE[Math.max(17, Math.min(40, max))];
     return { elig, chosen, traitMax, roll, red, max, green: [max, row[0]], yellow: [row[1], row[2]], redR: [row[3], 1] };
   }
+  // Current Health during play (starts at the maximum) and the zone it puts the champion in.
+  function curHealth(h) {
+    const v = st.play.current;
+    if (!h) return null;
+    if (v == null || v === '') return h.max;
+    const n = parseInt(v, 10);
+    return isNaN(n) ? h.max : n;
+  }
+  function zoneOf(h) {
+    const c = curHealth(h);
+    if (c == null) return null;
+    return c >= h.green[1] ? 'green' : c >= h.yellow[1] ? 'yellow' : c >= 1 ? 'red' : 'out';
+  }
 
   function renderHealth() {
     const R = R0;
@@ -1265,6 +1278,11 @@
     const i = st.info, pl = st.play;
     const pr = principlesFinal();
     const rows = sheetRows(R);
+    // Table mode: the current Health decides the zone, which lights its status die and locks the zones above it.
+    const zNow = zoneOf(h);
+    const ZRANK = { green: 0, yellow: 1, red: 2, out: 3 };
+    const ZNAME = { green: tr('Green zone'), yellow: tr('Yellow zone'), red: tr('Red zone'), out: tr('Out of the fight') };
+    const zLocked = z => zNow && ZRANK[z] > ZRANK[zNow] || zNow === 'out';
     const charLine = (label, d, extra = '') => `<div class="hs-f"><span class="hs-l">${label}</span>${d ? `<span${tip(`${esc(d.lore || '')}`)} class="term">${esc(d.rt + extra)}</span>` : BLANK}</div>`;
     const attr = (label, v) => `<div class="hs-f"><span class="hs-l">${label}</span>${esc(v || '')}</div>`;
     const traitRows = (list, n) => {
@@ -1276,7 +1294,7 @@
     const emptyRows = (n, have) => Array.from({ length: Math.max(0, n - have) }, () => '<tr><td class="ic"></td><td class="nm">&nbsp;</td><td class="ty"></td><td class="gt"></td></tr>').join('');
     const prRow = (x, r) => `<tr class="pr-row"><td class="ic">${iconHtml(x.p.ability)}</td><td class="nm"><small class="po-lbl">${tr('Principle of')}</small> ${esc(principleShort(x))}</td><td class="ty">${esc(x.p.type)}</td><td class="gt">${rulesText(x.p.ability, { ch: { 'energy/element': st.pch[x.slot] } })}</td></tr>`;
     const check = (path, val, label) => `<input type="checkbox" class="hs-chk" data-bind="${path}" data-live="1"${val ? ' checked' : ''} aria-label="${esc(label)}">`;
-    const zone = (cls, label, body) => `<div class="hs-zone ${cls}"><div class="zlbl">${label}</div><table class="hs-ab-t"><thead><tr><th>${tr('Icon')}</th><th>${tr('Name')}</th><th>${tr('Type')}</th><th>${tr('Game text')}</th></tr></thead><tbody>${body}</tbody></table></div>`;
+    const zone = (cls, label, body) => `<div class="hs-zone ${cls}${zLocked(cls) ? ' locked' : ''}${zNow === cls ? ' now' : ''}"><div class="zlbl">${label}</div><table class="hs-ab-t">${zLocked(cls) ? `<caption class="zlock">${ico('lock')} ${zNow === 'out' ? tr('Out of the fight: only your Out action is available.') : tr('Unlocked when your Health reaches the {z}.', { z: ZNAME[cls].toLowerCase() })}</caption>` : ''}<thead><tr><th>${tr('Icon')}</th><th>${tr('Name')}</th><th>${tr('Type')}</th><th>${tr('Game text')}</th></tr></thead><tbody>${body}</tbody></table></div>`;
     const principleCol = x => x ? `<div class="hs-pr"><div class="hs-pr-h">${tr('Principle of')} <b>${esc(principleShort(x))}</b> <small class="muted">${esc(tr(x.p.cat))}</small></div>
       <div class="hs-pr-s"><span class="hs-l">${tr('During roleplaying')}</span>${esc(principleText(x, x.p.rp))}</div>
       <div class="hs-pr-s"><span class="hs-l">${tr('Minor twist')}</span>${esc(x.p.minor)}</div>
@@ -1311,19 +1329,44 @@
         <div class="hs-stats">
           <table class="hs-traits"><thead><tr><th>${tr('Powers')}</th><th>${tr('Die')}</th></tr></thead><tbody>${traitRows(powers, 6)}</tbody></table>
           <table class="hs-traits"><thead><tr><th>${tr('Qualities')}</th><th>${tr('Die')}</th></tr></thead><tbody>${traitRows(quals, 6)}</tbody></table>
-          <div class="hs-status"><div class="hs-h"${tip(window.GLOSSARY['status die'])}>${tr('Status Dice')}</div>${R.status ? ['Green', 'Yellow', 'Red'].map((z, n) => `<div class="hs-sd ${z.toLowerCase()}"><small>${tr(z)}</small>${die(R.status[n])}</div>`).join('') : BLANK}</div>
-          <div class="hs-hr"><div class="hs-h"${tip(window.GLOSSARY.Health)}>${tr('Health Range')}</div>${h ? `<div class="burst g">${tr('Green')}<b>${h.green[0]}–${h.green[1]}</b></div><div class="burst y">${tr('Yellow')}<b>${h.yellow[0]}–${h.yellow[1]}</b></div><div class="burst r">${tr('Red')}<b>${h.redR[0]}–1</b></div>
-            <div class="burst c">${tr('Current')}<input type="text" inputmode="numeric" data-bind="play.current" data-live="1" value="${esc(pl.current == null || pl.current === '' ? h.max : pl.current)}" aria-label="${tr('Current Health')}"></div>` : BLANK}</div>
+          <div class="hs-status"><div class="hs-h"${tip(window.GLOSSARY['status die'])}>${tr('Status Dice')}</div>${R.status ? ['Green', 'Yellow', 'Red'].map((z, n) => `<div class="hs-sd ${z.toLowerCase()}${zNow === z.toLowerCase() ? ' current' : ''}"><small>${tr(z)}</small>${die(R.status[n])}</div>`).join('') : BLANK}</div>
+          <div class="hs-hr"><div class="hs-h"${tip(window.GLOSSARY.Health)}>${tr('Health Range')}</div>${h ? `<div class="burst g${zNow === 'green' ? ' now' : ''}">${tr('Green')}<b>${h.green[0]}–${h.green[1]}</b></div><div class="burst y${zNow === 'yellow' ? ' now' : ''}">${tr('Yellow')}<b>${h.yellow[0]}–${h.yellow[1]}</b></div><div class="burst r${zNow === 'red' ? ' now' : ''}">${tr('Red')}<b>${h.redR[0]}–1</b></div>
+            <div class="burst c">${tr('Current')}<input type="text" inputmode="numeric" data-bind="play.current" data-live="1" value="${esc(curHealth(h))}" aria-label="${tr('Current Health')}"></div>
+            <div class="hs-track hs-noexport" role="group" aria-label="${tr('Adjust Health')}"><button type="button" data-act="hpStep" data-d="-1" aria-label="${tr('Lose 1 Health')}">−</button><button type="button" data-act="hpStep" data-d="1" aria-label="${tr('Recover 1 Health')}">+</button><button type="button" data-act="hpStep" data-d="max" aria-label="${tr('Back to full Health')}"${tip(tr('Back to full Health'))}>${ico('reset')}</button></div>
+            <div class="hs-znow z-${zNow}">${ZNAME[zNow]}</div>` : BLANK}</div>
         </div>
         <div class="hs-h" style="margin-top:12px">${tr('Abilities')}</div>
         ${zone('green', tr('Green zone'), rows.green.map(r => abRow(r)).join('') + emptyRows(5, rows.green.length) + pr.map(x => prRow(x)).join(''))}
         ${zone('yellow', tr('Yellow zone'), rows.yellow.map(r => abRow(r)).join('') + emptyRows(5, rows.yellow.length))}
         ${zone('red', tr('Red zone'), rows.red.map(r => abRow(r)).join('') + emptyRows(3, rows.red.length))}
-        <div class="hs-out"><span class="zlbl"${tip(window.COLOR_INFO.out)}>${tr('Out')}</span>${rows.out ? rulesText(rows.out.text, rows.out.entry) : ''}</div>
-        ${st.arch.minionForms && st.arch.minionForms.length ? `<div class="hs-card"><div class="hs-h">${tr('Minion forms (auxiliary sheet)')}</div><small>${esc(st.arch.minionForms.map(abName).join(', '))}</small></div>` : ''}
-        ${i.notes || st.arch.notes ? `<div class="hs-card"><div class="hs-h">${tr('Notes (auxiliary sheet)')}</div><div style="font-size:.9rem;white-space:pre-wrap">${esc([i.notes, st.arch.notes].filter(Boolean).join('\n\n'))}</div></div>` : ''}
+        <div class="hs-out${zNow === 'out' ? ' on' : ''}"><span class="zlbl"${tip(window.COLOR_INFO.out)}>${tr('Out')}</span>${rows.out ? rulesText(rows.out.text, rows.out.entry) : ''}</div>
       </div>
+      ${auxPageHtml()}
     </div>`;
+  }
+
+  // Page 3, the auxiliary sheet: biography, forms/modes, minions in play and table notes.
+  function auxPageHtml() {
+    const i = st.info, pl = st.play, forms = st.arch.minionForms || [];
+    const paras = (i.notes || '').split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+    const lines = n => Array.from({ length: n }, () => '<div class="hs-rule"></div>').join('');
+    const line = (path, n, label) => `<input class="hs-line" type="text" data-bind="${path}.${n}" data-live="1" value="${esc((pl[path.split('.')[1]] || [])[n] || '')}" aria-label="${esc(label)}">`;
+    return `<div class="hs-page hs-aux">
+        <div class="hs-card hs-3"><div><div class="hs-h">${tr('Hero Name')}</div>${esc(i.name || '')}</div><div><div class="hs-h">${tr('Alias')}</div>${esc(i.alias || '')}</div><div><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}</div></div>
+        <div class="hs-aux-grid">
+          <div class="hs-card hs-bio"><div class="hs-h">${tr('Biography')}</div>${paras.length ? paras.map(p => `<p>${esc(p)}</p>`).join('') : lines(12)}</div>
+          <div class="hs-aux-side">
+            ${forms.length ? `<div class="hs-card"><div class="hs-h"${tip(tr('<h5>Minion forms</h5>When you create a minion you may discard one bonus you have access to in order to add a form with that bonus value or higher. The number of forms you know equals the maximum value of a related quality.'))}>${tr('Minion forms')}</div>
+              ${forms.map(n => { const f = window.MINION_FORMS.find(x => x[0] === n) || [n, '', '']; return `<div class="hs-form"><b>${esc(abName(n))}</b> <small>${tr('{b} or higher', { b: esc(f[2]) })}</small><div>${rulesText(f[1])}</div></div>`; }).join('')}</div>` : ''}
+            ${st.arch.notes ? `<div class="hs-card"><div class="hs-h">${tr('Forms and modes')}</div><div class="hs-pre">${esc(st.arch.notes)}</div></div>` : ''}
+            <div class="hs-card"><div class="hs-h"${tip(window.GLOSSARY.minion || '')}>${tr('Minions in play')}</div>
+              <table class="hs-mtab"><thead><tr><th>${tr('Name')}</th><th>${tr('Die')}</th><th>${tr('Notes')}</th></tr></thead><tbody>
+              ${[0, 1, 2, 3, 4, 5].map(n => `<tr><td>${line('play.mname', n, tr('Minion {n} name', { n: n + 1 }))}</td><td class="md">${line('play.mdie', n, tr('Minion {n} die', { n: n + 1 }))}</td><td>${line('play.mnote', n, tr('Minion {n} notes', { n: n + 1 }))}</td></tr>`).join('')}
+              </tbody></table></div>
+          </div>
+        </div>
+        <div class="hs-card"><div class="hs-h">${tr('Table notes')}</div><div class="hs-notes">${Array.from({ length: 10 }, (_, n) => line('play.notes', n, tr('Note line {n}', { n: n + 1 }))).join('')}</div></div>
+      </div>`;
   }
 
   // ------------------------------------------------------------------ PDF export
@@ -1653,6 +1696,16 @@
     }
     if (act === 'hmode') { st.health.mode = el.dataset.m; if (el.dataset.m === 'roll' && !st.health.roll) st.health.roll = roll(['d8'])[0]; render(); return; }
     if (act === 'hroll') { st.health.roll = roll(['d8'])[0]; render(); return; }
+    if (act === 'hpStep') {   // table mode: − / + / full Health on the sheet
+      const h = healthCalc(compute());
+      if (!h) return;
+      const d = el.dataset.d;
+      st.play.current = String(d === 'max' ? h.max : Math.max(0, Math.min(h.max, curHealth(h) + Number(d))));
+      renderSideOnly(false);
+      const again = document.querySelector(`#sheet-preview [data-act="hpStep"][data-d="${d}"]`);
+      if (again) again.focus();
+      return;
+    }
     if (act === 'export') { exportJson(); return; }
     if (act === 'pdf') { exportPdf(); return; }
     if (act === 'clearPortrait') { st.info.portrait = null; render(); return; }
@@ -1702,6 +1755,13 @@
     }
     if (!el.dataset.bind || !el.dataset.live) return;
     bindValue(el);
+    if (el.dataset.bind === 'play.current' && el.closest('#sheet-preview')) {   // redraw zones as Health is typed, keeping the caret
+      const pos = el.selectionStart;
+      renderSideOnly(false);
+      const again = document.querySelector('#sheet-preview [data-bind="play.current"]');
+      if (again) { again.value = el.value; again.focus(); again.setSelectionRange(pos, pos); }
+      return;
+    }
     renderSideOnly(!!el.closest('#sheet-preview'));
   });
 

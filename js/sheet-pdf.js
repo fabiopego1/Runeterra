@@ -294,7 +294,7 @@
 
         const walk = async el => {
           const s = cs(el);
-          if (s.display === 'none' || s.visibility === 'hidden') return;
+          if (s.display === 'none' || s.visibility === 'hidden' || el.classList.contains('hs-noexport')) return;   // on-screen play controls stay off paper
           const r = el.getBoundingClientRect();
           if (el.tagName === 'INPUT') { if (el.type !== 'checkbox') drawBox(el, s, r); addInput(el, s, r); return; }
           drawBox(el, s, r);
