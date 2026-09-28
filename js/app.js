@@ -49,7 +49,8 @@
     health: { trait: null, mode: 'fixed', roll: null },
     pch: {},
     sel: {},
-    info: { name: '', alias: '', pronouns: '', age: '', height: '', eyes: '', hair: '', build: '', look: '', notes: '' },
+    info: { name: '', alias: '', player: '', gender: '', age: '', height: '', eyes: '', hair: '', skin: '', build: '', costume: '', notes: '', portrait: null },
+    play: { hp: [], rw: [], issues: [], coll: [], cdone: [], current: null },
     renames: {}, traitNames: {}
   });
   let st = load();
@@ -57,9 +58,19 @@
   function load() {
     try {
       const raw = localStorage.getItem(STORE);
-      if (raw) { const s = JSON.parse(raw); if (s && s.v === 1) return Object.assign(blank(), s); }
+      if (raw) { const s = JSON.parse(raw); if (s && s.v === 1) return upgradeState(s); }
     } catch (e) { /* storage unavailable */ }
     return blank();
+  }
+  // Merge a saved/imported state onto a blank one (older saves lack newer fields).
+  function upgradeState(s) {
+    const b = blank();
+    const out = Object.assign(b, s);
+    out.info = Object.assign(blank().info, s.info || {});
+    if (s.info && s.info.look && !out.info.costume) out.info.costume = s.info.look;
+    if (s.info && s.info.pronouns && !out.info.gender) out.info.gender = s.info.pronouns;
+    out.play = Object.assign(blank().play, s.play || {});
+    return out;
   }
   function save() { try { localStorage.setItem(STORE, JSON.stringify(st)); } catch (e) { /* ignore */ } }
 
@@ -1023,68 +1034,295 @@
     return L;
   }
 
+  // ------------------------------------------------------------------ action icons (the "ICON" column of the hero sheet)
+  const ICONS = {
+    Attack: ['ATK', 'Attack'], Defend: ['DEF', 'Defend'], Overcome: ['OVR', 'Overcome'],
+    Boost: ['BST', 'Boost'], Hinder: ['HIN', 'Hinder'], Recover: ['REC', 'Recover']
+  };
+  function actionIcons(text) {
+    const out = [];
+    (text || '').replace(/\b(Attack|Defend|Overcome|Boost|Hinder|Recover)\b/g, (m, a) => { if (!out.includes(a)) out.push(a); return m; });
+    return out;
+  }
+  const iconHtml = text => actionIcons(text).map(a => `<span class="act-ic act-${a.toLowerCase()}"${tip(`<h5>${a} icon</h5>${window.GLOSSARY[a]}<hr><small>The hero sheet's ICON column shows which basic actions an ability uses.</small>`)}>${ICONS[a][0]}</span>`).join('');
+
+  // Plain-text version of an ability (brackets filled in) for the PDF sheet.
+  function plainText(text, entry) {
+    return String(text || '').replace(/\[([^\]]+)\]/g, (m, br) => {
+      if (/^d(4|6|8|10|12)$/.test(br)) return br;
+      if (TRAIT_TOKENS[br] !== undefined && entry) {
+        const k = br === 'quality' && entry.trait2 ? entry.trait2 : entry.trait;
+        if (k && TRAIT[k]) return sheetTraitName(k);
+      }
+      if (CHOICE_TOKENS[br] !== undefined && entry && entry.ch && entry.ch[br]) return entry.ch[br].replace(/ \(.*\)$/, '');
+      return m;
+    });
+  }
+  const sheetTraitName = k => (k === 'rp-quality' && st.pers.qname ? st.pers.qname : traitName(k));
+  const principleShort = x => {
+    let n = (window.PRINCIPLE_LORE[x.id] || [x.p.name])[0].replace(/^Principle of /, '');
+    if (x.id === 'energy-element') n = st.pch[x.slot] || n;
+    return n;
+  };
+  const principleText = (x, s) => String(s).replace(/\[energy\/element\]/g, st.pch[x.slot] || '[energy/element]');
+
+  // Rows of the official sheet: green / principles / yellow / red / out
+  function sheetRows(R) {
+    const abs = allAbilities(R);
+    const row = x => {
+      const ab = A[x.name];
+      const text = x.text || (ab && ab.text) || '';
+      return { x, name: st.renames[x.iid] || displayName(x.name), orig: displayName(x.name), type: x.type || (ab && ab.type) || '', text, entry: x.entry };
+    };
+    return {
+      green: abs.filter(x => x.color === 'green' && x.src !== 'Principle').map(row),
+      principles: abs.filter(x => x.src === 'Principle').map(row),
+      yellow: abs.filter(x => x.color === 'yellow').map(row),
+      red: abs.filter(x => x.color === 'red').map(row),
+      out: abs.filter(x => x.color === 'out').map(row)[0] || null
+    };
+  }
+
   function sheetHtml(R) {
     const bg = bgDef(), ps = psDef(), ar = archDef(), shape = shapeDef(), pe = persDef(), rg = regionDef();
     const h = healthCalc(R);
     const powers = sortTraits(owned(R, 'power'));
     const quals = sortTraits(owned(R, 'quality'));
-    const tl = t => `<div class="trait-line"><span>${traitSpan(t.key)}${t.key === 'rp-quality' && st.pers.qname ? '' : ''}</span>${die(t.die, 'sm')}</div>`;
-    const nameOf = t => (t.key === 'rp-quality' && st.pers.qname ? st.pers.qname : null);
-    const tl2 = t => `<div class="trait-line"><span>${nameOf(t) ? `<span class="term"${tip(traitTip('rp-quality'))}>${esc(nameOf(t))}</span>` : traitSpan(t.key)}</span>${die(t.die, 'sm')}</div>`;
-    const abs = allAbilities(R);
-    const abBlock = color => abs.filter(x => x.color === color).map(x => {
-      const ab = A[x.name];
-      const text = x.text || (ab && ab.text) || '';
-      const nm = st.renames[x.iid] || (x.name === 'Out' ? 'Out ability' : displayName(x.name));
-      return `<div class="hs-ab ${color}"><div class="n">${esc(nm)} <small class="muted">${x.type || (ab && ab.type) || ''}</small></div><div class="x">${rulesText(text, x.entry)}</div><div class="src">${esc(x.src)}${st.renames[x.iid] ? ' · ' + esc(displayName(x.name)) : ''}</div></div>`;
-    }).join('') || '<small class="muted">—</small>';
+    const i = st.info, pl = st.play;
     const pr = principlesFinal();
-    const i = st.info;
+    const rows = sheetRows(R);
+    const charLine = (label, d, extra = '') => `<div class="hs-f"><span class="hs-l">${label}</span>${d ? `<span${tip(`<div class="sc-line">Sentinels: ${esc(d.sc)}</div>${esc(d.lore || '')}`)} class="term">${esc(d.rt + extra)}</span> <small class="muted">(${esc(d.sc)})</small>` : '—'}</div>`;
+    const attr = (label, v) => `<div class="hs-f"><span class="hs-l">${label}</span>${esc(v || '')}</div>`;
+    const traitRows = (list, n) => {
+      const out = list.map(t => `<tr><td>${t.key === 'rp-quality' && st.pers.qname ? `<span class="term"${tip(traitTip('rp-quality'))}>${esc(st.pers.qname)}</span>` : traitSpan(t.key)}</td><td class="dt">${die(t.die, 'sm')}</td></tr>`);
+      while (out.length < n) out.push('<tr><td>&nbsp;</td><td class="dt"></td></tr>');
+      return out.join('');
+    };
+    const abRow = (r, zone) => `<tr><td class="ic">${iconHtml(r.text)}</td><td class="nm">${esc(r.name)}${r.name !== r.orig ? `<small>${esc(r.orig)}</small>` : ''}</td><td class="ty"${tip(window.ABILITY_TYPES[r.type] || '')}>${esc(r.type)}</td><td class="gt">${rulesText(r.text, r.entry)}</td></tr>`;
+    const emptyRows = (n, have) => Array.from({ length: Math.max(0, n - have) }, () => '<tr><td class="ic"></td><td class="nm">&nbsp;</td><td class="ty"></td><td class="gt"></td></tr>').join('');
+    const prRow = (x, r) => `<tr class="pr-row"><td class="ic">${iconHtml(x.p.ability)}</td><td class="nm"><small class="po-lbl">Principle of</small> ${esc(principleShort(x))}</td><td class="ty">${esc(x.p.type)}</td><td class="gt">${rulesText(x.p.ability, { ch: { 'energy/element': st.pch[x.slot] } })}</td></tr>`;
+    const check = (path, val, label) => `<input type="checkbox" class="hs-chk" data-bind="${path}" data-live="1"${val ? ' checked' : ''} aria-label="${esc(label)}">`;
+    const zone = (cls, label, body) => `<div class="hs-zone ${cls}"><div class="zlbl">${label}</div><table class="hs-ab-t"><thead><tr><th>Icon</th><th>Name</th><th>Type</th><th>Game text</th></tr></thead><tbody>${body}</tbody></table></div>`;
+    const principleCol = x => x ? `<div class="hs-pr"><div class="hs-pr-h">Principle of <b>${esc(principleShort(x))}</b> <small class="muted">${esc(x.p.cat)} · ${esc(x.p.name)}</small></div>
+      <div class="hs-pr-s"><span class="hs-l">During roleplaying</span>${esc(principleText(x, x.p.rp))}</div>
+      <div class="hs-pr-s"><span class="hs-l">Minor twist</span>${esc(x.p.minor)}</div>
+      <div class="hs-pr-s"><span class="hs-l">Major twist</span>${esc(x.p.major)}</div></div>` : '<div class="hs-pr"><div class="hs-pr-h">Principle of …</div></div>';
     return `<div class="hero-sheet">
-      <div class="hs-head"><div><div class="hs-name">${esc(i.name || 'Unnamed Champion')}</div><div class="hs-alias">${esc(i.alias)}${i.alias && rg ? ' · ' : ''}${rg ? esc(rg.name) : ''}</div></div>
-      <div style="text-align:right"><div><b>Origin:</b> ${bg ? esc(bg.rt) : '—'} <small class="muted">(${bg ? esc(bg.sc) : ''})</small></div><div><b>Source:</b> ${ps ? esc(ps.rt) : '—'} <small class="muted">(${ps ? esc(ps.sc) : ''})</small></div>
-      <div><b>Path:</b> ${ar ? esc(ar.rt) + (shape && shape !== ar ? ' ' + esc(shape.rt) : '') : '—'} <small class="muted">(${ar ? esc(ar.sc) : ''})</small></div><div><b>Temperament:</b> ${pe ? esc(pe.rt) : '—'} <small class="muted">(${pe ? esc(pe.sc) : ''})</small></div></div></div>
-      <div class="hs-cols">
-        <div>
-          <div class="hs-box"><h4>Powers</h4>${powers.map(tl).join('') || '<small class="muted">—</small>'}</div>
-          <div class="hs-box"><h4>Qualities</h4>${quals.map(tl2).join('') || '<small class="muted">—</small>'}</div>
-          <div class="hs-box"><h4>Status</h4>${R.status ? `<div class="status-row"><span class="z g">Green ${die(R.status[0])}</span><span class="z y">Yellow ${die(R.status[1])}</span><span class="z r">Red ${die(R.status[2])}</span></div>` : '—'}</div>
-          <div class="hs-box"><h4>Health</h4>${h ? `<div class="hs-health"><div class="max">Max<b>${h.max}</b></div><div class="g">G<b>${h.green[0]}–${h.green[1]}</b></div><div class="y">Y<b>${h.yellow[0]}–${h.yellow[1]}</b></div><div class="r">R<b>${h.redR[0]}–1</b></div></div>` : '—'}</div>
+      <div class="hs-page">
+        <div class="hs-top">
+          <div class="hs-portrait">${i.portrait ? `<img src="${i.portrait}" alt="Portrait of ${esc(i.name || 'your champion')}">` : `<span class="muted">Portrait</span>`}</div>
+          <div class="hs-idblock">
+            <div class="hs-card"><div class="hs-h">Player</div>${esc(i.player || '')}&nbsp;</div>
+            <div class="hs-card hs-2"><div><div class="hs-h">Hero Name</div><div class="hs-name">${esc(i.name || 'Unnamed Champion')}</div></div><div><div class="hs-h">Alias</div>${esc(i.alias || '')}</div></div>
+            <div class="hs-card"><div class="hs-h">Physical Attributes</div>
+              <div class="hs-3">${attr('Gender', i.gender)}${attr('Age', i.age)}${attr('Height', i.height)}</div>
+              <div class="hs-3">${attr('Eyes', i.eyes)}${attr('Hair', i.hair)}${attr('Skin', i.skin)}</div>
+              ${attr('Build', i.build)}${attr('Costume/Equipment', i.costume)}${rg ? attr('Homeland', rg.name) : ''}</div>
+            <div class="hs-card"><div class="hs-h">Characteristics</div>
+              <div class="hs-2">${charLine('Background', bg)}${charLine('Power Source', ps)}</div>
+              <div class="hs-2">${charLine('Archetype', ar, shape && shape !== ar ? ' ' + shape.rt : '')}${charLine('Personality', pe)}</div></div>
+          </div>
         </div>
-        <div>
-          <div class="hs-box"><h4>Principles</h4>${pr.map(x => `<div style="margin-bottom:8px"><b>${esc((window.PRINCIPLE_LORE[x.id] || [x.p.name])[0])}</b> <small class="muted">${esc(x.p.cat)}</small><div style="font-size:.86rem"><em>Roleplaying:</em> ${esc(x.p.rp)}<br><em>Minor twist:</em> ${esc(x.p.minor)}<br><em>Major twist:</em> ${esc(x.p.major)}</div></div>`).join('') || '—'}</div>
-          <div class="hs-box"><h4>Green abilities</h4>${abBlock('green')}</div>
-        </div>
-        <div>
-          <div class="hs-box"><h4>Yellow abilities</h4>${abBlock('yellow')}</div>
-          <div class="hs-box"><h4>Red abilities</h4>${abBlock('red')}</div>
-          <div class="hs-box"><h4>Out</h4>${abBlock('out')}</div>
+        <div class="hs-prs">${principleCol(pr[0])}${principleCol(pr[1])}</div>
+        <div class="hs-bottom">
+          <div class="hs-card"><div class="hs-h"${tip(window.GLOSSARY['hero point'])}>Hero Points <small>this issue</small></div><div class="hs-hp">${[0, 1, 2, 3, 4].map(n => check(`play.hp.${n}`, pl.hp[n], 'Hero point ' + (n + 1))).join('')}</div>
+            <div class="hs-h" style="margin-top:8px"${tip('Rewards you can claim by spending hero points — tick them off as you use them.')}>Hero Point Rewards</div>
+            ${[1, 2, 3, 4].map(r => `<div class="hs-hp"><b>+${r}</b>${[0, 1, 2, 3].map(c => check(`play.rw.${(r - 1) * 4 + c}`, pl.rw[(r - 1) * 4 + c], `+${r} reward ${c + 1}`)).join('')}</div>`).join('')}</div>
+          <div class="hs-card"><div class="hs-h"${tip('Past sessions ("issues") your champion took part in.')}>Back Issues</div>${[0, 1, 2, 3, 4, 5].map(n => `<input class="hs-line" type="text" data-bind="play.issues.${n}" data-live="1" value="${esc(pl.issues[n] || '')}" aria-label="Back issue ${n + 1}">`).join('')}</div>
+          <div class="hs-card"><div class="hs-h"${tip(window.GLOSSARY.collection + ' Tick a collection when it is complete — that is when your champion advances.')}>Collections</div>${[0, 1, 2, 3, 4, 5, 6, 7].map(n => `<div class="hs-coll">${check(`play.cdone.${n}`, pl.cdone[n], 'Collection ' + (n + 1) + ' complete')}<input class="hs-line" type="text" data-bind="play.coll.${n}" data-live="1" value="${esc(pl.coll[n] || '')}" aria-label="Collection ${n + 1}"></div>`).join('')}</div>
         </div>
       </div>
-      ${(i.pronouns || i.age || i.height || i.eyes || i.hair || i.build || i.look) ? `<div class="hs-box"><h4>Description</h4><div style="font-size:.9rem">${[['Pronouns', i.pronouns], ['Age', i.age], ['Height', i.height], ['Eyes', i.eyes], ['Hair', i.hair], ['Build', i.build]].filter(x => x[1]).map(x => `<b>${x[0]}:</b> ${esc(x[1])}`).join(' · ')}${i.look ? `<p><b>Gear &amp; look:</b> ${esc(i.look)}</p>` : ''}</div></div>` : ''}
-      ${i.notes || st.arch.notes ? `<div class="hs-box"><h4>Notes</h4><div style="font-size:.9rem;white-space:pre-wrap">${esc([i.notes, st.arch.notes].filter(Boolean).join('\n\n'))}</div></div>` : ''}
-      ${st.arch.minionForms && st.arch.minionForms.length ? `<div class="hs-box"><h4>Minion forms</h4><small>${esc(st.arch.minionForms.join(', '))}</small></div>` : ''}
+      <div class="hs-page">
+        <div class="hs-card hs-3"><div><div class="hs-h">Hero Name</div>${esc(i.name || '')}</div><div><div class="hs-h">Alias</div>${esc(i.alias || '')}</div><div><div class="hs-h">Player</div>${esc(i.player || '')}</div></div>
+        <div class="hs-stats">
+          <table class="hs-traits"><thead><tr><th>Powers</th><th>Die</th></tr></thead><tbody>${traitRows(powers, 6)}</tbody></table>
+          <table class="hs-traits"><thead><tr><th>Qualities</th><th>Die</th></tr></thead><tbody>${traitRows(quals, 6)}</tbody></table>
+          <div class="hs-status"><div class="hs-h"${tip(window.GLOSSARY['status die'])}>Status Dice</div>${R.status ? ['Green', 'Yellow', 'Red'].map((z, n) => `<div class="hs-sd ${z.toLowerCase()}"><small>${z}</small>${die(R.status[n])}</div>`).join('') : '—'}</div>
+          <div class="hs-hr"><div class="hs-h"${tip(window.GLOSSARY.Health)}>Health Range</div>${h ? `<div class="burst g">Green<b>${h.green[0]}–${h.green[1]}</b></div><div class="burst y">Yellow<b>${h.yellow[0]}–${h.yellow[1]}</b></div><div class="burst r">Red<b>${h.redR[0]}–1</b></div>
+            <div class="burst c">Current<input type="text" inputmode="numeric" data-bind="play.current" data-live="1" value="${esc(pl.current == null || pl.current === '' ? h.max : pl.current)}" aria-label="Current Health"></div>` : '—'}</div>
+        </div>
+        <div class="hs-h" style="margin-top:12px">Abilities</div>
+        ${zone('green', 'Green zone', rows.green.map(r => abRow(r)).join('') + emptyRows(5, rows.green.length) + pr.map(x => prRow(x)).join(''))}
+        ${zone('yellow', 'Yellow zone', rows.yellow.map(r => abRow(r)).join('') + emptyRows(5, rows.yellow.length))}
+        ${zone('red', 'Red zone', rows.red.map(r => abRow(r)).join('') + emptyRows(3, rows.red.length))}
+        <div class="hs-out"><span class="zlbl"${tip(window.COLOR_INFO.out)}>Out</span>${rows.out ? rulesText(rows.out.text, rows.out.entry) : ''}</div>
+        ${st.arch.minionForms && st.arch.minionForms.length ? `<div class="hs-card"><div class="hs-h">Minion forms (auxiliary sheet)</div><small>${esc(st.arch.minionForms.join(', '))}</small></div>` : ''}
+        ${i.notes || st.arch.notes ? `<div class="hs-card"><div class="hs-h">Notes (auxiliary sheet)</div><div style="font-size:.9rem;white-space:pre-wrap">${esc([i.notes, st.arch.notes].filter(Boolean).join('\n\n'))}</div></div>` : ''}
+      </div>
     </div>`;
+  }
+
+  // ------------------------------------------------------------------ official PDF export (Form Fillable Hero Sheet)
+  const pdfSafe = s => String(s == null ? '' : s)
+    .replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, '-')
+    .replace(/…/g, '...').replace(/★/g, '*').replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, '');
+
+  function sheetFieldValues(R) {
+    const F = {}, D = {}, C = {}, sizes = {};
+    const bg = bgDef(), ps = psDef(), ar = archDef(), shape = shapeDef(), pe = persDef();
+    const i = st.info, pl = st.play;
+    const both = d => (d ? `${d.rt} (${d.sc})` : '');
+    Object.assign(F, {
+      'Player': i.player, 'Hero Name': i.name, 'Alias': i.alias, 'Gender': i.gender, 'Age': i.age, 'Height': i.height,
+      'Eyes': i.eyes, 'Hair': i.hair, 'Skin': i.skin, 'Build': i.build,
+      'Costume/Equipment': [i.costume, regionDef() ? 'Homeland: ' + regionDef().name : ''].filter(Boolean).join('\n'),
+      'Background': both(bg), 'Power Source': both(ps),
+      'Archetype': ar ? (shape && shape !== ar ? `${ar.rt} ${shape.rt} (${ar.sc} ${shape.sc})` : both(ar)) : '',
+      'Personality': both(pe)
+    });
+    for (const k of ['Background', 'Power Source', 'Archetype', 'Personality']) {
+      const n = (F[k] || '').length;
+      if (n > 16) sizes[k] = n > 34 ? 5 : n > 26 ? 6 : 7;
+    }
+    const pr = principlesFinal();
+    pr.forEach((x, n) => {
+      const sfx = n ? ' 2' : '';
+      F['Principle' + sfx] = principleShort(x);
+      F['During Roleplaying' + sfx] = principleText(x, x.p.rp);
+      F['Minor Twist' + sfx] = x.p.minor;
+      F['Major Twist' + sfx] = x.p.major;
+    });
+    const fillTraits = (list, fieldBase, dieStart) => {
+      const rows = list.slice(0, 6);
+      if (list.length > 6) rows[5] = { merged: list.slice(5) };
+      rows.forEach((t, n) => {
+        const f = n ? `${fieldBase} ${n + 1}` : fieldBase;
+        if (t.merged) { F[f] = t.merged.map(x => `${sheetTraitName(x.key)} ${x.die}`).join(', '); sizes[f] = 6; }
+        else { F[f] = sheetTraitName(t.key); D['Die Type ' + (dieStart + n)] = t.die; }
+      });
+    };
+    fillTraits(sortTraits(owned(R, 'power')), 'Powers', 1);
+    fillTraits(sortTraits(owned(R, 'quality')), 'Qualities', 7);
+    if (R.status) R.status.forEach((d, n) => { D['Die Type ' + (13 + n)] = d; });
+    const h = healthCalc(R);
+    if (h) {
+      F['Health Range 1'] = `${h.green[0]}-${h.green[1]}`;
+      F['Health Range 2'] = `${h.yellow[0]}-${h.yellow[1]}`;
+      F['Health Range 3'] = `${h.redR[0]}-1`;
+      F['Health Range 4'] = String(pl.current == null || pl.current === '' ? h.max : pl.current);
+    }
+    const rows = sheetRows(R);
+    const put = (slot, r) => {
+      const sfx = slot === 1 ? '' : ' ' + slot;
+      F['Icon' + sfx] = actionIcons(r.text).slice(0, 2).map(a => ICONS[a][0]).join(' ');
+      F['Name' + sfx] = r.name;
+      D['Type' + sfx] = r.type === 'A/I' ? 'A' : r.type;
+      F['Text' + sfx] = r.textPlain;
+      sizes['Text' + sfx] = r.textPlain.length > 230 ? 5 : r.textPlain.length > 150 ? 6 : 7;
+      sizes['Icon' + sfx] = 4.5;
+    };
+    const zoneFill = (list, first, count) => {
+      const L = list.map(r => ({ ...r, textPlain: plainText(r.text, r.entry) }));
+      if (L.length > count) {
+        const extra = L.slice(count - 1);
+        L.splice(count - 1, L.length, { name: extra.map(r => r.name).join(' / '), type: extra[0].type, text: '', textPlain: extra.map(r => `${r.name}: ${r.textPlain}`).join(' | ') });
+      }
+      L.forEach((r, n) => put(first + n, r));
+      return list.length > count;
+    };
+    const over = [];
+    if (zoneFill(rows.green, 1, 5)) over.push('Green');
+    pr.forEach((x, n) => {
+      const slot = 6 + n;
+      F['Icon ' + slot] = actionIcons(x.p.ability).slice(0, 2).map(a => ICONS[a][0]).join(' ');
+      sizes['Icon ' + slot] = 4.5;
+      F['Name ' + slot] = principleShort(x);
+      D['Type ' + slot] = x.p.type;
+      F['Text ' + slot] = principleText(x, x.p.ability);
+      sizes['Text ' + slot] = 7;
+    });
+    if (zoneFill(rows.yellow, 8, 5)) over.push('Yellow');
+    if (zoneFill(rows.red, 13, 3)) over.push('Red');
+    if (rows.out) F['Out'] = plainText(rows.out.text, rows.out.entry);
+    for (let n = 0; n < 5; n++) C['Check Box ' + (n + 1)] = !!pl.hp[n];
+    for (let n = 0; n < 16; n++) C['Check Box ' + (n + 6)] = !!pl.rw[n];
+    ['Back Issues', 'Back Issues 2', 'Back Issues 3', 'Back Issues 4', 'Back Issues 5', 'Back Issues 6'].forEach((f, n) => { F[f] = pl.issues[n] || ''; });
+    for (let n = 0; n < 8; n++) F[n ? 'Collected Trades ' + (n + 1) : 'Collected Trades'] = (pl.cdone[n] ? '[X] ' : '') + (pl.coll[n] || '');
+    return { F, D, C, sizes, over };
+  }
+
+  let pdfTemplate = null; // ArrayBuffer chosen by the user when fetch is unavailable (file://)
+  async function exportPdf() {
+    const status = document.getElementById('pdf-status');
+    const say = (msg, isErr) => { if (status) { status.innerHTML = msg; status.className = isErr ? 'issues' : 'okbox'; } };
+    if (!window.PDFLib) { say('The PDF library failed to load (js/vendor/pdf-lib.min.js).', true); return; }
+    let bytes = pdfTemplate;
+    if (!bytes) {
+      try {
+        const r = await fetch('assets/hero-sheet.pdf');
+        if (!r.ok) throw new Error(r.status);
+        bytes = await r.arrayBuffer();
+      } catch (e) {
+        say('Your browser blocked loading <code>assets/hero-sheet.pdf</code> (this happens when opening the page straight from disk). <label class="btn small" for="template-file">Choose the blank Form Fillable Hero Sheet PDF</label> and the export will continue — or serve the folder with any web server.', true);
+        return;
+      }
+    }
+    try {
+      say('Filling your hero sheet…');
+      const { PDFDocument, StandardFonts } = window.PDFLib;
+      const doc = await PDFDocument.load(bytes);
+      const form = doc.getForm();
+      const font = await doc.embedFont(StandardFonts.Helvetica);
+      const R = compute();
+      const { F, D, C, sizes, over } = sheetFieldValues(R);
+      for (const [name, val] of Object.entries(F)) {
+        try {
+          const f = form.getTextField(name);
+          f.setText(pdfSafe(val));
+          f.setFontSize(sizes[name] || (f.isMultiline() ? 8 : 9));
+        } catch (e) { /* field missing in this template */ }
+      }
+      for (const [name, val] of Object.entries(D)) {
+        try { const f = form.getDropdown(name); if (f.getOptions().includes(val)) f.select(val); } catch (e) { /* ignore */ }
+      }
+      for (const [name, val] of Object.entries(C)) {
+        try { const f = form.getCheckBox(name); if (val) f.check(); else f.uncheck(); } catch (e) { /* ignore */ }
+      }
+      if (st.info.portrait) {
+        try {
+          const img = st.info.portrait.startsWith('data:image/png') ? await doc.embedPng(st.info.portrait) : await doc.embedJpg(st.info.portrait);
+          form.getButton('Character Image').setImage(img);
+        } catch (e) { /* ignore image problems */ }
+      }
+      form.updateFieldAppearances(font);
+      const out = await doc.save();
+      const blob = new Blob([out], { type: 'application/pdf' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = (st.info.name || 'runeterra-champion').replace(/[^\w-]+/g, '_') + '_hero_sheet.pdf';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      say('✓ Hero sheet PDF downloaded.' + (over.length ? ` Note: your ${over.join(' & ')} zone has more abilities than the sheet has rows, so the extras were combined into the last row.` : ''));
+    } catch (e) {
+      say('Could not fill the PDF: ' + esc(e.message), true);
+    }
   }
 
   function renderFinish() {
     const R = R0;
     const i = st.info;
     const field = (k, label, ph = '') => `<label class="field"><span>${label}</span><input type="text" data-bind="info.${k}" data-live="1" value="${esc(i[k])}" placeholder="${esc(ph)}"></label>`;
-    const abs = allAbilities(R).filter(x => x.name !== 'Out');
+    const abs = allAbilities(R).filter(x => x.name !== 'Out' && x.src !== 'Principle');
     const renameTraits = Object.keys(R.T).filter(k => k !== 'rp-quality');
     return `<div class="panel no-print"><div class="step-head"><div><div class="eyebrow">Step 8 · Sentinels: Finishing Touches</div><h2>Legend</h2></div></div>
       <p class="intro">${window.STEP_INTROS.finish}</p>
-      <div class="grid2">${field('name', 'Champion name', 'e.g. Kaelis, the Ember Warden')}${field('alias', 'Title / true name', 'e.g. "The Last Flame of Ionia"')}</div>
-      <div class="grid3">${field('pronouns', 'Pronouns / gender')}${field('age', 'Age', 'e.g. mid-thirties, or 2,000 years')}${field('height', 'Height')}${field('eyes', 'Eyes', 'e.g. glowing Hextech blue')}${field('hair', 'Hair')}${field('build', 'Build / skin', 'e.g. rugged, bioluminescent')}</div>
-      <label class="field"><span>Gear &amp; appearance</span><textarea data-bind="info.look" data-live="1" placeholder="What do they wear and carry into battle?">${esc(i.look)}</textarea></label>
-      <label class="field"><span>Backstory notes</span><textarea data-bind="info.notes" data-live="1" placeholder="Where did they come from? Who do they fight for?">${esc(i.notes)}</textarea></label>
+      <div class="grid3">${field('name', 'Hero name', 'e.g. Kaelis, the Ember Warden')}${field('alias', 'Alias / true name', 'e.g. Kaelis Du Morne')}${field('player', 'Player')}</div>
+      <div class="subsec"><h4>Physical attributes</h4>
+      <div class="grid3">${field('gender', 'Gender')}${field('age', 'Age', 'e.g. mid-thirties, or 2,000 years')}${field('height', 'Height')}${field('eyes', 'Eyes', 'e.g. glowing Hextech blue')}${field('hair', 'Hair')}${field('skin', 'Skin', 'e.g. sun-bronzed, bioluminescent')}</div>
+      ${field('build', 'Build', 'e.g. wiry, towering, clockwork')}
+      <label class="field"><span>Costume / equipment</span><textarea data-bind="info.costume" data-live="1" placeholder="What do they wear and carry into battle?">${esc(i.costume)}</textarea></label>
+      <div class="portrait-row"><div class="hs-portrait small">${i.portrait ? `<img src="${i.portrait}" alt="Portrait">` : '<span class="muted">No portrait</span>'}</div>
+        <div><label class="btn small" for="portrait-file">${i.portrait ? 'Change portrait' : 'Add portrait'}</label> ${i.portrait ? '<button class="btn small ghost" data-act="clearPortrait">Remove</button>' : ''}<input id="portrait-file" type="file" accept="image/*" hidden>
+        <p class="muted">Goes in the picture box of the hero sheet (and the PDF).</p></div></div></div>
+      <label class="field"><span>Backstory notes (auxiliary sheet)</span><textarea data-bind="info.notes" data-live="1" placeholder="Where did they come from? Who do they fight for?">${esc(i.notes)}</textarea></label>
       <div class="subsec"><h4${tip('The rulebook asks you to rename every ability to fit your hero. The original Sentinels name stays on the sheet in small print so you and your GM can look it up.')} class="term">Name your abilities</h4>
-        <div class="grid2">${abs.map(x => `<label class="field"><span>${esc(displayName(x.name))} <span class="pill ${x.color}">${x.color}</span></span><input type="text" data-bind="renames.${x.iid.replace(/\./g, '_')}" data-rename="${esc(x.iid)}" data-live="1" value="${esc(st.renames[x.iid] || '')}" placeholder="${esc(displayName(x.name))}"></label>`).join('') || '<small class="muted">No abilities yet.</small>'}</div></div>
-      <div class="subsec"><h4${tip('Signature Weapon and Mount are meant to be renamed (e.g. "Hextech Rifle", "Valor"). You can rename any other trait too.')} class="term">Name your gear &amp; gifts</h4>
+        <div class="grid2">${abs.map(x => `<label class="field"><span>${esc(displayName(x.name))} <span class="pill ${x.color}">${x.color}</span></span><input type="text" data-rename="${esc(x.iid)}" data-bind="renames" data-live="1" value="${esc(st.renames[x.iid] || '')}" placeholder="${esc(displayName(x.name))}"></label>`).join('') || '<small class="muted">No abilities yet.</small>'}</div></div>
+      <div class="subsec"><h4${tip('Signature Weapon and Mount are meant to be renamed (e.g. "Hextech Rifle", "Valor"). You can rename any other trait too, the way the rulebook renames Power Suit to "Power Arm".')} class="term">Name your gear &amp; gifts</h4>
         <div class="grid3">${renameTraits.map(k => `<label class="field"><span>${esc(TRAIT[k].rt)} ${die(R.T[k].die, 'sm')}</span><input type="text" data-bind="traitNames.${k}" data-live="1" value="${esc(st.traitNames[k] || '')}" placeholder="${esc(TRAIT[k].rt)}"></label>`).join('')}</div></div>
       ${issuesHtml(stepIssues('finish', R))}
-      <div class="step-footer"><button class="btn" data-act="go" data-step="health">← Back</button><div style="display:flex;gap:8px"><button class="btn" data-act="export">Export JSON</button><button class="btn primary" data-act="print">Print sheet</button></div></div></div>
+      <div class="subsec"><h4>Your hero sheet</h4><p class="muted">Below is your sheet laid out like the official two-page <em>Sentinel Comics RPG</em> hero sheet. Hero points, back issues, collections and current Health can be ticked and edited right on it during play.
+        <b>Export PDF</b> fills in the official form-fillable hero sheet for you.</p><div id="pdf-status"></div><input id="template-file" type="file" accept="application/pdf,.pdf" hidden></div>
+      <div class="step-footer"><button class="btn" data-act="go" data-step="health">← Back</button><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="export">Export JSON</button><button class="btn" data-act="print">Print</button><button class="btn primary" data-act="pdf">Export PDF hero sheet</button></div></div></div>
       <div class="panel" id="sheet-preview">${sheetHtml(R)}</div>`;
   }
 
@@ -1136,13 +1374,13 @@
     document.getElementById('side').innerHTML = renderSide();
     save();
   }
-  function renderSideOnly() {
+  function renderSideOnly(fromSheet) {
     R0 = compute();
     document.getElementById('side').innerHTML = renderSide();
-    const box = document.querySelector('#stage .issues, #stage .okbox');
+    const box = document.querySelector('#stage .issues:not(#pdf-status), #stage .okbox:not(#pdf-status)');
     if (box) box.outerHTML = issuesHtml(stepIssues(st.step, R0));
     const sheet = document.getElementById('sheet-preview');
-    if (sheet) sheet.innerHTML = sheetHtml(R0);
+    if (sheet && !fromSheet) sheet.innerHTML = sheetHtml(R0);
     save();
   }
 
@@ -1235,6 +1473,8 @@
     if (act === 'hmode') { st.health.mode = el.dataset.m; if (el.dataset.m === 'roll' && !st.health.roll) st.health.roll = roll(['d8'])[0]; render(); return; }
     if (act === 'hroll') { st.health.roll = roll(['d8'])[0]; render(); return; }
     if (act === 'export') { exportJson(); return; }
+    if (act === 'pdf') { exportPdf(); return; }
+    if (act === 'clearPortrait') { st.info.portrait = null; render(); return; }
     if (act === 'print') { st.step = 'finish'; render(); setTimeout(() => window.print(), 150); return; }
     if (act === 'reset') { if (confirm('Start over? This clears your current champion.')) { st = blank(); render(); } return; }
   });
@@ -1244,23 +1484,48 @@
     if (v === '') v = null;
     let path = el.dataset.bind;
     if (el.dataset.rename) { st.renames[el.dataset.rename] = el.value; return; }
-    if (path.startsWith('pers.qname') || path.startsWith('info.') || path.startsWith('traitNames.') || path === 'arch.notes') v = el.value;
+    if (path.startsWith('pers.qname') || path.startsWith('info.') || path.startsWith('traitNames.') || path === 'arch.notes' || (path.startsWith('play.') && el.type !== 'checkbox')) v = el.value;
     setPath(st, path, v);
   }
   document.addEventListener('change', ev => {
     const el = ev.target;
     if (el.id === 'import-file') { importJson(el.files[0]); el.value = ''; return; }
+    if (el.id === 'portrait-file') { loadPortrait(el.files[0]); el.value = ''; return; }
+    if (el.id === 'template-file') {
+      const f = el.files[0]; el.value = '';
+      if (f) f.arrayBuffer().then(b => { pdfTemplate = b; exportPdf(); });
+      return;
+    }
     if (!el.dataset.bind) return;
     bindValue(el);
-    if (el.dataset.live) { renderSideOnly(); document.getElementById('nav').innerHTML = renderNav(); return; }
+    if (el.dataset.live) { renderSideOnly(!!el.closest('#sheet-preview')); document.getElementById('nav').innerHTML = renderNav(); return; }
     render();
   });
   document.addEventListener('input', ev => {
     const el = ev.target;
     if (!el.dataset.bind || !el.dataset.live) return;
     bindValue(el);
-    renderSideOnly();
+    renderSideOnly(!!el.closest('#sheet-preview'));
   });
+
+  // Downscale the portrait so it fits comfortably in browser storage and the PDF.
+  function loadPortrait(file) {
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 700, k = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        st.info.portrait = c.toDataURL('image/jpeg', 0.85);
+        render();
+      };
+      img.src = r.result;
+    };
+    r.readAsDataURL(file);
+  }
 
   function flash(el) {
     el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(0)' }], { duration: 220 });
@@ -1283,7 +1548,7 @@
       try {
         const s = JSON.parse(r.result);
         if (!s || s.v !== 1) throw new Error('Not a Champion Forge file');
-        st = Object.assign(blank(), s); render();
+        st = upgradeState(s); render();
       } catch (e) { alert('Could not import: ' + e.message); }
     };
     r.readAsText(file);
