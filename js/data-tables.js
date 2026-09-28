@@ -368,7 +368,7 @@ window.ARCHETYPES = [
   { n: 12, id: 'psychic', sc: 'Psychic', rt: 'Mindweaver', role: 'Enchanter / Control Mage',
     lore: 'Your mind is the weapon — a vastaya charm, telekinetic orbs of dark sovereignty, visions of what is to come.',
     champs: 'Ahri, Syndra, Karma, Zoe',
-    req: { any: ['P:psychic'], count: 2, label: 'at least two Psychic powers' },
+    req: { any: ['P:psychic'], count: 2, label: 'at least two Mind Magic (Psychic) powers' },
     powers: ['P:intellectual', 'P:materials', 'P:psychic', 'P:selfcontrol'], quals: ['Q:information', 'Q:mental'], remPowers: 'any',
     green: { count: 2, list: ['Psychic Assault', 'Psychic Coordination', 'Psychic Insight'] },
     yellow: { count: 2, list: ['Astral Projection', 'Illusionary Double', 'Minion Suggestion', 'Postcognitive Understanding', 'Precognitive Alteration', 'Psychic Analysis', 'Swarm', 'Telekinetic Assault', 'Telepathic Whammy'], note: 'Only abilities whose associated power or quality you have.' },
