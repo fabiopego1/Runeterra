@@ -535,7 +535,7 @@ Object.assign(window.I18N.ui, {
  "Finishing Touches & Sheet": "Toques finais e ficha",
  "Finish the step marked “You are here” to continue": "Termine o passo marcado com “Você está aqui” para continuar",
  "Next": "Próximo",
- "<h5>Guided vs Constructed</h5>Guided: roll and choose among the allowed entries. Constructed: pick freely. Die sizes work the same either way.": "<h5>Guiado x Construído</h5>Guiado: role e escolha entre as opções permitidas. Construído: escolha livremente. Os tamanhos de dado funcionam igual nos dois.",
+ "<h5>Guided vs Constructed</h5>Guided: roll and choose among the allowed entries. Constructed: pick freely. Die sizes work the same either way.": "<h5>Construído ou Guiado?</h5><b>Construído:</b> escolha livremente, ideal para quem já imagina o campeão. <b>Guiado:</b> role os dados e escolha entre as opções que eles liberam (uma nova rolagem por capítulo). Os tamanhos de dado funcionam igual nos dois, e dá para trocar a qualquer momento.",
  "Method": "Método",
  "The Chronicle": "A Crônica",
  "Sealed": "Selado",
@@ -595,5 +595,6 @@ Object.assign(window.I18N.ui, {
  "Change choice": "Trocar escolha",
  "Keep the current choice": "Manter a escolha atual",
  "Change last choice": "Trocar última escolha",
+ "<b>Which one?</b> Constructed is the most direct: you choose everything, ideal when you already have a champion in mind or are new to the game. Guided is for those who like surprises: at each chapter you roll the dice and pick among the options they unlock, with one re-roll per chapter.": "<b>Qual escolher?</b> Construído é o mais direto: você escolhe tudo, ideal quando já tem um campeão em mente ou está começando no jogo. Guiado é para quem gosta de surpresa: a cada capítulo você rola os dados e escolhe entre as opções que eles liberam, podendo rolar de novo uma vez por capítulo.",
  "FOOTER": "Projeto de fã não oficial. Runeterra e League of Legends são © Riot Games. Uso pessoal e não comercial."
 });

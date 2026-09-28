@@ -1,0 +1,31 @@
+name: Testes
+
+on:
+  push:
+    branches: [main, 'claude/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Instalar Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1
+          npx playwright install --with-deps chromium
+      - name: Rodar os testes
+        env:
+          GM_PASSWORD: ${{ secrets.GM_PASSWORD }}
+        run: |
+          python3 -m http.server 8765 >/dev/null 2>&1 &
+          sleep 1
+          node tests/run.js

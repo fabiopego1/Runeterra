@@ -777,9 +777,10 @@
         <div class="tp-method">
           <div class="tp-method-l">${tr('Choose how fate is decided')}</div>
           <div class="tp-options" role="radiogroup" aria-label="${tr('Creation method')}">
-            <button class="tp-option${st.method === 'guided' ? ' on' : ''}" role="radio" aria-checked="${st.method === 'guided'}" data-act="method" data-m="guided"><span class="tp-o-t">${tr('Guided')}</span><span class="tp-o-d">${tr('Roll the dice at every chapter and choose among the paths they open. Let the Runes decide.')}</span></button>
             <button class="tp-option${st.method === 'constructed' ? ' on' : ''}" role="radio" aria-checked="${st.method === 'constructed'}" data-act="method" data-m="constructed"><span class="tp-o-t">${tr('Constructed')}</span><span class="tp-o-d">${tr('Pick freely to build the champion you already imagine. Same dice, your choice.')}</span></button>
+            <button class="tp-option${st.method === 'guided' ? ' on' : ''}" role="radio" aria-checked="${st.method === 'guided'}" data-act="method" data-m="guided"><span class="tp-o-t">${tr('Guided')}</span><span class="tp-o-d">${tr('Roll the dice at every chapter and choose among the paths they open. Let the Runes decide.')}</span></button>
           </div>
+          <p class="tp-small tp-which">${tr('<b>Which one?</b> Constructed is the most direct: you choose everything, ideal when you already have a champion in mind or are new to the game. Guided is for those who like surprises: at each chapter you roll the dice and pick among the options they unlock, with one re-roll per chapter.')}</p>
           <p class="tp-small">${tr('You can switch at any time. Progress is kept in this browser.')}</p>
         </div>
         <div class="step-footer tp-footer"><span></span><div class="next-wrap"><button class="btn primary" data-act="next"><span class="btn-kicker">${tr('Chapter I')}</span>${tr('Begin the chronicle')} ${ico('next')}</button></div></div>
@@ -1406,7 +1407,7 @@
     return `<div class="step-footer"><div class="footer-left"><button class="btn ghost" data-act="back">${ico('prev')} ${tr('Back')}</button><button class="btn small change-btn change-last" data-act="changeLast" hidden>${ico('reset')} ${tr('Change last choice')}</button></div>
       <div class="next-wrap">${ready ? '' : `<span class="next-hint">${tr('Finish the step marked “You are here” to continue')}</span>`}<button class="btn primary${ready ? '' : ' is-disabled'}" data-act="next" aria-disabled="${!ready}"><span class="btn-kicker">${next ? tr('Chapter') + ' ' + ROMAN[i + 1] : ''}</span>${next ? esc(next.name) : tr('Next')} ${ico('next')}</button></div></div>`;
   }
-  const methodToggle = () => `<div class="method" role="group" aria-label="${tr('Creation method')}"${tip(tr('<h5>Guided vs Constructed</h5>Guided: roll and choose among the allowed entries. Constructed: pick freely. Die sizes work the same either way.'))}><span class="method-l">${tr('Method')}</span><button class="${st.method === 'guided' ? 'on' : ''}" data-act="method" data-m="guided" aria-pressed="${st.method === 'guided'}">${tr('Guided')}</button><button class="${st.method === 'constructed' ? 'on' : ''}" data-act="method" data-m="constructed" aria-pressed="${st.method === 'constructed'}">${tr('Constructed')}</button></div>`;
+  const methodToggle = () => `<div class="method" role="group" aria-label="${tr('Creation method')}"${tip(tr('<h5>Guided vs Constructed</h5>Guided: roll and choose among the allowed entries. Constructed: pick freely. Die sizes work the same either way.'))}><span class="method-l">${tr('Method')}</span><button class="${st.method === 'constructed' ? 'on' : ''}" data-act="method" data-m="constructed" aria-pressed="${st.method === 'constructed'}">${tr('Constructed')}</button><button class="${st.method === 'guided' ? 'on' : ''}" data-act="method" data-m="guided" aria-pressed="${st.method === 'guided'}">${tr('Guided')}</button></div>`;
 
   // ------------------------------------------------------------------ nav + side
   function renderNav() {
@@ -1799,6 +1800,44 @@
   document.addEventListener('keydown', ev => {
     if (ev.key === '?' && !/^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName || '')) location.href = 'regras.html';
   });
+
+  // Header "Arquivo" menu: export, import, print and start over live behind one button.
+  const fileBtn = document.getElementById('file-btn'), filePop = document.getElementById('file-pop');
+  if (fileBtn && filePop) {
+    const items = () => [...filePop.querySelectorAll('[role="menuitem"]')];
+    const setOpen = (open, focus) => {
+      filePop.hidden = !open;
+      fileBtn.setAttribute('aria-expanded', String(open));
+      if (open && focus) items()[0].focus();
+      if (!open && focus) fileBtn.focus();
+    };
+    fileBtn.addEventListener('click', ev => { ev.stopPropagation(); setOpen(filePop.hidden, ev.detail === 0); });
+    document.addEventListener('click', ev => {   // any click outside closes it; picking an item closes it after the action runs
+      if (filePop.hidden) return;
+      if (!filePop.contains(ev.target) || ev.target.closest('[role="menuitem"]')) setTimeout(() => setOpen(false), 0);
+    });
+    filePop.addEventListener('keydown', ev => {
+      const list = items(), i = list.indexOf(document.activeElement);
+      if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { ev.preventDefault(); list[(i + (ev.key === 'ArrowDown' ? 1 : list.length - 1)) % list.length].focus(); }
+      if ((ev.key === 'Enter' || ev.key === ' ') && document.activeElement.tagName === 'LABEL') { ev.preventDefault(); document.activeElement.click(); }
+    });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !filePop.hidden) setOpen(false, true); });
+  }
+
+  // First visit on a touch screen: explain that underlined terms open their explanation with a tap.
+  try {
+    if (matchMedia('(hover: none)').matches && !localStorage.getItem('runeterra-touch-hint')) {
+      localStorage.setItem('runeterra-touch-hint', '1');
+      const toast = document.createElement('div');
+      toast.className = 'touch-hint';
+      toast.setAttribute('role', 'status');
+      toast.innerHTML = `<span>${ico('codex')}</span><p>Toque em qualquer termo <u>sublinhado</u> para ver o que ele significa. Toque de novo para fechar.</p><button type="button" aria-label="Fechar">✕</button>`;
+      document.body.appendChild(toast);
+      const close = () => { toast.classList.add('out'); setTimeout(() => toast.remove(), 300); };
+      toast.querySelector('button').addEventListener('click', close);
+      setTimeout(close, 9000);
+    }
+  } catch (e) { /* storage blocked: skip the hint */ }
 
   render();
 })();

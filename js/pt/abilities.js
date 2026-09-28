@@ -198,7 +198,7 @@
     'Not Quite Right': ['Não Exatamente Assim', 'Depois que uma reserva de dados for rolada, ajuste um dado um valor para cima ou para baixo.'],
     'Offensive Strike': ['Golpe Ofensivo', 'Ataque usando [power/quality]. Use seu dado Máx.'],
     'Onboard Upgrade': ['Aprimoramento Embutido', 'Fortaleça a si mesmo usando Traje Hextec. Use seus dados Mín+Médio. Esse bônus é persistente e exclusivo.'],
-    'Organi-Hack': ['Organi-Hack', 'Ataque um alvo usando [power]. Atrapalhe esse alvo com seu dado Mín.'],
+    'Organi-Hack': ['Invasão Orgânica', 'Ataque um alvo usando [power]. Atrapalhe esse alvo com seu dado Mín.'],
     'Overcome From the Darkness': ['Superar das Sombras', 'Ataque ou Supere usando [power/quality]. Fortaleça a si mesmo usando seu dado Mín.'],
     'Overpower': ['Sobrecarga', 'Sempre que receber um Fortalecimento, aumente esse bônus em +1. Depois, se o bônus for +5 ou mais, sofra dano igual ao bônus e remova-o.'],
     'Overwhelming Vision': ['Visão Avassaladora', 'Ataque usando [power]. Depois, se o alvo do Ataque sobreviver, Ataque-o também com seu dado Máx. Se não, Recupere Vida igual ao seu dado Mín.'],
