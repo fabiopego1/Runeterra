@@ -6,12 +6,15 @@
   const ic = a => `<span class="act-ic act-${a.toLowerCase()}">${{ Attack: 'ATQ', Defend: 'DEF', Overcome: 'SUP', Boost: 'FOR', Hinder: 'ATR', Recover: 'REC' }[a]}</span>`;
   const NOME = { Attack: 'Atacar', Defend: 'Defender', Overcome: 'Superar', Boost: 'Fortalecer', Hinder: 'Atrapalhar', Recover: 'Recuperar' };
   const see = (id, txt) => `<a href="#cs-${id}">${txt}</a>`;
-  const BASICO = 'O básico', ACAO = 'Na cena de ação', ENTRE = 'Entre as cenas';
+  const BASICO = 'O básico', ACAO = 'Na cena de ação', ENTRE = 'Entre as cenas', MESTRE = 'Para o Mestre';
+  const track = (g, y, r) => `<span class="cs-track">${'<i class="g"></i>'.repeat(g)}${'<i class="y"></i>'.repeat(y)}${'<i class="r"></i>'.repeat(r)}</span>`;
+  const roll = (dice, note) => `<span class="cs-roll">${dice.map(([d, n]) => `<span class="die ${d}">${d.slice(1)}</span><b>${n}</b>`).join('')}</span>${note ? ` <span class="cs-roll-note">${note}</span>` : ''}`;
 
   window.CHEAT_GROUPS_PT = [
     { name: BASICO, lede: 'Como o jogo se organiza, como os dados funcionam e o que acontece quando você se machuca.' },
     { name: ACAO, lede: 'Turnos, ações, mods e reviravoltas: tudo o que você usa durante uma luta, perseguição ou resgate.' },
-    { name: ENTRE, lede: 'Recuperação, conversas, pontos de herói e coleções: o que acontece entre uma cena de ação e outra.' }
+    { name: ENTRE, lede: 'Recuperação, conversas, pontos de herói e coleções: o que acontece entre uma cena de ação e outra.' },
+    { name: MESTRE, lede: 'Como montar e conduzir uma cena de ação: marcador, ambiente, desafios, lacaios, tenentes e vilões. Termina com um exemplo de jogo completo.' }
   ];
 
   window.CHEAT_SECTIONS_PT = [
@@ -214,6 +217,136 @@
         <li>depois de rolar, mudar o número de um dado para o que quiser (e só então definir Mín, Médio e Máx);</li>
         <li>estabelecer um fato sobre a cena, baseado numa edição anterior;</li>
         <li>evitar uma reviravolta menor, explicando como aquela experiência ajuda agora.</li></ul>
-      <p>Justifique com uma lembrança ("Da última vez que enfrentei o Swain, ele estava ferido do lado direito...") e, se quiser, com uma "nota do editor" citando a edição. É também entre coleções que o herói pode evoluir e mudar de ficha.</p>` }
+      <p>Justifique com uma lembrança ("Da última vez que enfrentei o Swain, ele estava ferido do lado direito...") e, se quiser, com uma "nota do editor" citando a edição. É também entre coleções que o herói pode ${see('gm-evolution', 'evoluir e mudar de ficha')}.</p>` },
+
+    // ------------------------------------------------------------------ IV · Para o Mestre
+    { id: 'gm-scene', group: MESTRE, title: 'Montando uma cena de ação', nav: 'Montando a cena', body: `
+      <p>Uma cena de ação é montada com <b>elementos</b>: desafios, lacaios, tenentes, vilões e o ambiente, mais o ${see('gm-tracker', 'marcador de cena')}. A regra de bolso: uma cena tem cerca de <b>H elementos</b>, em que <b>H</b> é o número de heróis. Assim todo mundo tem algo para fazer no próprio turno.</p>
+      <div class="cs-scroll"><table class="cs-table cs-wide"><thead><tr><th>Dificuldade</th><th>Desafios</th><th>Lacaios</th><th>Tenentes</th><th>Vilões</th><th>Ambiente</th></tr></thead><tbody>
+        <tr><td><b>Fácil</b></td><td>1 a 2 sucessos, ou 1 com dificuldade extra (como um contador)</td><td>H lacaios d6</td><td>½H tenentes d8</td><td>Nenhum</td><td>Nenhum</td></tr>
+        <tr><td><b>Moderada</b></td><td>3 a 4 sucessos, ou 1 a 2 com dificuldade extra</td><td>H lacaios d8</td><td>½H tenentes d10</td><td>Vilão menor (sem aprimoramentos)</td><td>Ambiente comum</td></tr>
+        <tr><td><b>Difícil</b></td><td>5 ou mais sucessos, ou 3 a 4 com dificuldade extra</td><td>H lacaios d10</td><td>½H tenentes d12</td><td>Vilão maior (com aprimoramentos)</td><td>Ambiente hostil</td></tr></tbody></table></div>
+      <p class="cs-note">½H = metade do número de heróis, arredondada para cima. Cada linha é <b>um</b> elemento: "H lacaios d8" conta como um elemento moderado.</p>
+      <ul class="cs-list">
+        <li><b>Cena fácil:</b> quase só elementos fáceis, nenhum difícil. Serve de aquecimento ou de passagem na história.</li>
+        <li><b>Cena moderada:</b> a maioria das cenas de uma edição.</li>
+        <li><b>Cena difícil:</b> o grande confronto. Quase só elementos difíceis, nenhum fácil.</li></ul>
+      <h4>Trocas que mantêm o equilíbrio</h4>
+      <ul class="cs-list">
+        <li>Um elemento moderado vale dois fáceis; um difícil vale dois moderados.</li>
+        <li>Dois moderados podem virar um fácil e um difícil.</li>
+        <li>Num grupo de lacaios, <b>dois lacaios</b> podem virar <b>um tenente</b> de um tamanho de dado acima.</li>
+        <li>Tire um elemento moderado para deixar a cena fácil; some um moderado ou difícil para deixá-la difícil.</li></ul>
+      <div class="cs-callout"><b>Use cartões.</b> Um cartão para o marcador de cena, um para cada grupo de lacaios, tenente, vilão, desafio e local, e um para cada Mod. Deixe todos no meio da mesa. Vire o cartão de lado quando aquele elemento já agiu na rodada e retire-o quando for resolvido: a mesa vendo os cartões sumirem é a melhor sensação de progresso.</div>` },
+
+    { id: 'gm-tracker', group: MESTRE, title: 'Marcador de cena e ambiente', nav: 'Marcador e ambiente', body: `
+      <p>O marcador de cena mede o perigo e a urgência. Ele precisa de pelo menos um espaço de cada cor; comece por um destes e ajuste:</p>
+      <table class="cs-table"><tbody>
+        <tr><td><b>Padrão</b><br>${track(2, 4, 2)}</td><td>O mais comum. Começa no Verde, logo passa ao Amarelo e só chega ao Vermelho se a cena se arrastar.</td></tr>
+        <tr><td><b>Prolongado</b><br>${track(3, 5, 3)}</td><td>Cenas longas, grupos pequenos, perseguições e explorações com muitos desafios.</td></tr>
+        <tr><td><b>Épico</b><br>${track(1, 3, 4)}</td><td>Confrontos finais. O Verde quase não existe e o Vermelho é praticamente certo.</td></tr></tbody></table>
+      <h4>O turno do marcador</h4>
+      <p>O marcador tem um turno na ordem de ação, como qualquer personagem. Nele, faça nesta ordem:</p>
+      <ol class="cs-steps">
+        <li><b>Avance o marcador:</b> marque o próximo espaço. Ao marcar o último Verde, a cena fica Amarela; ao marcar o último Amarelo, fica Vermelha. Anuncie a mudança: os heróis ganham acesso a novas habilidades.</li>
+        <li><b>Ative as ameaças do ambiente</b> que já estão em jogo (lacaios e tenentes do lugar agem agora).</li>
+        <li>Se não houver nenhuma ameaça do ambiente, <b>introduza uma nova</b>, liberada pela cor atual da cena.</li>
+        <li>Se nenhuma ameaça entrou, <b>dispare uma reviravolta do ambiente</b> da cor atual. Se nenhuma servir, role os três dados do ambiente como um Atacar, Fortalecer ou Atrapalhar.</li></ol>
+      <ul class="cs-list">
+        <li>Sem ambiente, o turno do marcador é só o passo 1.</li>
+        <li>O ambiente nunca faz Defender nem Superar. Cada reviravolta maior do ambiente acontece no máximo uma vez por cena.</li>
+        <li>Quando um herói consegue um Superar com reviravolta, você pode sugerir uma reviravolta do ambiente da cor atual.</li></ul>
+      <div class="cs-callout"><b>Fim do marcador:</b> quando o último espaço Vermelho é marcado, algo ruim acontece e a cena termina. O plano do vilão avança, alguém não é salvo, a fenda do Vazio se abre de vez. A história segue para uma nova cena, provavelmente com muito mais em jogo.</div>` },
+
+    { id: 'gm-challenges', group: MESTRE, title: 'Desafios', body: `
+      <p>Desafios são obstáculos, perigos para inocentes e complicações que precisam ser resolvidos durante a cena: um prédio desabando em Piltover, um vazamento de química em Zaun, um navio pegando fogo em Águas de Sentina. São resolvidos com ações de <b>Superar</b>, e dão aos heróis que não brilham no combate a chance de salvar o dia.</p>
+      <table class="cs-table"><tbody>
+        <tr><td><b>Simples</b></td><td>Um Superar resolve. Não ameaça ninguém a cada turno, mas se ficar sem solução até o fim da cena, gera consequências na história.</td></tr>
+        <tr><td><b>Em etapas</b></td><td>Vários sucessos em ordem (ex.: <i>achar</i> a fábrica de golens, depois <i>destruí-la</i>). Vários heróis podem avançar o mesmo desafio no mesmo turno. Um <b>12+</b> conta como dois sucessos. Mantenha em torno de 3 sucessos, no máximo 5.</td></tr>
+        <tr><td><b>Várias soluções</b></td><td>Caminhos que se excluem: <i>hackear</i> a porta hextec <b>ou</b> <i>arrombá-la</i>, não os dois.</td></tr>
+        <tr><td><b>Ramificados</b></td><td>Resolver um desafio libera outros, conforme o jeito que foi resolvido. Ótimo para invadir uma base ou explorar uma tumba em Shurima.</td></tr>
+        <tr><td><b>Com contador</b></td><td>Tem um turno próprio. A cada turno dele, marque uma caixa; quando marcar a última, as consequências acontecem na hora.</td></tr></tbody></table>
+      <h4>Quanto tempo dar ao contador</h4>
+      <table class="cs-table"><thead><tr><th>Impacto se disparar</th><th>Contador</th></tr></thead><tbody>
+        <tr><td>Pouco impacto em civis, ou perigo para os heróis</td><td>1 a 2 turnos</td></tr>
+        <tr><td>Grande impacto em civis, ou grande perigo para os heróis</td><td>Até a próxima mudança de cor da cena</td></tr>
+        <tr><td>Catástrofe na região</td><td>Use um Dispositivo do Juízo Final</td></tr></tbody></table>
+      <p><b>Dispositivos do Juízo Final</b> são desafios com contador e vários sucessos que, no próprio turno, <b>aceleram o marcador de cena</b> (um espaço, dois, ou direto para a próxima cor). Se o marcador acabar com um deles em jogo, ele dispara e a cena termina, quase sempre de forma catastrófica.</p>
+      <p class="cs-note">Um desafio também pode ter uma habilidade própria e agir no turno dele, como uma torre de defesa. Transformar um inimigo em desafio, e não em lacaio, dá chance aos heróis de Superar em cenas cheias de combate.</p>` },
+
+    { id: 'gm-minions', group: MESTRE, title: 'Conduzindo lacaios e tenentes', nav: 'Lacaios e tenentes', body: `
+      <p>As regras básicas de dano estão em ${see('enemies', 'Inimigos')}. Do lado do Mestre:</p>
+      <table class="cs-table"><thead><tr><th>Dado</th><th>Exemplos em Runeterra</th></tr></thead><tbody>
+        <tr><td>d4</td><td>Ratos-químicos de Zaun, turba em pânico, autômatos quebrados</td></tr>
+        <tr><td>d6</td><td>Capangas dos Barões Químicos, guardas da cidade, piratas de Águas de Sentina</td></tr>
+        <tr><td>d8</td><td>Soldados de Noxus, assassinos da Ordem das Sombras, lobos de Freljord</td></tr>
+        <tr><td>d10</td><td>Guarda de elite, capangas turbinados com química, criaturas do Vazio</td></tr>
+        <tr><td>d12</td><td>Golens hextec, máquinas de cerco, feras colossais</td></tr></tbody></table>
+      <ul class="cs-list">
+        <li><b>Em grupo:</b> lacaios iguais agem juntos. Role todos os dados de uma vez e distribua o resultado entre os alvos.</li>
+        <li><b>Um dado só</b> para qualquer ação básica. Se tiverem habilidade, ela é a jogada preferida deles.</li>
+        <li><b>Não concentre</b> todos os ataques no mesmo herói, principalmente no que está quase em Nocaute, a não ser que o vilão deixe isso claro antes ("Acabem com a Demaciana!").</li>
+        <li><b>Superar:</b> lacaios e tenentes nunca aceitam reviravolta maior; com 1 a 3, apenas falham. Com 4 a 7, conseguem com um custo: o lacaio sai de cena, o tenente perde um tamanho de dado. Eles <b>não podem avançar o marcador</b>; isso só os vilões fazem.</li>
+        <li>Para lacaios mais perigosos sem aumentar o dado, dê bônus em ações específicas ("+1 para Atacar em bando").</li></ul>
+      <h4>Ideias de habilidade para tenentes</h4>
+      <ul class="cs-list">
+        <li>Bônus em Fortalecer, Atrapalhar ou Defender, ou afetar vários alvos no mesmo local com essas ações.</li>
+        <li>Atacar e Fortalecer um aliado (ou Atrapalhar um inimigo) com a mesma rolagem.</li>
+        <li>Ação especial: criar lacaios, curar o vilão, trazer uma ameaça do ambiente, levar um herói para outro local.</li>
+        <li>Sacrificar-se para o vilão fugir, agir fora de hora ou avançar o marcador um espaço.</li></ul>` },
+
+    { id: 'gm-villains', group: MESTRE, title: 'Vilões, ameaças e reviravoltas', nav: 'Vilões e ameaças', body: `
+      <ul class="cs-list">
+        <li><b>Vilões</b> agem como heróis: poderes, qualidades, habilidades, Vida e um dado de status próprio, descrito na ficha deles. Cada vilão tem o próprio turno.</li>
+        <li>Só vilões podem usar <b>Superar para avançar o marcador de cena</b>, e podem pagar Ações Arriscadas com reviravoltas, como os heróis.</li>
+        <li><b>Aprimoramentos</b> tornam o vilão mais forte e dão aos heróis outra forma de vencê-lo, como uma armadura hextec que cai depois de alguns Superar.</li>
+        <li><b>Ameaças</b> são lacaios, tenentes ou vilões que entram no meio da cena, trazidos por outro personagem, pelo ambiente ou por uma reviravolta. Começam a agir no turno seguinte ao da entrada.</li>
+        <li><b>Personagens da trama</b> aliados podem ser lacaios (civis frágeis) ou tenentes (um guarda de elite amigo). Você pode deixar os jogadores controlarem esses aliados.</li></ul>
+      <h4>De onde tirar reviravoltas</h4>
+      <ol class="cs-steps">
+        <li>Das <b>perguntas de reviravolta dos princípios</b> dos heróis: sempre a primeira opção.</li>
+        <li>Do <b>ambiente</b> ou da própria cena (o cano de química que estoura, a ponte que cede).</li>
+        <li>Da sua cabeça, misturando os dois. Prefira reviravoltas que tiram a atenção do combate: um inocente em perigo, um segredo exposto, um novo desafio.</li></ol>
+      <p class="cs-note">Reviravoltas menores duram até a próxima cena de montagem; as maiores, até o fim da edição. Mesmo resolvidas, podem voltar como gancho para outra cena, edição ou coleção.</p>` },
+
+    { id: 'gm-evolution', group: MESTRE, title: 'Evolução entre coleções', nav: 'Evolução', body: `
+      <p>Ao fechar uma ${see('collections', 'coleção')}, o arco de história termina e os heróis podem mudar. Há três tamanhos de mudança:</p>
+      <table class="cs-table"><tbody>
+        <tr><td><b>Visual</b></td><td>Novo traje, alcunha, cabelo. Livre, sem pedir permissão, mas vale pensar no motivo.</td></tr>
+        <tr><td><b>Detalhes</b></td><td>Trocar um poder ou qualidade por outro do <b>mesmo dado</b> (as habilidades passam a usar o novo), trocar um princípio, ou trocar uma habilidade por outra da <b>mesma cor</b>, das mesmas listas da criação, usando o mesmo poder ou qualidade.</td></tr>
+        <tr><td><b>Reescrita</b></td><td>Quando muita coisa mudou: refaça a criação pelo método Construído, mantendo a história e as coleções.</td></tr></tbody></table>
+      <p>Na Forja, tudo isso fica na seção <a href="index.html">Evoluir campeão</a>, no capítulo Lenda, com histórico das mudanças. Mudanças também podem acontecer no meio de uma coleção, se a história pedir.</p>` },
+
+    { id: 'example', group: MESTRE, title: 'Exemplo de jogo: fumaça nas docas do Entresol', nav: 'Exemplo de jogo', body: `
+      <p>Três heróis seguem a pista de um carregamento de química ilegal até as docas do Entresol, em Zaun:</p>
+      <table class="cs-table"><tbody>
+        <tr><td><b>Rix Ferrugem</b> (Zaun)</td><td>Inventor de dispositivos químicos. Poder <i>Química</i> d10, qualidade <i>Tecnologia</i> d8. Temperamento Imprudente: status Verde d6, Amarelo d6, Vermelho d8.</td></tr>
+        <tr><td><b>Aldric Valmont</b> (Demacia)</td><td>Soldado da Vanguarda. Poder <i>Força</i> d10, qualidade <i>Combate</i> d8. Temperamento Comandante Nato: status d6, d8, d10. Vida 28 (Verde 28 a 22, Amarela 21 a 11, Vermelha 10 a 1).</td></tr>
+        <tr><td><b>Sen Hayari</b> (Ionia)</td><td>Espiritualista. Poder <i>Energia Espiritual</i> d8, qualidade <i>Percepção</i> d10. Temperamento Curioso: status d6, d8, d10.</td></tr></tbody></table>
+      <p><b>A cena (moderada).</b> Marcador padrão ${track(2, 4, 2)}. Três <b>capangas turbinados</b> (lacaios d8), o <b>Capataz Gorn</b> (tenente d10, "+1 para Atacar quem estiver Atrapalhado") e um desafio com contador: <b>vazamento de gás químico</b>, 1 sucesso, contador de 2 turnos. Se disparar, todos na doca sofrem dano.</p>
+
+      <h4>Rodada 1</h4>
+      <ol class="cs-steps cs-example">
+        <li><b>O Mestre abre a cena</b> e escolhe quem começa: Aldric, que chegou primeiro. Aldric <b>Ataca</b> um capanga com Força, Combate e o status Verde:
+          ${roll([['d10', 7], ['d8', 3], ['d6', 5]], 'Ordenando: Mín 3, Médio 5, Máx 7. Dano = 5.')}
+          O capanga rola o próprio d8 para resistir e tira 4. Menos que 5: <b>derrotado</b>. Aldric passa a vez para Sen.</li>
+        <li><b>Sen tenta fechar a válvula</b> do vazamento (Superar), agindo pelo seu princípio de proteger inocentes:
+          ${roll([['d8', 2], ['d10', 9], ['d6', 6]], 'Médio 6: sucesso com reviravolta menor.')}
+          O vazamento está resolvido. Como ela usou um princípio num Superar, <b>cada herói ganha 1 ponto de herói</b>. Para a reviravolta, o Mestre propõe e Sen aceita: o assobio da válvula chama atenção, e <b>o marcador avança um espaço</b>. Sen passa a vez para os capangas.</li>
+        <li><b>Os dois capangas agem juntos</b>, cada um rolando seu d8: um Ataca Aldric e tira 6; o outro Ataca Rix e tira 3. Aldric cai para 22 de Vida (ainda Verde). Os capangas passam a vez para Rix.</li>
+        <li><b>Rix Fortalece Aldric</b> arremessando uma cápsula de fumaça:
+          ${roll([['d10', 8], ['d8', 8], ['d6', 4]], 'Dois 8: Rix escolhe a ordem. Médio 8 = bônus de +3.')}
+          O Mod vira um cartão na frente de Aldric: <b>"Cortina de fumaça +3"</b>. Rix passa a vez para o marcador.</li>
+        <li><b>Turno do marcador:</b> o Mestre marca o segundo espaço Verde. Com os dois Verdes marcados, <b>a cena agora é Amarela</b>. O status de todos passa a ser pelo menos Amarelo, e as habilidades Amarelas ficam liberadas. O marcador passa a vez para Gorn.</li>
+        <li><b>Gorn Ataca Aldric</b> com seu d10 e tira 9. Aldric vai para 13: <b>zona Amarela</b> pela própria Vida também. Todos já agiram, a rodada acaba. Gorn escolheria quem abre a próxima, mas não pode escolher a si mesmo: escolhe os capangas.</li></ol>
+      <div class="cs-callout">Repare na armadilha: os heróis jogaram todos antes dos inimigos, então os capangas terminam a rodada 1 e abrem a rodada 2, agindo duas vezes seguidas. Na próxima, vale intercalar.</div>
+
+      <h4>Rodada 2</h4>
+      <ol class="cs-steps cs-example">
+        <li>Os capangas Atacam de novo; Sen e Rix levam 5 e 2 de dano. Passam para Aldric.</li>
+        <li><b>Aldric Ataca Gorn</b> usando o Mod de Rix, agora com o status Amarelo (d8):
+          ${roll([['d10', 9], ['d8', 6], ['d8', 2]], 'Médio 6 +3 da fumaça = 9 de dano.')}
+          O Mod é gasto e o cartão sai da mesa. Gorn rola o d10 para resistir e tira 7, menos que 9: <b>falhou</b>, então o tenente <b>perde um tamanho</b> e vira d8. (Com 20 de dano ou mais, o dobro do d10, ele cairia direto, sem rolar.)</li>
+        <li>E a luta continua. Quando o grupo derrubar Gorn, o Mestre retira o último cartão e a cena termina antes do Vermelho. Na <b>cena de montagem</b> seguinte, cada herói recupera Vida e o grupo decide para onde leva a pista do carregamento.</li></ol>` }
   ];
 })();

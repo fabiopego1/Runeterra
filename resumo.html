@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resumo para a mesa · Forja de Campeões</title>
+  <meta name="description" content="As regras essenciais numa folha A4 para imprimir e deixar na mesa.">
+  <meta name="theme-color" content="#0c0d10">
+  <link rel="preload" href="assets/fonts/BarlowSemiCondensed-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/Marcellus-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body class="site-page page-summary">
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" data-sigil="compass"></span>
+      <span class="brand-text"><span class="brand-kicker">Runeterra · Crônica de Mesa</span><span class="brand-title">Forja de Campeões</span></span>
+    </a>
+    <nav class="header-actions site-nav" aria-label="Páginas">
+      <a class="hbtn" href="index.html"><span data-ico="prev"></span><span>Forja</span></a>
+      <a class="hbtn key" href="lore.html"><span data-ico="map"></span><span>Lore</span></a>
+      <a class="hbtn key" href="regras.html"><span data-ico="codex"></span><span>Regras</span></a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <div class="sum-bar">
+      <p>As regras essenciais numa folha A4. Imprima e deixe no meio da mesa. Detalhes e exemplos na página de <a href="regras.html">Regras</a>.</p>
+      <button class="btn primary" type="button" onclick="window.print()"><span data-ico="print"></span> Imprimir resumo</button>
+    </div>
+
+    <article class="sum-sheet" aria-label="Resumo das regras">
+      <header class="sum-head">
+        <div><div class="sum-kicker">Forja de Campeões · Runeterra</div><h1>Resumo para a mesa</h1></div>
+        <div class="sum-formula"><b>Poder</b> + <b>Qualidade</b> + <b>Status</b> → ordene em Mín · <u>Médio</u> · Máx → o <b>Médio</b> é o dado de efeito</div>
+      </header>
+
+      <div class="sum-cols">
+        <section>
+          <h2>Seu turno</h2>
+          <ol>
+            <li>Diga o que quer e qual o objetivo.</li>
+            <li>Escolha a ação: Atacar, Defender, Superar, Fortalecer, Atrapalhar (Recuperar só com habilidade).</li>
+            <li>Use uma habilidade (só uma de Ação por turno) ou faça uma ação básica.</li>
+            <li>Role, ordene, aplique os Mods declarados antes.</li>
+            <li>Passe a vez para quem ainda não agiu na rodada.</li>
+          </ol>
+          <p class="sum-small">Quem joga por último escolhe quem abre a próxima rodada, menos a si mesmo.</p>
+
+          <h2>Ações</h2>
+          <table>
+            <tr><th>Atacar</th><td>Dano = efeito. Sempre acerta.</td></tr>
+            <tr><th>Defender</th><td>Reduz o próximo dano sofrido (seu ou de quem você protege) até o seu próximo turno.</td></tr>
+            <tr><th>Superar</th><td>Resolve obstáculos e desafios. Veja a tabela.</td></tr>
+            <tr><th>Fortalecer<br>Atrapalhar</th><td>Cria um Mod (bônus ou penalidade) com nome.</td></tr>
+          </table>
+
+          <h2>Efeito</h2>
+          <table class="sum-effect">
+            <tr><th>Efeito</th><th>Superar</th><th>Mod</th></tr>
+            <tr><td>0 ou menos</td><td>Falha espetacular</td><td>nenhum</td></tr>
+            <tr><td>1–3</td><td>Falha, ou sucesso com reviravolta maior</td><td>±1</td></tr>
+            <tr><td>4–7</td><td>Sucesso com reviravolta menor</td><td>±2</td></tr>
+            <tr><td>8–11</td><td>Sucesso completo</td><td>±3</td></tr>
+            <tr><td>12+</td><td>Além das expectativas</td><td>±4</td></tr>
+          </table>
+          <p class="sum-small">Você sempre pode recusar a reviravolta e ficar com a falha.</p>
+        </section>
+
+        <section>
+          <h2>Zonas e status</h2>
+          <table>
+            <tr><th class="z-g">Verde</th><td>Habilidades Verdes.</td></tr>
+            <tr><th class="z-y">Amarela</th><td>Verdes e Amarelas.</td></tr>
+            <tr><th class="z-r">Vermelha</th><td>Todas.</td></tr>
+            <tr><th>Nocaute</th><td>Vida 0: só a habilidade de Nocaute nesta cena.</td></tr>
+          </table>
+          <p class="sum-small">Seu status é o mais perto do Nocaute entre a sua Vida e o marcador de cena. Uma reviravolta menor libera uma habilidade da zona seguinte.</p>
+
+          <h2>Mods</h2>
+          <ul>
+            <li>De −4 a +4, somados ao efeito. Declare antes de rolar.</li>
+            <li>Somem após um uso (dois, com reviravolta menor). <b>Persistente:</b> até removido ou fim da cena.</li>
+            <li><b>Exclusivo:</b> só um bônus e uma penalidade exclusivos por rolagem.</li>
+            <li>Remova com Superar ou com um Mod oposto.</li>
+          </ul>
+
+          <h2>Reações e riscos</h2>
+          <ul>
+            <li><b>Reação:</b> uma por rodada, normalmente com um só dado.</li>
+            <li><b>Todo Mundo no Chão!:</b> Defender como reação, só em você, pagando reviravolta menor.</li>
+            <li><b>Ação Arriscada:</b> numa ação básica, some um efeito extra (outro alvo, usar o Máx…) pagando reviravolta menor.</li>
+          </ul>
+
+          <h2>Reviravoltas</h2>
+          <table>
+            <tr><th>Menor</th><td>Incômodo; some na próxima cena de montagem.</td></tr>
+            <tr><th>Maior</th><td>Grande complicação; dura até o fim da edição.</td></tr>
+          </table>
+        </section>
+
+        <section>
+          <h2>Lacaios e tenentes</h2>
+          <p>Um dado só, para tudo. Atacados, rolam o dado contra o dano:</p>
+          <table>
+            <tr><th></th><th>Rolou menos</th><th>Igualou ou passou</th></tr>
+            <tr><th>Lacaio</th><td>Derrotado</td><td>Perde um tamanho (d4 fica em d4)</td></tr>
+            <tr><th>Tenente</th><td>Perde um tamanho (em d4, derrotado)</td><td>Nada</td></tr>
+          </table>
+          <p class="sum-small">Dano de pelo menos o dobro do dado do tenente o derrota sem rolar.</p>
+
+          <h2>Marcador de cena</h2>
+          <p>Tem turno próprio: marca um espaço, depois o ambiente age. No último espaço Vermelho, algo ruim acontece e a cena acaba.</p>
+
+          <h2>Montagem</h2>
+          <ul>
+            <li>Reviravoltas menores e todos os Mods somem.</li>
+            <li>Cada herói faz <b>uma</b>: recuperar Vida até o máximo da zona acima; ajudar outro herói (+1 zona para ele); ou se preparar (Fortalecer para a próxima cena).</li>
+          </ul>
+
+          <h2>Pontos de herói</h2>
+          <ul>
+            <li>Princípio usado num Superar, ou cena social marcante: <b>+1 para cada herói</b>. Máximo 5 por edição.</li>
+            <li>No fim da edição, viram bônus exclusivos (ex.: +3 e +2) para a próxima.</li>
+          </ul>
+
+          <h2>Coleções</h2>
+          <p>Seis edições viram uma coleção. Cada uma, uma vez por sessão: mudar um dado já rolado, criar um fato na cena ou evitar uma reviravolta menor.</p>
+        </section>
+      </div>
+      <footer class="sum-foot">Projeto de fã não oficial. Runeterra e League of Legends são © Riot Games.</footer>
+    </article>
+  </main>
+
+  <footer class="foot">
+    <span class="foot-rule" aria-hidden="true"></span>
+    <p>Projeto de fã não oficial. Runeterra e League of Legends são © Riot Games. Uso pessoal e não comercial.</p>
+    <a class="foot-gm" href="gm.html"><span data-ico="lock"></span><span>Escudo do Mestre</span></a>
+  </footer>
+
+  <script src="js/i18n.js?v=dev"></script>
+  <script src="js/icons.js?v=dev"></script>
+</body>
+</html>

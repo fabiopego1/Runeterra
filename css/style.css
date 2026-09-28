@@ -813,6 +813,65 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .cs-table td { border-bottom: 1px solid var(--line); padding: 6px; vertical-align: top; color: var(--text-2); }
 .cs-table td:first-child { white-space: nowrap; color: var(--text); font-family: var(--font-mono); font-size: .82rem; }
 .cs-callout { border-left: 2px solid var(--gold); padding: 6px 0 6px 14px; font-size: .95rem; margin: 10px 0; color: var(--text-2); }
+.cs-note { font-size: .86rem; color: var(--text-3); }
+.cs-scroll { overflow-x: auto; }
+.cs-wide { min-width: 620px; }
+.cs-wide td:first-child { white-space: nowrap; }
+.cs-track { display: inline-flex; gap: 3px; margin-top: 4px; vertical-align: middle; }
+.cs-track i { width: 11px; height: 11px; transform: rotate(45deg) scale(.8); border: 1px solid; }
+.cs-track .g { border-color: var(--zone-g); background: rgba(121, 176, 106, .25); }
+.cs-track .y { border-color: var(--zone-y); background: rgba(217, 171, 69, .25); }
+.cs-track .r { border-color: var(--zone-r); background: rgba(196, 88, 76, .25); }
+.cs-roll { display: inline-flex; align-items: center; gap: 4px; margin: 4px 6px 4px 0; padding: 3px 8px; background: var(--ink-0); border: 1px solid var(--line-2); vertical-align: middle; }
+.cs-roll b { font-family: var(--font-mono); font-weight: 500; color: var(--gold-hi); margin-right: 6px; }
+.cs-roll-note { font-size: .88rem; color: var(--text-3); font-style: italic; }
+.cs-example li { margin-bottom: 12px; line-height: 1.6; }
+
+.rules-print { margin-top: 14px; }
+/* One-page table summary (resumo.html): a dark card on screen, a dense A4 sheet on paper */
+.page-summary .page { max-width: 1180px; margin: 0 auto; padding: 28px 32px 40px; }
+.sum-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; color: var(--text-2); }
+.sum-bar p { margin: 0; }
+.sum-sheet { background: var(--ink-1); box-shadow: inset 0 0 0 1px var(--gold-lo); padding: 22px 26px; font-size: .9rem; line-height: 1.4; }
+.sum-head { display: flex; justify-content: space-between; align-items: end; gap: 18px; flex-wrap: wrap; border-bottom: 1px solid var(--gold-lo); padding-bottom: 10px; margin-bottom: 12px; }
+.sum-head h1 { font-size: 1.9rem; margin: 0; color: var(--gold-hi); }
+.sum-kicker { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .16em; text-transform: uppercase; color: var(--text-3); }
+.sum-formula { font-size: .95rem; color: var(--text-2); padding: 6px 10px; border-left: 2px solid var(--gold); }
+.sum-formula b { color: var(--text); }
+.sum-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+.sum-cols h2 { font-family: var(--font-mono); font-size: .66rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); margin: 12px 0 4px; padding-bottom: 3px; border-bottom: 1px solid var(--line-2); }
+.sum-cols section > h2:first-child { margin-top: 0; }
+.sum-cols p, .sum-cols ul, .sum-cols ol { margin: 4px 0; color: var(--text-2); }
+.sum-cols ul, .sum-cols ol { padding-left: 18px; }
+.sum-cols li { margin-bottom: 2px; }
+.sum-cols table { width: 100%; border-collapse: collapse; margin: 4px 0; }
+.sum-cols th, .sum-cols td { text-align: left; vertical-align: top; padding: 3px 5px; border-bottom: 1px solid var(--line); color: var(--text-2); font-weight: 400; }
+.sum-cols th { color: var(--text); white-space: nowrap; font-weight: 500; }
+.sum-effect th { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
+.sum-effect td:first-child { white-space: nowrap; color: var(--text); font-family: var(--font-mono); font-size: .8rem; }
+.sum-cols th.z-g { color: var(--zone-g); } .sum-cols th.z-y { color: var(--zone-y); } .sum-cols th.z-r { color: var(--zone-r); }
+.sum-small { font-size: .82rem; color: var(--text-3) !important; }
+.sum-foot { margin-top: 12px; font-size: .7rem; color: var(--text-3); text-align: right; }
+@media (max-width: 900px) {
+  .page-summary .page { padding: 18px 16px 30px; }
+  .sum-sheet { padding: 16px; }
+  .sum-cols { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+}
+@media print {
+  @page { size: A4; margin: 9mm; }
+  .page-summary .site-header, .page-summary .sum-bar, .page-summary .foot { display: none !important; }
+  .page-summary, .page-summary .page { background: #fff !important; padding: 0 !important; max-width: none; }
+  .sum-sheet { background: #fff; box-shadow: none; padding: 0; font-size: 9.6pt; line-height: 1.32; color: #000; }
+  .sum-sheet * { color: #000 !important; border-color: #999 !important; }
+  .sum-sheet p, .sum-sheet li, .sum-sheet td, .sum-sheet th, .sum-sheet .sum-formula { font-size: inherit !important; }
+  .sum-sheet .sum-small { font-size: 8.6pt !important; color: #333 !important; }
+  .sum-effect td:first-child { font-size: 8.6pt !important; }
+  .sum-sheet .sum-effect th { font-size: 7pt !important; }
+  .sum-head h1 { font-size: 17pt; }
+  .sum-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5mm; }
+  .sum-cols h2 { font-size: 7pt; margin-top: 7px; }
+  .sum-cols th.z-g, .sum-cols th.z-y, .sum-cols th.z-r { font-weight: 700; }
+}
 
 /* ==========================================================================
    Responsive — recompose, don't shrink
