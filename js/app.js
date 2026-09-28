@@ -4,6 +4,8 @@
 
   const tr = window.T;
   const PT = window.LANG === 'pt';
+  // Empty-value marker; Portuguese copy avoids the em dash.
+  const BLANK = PT ? 'a definir' : '—';
   const A = window.ABILITIES;
   const PRINCIPLES = window.PRINCIPLES;
   const CATS = window.TRAIT_CATEGORIES;
@@ -114,7 +116,7 @@
     return `<h5>${d.toUpperCase()}</h5><div class="sc-line">${tr('Sentinels die size')}</div>` +
       tr('In the Sentinels system every trait is a die — bigger is better (d4 → d6 → d8 → d10 → d12). ') +
       tr('Each roll uses a pool of <b>one power + one quality + your status die</b>.') +
-      `<ul><li>${tr('As a power:')} ${esc(i.power || '—')}</li><li>${tr('As a quality:')} ${esc(i.quality || '—')}</li><li>${tr('As a status die:')} ${esc(i.status || '—')}</li></ul>` +
+      `<ul><li>${tr('As a power:')} ${esc(i.power || (PT ? 'não se aplica' : '—'))}</li><li>${tr('As a quality:')} ${esc(i.quality || (PT ? 'não se aplica' : '—'))}</li><li>${tr('As a status die:')} ${esc(i.status || (PT ? 'não se aplica' : '—'))}</li></ul>` +
       (i.note ? `<small>${esc(i.note)}</small>` : '');
   }
   const die = (d, cls = '') => d ? `<span class="die ${d} ${cls}"${tip(dieTip(d))}>${d.slice(1)}</span>` : '';
@@ -784,7 +786,7 @@
         <ol class="tp-chapters">${chapters.map((c, i) => `<li><span class="tp-n">${ROMAN[i + 1]}</span><span class="tp-c"><b>${c[0]}</b><span>${c[1]}</span></span>${c[2] ? `<span class="tp-sc">${c[2]}</span>` : ''}</li>`).join('')}</ol>
         <div class="tp-dice">
           <div class="tp-aside-h">${tr('How a roll works')}</div>
-          <p>${tr('Every action rolls <b>three dice</b> —')} <span class="term"${tip(tr('<h5>Powers</h5>Exceptional traits — magic, Hextech, Ascended strength. Rated d6 (above average) to d12 (godlike).'))}>${tr('a power')}</span>, <span class="term"${tip(tr('<h5>Qualities</h5>Learned skills and knowledge. Rated d6 (solid competency) to d12 (world class).'))}>${tr('a quality')}</span> ${tr('and your')} <span class="term"${tip(window.GLOSSARY['status die'])}>${tr('status')}</span> — ${tr('sorted into')} ${rulesText(tr('Min die, Mid die and Max die'))}.</p>
+          <p>${tr('Every action rolls <b>three dice</b> —')} <span class="term"${tip(tr('<h5>Powers</h5>Exceptional traits — magic, Hextech, Ascended strength. Rated d6 (above average) to d12 (godlike).'))}>${tr('a power')}</span>, <span class="term"${tip(tr('<h5>Qualities</h5>Learned skills and knowledge. Rated d6 (solid competency) to d12 (world class).'))}>${tr('a quality')}</span> ${tr('and your')} <span class="term"${tip(window.GLOSSARY['status die'])}>${tr('status')}</span>${PT ? ',' : ' —'} ${tr('sorted into')} ${rulesText(tr('Min die, Mid die and Max die'))}.</p>
           <div class="tp-dice-row">${['d4', 'd6', 'd8', 'd10', 'd12'].map(d => die(d)).join('')}</div>
           <p>${tr('As {health} falls you pass from the {g} to the {y} and {r}, unlocking stronger abilities.', { health: rulesText(tr('Health')), g: rulesText(tr('Green zone')), y: rulesText(tr('Yellow zone')), r: rulesText(tr('Red zone')) })}</p>
         </div>
@@ -1099,7 +1101,7 @@
           return socket({ bind: 'retcon.key', d: 'd6', cur: rc.key, groups: traitGroups(keys, k => traitItem(k)), empty: tr('Bind this d6 to any power or quality') });
         }
         if (rc.type === 'change-principle') {
-          const opts = PRINCIPLES.map(p => `<option value="${p.id}"${rc.principle === p.id ? ' selected' : ''}>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])} — ${esc(tr(p.cat))}</option>`).join('');
+          const opts = PRINCIPLES.map(p => `<option value="${p.id}"${rc.principle === p.id ? ' selected' : ''}>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}${PT ? ` (${esc(tr(p.cat))})` : ` — ${esc(tr(p.cat))}`}</option>`).join('');
           return `<div class="grid2"><label class="field"><span>${tr('Replace')}</span><select data-bind="retcon.which"><option value="">${tr('— choose —')}</option><option value="bg"${rc.which === 'bg' ? ' selected' : ''}>${tr('Origin principle')}</option><option value="arch"${rc.which === 'arch' ? ' selected' : ''}>${tr('Path principle')}</option></select></label><label class="field"><span>${tr('With (any category)')}</span><select data-bind="retcon.principle"><option value="">${tr('— choose —')}</option>${opts}</select></label></div>`;
         }
         if (rc.type === 'change-ability') return `<p class="muted">${tr('Go back to any ability (Source, Path or Ultimates) and change which power or quality it uses. Everything stays editable — this option simply makes it “official”.')}</p>`;
@@ -1172,7 +1174,7 @@
     }
     for (const e of st.sel.red || []) L.push({ iid: 'red:' + e.cat + ':' + e.name, name: e.name, color: 'red', src: 'Ultimate', entry: e });
     const pe = persDef();
-    if (pe) L.push({ iid: 'out', name: 'Out', color: 'out', src: 'Temperament', text: pe.out, type: '—', entry: { trait: st.pers.outTrait } });
+    if (pe) L.push({ iid: 'out', name: 'Out', color: 'out', src: 'Temperament', text: pe.out, type: PT ? '' : '—', entry: { trait: st.pers.outTrait } });
     return L;
   }
 
@@ -1237,7 +1239,7 @@
     const i = st.info, pl = st.play;
     const pr = principlesFinal();
     const rows = sheetRows(R);
-    const charLine = (label, d, extra = '') => `<div class="hs-f"><span class="hs-l">${label}</span>${d ? `<span${tip(`<div class="sc-line">Sentinels: ${esc(d.sc)}</div>${esc(d.lore || '')}`)} class="term">${esc(d.rt + extra)}</span> <small class="muted">(${esc(d.sc)})</small>` : '—'}</div>`;
+    const charLine = (label, d, extra = '') => `<div class="hs-f"><span class="hs-l">${label}</span>${d ? `<span${tip(`<div class="sc-line">Sentinels: ${esc(d.sc)}</div>${esc(d.lore || '')}`)} class="term">${esc(d.rt + extra)}</span> <small class="muted">(${esc(d.sc)})</small>` : BLANK}</div>`;
     const attr = (label, v) => `<div class="hs-f"><span class="hs-l">${label}</span>${esc(v || '')}</div>`;
     const traitRows = (list, n) => {
       const out = list.map(t => `<tr><td>${t.key === 'rp-quality' && st.pers.qname ? `<span class="term"${tip(traitTip('rp-quality'))}>${esc(st.pers.qname)}</span>` : traitSpan(t.key)}</td><td class="dt">${die(t.die, 'sm')}</td></tr>`);
@@ -1283,9 +1285,9 @@
         <div class="hs-stats">
           <table class="hs-traits"><thead><tr><th>${tr('Powers')}</th><th>${tr('Die')}</th></tr></thead><tbody>${traitRows(powers, 6)}</tbody></table>
           <table class="hs-traits"><thead><tr><th>${tr('Qualities')}</th><th>${tr('Die')}</th></tr></thead><tbody>${traitRows(quals, 6)}</tbody></table>
-          <div class="hs-status"><div class="hs-h"${tip(window.GLOSSARY['status die'])}>${tr('Status Dice')}</div>${R.status ? ['Green', 'Yellow', 'Red'].map((z, n) => `<div class="hs-sd ${z.toLowerCase()}"><small>${tr(z)}</small>${die(R.status[n])}</div>`).join('') : '—'}</div>
+          <div class="hs-status"><div class="hs-h"${tip(window.GLOSSARY['status die'])}>${tr('Status Dice')}</div>${R.status ? ['Green', 'Yellow', 'Red'].map((z, n) => `<div class="hs-sd ${z.toLowerCase()}"><small>${tr(z)}</small>${die(R.status[n])}</div>`).join('') : BLANK}</div>
           <div class="hs-hr"><div class="hs-h"${tip(window.GLOSSARY.Health)}>${tr('Health Range')}</div>${h ? `<div class="burst g">${tr('Green')}<b>${h.green[0]}–${h.green[1]}</b></div><div class="burst y">${tr('Yellow')}<b>${h.yellow[0]}–${h.yellow[1]}</b></div><div class="burst r">${tr('Red')}<b>${h.redR[0]}–1</b></div>
-            <div class="burst c">${tr('Current')}<input type="text" inputmode="numeric" data-bind="play.current" data-live="1" value="${esc(pl.current == null || pl.current === '' ? h.max : pl.current)}" aria-label="${tr('Current Health')}"></div>` : '—'}</div>
+            <div class="burst c">${tr('Current')}<input type="text" inputmode="numeric" data-bind="play.current" data-live="1" value="${esc(pl.current == null || pl.current === '' ? h.max : pl.current)}" aria-label="${tr('Current Health')}"></div>` : BLANK}</div>
         </div>
         <div class="hs-h" style="margin-top:12px">${tr('Abilities')}</div>
         ${zone('green', tr('Green zone'), rows.green.map(r => abRow(r)).join('') + emptyRows(5, rows.green.length) + pr.map(x => prRow(x)).join(''))}
@@ -1540,7 +1542,7 @@
     const h = healthCalc(R);
     const i = st.info;
     const row = t => `<li><span class="led-name">${t.key === 'rp-quality' && st.pers.qname ? `<span class="term"${tip(traitTip('rp-quality'))}>${esc(st.pers.qname)}</span>` : traitSpan(t.key)}</span><span class="led-dots"></span>${die(t.die, 'sm')}</li>`;
-    const fact = (label, d, extra) => `<div class="dos-fact${d ? '' : ' empty'}"><dt>${label}</dt><dd>${d ? esc(d.rt + (extra || '')) : '—'}</dd></div>`;
+    const fact = (label, d, extra) => `<div class="dos-fact${d ? '' : ' empty'}"><dt>${label}</dt><dd>${d ? esc(d.rt + (extra || '')) : BLANK}</dd></div>`;
     return `<div class="dossier" style="--rc:${rg ? rg.color : 'var(--gold)'}">
       <div class="dos-band"><span class="dos-kicker">${tr('Champion Dossier')}</span><span class="dos-region">${rg ? esc(rg.name) : tr('Homeland unknown')}</span></div>
       <div class="dos-id">

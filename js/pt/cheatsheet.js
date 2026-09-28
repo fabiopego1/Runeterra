@@ -26,9 +26,9 @@
     { id: 'ability-types', title: 'Tipos de Habilidade', body: `
       <p>Todas as habilidades se encaixam em três categorias. Na ficha de herói, anote o <b>Tipo</b> pela letra:</p>
       <table class="cs-table"><tbody>
-        <tr><td><b>A</b> — Ação</td><td>Usada no seu turno, no lugar de uma ação básica.</td></tr>
-        <tr><td><b>R</b> — Reação</td><td>Dispara em resposta a algo, mesmo fora do seu turno.</td></tr>
-        <tr><td><b>I</b> — Inerente</td><td>Sempre ativa; não precisa de rolagem nem de ação.</td></tr></tbody></table>
+        <tr><td><b>A</b> (Ação)</td><td>Usada no seu turno, no lugar de uma ação básica.</td></tr>
+        <tr><td><b>R</b> (Reação)</td><td>Dispara em resposta a algo, mesmo fora do seu turno.</td></tr>
+        <tr><td><b>I</b> (Inerente)</td><td>Sempre ativa; não precisa de rolagem nem de ação.</td></tr></tbody></table>
       <p>As habilidades normalmente envolvem um ou mais tipos de ação, mostrados na coluna <b>Ícone</b>:
         ${['Attack', 'Defend', 'Overcome', 'Boost', 'Hinder', 'Recover'].map(a => `${ic(a)} ${NOME[a]}`).join(' · ')}</p>` },
     { id: 'actions', title: 'Ações', body: `

@@ -7,7 +7,7 @@
   const KEY = 'runeterra-lang';
   let lang = null;
   try { lang = localStorage.getItem(KEY); } catch (e) { /* storage blocked */ }
-  if (!lang) lang = /^pt/i.test(navigator.language || '') ? 'pt' : 'en';
+  if (!lang) lang = 'pt'; // PT-BR is the default until the player picks EN
   window.LANG = lang === 'pt' ? 'pt' : 'en';
   document.documentElement.lang = window.LANG === 'pt' ? 'pt-BR' : 'en';
 

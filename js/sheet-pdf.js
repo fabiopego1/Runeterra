@@ -105,7 +105,8 @@
       say('Embedding fonts…');
       const doc = await PDFDocument.create();
       const T = window.T || (x => x);
-      doc.setTitle(fdoc.querySelector('.hs-name') ? fdoc.querySelector('.hs-name').textContent.trim() + ' — ' + T('Hero Sheet') : T('Hero Sheet'));
+      const heroName = fdoc.querySelector('.hs-name') ? fdoc.querySelector('.hs-name').textContent.trim() : '';
+      doc.setTitle(!heroName ? T('Hero Sheet') : window.LANG === 'pt' ? `Ficha de Herói de ${heroName}` : `${heroName} — Hero Sheet`);
       doc.setCreator('Runeterra Champion Forge');
       let fonts = {}, fieldFont, fallback;
       if (!window.fontkit && fontkitSrc) await loadScript(fontkitSrc).catch(() => {});   // big: fetched only when exporting
