@@ -835,7 +835,7 @@
   }
 
   // ------------------------------------------------------------------ guided flow
-  const ui = { expand: {} };        // transient: which collapsed choice grids are re-opened
+  const ui = { expand: {}, lastPick: {} };   // transient: re-opened choice grids; most recent choice per chapter
   let flowCurrent = null;           // "step:section" of the section the user should work on now
 
   // Renders a step's sections in order. Sections after the first unfinished one are locked.
@@ -1401,7 +1401,7 @@
     const i = stepIndex(st.step);
     const next = STEPS[i + 1];
     const ready = !stepIssues(st.step, R0).length;
-    return `<div class="step-footer"><button class="btn ghost" data-act="back">${ico('prev')} ${tr('Back')}</button>
+    return `<div class="step-footer"><div class="footer-left"><button class="btn ghost" data-act="back">${ico('prev')} ${tr('Back')}</button><button class="btn small change-btn change-last" data-act="changeLast" hidden>${ico('reset')} ${tr('Change last choice')}</button></div>
       <div class="next-wrap">${ready ? '' : `<span class="next-hint">${tr('Finish the step marked “You are here” to continue')}</span>`}<button class="btn primary${ready ? '' : ' is-disabled'}" data-act="next" aria-disabled="${!ready}"><span class="btn-kicker">${next ? tr('Chapter') + ' ' + ROMAN[i + 1] : ''}</span>${next ? esc(next.name) : tr('Next')} ${ico('next')}</button></div></div>`;
   }
   const methodToggle = () => `<div class="method" role="group" aria-label="${tr('Creation method')}"${tip(tr('<h5>Guided vs Constructed</h5>Guided: roll and choose among the allowed entries. Constructed: pick freely. Die sizes work the same either way.'))}><span class="method-l">${tr('Method')}</span><button class="${st.method === 'guided' ? 'on' : ''}" data-act="method" data-m="guided" aria-pressed="${st.method === 'guided'}">${tr('Guided')}</button><button class="${st.method === 'constructed' ? 'on' : ''}" data-act="method" data-m="constructed" aria-pressed="${st.method === 'constructed'}">${tr('Constructed')}</button></div>`;
@@ -1482,7 +1482,42 @@
       if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
     }
     lastFlow = flowCurrent;
+    updateChangeLast();
   }
+  // Chapter change: fade the old chapter out, jump to the top while it is hidden, then fade the new one in,
+  // so the page never swaps content under the reader mid-scroll. Focus moves to the new chapter title.
+  let turning = false;
+  function goToStep(id) {
+    if (turning || id === st.step) return;
+    const stage = document.getElementById('stage');
+    const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    hideTip();
+    const swap = () => {
+      st.step = id; render();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      const title = stage.querySelector('.chapter-title, .tp-title');
+      if (title) { title.setAttribute('tabindex', '-1'); title.focus({ preventScroll: true }); }
+      if (reduce) { turning = false; return; }
+      stage.classList.remove('leaving'); stage.classList.add('entering');
+      requestAnimationFrame(() => requestAnimationFrame(() => { stage.classList.remove('entering'); turning = false; }));
+    };
+    if (reduce) { swap(); return; }
+    turning = true;
+    stage.classList.add('leaving');
+    setTimeout(swap, 180);
+  }
+
+  // "Change last choice" in the footer: reopens the most recent choice of this chapter.
+  function changeLastKey() {
+    const keys = [...document.querySelectorAll('#stage .change-btn[data-key]')].map(b => b.dataset.key);
+    const last = ui.lastPick[st.step];
+    return keys.includes(last) ? last : keys[keys.length - 1];
+  }
+  function updateChangeLast() {
+    const b = document.querySelector('#stage [data-act="changeLast"]');
+    if (b) b.hidden = !changeLastKey();
+  }
+
   function renderSideOnly(fromSheet) {
     R0 = compute();
     document.getElementById('side').innerHTML = renderSide();
@@ -1553,9 +1588,17 @@
     if (act === 'go') {
       const i = stepIndex(el.dataset.step);
       if (i < 0 || i > st.maxStep) return;                     // can't jump ahead to a step never reached
-      st.step = el.dataset.step; hideTip(); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); return;
+      goToStep(el.dataset.step); return;
     }
-    if (act === 'back') { const i = stepIndex(st.step); if (i > 0) { st.step = STEPS[i - 1].id; hideTip(); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); } return; }
+    if (act === 'back') { const i = stepIndex(st.step); if (i > 0) goToStep(STEPS[i - 1].id); return; }
+    if (act === 'changeLast') {
+      const key = changeLastKey();
+      if (!key) return;
+      ui.expand[key] = true; render();
+      const sec = document.querySelector(`#stage .keep-btn[data-key="${key}"]`);
+      if (sec) (sec.closest('.flow-sec') || sec).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
     if (act === 'next') {
       const i = stepIndex(st.step);
       if (stepIssues(st.step, R0).length) {                    // not finished: point at what's missing
@@ -1563,7 +1606,7 @@
         if (cur) { cur.scrollIntoView({ behavior: 'smooth', block: 'start' }); cur.classList.remove('pulse'); void cur.offsetWidth; cur.classList.add('pulse'); }
         return;
       }
-      if (i < STEPS.length - 1) { st.step = STEPS[i + 1].id; st.maxStep = Math.max(st.maxStep, i + 1); hideTip(); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      if (i < STEPS.length - 1) { st.maxStep = Math.max(st.maxStep, i + 1); goToStep(STEPS[i + 1].id); }
       return;
     }
     if (act === 'socketOpen') { ui.socket = el.getAttribute('aria-expanded') === 'true' ? '' : el.dataset.bind; render(); return; }
@@ -1588,10 +1631,10 @@
     }
     if (act === 'pick') {
       if (el.dataset.locked && st.method === 'guided') { flash(el); return; }
-      pick(el.dataset.kind, el.dataset.id); ui.expand[el.dataset.kind] = false; render(); return;
+      pick(el.dataset.kind, el.dataset.id); ui.expand[el.dataset.kind] = false; ui.lastPick[st.step] = el.dataset.kind; render(); return;
     }
     if (act === 'toggleAb') { toggleAb(el.dataset.g, el.dataset.name, el.dataset.cat); render(); return; }
-    if (act === 'principle') { if (el.dataset.slot === 'bg') st.bg.principle = el.dataset.id; else st.arch.principle = el.dataset.id; ui.expand['pr-' + el.dataset.slot] = false; render(); return; }
+    if (act === 'principle') { if (el.dataset.slot === 'bg') st.bg.principle = el.dataset.id; else st.arch.principle = el.dataset.id; ui.expand['pr-' + el.dataset.slot] = false; ui.lastPick[st.step] = 'pr-' + el.dataset.slot; render(); return; }
     if (act === 'divMethod') { st.arch.divMethod = el.dataset.id; delete st.sel['arch-divmethod']; render(); return; }
     if (act === 'minionForm') {
       const f = st.arch.minionForms = st.arch.minionForms || [];

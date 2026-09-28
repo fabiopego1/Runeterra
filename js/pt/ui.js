@@ -594,5 +594,6 @@ Object.assign(window.I18N.ui, {
  "What do they want that they cannot get alone?": "O que ele quer e não consegue alcançar sozinho?",
  "Change choice": "Trocar escolha",
  "Keep the current choice": "Manter a escolha atual",
+ "Change last choice": "Trocar última escolha",
  "FOOTER": "Projeto de fã não oficial. Runeterra e League of Legends são © Riot Games. Uso pessoal e não comercial."
 });
