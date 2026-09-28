@@ -44,9 +44,15 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     };
     const ab = (g, n, cat) => p.click(`[data-act=toggleAb][data-g=${g}][data-name="${n}"]${cat ? `[data-cat="${cat}"]` : ''}`);
 
+    ok(await p.$eval('#tour h4', e => e.textContent.includes('Bem-vindo')), 'the guide greets a new champion on the welcome page');
+    await p.click('[data-act=tourOk]');
+    ok(!(await p.$('#tour')), '"Entendi" closes the guide for this chapter');
     ok(await p.$eval('[data-act=method][data-m=constructed]', e => e.getAttribute('aria-pressed') === 'true' || e.classList.contains('on') || e.classList.contains('active')), 'Construído is the default method');
     ok(await p.$$eval('.rail-item.locked', e => e.length) > 0, 'later chapters are locked on a fresh start');
     await next();
+    ok(await p.$eval('#tour h4', e => e.textContent.includes('Povo')), 'the guide explains the next chapter');
+    await p.click('[data-act=tourOff]');
+    ok(!(await p.$('#tour')), 'the guide can be turned off');
     const peopleStep = await step();
     await next();
     ok(await step() === peopleStep, 'cannot advance without picking a people');
@@ -79,6 +85,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await ab('arch-yellow', 'Cords of Magic'); await sel('sel.arch-yellow.0.trait', 'cosmic');
     await p.click('[data-act=principle][data-slot=arch][data-id=destiny]');
     await next();
+    ok(await p.$$eval('.status-explain', e => e.length) === 1 && await p.$$eval('.status-trend', e => e.length) > 10, 'Temperament explains the status dice and tags each card');
     await p.click('[data-kind=pers][data-id=decisive]');
     await p.fill('input[data-bind="pers.qname"]', 'Dom dos Imaginais'); await p.press('input[data-bind="pers.qname"]', 'Enter'); await p.waitForTimeout(100);
     await sel('pers.outTrait', 'cosmic');
