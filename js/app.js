@@ -44,7 +44,7 @@
   // ------------------------------------------------------------------ state
   const STORE = 'runeterra-forge-v1';
   const blank = () => ({
-    v: 1, step: 'intro', maxStep: 0, method: 'constructed', region: null,   // Construído is the default method
+    v: 1, step: 'intro', maxStep: 0, method: 'constructed', people: null, region: null,   // Construído is the default method
     rolls: {}, rerolls: {},
     bg: { id: null, assign: {}, principle: null },
     ps: { id: null, assign: {}, extra: {} },
@@ -78,6 +78,8 @@
     out.play = Object.assign(blank().play, s.play || {});
     out.evo = Object.assign(blank().evo, s.evo || {});
     out.maxStep = typeof s.maxStep === 'number' ? s.maxStep : -1;   // older saves: recomputed after load
+    // Saves from before the People chapter: every chapter after the welcome moved one place down.
+    if (!('people' in s) && out.maxStep >= 1) out.maxStep += 1;
     // A save that never left the intro has not really started: open it on the default method (Construído).
     if (out.step === 'intro' && !out.maxStep && !out.region) out.method = 'constructed';
     return out;
@@ -102,6 +104,7 @@
   const archDef = () => byId(window.ARCHETYPES, st.arch.id);
   const persDef = () => byId(window.PERSONALITIES, st.pers.id);
   const regionDef = () => byId(window.REGIONS, st.region);
+  const peopleDef = () => byId(window.PEOPLES || [], st.people);
   // The archetype whose dice/abilities are used (base archetype for Divided/Modular).
   function shapeDef() {
     const a = archDef();
@@ -478,6 +481,9 @@
       if (st.method === 'guided') add('roll', title, st.rolls[key] || picked ? [] : [tr('Roll the dice.')], tr('Press <b>Roll</b>. The highlighted entries are the ones you can pick.'));
     };
     const groupSecs = step => groups().filter(g => g.step === step).forEach(g => add('g-' + g.key, g.label, groupIssues(g, R), g.note ? esc(g.note) + ' ' + GROUP_HINT : GROUP_HINT, { group: g }));
+    if (id === 'people') {
+      add('pick', tr('Choose your people'), st.people ? [] : [tr('Choose a people.')], tr('Click the people your champion belongs to. Hover a card to preview it.'));
+    }
     if (id === 'region') {
       add('pick', tr('Choose your homeland'), st.region ? [] : [tr('Choose a homeland.')], tr('Click the land your champion comes from. Hover a card to preview it.'));
     }
@@ -605,6 +611,7 @@
   // ------------------------------------------------------------------ steps
   const STEPS = [
     { id: 'intro', name: tr('Welcome'), sub: tr('How it works') },
+    { id: 'people', name: tr('People'), sub: tr('Runeterra flavour') },
     { id: 'region', name: tr('Homeland'), sub: tr('Runeterra flavour') },
     { id: 'background', name: tr('Origin'), sub: '' },
     { id: 'powersource', name: tr('Source of Power'), sub: '' },
@@ -653,9 +660,11 @@
       return `<button class="${cls}" data-act="pick" data-kind="${kind}" data-id="${it.id}"${v === false ? ' data-locked="1"' : ''}${it.id === selId ? ' aria-pressed="true"' : ''}>${renderer(it)}</button>`;
     }).join('')}</div>`;
   }
+  // Suggestion marks from the flavour chapters (People and Homeland): no rules effect.
   const fitMark = (arr, id) => {
-    const r = regionDef();
-    return r && arr && r[arr] && r[arr].includes(id) ? `<span class="fit"${tip(tr('Suits a champion from {place}', { place: esc(r.name) }))}>${ico('mark')}${esc(r.name)}</span>` : '';
+    const r = regionDef(), pp = peopleDef();
+    const m = (src, label) => src && src[arr] && src[arr].includes(id) ? `<span class="fit"${tip(label)}>${ico('mark')}${esc(src.name)}</span>` : '';
+    return m(pp, tr('Suits a champion of the {people} people', { people: esc(pp && pp.name) })) + m(r, tr('Suits a champion from {place}', { place: esc(r && r.name) }));
   };
 
   function assignHtml(slots, optionKeys, before, stepPrefix, label) {
@@ -735,7 +744,8 @@
       const t = `<h5>${esc(lore[0])}</h5><div class="sc-line">${esc(tr(p.cat))}</div>` +
         `<b>${tr('During roleplaying:')}</b> ${esc(p.rp)}<hr><b>${tr('Minor twist:')}</b> ${esc(p.minor)}<br><b>${tr('Major twist:')}</b> ${esc(p.major)}<hr>` +
         `<b>${tr('Green ability ({t}):', { t: p.type })}</b> ${esc(ruleTip(p.ability))}` + (lore[1] ? `<hr><em>${tr('In Runeterra:')}</em> ${esc(lore[1])}` : '');
-      const fits = r && r.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${esc(r.name)}</span>` : '';
+      const pp = peopleDef();
+      const fits = (pp && pp.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${esc(pp.name)}</span>` : '') + (r && r.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${esc(r.name)}</span>` : '');
       return `<button class="principle${p.id === cur ? ' selected' : ''}${p.id === other ? ' taken' : ''}" data-act="principle" data-slot="${slot}" data-id="${p.id}"${tip(t)}${p.id === other ? ' disabled' : ''}>` +
         `<div class="pn">${esc(lore[0])}${fits}</div><div class="po">${esc(tr(p.cat))}</div><div class="ph">${esc(lore[1])}</div></button>`;
     }).join('');
@@ -904,11 +914,27 @@
   const chapterHead = (title, withMethod) => {
     const i = stepIndex(st.step);
     return `<header class="chapter"><div class="chapter-num" aria-hidden="true">${ROMAN[i]}</div>
-      <div class="chapter-titles"><div class="chapter-kicker">${tr('Chapter')} ${ROMAN[i]} <span>${tr('of IX')}</span></div><h2 class="chapter-title">${esc(title)}</h2></div>
+      <div class="chapter-titles"><div class="chapter-kicker">${tr('Chapter')} ${ROMAN[i]} <span>${tr('of {n}', { n: ROMAN[STEPS.length - 1] })}</span></div><h2 class="chapter-title">${esc(title)}</h2></div>
       ${withMethod ? methodToggle() : ''}</header>`;
   };
   const stepPanel = (eyebrow, title, introKey, body, withMethod) => `<div class="panel">${chapterHead(title, withMethod)}
       <p class="chapter-lede">${window.STEP_INTROS[introKey]}</p>${body}${navFooter()}</div>`;
+
+  function renderPeople() {
+    const p = peopleDef();
+    const names = (list, arr) => arr.map(id => { const x = byId(list, id); return x ? x.rt : id; }).join(', ');
+    const fits = [[tr('Fitting Homelands'), p && p.regions.map(id => (byId(window.REGIONS, id) || { name: id }).name).join(', ')], [tr('Fitting Origins'), p && names(window.BACKGROUNDS, p.bg)],
+      [tr('Fitting Sources'), p && names(window.POWER_SOURCES, p.ps)], [tr('Fitting Paths'), p && names(window.ARCHETYPES, p.ar)], [tr('Fitting Principles'), p && p.pr.map(id => (window.PRINCIPLE_LORE[id] || [id])[0]).join(', ')]].filter(x => x[1]);
+    const H = {
+      pick: () => pickSection('people', p && `<div class="chosen chosen-region" style="--rc:${p.color}">${sigil(p.sigil, 'chosen-sigil')}<div class="chosen-sc">${tr('People')}</div><div class="chosen-t">${esc(p.name)}</div><p class="lore">${esc(p.lore)}</p>
+          <p class="lore-link"><a href="lore.html#races">${ico('map')} ${tr('Read about the peoples of Runeterra')}</a></p>
+          <p class="champs"><b>${tr('Champions:')}</b> ${esc(p.champs)}</p>
+          ${fits.length ? `<div class="grid3">${fits.map(([h, v]) => `<div><h4>${h}</h4><small>${esc(v)}</small></div>`).join('')}</div>` : ''}
+          <p class="sc">${tr('No rules effect. Options marked {mark} <b>{place}</b> in later steps are only suggestions.', { mark: ico('mark'), place: esc(p.name) })}</p></div>`,
+        `<p class="muted">${tr('Runeterra is home to many peoples. Your people is pure flavour: it changes no rule, but suggests homelands and choices that suit it.')}</p><div class="cards regions">${(window.PEOPLES || []).map(x => `<button class="card region-card${x.id === st.people ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="people" data-id="${x.id}"${tip(`<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.sigil)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
+    };
+    return stepPanel('Step 0 · Runeterra', tr('People'), 'people', flowHtml('people', sectionsFor('people', R0), H), false);
+  }
 
   function renderRegion() {
     const r = regionDef();
@@ -918,7 +944,7 @@
           <p class="champs"><b>${tr('Champions:')}</b> ${esc(r.champs)}</p>
           <div class="grid3"><div><h4>${tr('Fitting Origins')}</h4><small>${esc(names(window.BACKGROUNDS, r.bg))}</small></div><div><h4>${tr('Fitting Sources')}</h4><small>${esc(names(window.POWER_SOURCES, r.ps))}</small></div><div><h4>${tr('Fitting Principles')}</h4><small>${esc(r.pr.map(id => (window.PRINCIPLE_LORE[id] || [id])[0]).join(', '))}</small></div></div>
           <p class="sc">${tr('No rules effect. Options marked {mark} <b>{place}</b> in later steps are only suggestions.', { mark: ico('mark'), place: esc(r.name) })}</p></div>`,
-        `<p class="muted">${tr('New to Runeterra? Read the <a href="#" data-act="lore" data-section="lore-planet">world lore</a> first.')}</p><div class="cards regions">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.id)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
+        `<p class="muted">${tr('New to Runeterra? Read the <a href="#" data-act="lore" data-section="lore-planet">world lore</a> first.')}</p><div class="cards regions">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.id)}${fitMark('regions', x.id)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
     };
     return stepPanel('Step 1 · Runeterra', tr('Homeland'), 'region', flowHtml('region', sectionsFor('region', R0), H), false);
   }
@@ -984,7 +1010,7 @@
     const H = {
       roll: () => rollerHtml('arch', p.archDice, tr('Roll your Source dice')),
       pick: () => pickSection('arch', a && chosenSummary(a.rt + ' · ' + a.role, a.sc, a.lore, a.champs),
-        cardsHtml(window.ARCHETYPES, 'arch', st.arch.id, 'arch', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.role)}${x.advanced ? ' · ' + tr('advanced') : ''}</div><div class="d">${esc(x.champs)}</div><span class="info" aria-label="${tr('Details')}"${tip(archTip(x))}>${ico('info')}</span>`)),
+        cardsHtml(window.ARCHETYPES, 'arch', st.arch.id, 'arch', x => `<span class="n">${pad2(x.n)}</span>${fitMark('ar', x.id)}<div class="t">${esc(x.rt)}</div><div class="s">${esc(x.role)}${x.advanced ? ' · ' + tr('advanced') : ''}</div><div class="d">${esc(x.champs)}</div><span class="info" aria-label="${tr('Details')}"${tip(archTip(x))}>${ico('info')}</span>`)),
       broll: () => rollerHtml('base', p.archDice, tr('Roll for your base Path')),
       base: () => `<p class="muted">${a.divided ? tr('Your full Path becomes “{name}”.', { name: esc(a.rt) + ' ' + (shape ? esc(shape.rt) : '…') }) : tr('You follow this Path\'s dice rules, but gain modes instead of its abilities.')}</p>` +
         pickSection('base', shape && chosenSummary(shape.rt + ' · ' + shape.role, shape.sc, shape.lore, shape.champs),
@@ -1353,6 +1379,9 @@
     const r = regionDef(), b = bgDef(), p = psDef(), a = archDef(), pe = persDef();
     const fill = (t, slot) => String(t || '').replace(/\[([^\]]+)\]/g, (m, k) => (k === 'energy/element' && st.pch[slot]) || tokenLabel(k));
     const C = [];
+    const pp = peopleDef();
+    if (pp) C.push({ kicker: tr('People'), title: pp.name, text: esc(pp.lore), color: pp.color, link: 'lore.html#races',
+      qs: [tr('What does your people think of you, and what do you think of them?'), tr('Which custom of your people do you still keep, even far from home?')] });
     if (r) C.push({ kicker: tr('Homeland'), title: r.name, text: esc(r.tag), color: r.color,
       link: window.LORE_FOR_REGION && window.LORE_FOR_REGION[r.id] ? 'lore.html#' + window.LORE_FOR_REGION[r.id].replace(/^lore-/, '') : '',
       qs: [...((window.BIO_REGION || {})[r.id] || []), r.champs ? tr('Which of these champions does your hero know, admire or fear? {c}.', { c: r.champs }) : ''] });
@@ -1478,7 +1507,7 @@
             <div class="hs-card"><div class="hs-h">${tr('Physical Attributes')}</div>
               <div class="hs-3">${attr(tr('Gender'), i.gender)}${attr(tr('Age'), i.age)}${attr(tr('Height'), i.height)}</div>
               <div class="hs-3">${attr(tr('Eyes'), i.eyes)}${attr(tr('Hair'), i.hair)}${attr(tr('Skin'), i.skin)}</div>
-              ${attr(tr('Build'), i.build)}${attr(tr('Costume/Equipment'), i.costume)}${rg ? attr(tr('Homeland'), rg.name) : ''}</div>
+              ${attr(tr('Build'), i.build)}${attr(tr('Costume/Equipment'), i.costume)}<div class="hs-2">${attr(tr('People'), peopleDef() ? peopleDef().name : '')}${attr(tr('Homeland'), rg ? rg.name : '')}</div></div>
             <div class="hs-card"><div class="hs-h">${tr('Characteristics')}</div>
               <div class="hs-2">${charLine(tr('Background'), bg)}${charLine(tr('Power Source'), ps)}</div>
               <div class="hs-2">${charLine(tr('Archetype'), ar, shape && shape !== ar ? ' ' + shape.rt : '')}${charLine(tr('Personality'), pe)}</div></div>
@@ -1647,7 +1676,7 @@
     const row = t => `<li><span class="led-name">${t.key === 'rp-quality' && st.pers.qname ? `<span class="term"${tip(traitTip('rp-quality'))}>${esc(st.pers.qname)}</span>` : traitSpan(t.key)}</span><span class="led-dots"></span>${die(t.die, 'sm')}</li>`;
     const fact = (label, d, extra) => `<div class="dos-fact${d ? '' : ' empty'}"><dt>${label}</dt><dd>${d ? esc(d.rt + (extra || '')) : BLANK}</dd></div>`;
     return `<div class="dossier" style="--rc:${rg ? rg.color : 'var(--gold)'}">
-      <div class="dos-band"><span class="dos-kicker">${tr('Champion Dossier')}</span><span class="dos-region">${rg ? esc(rg.name) : tr('Homeland unknown')}</span></div>
+      <div class="dos-band"><span class="dos-kicker">${tr('Champion Dossier')}</span><span class="dos-region">${rg || peopleDef() ? esc([peopleDef() && peopleDef().name, rg && rg.name].filter(Boolean).join(' · ')) : tr('Homeland unknown')}</span></div>
       <div class="dos-id">
         <div class="dos-portrait">${i.portrait ? `<img src="${i.portrait}" alt="">` : sigil(rg ? rg.id : 'compass', 'dos-sigil')}</div>
         <div class="dos-names"><div class="dos-name${i.name ? '' : ' unnamed'}">${esc(i.name || tr('Unnamed Champion'))}</div>
@@ -1663,7 +1692,7 @@
   }
 
   // ------------------------------------------------------------------ main render
-  const RENDER = { intro: renderIntro, region: renderRegion, background: renderBackground, powersource: renderPowerSource, archetype: renderArchetype, personality: renderPersonality, red: renderRed, retcon: renderRetcon, health: renderHealth, finish: renderFinish };
+  const RENDER = { intro: renderIntro, people: renderPeople, region: renderRegion, background: renderBackground, powersource: renderPowerSource, archetype: renderArchetype, personality: renderPersonality, red: renderRed, retcon: renderRetcon, health: renderHealth, finish: renderFinish };
   // For saves made before step locking existed: unlock up to the first incomplete step.
   function reachedStep() {
     const R = compute();
@@ -1679,7 +1708,7 @@
     const h = healthCalc(R0), z = zoneOf(h), rg = regionDef(), i = st.info, pe = persDef();
     return `<div class="sp-id">
         <div class="sp-portrait">${i.portrait ? `<img src="${i.portrait}" alt="">` : sigil(rg ? rg.id : 'compass', 'dos-sigil')}</div>
-        <div><div class="sp-name">${esc(i.name || tr('Unnamed Champion'))}</div><div class="sp-sub">${esc([i.alias, rg && rg.name].filter(Boolean).join(' · '))}</div></div></div>
+        <div><div class="sp-name">${esc(i.name || tr('Unnamed Champion'))}</div><div class="sp-sub">${esc([i.alias, peopleDef() && peopleDef().name, rg && rg.name].filter(Boolean).join(' · '))}</div></div></div>
       ${h ? `<div class="sp-block sp-hp"><div class="sp-h">${tr('Health')}</div>
         <div class="sp-hp-n"><b>${curHealth(h)}</b><span>/ ${h.max}</span></div>
         <div class="hs-track" role="group" aria-label="${tr('Adjust Health')}"><button type="button" data-act="hpStep" data-d="-1" aria-label="${tr('Lose 1 Health')}">−</button><button type="button" data-act="hpStep" data-d="1" aria-label="${tr('Recover 1 Health')}">+</button><button type="button" data-act="hpStep" data-d="max" aria-label="${tr('Back to full Health')}"${tip(tr('Back to full Health'))}>${ico('reset')}</button></div>
@@ -1792,6 +1821,7 @@
   function roll(sizes) { return sizes.map(d => 1 + Math.floor(Math.random() * dn(d))); }
 
   function pick(kind, id) {
+    if (kind === 'people') st.people = st.people === id ? null : id;
     if (kind === 'region') st.region = st.region === id ? null : id;
     if (kind === 'bg' && st.bg.id !== id) {
       const old = bgDef();

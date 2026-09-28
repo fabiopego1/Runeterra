@@ -329,7 +329,8 @@ aside.sheet-side { position: sticky; top: 87px; align-self: start; max-height: c
 /* Signature 4 — the homeland map legend with regional sigils */
 .cards.regions { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 .region-card { display: grid; grid-template-columns: 38px 1fr; column-gap: 14px; padding: 16px 18px; min-height: 0; }
-.region-card .sigil { grid-row: span 2; color: var(--rc); width: 36px; height: 36px; opacity: .9; }
+.region-card .sigil { grid-row: 1 / span 3; color: var(--rc); width: 36px; height: 36px; opacity: .9; }
+.region-card > :not(.sigil) { grid-column: 2; }
 .region-card .d { margin-top: 2px; }
 .region-card:hover .sigil { opacity: 1; }
 .region-card.selected { box-shadow: inset 3px 0 0 var(--rc), inset 0 0 0 1px var(--gold-lo); }
