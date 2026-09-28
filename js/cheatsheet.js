@@ -57,7 +57,7 @@
       <p><b>Careful:</b> "bunching up" is risky. The players can all act at once before the enemy, but after they do, the GM may activate every enemy in the following turn, so the enemies act back to back.</p>` },
     { id: 'terms', title: 'Terminology', body: `
       <h4>Mods</h4>
-      <p>Modifiers from bonuses or penalties, usually created by Boost or Hinder actions. Unless a Mod is <b>Persistent</b>, it's removed after being used. If a roll has both positive and negative Mods, apply the difference (e.g. −2 and +3 → <b>+1</b>). All Mods apply to the character's next roll, except that only <b>one positive and one negative Exclusive Mod</b> can be used in a roll.</p>
+      <p>Modifiers from bonuses or penalties, usually created by Boost or Hinder actions. Mods range from <b>−4 to +4</b>. Unless a Mod is <b>Persistent</b>, it's removed after being used. If a roll has both positive and negative Mods, apply the difference (e.g. −2 and +3 → <b>+1</b>). All Mods apply to the character's next roll, except that only <b>one positive and one negative Exclusive Mod</b> can be used in a roll.</p>
       <h4>Status</h4>
       <p>The currently active <b>GYRO</b> (Green, Yellow, Red, Out) for the scene. It's set by either the scene tracker or the character's current health, <b>whichever has progressed further</b>.</p>
       <h4>Twists</h4>

@@ -5,7 +5,11 @@ A fan-made tabletop RPG set in **Runeterra** (League of Legends), using the
 
 ## Part 1: Character creation (web page)
 
-Open `index.html` in a browser. There's no build step and nothing to install. You can also host it on GitHub Pages.
+Open `index.html` in a browser. There's no build step and nothing to install.
+
+### Hosting
+`.github/workflows/pages.yml` publishes the site to GitHub Pages on every push to `main` (only the web files, not the rulebook PDF).
+One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**. The site is then at `https://fabiopego1.github.io/Runeterra/`.
 
 The builder walks through the rulebook's hero-creation chapter (ch. 3), re-skinned for Runeterra:
 
