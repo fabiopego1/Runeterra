@@ -37,5 +37,14 @@ The builder walks through the rulebook's hero-creation chapter (ch. 3), re-skinn
 * `js/data-tables.js`: the Background, Power Source, Archetype, Personality and Red ability tables, with Runeterra names.
 * `js/data-lore.js`: Runeterra flavour: trait names, regions, glossary and principle notes.
 * `js/app.js`: the builder itself.
+* `gm.html`, `js/gm.js`, `js/gm-vault.js`: the password-protected GM Screen (see below).
+
+### GM Screen
+`gm.html` is a GM-only page. GitHub Pages has no server that could check a password, so the page content is published **encrypted** (AES-256-GCM, key derived from the password with PBKDF2) and decrypted in the browser only when the right password is typed. The password itself is never stored in the repo.
+
+To change what the GM page shows (or the password):
+1. Write the page content as HTML in `gm/content.html` (this file is git-ignored, so your notes stay private).
+2. Run `node tools/gm-seal.js`. It asks for the password and rewrites `js/gm-vault.js`.
+3. Commit `js/gm-vault.js`.
 
 *Unofficial fan project. Runeterra © Riot Games. SCRPG © Greater Than Games. For personal, non-commercial use.*
