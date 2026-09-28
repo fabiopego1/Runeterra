@@ -114,14 +114,26 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(info.pages === 3, `PDF has three pages (${info.pages})`);
     ok(info.notes === 10 && info.note0 === 'Deve um favor a Silco', 'PDF keeps the table notes as fillable fields');
 
-    // Evolve: swap a power, an ability and a principle; undo; history on page 3
+    // Ficha page: the Forge links to it; full-screen sheet with a play rail
+    ok(!!(await p.$('.sheet-cta a[href="ficha.html"]')), 'the Legend chapter links to the Ficha page');
+    await p.goto(`${BASE}/ficha.html`);
+    await p.waitForSelector('#sp-rail');
+    ok(await p.$$eval('#sheet-preview .hs-page', e => e.length) === 3, 'Ficha shows the three sheet pages');
+    const railHp = () => p.$eval('.sp-hp-n b', e => Number(e.textContent));
+    const hp0 = await railHp();
+    await p.click('#sp-rail [data-act=hpStep][data-d="-1"]');
+    ok(await railHp() === hp0 - 1 && await p.$eval('#sheet-preview [data-bind="play.current"]', e => Number(e.value)) === hp0 - 1, 'the rail − button updates Health on the rail and on the sheet');
+    await p.click('#sp-rail [data-act=hpStep][data-d=max]');
+
+    // Evolve tab: swap a power, an ability and a principle; undo; history on page 3
     const stored = () => p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-forge-v1')));
+    await p.click('[data-act=sheetTab][data-tab=evolve]');
+    ok(!!(await p.$('#flow-evolve')), 'Evolve tab opens the evolve tools');
     await p.selectOption('[data-evo=from]', 'flight');
     const to = await p.$eval('[data-evo=to]', s => { const o = [...s.options].find(x => x.value); return { v: o.value, t: o.textContent }; });
     await p.selectOption('[data-evo=to]', to.v);
     await p.click('[data-act=evoApply]');
     ok((await stored()).evo.traits.flight === to.v, `power swap saved (Voo → ${to.t})`);
-    ok(await p.$eval('#sheet-preview', (e, t) => e.textContent.includes(t), to.t), 'swapped power shows on the sheet');
     await p.click('[data-act=evoTab][data-tab=ability]');
     await p.selectOption('[data-evo=from]', { index: 1 });
     if (await p.$('[data-evo=to]')) {
@@ -140,7 +152,10 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.selectOption('[data-evo=to]', pr);
     await p.click('[data-act=evoApply]');
     ok((await stored()).evo.principles.bg === pr, 'principle swap saved');
+    await p.click('[data-act=sheetTab][data-tab=sheet]');
+    ok(await p.$eval('#sheet-preview', (e, t) => e.textContent.includes(t), to.t), 'swapped power shows on the sheet');
     ok(await p.$$eval('#sheet-preview .hs-evo', e => e.length) === 2, 'page 3 lists the evolution history');
+    await p.goto(`${BASE}/index.html`);
     const issues = await p.evaluate(() => document.querySelectorAll('.rail-item.locked').length);
     ok(issues === 0, 'evolving keeps every chapter valid');
 
@@ -157,8 +172,9 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('#file-pop', e => e.hidden), 'menu closes after an action');
 
     // Major rewrite: back to the chapters with Construído, history kept
+    await p.goto(`${BASE}/ficha.html#evoluir`);
     p.once('dialog', d => d.accept());
-    await p.click('[data-act=evoRewrite]'); await p.waitForTimeout(200);
+    await Promise.all([p.waitForURL(/index\.html/), p.click('[data-act=evoRewrite]')]);
     const rw = await stored();
     ok(rw.step === 'background' && rw.method === 'constructed' && rw.info.name === 'Bruxaria' && rw.evo.log.slice(-1)[0].kind === 'rewrite' && !rw.bg.id, 'rewrite restarts creation and keeps name and history');
     await p.context().close();
@@ -193,7 +209,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
   // 3. Every page loads, and none scrolls sideways on a phone.
   for (const vp of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
     const p = await newPage(vp);
-    for (const page of ['index.html', 'lore.html', 'regras.html', 'resumo.html', 'gm.html']) {
+    for (const page of ['index.html', 'ficha.html', 'lore.html', 'regras.html', 'resumo.html', 'gm.html']) {
       await p.goto(`${BASE}/${page}`);
       if (page === 'index.html') { await p.evaluate(fx => { const o = JSON.parse(fx); o.step = 'finish'; localStorage.setItem('runeterra-forge-v1', JSON.stringify(o)); }, FIXTURE); await p.reload(); }
       await p.evaluate(() => document.fonts.ready); await p.waitForTimeout(200);
