@@ -308,7 +308,7 @@ Object.assign(window.I18N.ui, {
  "Show me": "Mostrar",
  "This chapter is complete.": "Este capítulo está completo.",
  "Continue to <b>{next}</b> when you are ready.": "Siga para <b>{next}</b> quando estiver pronto.",
- "Pick a different option below, or": "Escolha outra opção abaixo, ou",
+ "Pick a different option below, or": "Escolha outra opção abaixo.",
  "Champions": "Campeões",
  "any {cat}": "qualquer {cat}",
  "Qualities:": "Qualidades:",
@@ -592,5 +592,7 @@ Object.assign(window.I18N.ui, {
  "The story of the table starts now, in times of political unrest, returning gods and global threats.": "A história da mesa começa agora, em tempos de agitação política, deuses que retornam e ameaças globais.",
  "Where is your hero when the campaign begins, and why?": "Onde seu herói está quando a campanha começa, e por quê?",
  "What do they want that they cannot get alone?": "O que ele quer e não consegue alcançar sozinho?",
+ "Change choice": "Trocar escolha",
+ "Keep the current choice": "Manter a escolha atual",
  "FOOTER": "Projeto de fã não oficial. Runeterra e League of Legends são © Riot Games. Uso pessoal e não comercial."
 });

@@ -747,8 +747,8 @@
     }
     const intro = `<p class="muted"${tip(`<h5>${esc(tr('{cat} principles', { cat: tr(cat) }))}</h5>${esc(pc)}<hr>` + tr('Each principle gives roleplaying guidance, a Minor and Major twist question, and a Green ability that earns hero points for the whole team.'))}>${esc(pc)} <span class="term info-mark">${ico('info')}</span></p>`;
     const key = 'pr-' + slot;
-    if (p && !ui.expand[key]) return `<div class="picked-bar"><span>${tr('Chosen:')} <b>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</b></span><button class="linkbtn" data-act="expand" data-key="${key}">${tr('Change')}</button></div>${detail}`;
-    return intro + (p ? `<div class="picked-bar muted-bar"><span>${tr('Pick a different principle below, or')}</span><button class="linkbtn" data-act="collapse" data-key="${key}">${tr('keep the current choice')}</button></div>` : '') + `<div class="principles">${items}</div>${detail}`;
+    if (p && !ui.expand[key]) return `<div class="picked-bar"><span>${tr('Chosen:')} <b>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</b></span><button class="btn small change-btn" data-act="expand" data-key="${key}">${ico('reset')} ${tr('Change choice')}</button></div>${detail}`;
+    return intro + (p ? `<div class="picked-bar muted-bar"><span>${tr('Pick a different principle below, or')}</span><button class="btn small ghost keep-btn" data-act="collapse" data-key="${key}">${ico('close')} ${tr('Keep the current choice')}</button></div>` : '') + `<div class="principles">${items}</div>${detail}`;
   }
 
 
@@ -865,10 +865,10 @@
     return guide + parts.join('');
   }
 
-  // Collapsible choice grid: once something is chosen, show a compact summary with a Change button.
+  // Collapsible choice grid: once something is chosen, show a compact summary with a clear "change choice" button.
   function pickSection(key, chosenHtml, gridHtml) {
-    if (chosenHtml && !ui.expand[key]) return `<div class="picked-bar">${chosenHtml}<button class="linkbtn" data-act="expand" data-key="${key}">${tr('Change')}</button></div>`;
-    return (chosenHtml ? `<div class="picked-bar muted-bar"><span>${tr('Pick a different option below, or')}</span><button class="linkbtn" data-act="collapse" data-key="${key}">${tr('keep the current choice')}</button></div>` : '') + gridHtml;
+    if (chosenHtml && !ui.expand[key]) return `<div class="picked-bar">${chosenHtml}<button class="btn small change-btn" data-act="expand" data-key="${key}">${ico('reset')} ${tr('Change choice')}</button></div>`;
+    return (chosenHtml ? `<div class="picked-bar muted-bar"><span>${tr('Pick a different option below, or')}</span><button class="btn small ghost keep-btn" data-act="collapse" data-key="${key}">${ico('close')} ${tr('Keep the current choice')}</button></div>` : '') + gridHtml;
   }
   const chosenSummary = (title, sc, lore, champs, extra = '') => `<div class="chosen"><div class="chosen-t">${esc(title)}</div>${lore ? `<p class="lore">${esc(lore)}</p>` : ''}${champs ? `<p class="champs"><span>${tr('Champions')}</span> ${esc(champs)}</p>` : ''}${extra}</div>`;
 

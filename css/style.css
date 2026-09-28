@@ -286,6 +286,11 @@ aside.sheet-side { position: sticky; top: 87px; align-self: start; max-height: c
 /* chosen summary (collapsed selection) */
 .picked-bar { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding: 16px 0; border-top: 1px solid var(--gold-lo); border-bottom: 1px solid var(--line); margin-bottom: 12px; }
 .picked-bar.muted-bar { align-items: center; border-top-color: var(--line); padding: 8px 0; color: var(--text-2); font-size: .9rem; }
+.change-btn { flex: none; align-self: center; border-color: var(--gold-lo); color: var(--gold-hi); background: rgba(200, 164, 94, .06); }
+.change-btn:hover { background: rgba(200, 164, 94, .14); border-color: var(--gold); }
+.change-btn .ico, .keep-btn .ico { width: 13px; height: 13px; }
+.btn.keep-btn { flex: none; padding: 5px 10px; border: 1px solid var(--line-2); color: var(--text-2); }
+.btn.keep-btn:hover { border-color: var(--gold-lo); color: var(--gold-hi); }
 .chosen { flex: 1; min-width: 0; }
 .chosen-sc { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); }
 .chosen-t { font-family: var(--font-display); font-size: 1.7rem; line-height: 1.1; color: var(--gold-hi); margin: 2px 0 6px; }
@@ -747,6 +752,7 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
   .hs-page { padding: 16px 12px; }
   .cards, .cards.regions, .principles { grid-template-columns: minmax(0, 1fr); }
   .picked-bar { flex-direction: column; gap: 8px; }
+  .change-btn { align-self: stretch; justify-content: center; padding: 9px 12px; }
   .assign-row { grid-template-columns: 40px minmax(0, 1fr) 22px; }
   .sock-row { grid-template-columns: 40px 12px minmax(0, 1fr) 22px; }
   .tray, .socket .note { margin-left: 20px; }
