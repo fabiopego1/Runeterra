@@ -1411,3 +1411,6 @@ html, body { overflow-x: clip; }
 
 /* Region sigil standing in for a missing portrait (Ficha page) */
 .dos-sigil { width: 46px; height: 46px; opacity: .8; }
+/* Region / people art at the top of their tooltip */
+#tip:has(.tip-img) { width: 360px; }
+#tip .tip-img { display: block; width: calc(100% + 26px); height: 150px; margin: -10px -13px 10px; object-fit: cover; border-bottom: 1px solid var(--gold-lo); }
