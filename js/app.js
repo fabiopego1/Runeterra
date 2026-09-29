@@ -743,7 +743,7 @@
     const typeTip = `<h5>${tr('Type: {t}', { t: ab.type })}</h5>${window.ABILITY_TYPES[ab.type] || ''}`;
     const colorTip = `<h5>${tr(color[0].toUpperCase() + color.slice(1) + ' ability')}</h5>${window.COLOR_INFO[color] || ''}`;
     const inputType = g.count === 1 && !g.fixed ? 'radio' : 'checkbox';
-    const control = g.fixed ? '' : `<input type="checkbox" data-act="toggleAb" data-g="${g.key}" data-name="${esc(name)}"${ctx.cat ? ` data-cat="${esc(ctx.cat)}"` : ''}${picked ? ' checked' : ''}${unavailable ? ' disabled' : ''} aria-label="${tr(inputType === 'radio' ? 'Select' : 'Toggle')} ${esc(abName(name))}">`;
+    const control = g.fixed ? '' : `<input type="checkbox" data-act="toggleAb" data-g="${g.key}" data-name="${esc(name)}"${ctx.cat || ctx.dataCat ? ` data-cat="${esc(ctx.dataCat || ctx.cat)}"` : ''}${picked ? ' checked' : ''}${unavailable ? ' disabled' : ''} aria-label="${tr(inputType === 'radio' ? 'Select' : 'Toggle')} ${esc(abName(name))}">`;
     return `<div class="ab ${color}${picked ? ' picked' : ''}${unavailable ? ' disabled' : ''}">` +
       `<div class="ab-top">${control}<span class="ab-name">${esc(abName(name))}</span><span class="pill ${color}"${tip(colorTip)}>${tr(color)}</span><span class="ab-type"${tip(typeTip)}>${ab.type}</span></div>` +
       (mode ? `<div class="ab-text"><em>${tr('Mode:')}</em> ${esc(mode.text)}</div>` : '') +
@@ -1092,6 +1092,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const cats = window.RED_ABILITIES.slice();
     const shape = shapeDef();
     if (shape && shape.extraRed) cats.push({ cat: 'X:' + shape.id, label: shape.rt + ' (' + tr('Path') + ')', list: shape.extraRed.map(a => ({ a })) });
+    // Older saves stored Path Red abilities without their category.
+    if (shape && shape.extraRed) for (const e of s) if (!e.cat && shape.extraRed.includes(e.name)) e.cat = 'X:' + shape.id;
     const catHtml = c => {
       const isX = c.cat.startsWith('X:');
       const inCat = isX ? [] : Object.values(R.T).filter(t => TRAIT[t.key].cat === c.cat && dn(t.die) >= 6);
@@ -1103,7 +1105,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         const picked = idx >= 0;
         const takenElsewhere = !picked && s.some(e => displayName(e.name) === displayName(a));
         const useOk = !use || use.some(k => R.T[k]);
-        const card = abilityCard({ key: 'red', color: 'red', count: need, list: [] }, a, s[idx], picked, R, { idx, cat: isX ? null : c.cat, use, color: 'red' });
+        const card = abilityCard({ key: 'red', color: 'red', count: need, list: [] }, a, s[idx], picked, R, { idx, cat: isX ? null : c.cat, dataCat: c.cat, use, color: 'red' });
         const block = !useOk || takenElsewhere || (!picked && s.length >= need);
         return block && !picked ? card.replace('type="checkbox"', 'type="checkbox" disabled').replace('class="ab red', 'class="ab red disabled') : card;
       }).join('');
