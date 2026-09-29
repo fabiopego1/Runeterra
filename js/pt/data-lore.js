@@ -295,7 +295,7 @@
     intro: [
       ['Bem-vindo à Forja', 'Aqui você monta a <b>ficha de um herói</b> para jogar RPG com amigos.', ''],
       ['A crônica', 'A criação tem <b>dez capítulos</b>, listados aqui. Cada um abre quando o anterior termina.', '.steps-nav || .rail'],
-      ['Começar', 'Clique aqui para abrir o Capítulo I. O guia volta em cada capítulo, e o botão <b>Guia</b> ao lado do título o reabre.', '.tp-go .btn']
+      ['Começar', 'Clique aqui para abrir o Capítulo I.', '.tp-go .btn']
     ],
     people: [
       ['Povo', 'De que povo seu campeão é. Serve <b>só para a interpretação</b>: não muda nenhum número.', '.cards.regions'],
@@ -305,8 +305,6 @@
     ],
     region: [
       ['Terra Natal', 'A região onde seu campeão cresceu. Também serve <b>só para a interpretação</b>.', '.cards.regions'],
-      ['Conheça o mundo', 'Passe o mouse numa região para ver a arte e os campeões de lá. O <b>Lore</b> conta a história completa.', 'a.hbtn[href="lore.html"]'],
-      ['Voltar e trocar', '<b>Voltar</b> leva ao capítulo anterior. <b>Trocar última escolha</b> desfaz a última decisão.', '.step-footer .footer-left']
     ],
     background: [
       ['Origem', 'Quem seu campeão era <b>antes</b> dos poderes. A partir daqui as escolhas viram números.', '.chapter'],

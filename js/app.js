@@ -927,10 +927,7 @@
   function renderPeople() {
     const p = peopleDef();
     const H = {
-      pick: () => pickSection('people', p && `<div class="chosen chosen-region" style="--rc:${p.color}">${sigil(p.sigil, 'chosen-sigil')}<div class="chosen-sc">${tr('People')}</div><div class="chosen-t">${esc(p.name)}</div><p class="lore">${esc(p.lore)}</p>
-          <p class="lore-link"><a href="lore.html#races">${ico('map')} ${tr('Read about the peoples of Runeterra')}</a></p>
-          <p class="champs"><b>${tr('Champions:')}</b> ${esc(p.champs)}</p>
-          <p class="sc">${tr('No rules effect. Options marked {mark} <b>{place}</b> in later steps are only suggestions.', { mark: ico('mark'), place: esc(p.name) })}</p></div>`,
+      pick: () => pickSection('people', '',   // the cards stay on screen; the chosen one is highlighted
         `<div class="cards regions">${(window.PEOPLES || []).map(x => `<button class="card region-card${x.id === st.people ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="people" data-id="${x.id}"${tip(`${tipImg('race-' + (PEOPLE_SLOT[x.id] || x.id))}<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.sigil)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
     };
     return stepPanel('Step 0 · Runeterra', tr('People'), 'people', flowHtml('people', sectionsFor('people', R0), H), false);
@@ -940,10 +937,7 @@
     const r = regionDef();
     const names = (list, arr) => arr.map(id => { const x = byId(list, id); return x ? x.rt : id; }).join(', ');
     const H = {
-      pick: () => pickSection('region', r && `<div class="chosen chosen-region" style="--rc:${r.color}">${sigil(r.id, 'chosen-sigil')}<div class="chosen-sc">${tr('Homeland')}</div><div class="chosen-t">${esc(r.name)}</div><p class="lore">${esc(r.lore)}</p>${window.LORE_FOR_REGION && window.LORE_FOR_REGION[r.id] ? `<p class="lore-link"><a href="#" data-act="lore" data-section="${window.LORE_FOR_REGION[r.id]}">${ico('map')} ${tr('Read the full lore of {place}', { place: esc(r.name) })}</a></p>` : ''}
-          <p class="champs"><b>${tr('Champions:')}</b> ${esc(r.champs)}</p>
-          <div class="grid4"><div><h4>${tr('Fitting Origins')}</h4><small>${esc(names(window.BACKGROUNDS, r.bg))}</small></div><div><h4>${tr('Fitting Sources')}</h4><small>${esc(names(window.POWER_SOURCES, r.ps))}</small></div>${r.ar && r.ar.length ? `<div><h4>${tr('Fitting Paths')}</h4><small>${esc(names(window.ARCHETYPES, r.ar))}</small></div>` : ''}<div><h4>${tr('Fitting Principles')}</h4><small>${esc(r.pr.map(id => (window.PRINCIPLE_LORE[id] || [id])[0]).join(', '))}</small></div></div>
-          <p class="sc">${tr('No rules effect. Options marked {mark} <b>{place}</b> in later steps are only suggestions.', { mark: ico('mark'), place: esc(r.name) })}</p></div>`,
+      pick: () => pickSection('region', '',   // the cards stay on screen; the chosen one is highlighted
         `<div class="cards regions">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`${tipImg('r-' + x.id)}<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.id)}${fitMark('regions', x.id)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
     };
     return stepPanel('Step 1 · Runeterra', tr('Homeland'), 'region', flowHtml('region', sectionsFor('region', R0), H), false);
