@@ -293,7 +293,7 @@
   // Sem seletor, o popup aparece no centro. Reabre pelo botão "Guia" ao lado do título do capítulo.
   W.TOUR = {
     intro: [
-      ['Bem-vindo à Forja', 'Aqui você monta a <b>ficha de um herói</b> para jogar RPG com amigos. Um <b>Mestre</b> narra a história; cada jogador decide o que o seu herói faz.', ''],
+      ['Bem-vindo à Forja', 'Aqui você monta a <b>ficha de um herói</b> para jogar RPG com amigos.', ''],
       ['A crônica', 'A criação tem <b>dez capítulos</b>, listados aqui. Cada um abre quando o anterior termina.', '.steps-nav || .rail'],
       ['Começar', 'Clique aqui para abrir o Capítulo I. O guia volta em cada capítulo, e o botão <b>Guia</b> ao lado do título o reabre.', '.tp-go .btn']
     ],
