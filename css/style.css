@@ -185,17 +185,16 @@ kbd { font-family: var(--font-mono); font-size: .7em; border: 1px solid var(--li
 .linkbtn:hover { color: var(--gold-hi); border-bottom-color: var(--gold); }
 
 /* ==========================================================================
-   Layout — chronicle rail | open stage | champion dossier
+   Layout — chronicle rail | open stage
    ========================================================================== */
-.layout { display: grid; grid-template-columns: 13rem minmax(0, 1fr) 20rem; max-width: 1960px; margin: 0 auto; padding: 36px 32px 72px; }
+.layout { display: grid; grid-template-columns: 13rem minmax(0, 1fr); max-width: 1960px; margin: 0 auto; padding: 36px 32px 72px; }
 .steps-nav { position: sticky; top: 87px; align-self: start; padding-right: 24px; }
-main.stage { min-width: 0; padding: 0 44px; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+main.stage { min-width: 0; padding: 0 0 0 44px; border-left: 1px solid var(--line); }
 /* chapter change: fade out, jump to the top, fade the new chapter in */
 main.stage { transition: opacity .32s ease, transform .32s ease; }
 main.stage.leaving { opacity: 0; transform: translateY(6px); transition-duration: .18s; }
 main.stage.entering { opacity: 0; transform: translateY(14px); transition: none; }
 .chapter-title:focus, .tp-title:focus { outline: none; }
-aside.sheet-side { position: sticky; top: 87px; align-self: start; max-height: calc(100vh - 105px); overflow: auto; padding-left: 28px; scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
 .panel { position: relative; }
 .panel + .panel { margin-top: 40px; }
 
@@ -538,55 +537,6 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 /* ==========================================================================
    Signature 2 — The Champion Dossier (hextech-cut frame)
    ========================================================================== */
-.dossier {
-  --rc: var(--gold);
-  position: relative; background: var(--ink-1); padding: 0 22px 20px;
-  clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
-  box-shadow: inset 0 0 0 1px var(--gold-lo);
-}
-.dossier::before, .dossier::after { content: ''; position: absolute; width: 18px; height: 18px; background: linear-gradient(135deg, transparent calc(50% - .6px), var(--gold-lo) calc(50% - .6px), var(--gold-lo) calc(50% + .6px), transparent calc(50% + .6px)); }
-.dossier::before { top: 0; left: 0; }
-.dossier::after { bottom: 0; right: 0; }
-.dos-band { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 -22px 18px; padding: 14px 22px 10px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--rc) 9%, var(--ink-1)); box-shadow: inset 0 3px 0 var(--rc); }
-.dos-kicker { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .2em; text-transform: uppercase; color: var(--text-3); }
-.dos-region { font-family: var(--font-display); font-size: .92rem; color: var(--rc); }
-.dos-id { display: grid; grid-template-columns: 78px 1fr; gap: 16px; align-items: end; }
-.dos-portrait {
-  width: 78px; height: 98px; display: grid; place-items: center; overflow: hidden; background: var(--ink-0); color: var(--rc);
-  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-  box-shadow: inset 0 0 0 1px var(--gold-lo);
-}
-.dos-portrait img { width: 100%; height: 100%; object-fit: cover; }
-.dos-sigil { width: 46px; height: 46px; opacity: .8; }
-.dos-names { min-width: 0; }
-/* Signature 3 — the champion name treatment */
-.dos-name { font-family: var(--font-display); font-size: 1.85rem; line-height: 1; color: var(--gold-hi); letter-spacing: .01em; overflow-wrap: anywhere; }
-.dos-name.unnamed { color: var(--text-3); font-size: 1.45rem; }
-.dos-epithet { font-style: italic; color: var(--text-2); margin-top: 6px; font-size: .98rem; }
-.dos-facts { display: grid; grid-template-columns: 1fr 1fr; margin: 18px 0 4px; border-top: 1px solid var(--line); }
-.dos-fact { padding: 8px 0 8px; border-bottom: 1px solid var(--line); }
-.dos-fact:nth-child(odd) { padding-right: 10px; border-right: 1px solid var(--line); }
-.dos-fact:nth-child(even) { padding-left: 12px; }
-.dos-fact dt { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .16em; text-transform: uppercase; color: var(--text-3); }
-.dos-fact dd { margin: 2px 0 0; font-family: var(--font-display); font-size: .98rem; line-height: 1.15; color: var(--text); }
-.dos-fact.empty dd { color: var(--text-3); }
-.dos-sec { margin-top: 16px; }
-.dos-sec h4 { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: .62rem; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
-.dos-sec h4::after { content: ''; flex: 1; height: 1px; background: var(--line); }
-.ledger { list-style: none; margin: 0; padding: 0; }
-.ledger li { display: grid; grid-template-columns: auto 1fr auto; align-items: end; gap: 6px; padding: 3px 0; font-size: .95rem; }
-.led-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
-.led-dots { border-bottom: 1px dotted var(--line-2); margin-bottom: 7px; }
-.dos-empty { font-size: .86rem; color: var(--text-3); font-style: italic; margin: 2px 0; }
-.dos-status { display: flex; gap: 16px; align-items: flex-end; }
-.dos-status .z { flex-direction: column; gap: 4px; }
-.dos-status i, .dos-hp i { font-style: normal; font-family: var(--font-mono); font-size: .56rem; letter-spacing: .12em; text-transform: uppercase; }
-.dos-hp { margin-left: auto; display: grid; justify-items: end; color: var(--text-3); }
-.dos-hp b { font-family: var(--font-display); font-weight: 400; font-size: 1.9rem; line-height: 1; color: var(--text); }
-.dos-counts { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; font-family: var(--font-mono); font-size: .72rem; color: var(--text-2); }
-.c-g { color: var(--zone-g); } .c-y { color: var(--zone-y); } .c-r { color: var(--zone-r); }
-.dos-principle { display: flex; justify-content: space-between; gap: 8px; margin: 2px 0; font-family: var(--font-display); font-size: .98rem; }
-.dos-principle small { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); align-self: center; }
 
 /* ==========================================================================
    Title page (Prologue)
@@ -882,10 +832,6 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 @media (max-width: 1520px) {
   .layout { grid-template-columns: 12.5rem minmax(0, 1fr); padding: 30px 24px 60px; }
   main.stage { border-right: 0; padding-right: 0; }
-  aside.sheet-side { grid-column: 2; position: static; max-height: none; overflow: visible; padding: 40px 0 0 44px; }
-  .dossier { max-width: 720px; }
-  .dossier .dos-facts { grid-template-columns: repeat(4, 1fr); }
-  .dossier .dos-fact { padding: 8px 10px !important; border-right: 1px solid var(--line); }
 }
 @media (max-width: 900px) {
   .site-header { position: relative; padding: 10px 16px; flex-wrap: wrap; gap: 6px; }
@@ -905,8 +851,6 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
   .rail-name { font-size: .72rem; font-family: var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); white-space: nowrap; }
   .rail-item.active .rail-name { color: var(--hex); }
   main.stage { border: 0; padding: 0; }
-  aside.sheet-side { grid-column: 1; padding: 40px 0 0; }
-  .dossier .dos-facts { grid-template-columns: 1fr 1fr; }
   .chapter { grid-template-columns: auto 1fr; }
   .chapter .chapter-tools { grid-column: 1 / -1; justify-self: start; margin-top: 12px; }
   .chapter-num { font-size: 4.2rem; }
@@ -1300,7 +1244,7 @@ a.brand, a.hbtn { text-decoration: none; }
    ========================================================================== */
 @media print {
   body { background: #fff; color: #000; }
-  .site-header, .steps-nav, aside.sheet-side, .no-print, .foot, .chapter, .chapter-lede, .step-footer, .guide { display: none !important; }
+  .site-header, .steps-nav, .no-print, .foot, .chapter, .chapter-lede, .step-footer, .guide { display: none !important; }
   .layout { display: block; padding: 0; }
   main.stage { border: 0; padding: 0; }
   .hs-page { background: #fff; box-shadow: inset 0 0 0 1px #999; clip-path: none; break-after: page; }
@@ -1464,3 +1408,6 @@ a.brand, a.hbtn { text-decoration: none; }
 
 /* Decorative overhangs (chapter numerals, glows) must never widen the page on phones */
 html, body { overflow-x: clip; }
+
+/* Region sigil standing in for a missing portrait (Ficha page) */
+.dos-sigil { width: 46px; height: 46px; opacity: .8; }

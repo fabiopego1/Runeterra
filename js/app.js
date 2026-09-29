@@ -1240,7 +1240,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   // ------------------------------------------------------------------ evolution between collections
   // Rulebook "Change details": swap a power or quality for another of the same die, a principle for another,
   // or an ability for another of the same colour from the same lists. Stored as an overlay (st.evo) so the
-  // creation chapters stay as they were built; the sheet, the dossier and the PDF show the evolved champion.
+  // creation chapters stay as they were built; the sheet and the PDF show the evolved champion.
   const evoTrait = k => (k && st.evo.traits[k]) || k;
   function evolvedR(R) {
     const T = {};
@@ -1689,34 +1689,6 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }).join('')}</ol>`;
   }
 
-  // The Champion Dossier: identity first, mechanics second.
-  function renderSide() {
-    const R = R0;
-    const bg = bgDef(), ps = psDef(), ar = archDef(), shape = shapeDef(), pe = persDef(), rg = regionDef();
-    const powers = sortTraits(owned(evolvedR(R), 'power'));
-    const quals = sortTraits(owned(evolvedR(R), 'quality'));
-    const abs = allAbilities(R);
-    const cnt = c => abs.filter(x => x.color === c).length;
-    const h = healthCalc(R);
-    const i = st.info;
-    const row = t => `<li><span class="led-name">${t.key === 'rp-quality' && st.pers.qname ? `<span class="term"${tip(traitTip('rp-quality'))}>${esc(st.pers.qname)}</span>` : traitSpan(t.key)}</span><span class="led-dots"></span>${die(t.die, 'sm')}</li>`;
-    const fact = (label, d, extra) => `<div class="dos-fact${d ? '' : ' empty'}"><dt>${label}</dt><dd>${d ? esc(d.rt + (extra || '')) : BLANK}</dd></div>`;
-    return `<div class="dossier" style="--rc:${rg ? rg.color : 'var(--gold)'}">
-      <div class="dos-band"><span class="dos-kicker">${tr('Champion Dossier')}</span><span class="dos-region">${rg || peopleDef() ? esc([peopleDef() && peopleDef().name, rg && rg.name].filter(Boolean).join(' · ')) : tr('Homeland unknown')}</span></div>
-      <div class="dos-id">
-        <div class="dos-portrait">${i.portrait ? `<img src="${i.portrait}" alt="">` : sigil(rg ? rg.id : 'compass', 'dos-sigil')}</div>
-        <div class="dos-names"><div class="dos-name${i.name ? '' : ' unnamed'}">${esc(i.name || tr('Unnamed Champion'))}</div>
-        <div class="dos-epithet">${i.alias ? esc(i.alias) : pe ? (PT ? esc(pe.rt) : 'the ' + esc(pe.rt)) : tr('an untold legend')}</div></div>
-      </div>
-      <dl class="dos-facts">${fact(tr('Origin'), bg)}${fact(tr('Source'), ps)}${fact(tr('Path'), ar, shape && shape !== ar ? ' ' + shape.rt : '')}${fact(tr('Temperament'), pe)}</dl>
-      <div class="dos-sec"><h4>${tr('Powers')}</h4>${powers.length ? `<ul class="ledger">${powers.map(row).join('')}</ul>` : `<p class="dos-empty">${tr('None yet — gained from your Source and Path.')}</p>`}</div>
-      <div class="dos-sec"><h4>${tr('Qualities')}</h4>${quals.length ? `<ul class="ledger">${quals.map(row).join('')}</ul>` : `<p class="dos-empty">${tr('None yet — gained from your Origin.')}</p>`}</div>
-      ${R.status ? `<div class="dos-sec"><h4>${tr('Status')}</h4><div class="dos-status"><span class="z g">${die(R.status[0])}<i>${tr('Green')}</i></span><span class="z y">${die(R.status[1])}<i>${tr('Yellow')}</i></span><span class="z r">${die(R.status[2])}<i>${tr('Red')}</i></span>${h ? `<span class="dos-hp"><b>${h.max}</b><i>${tr('Health')}</i></span>` : ''}</div></div>` : ''}
-      <div class="dos-sec"><h4>${tr('Abilities')}</h4><p class="dos-counts"><span class="c-g">${cnt('green')} ${tr(cnt('green') === 1 ? 'Green' : 'Greens')}</span><span class="c-y">${cnt('yellow')} ${tr(cnt('yellow') === 1 ? 'Yellow' : 'Yellows')}</span><span class="c-r">${cnt('red')} ${tr(cnt('red') === 1 ? 'Red' : 'Reds')}</span>${pe ? `<span>${tr('Out')}</span>` : ''}</p></div>
-      <div class="dos-sec"><h4>${tr('Principles')}</h4>${principlesFinal().map(x => `<p class="dos-principle"><span class="term"${tip(`<h5>${esc((window.PRINCIPLE_LORE[x.id] || [x.p.name])[0])}</h5>${esc(x.p.rp)}`)}>${esc((window.PRINCIPLE_LORE[x.id] || [x.p.name])[0])}</span><small>${esc(tr(x.p.cat))}</small></p>`).join('') || `<p class="dos-empty">${tr('None yet.')}</p>`}</div>
-    </div>`;
-  }
-
   // ------------------------------------------------------------------ main render
   const RENDER = { intro: renderIntro, people: renderPeople, region: renderRegion, background: renderBackground, powersource: renderPowerSource, archetype: renderArchetype, personality: renderPersonality, red: renderRed, retcon: renderRetcon, health: renderHealth, finish: renderFinish };
   // For saves made before step locking existed: unlock up to the first incomplete step.
@@ -1805,7 +1777,6 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const rail = document.querySelector('.rail'), here = rail && rail.querySelector('.rail-item.active');
     if (rail && here && rail.scrollWidth > rail.clientWidth) rail.scrollLeft = here.offsetLeft - (rail.clientWidth - here.offsetWidth) / 2;
     document.getElementById('stage').innerHTML = (RENDER[st.step] || renderIntro)();
-    document.getElementById('side').innerHTML = renderSide();
     save();
     // Guide the eye: when a section is completed, scroll to the newly unlocked one.
     if (lastFlow && flowCurrent && lastFlow !== flowCurrent && lastFlow.split(':')[0] === flowCurrent.split(':')[0] && !flowCurrent.endsWith(':done')) {
@@ -1856,7 +1827,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     if (SHEET_PAGE) {
       const rail = document.getElementById('sp-rail');
       if (rail) rail.innerHTML = sheetRailHtml();
-    } else document.getElementById('side').innerHTML = renderSide();
+    }
     const sheet = document.getElementById('sheet-preview');
     if (sheet && !fromSheet) sheet.innerHTML = sheetHtml(R0);
     save();
