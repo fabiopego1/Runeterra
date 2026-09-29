@@ -359,6 +359,13 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
       const h = crypto.createHash('sha1').update(fs.readFileSync(path.join(__dirname, '..', 'assets', dir, f))).digest('hex');
       if (seen[h]) dupFile.push(`${seen[h]} = ${dir}/${f}`); else seen[h] = `${dir}/${f}`;
     }
+    // Size budget: hover art must stay small so it shows at once; Lore pictures are sized to how big they are drawn.
+    const big = [];
+    for (const [dir, max] of [['cards', 30], ['tip', 30], ['lore', 90]]) for (const f of fs.readdirSync(path.join(__dirname, '..', 'assets', dir)).filter(f => f.endsWith('.webp'))) {
+      const kb = fs.statSync(path.join(__dirname, '..', 'assets', dir, f)).size / 1024;
+      if (kb > max) big.push(`${dir}/${f} ${Math.round(kb)} KB`);
+    }
+    ok(!big.length, `every picture is within its size budget${big.length ? ': ' + big.join(', ') : ''}`);
     ok(!dupSrc.length && !dupFile.length, `no picture is used twice${dupSrc.length || dupFile.length ? ': ' + dupSrc.concat(dupFile).join(', ') : ''}`);
   }
   errors.forEach(e => console.log('     ', e));
