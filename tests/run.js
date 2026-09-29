@@ -425,6 +425,19 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(/Modo sem Poderes|Powerless Mode/.test(await p.evaluate(() => window.ForgeDebug.issues('archetype').join(' | '))), 'Modular: a Powerless Mode needs two different powers');
     await p.context().close();
   }
+  // Older saves stored element choices with the English name, e.g. "Energia Hextec Bruta (Nuclear)".
+  {
+    const p = await newPage();
+    await p.goto(`${BASE}/index.html`);
+    const S = JSON.parse(FIXTURE);
+    S.sel.red = [{ name: 'Improved Immunity', cat: 'P:elemental', ch: { 'element/energy': 'Energia Hextec Bruta (Nuclear)' } }];
+    S.pch = { bg: 'Energia Hextec Bruta (Nuclear)' };
+    await p.evaluate(s => localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)), S);
+    await p.reload(); await p.waitForTimeout(300);
+    const st = await p.evaluate(() => window.ForgeDebug.state());
+    ok(st.sel.red[0].ch['element/energy'] === 'Energia Hextec Bruta' && st.pch.bg === 'Energia Hextec Bruta', 'old saves lose the English element name in parentheses');
+    await p.context().close();
+  }
   ok(errors.length === 0, 'no JavaScript errors or missing files');
   await browser.close();
   console.log(failures ? `\n${failures} failing` : '\nall passing');
