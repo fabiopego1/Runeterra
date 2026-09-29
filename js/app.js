@@ -593,6 +593,7 @@
       if ((rc.type === 'swap-powers' || rc.type === 'swap-quals') && (!rc.a || !rc.b || rc.a === rc.b)) I.push(tr('Pick two different traits to swap.'));
       if (rc.type === 'add-d6' && !rc.key) I.push(tr('Pick the new d6 power or quality.'));
       if (rc.type === 'change-principle' && (!rc.which || !rc.principle)) I.push(tr('Pick which principle to change and its replacement.'));
+      if (rc.type === 'change-principle' && rc.principle && [st.bg.principle, st.arch.principle].includes(rc.principle)) I.push(tr('Your two principles must be different.'));
       if (rc.type === 'red-up' && pers && pers.status[2] === 'd12') I.push(tr('Your Red status die is already d12 — pick another option.'));
       if (rc.type === 'extra-red' && (st.sel.red || []).length < 3) I.push(tr('Go back to Ultimates and pick your third Red ability.'));
       add('cfg', tr('Set it up'), I, tr('Complete the choice for your Twist of Fate.'));
@@ -1035,13 +1036,15 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   }
 
   function minionFormsHtml(R) {
-    const q = ['creativity', 'magical-lore', 'otherworldly-mythos', 'science', 'technology'].filter(k => R.T[k]);
+    // The book lists these as examples; any quality the hero has may fit, so the examples come first.
+    const EX = ['creativity', 'magical-lore', 'otherworldly-mythos', 'science', 'technology'];
+    const q = EX.filter(k => R.T[k]).concat(Object.keys(R.T).filter(k => !EX.includes(k) && TRAIT[k] && TRAIT[k].kind === 'quality'));
     const cur = st.arch.minionQ;
     const max = cur && R.T[cur] ? dn(R.T[cur].die) : 0;
     const chosen = st.arch.minionForms || [];
     return `<p class="muted"${tip(tr('<h5>Minion forms</h5>When you create a minion you may discard one bonus you have access to in order to add a form with that bonus value or higher. The number of forms you know equals the maximum value of a related quality.'))}>${tr('You know as many minion forms as the maximum value of a related quality.')}</p>
       <label class="field"><span>${tr('Related quality')}</span><select data-bind="arch.minionQ"><option value="">${tr('— choose —')}</option>${q.map(k => `<option value="${k}"${cur === k ? ' selected' : ''}>${esc(traitName(k))} (${R.T[k].die})</option>`).join('')}</select></label>
-      ${q.length ? '' : `<small class="muted">${tr('You need {list}.', { list: ['creativity', 'magical-lore', 'otherworldly-mythos', 'science', 'technology'].map(traitName).join(', ') })}</small>`}
+
       <div class="ab-list">${window.MINION_FORMS.map(([n, d, b]) => `<label class="ab${chosen.includes(n) ? ' picked' : ''}"><div class="ab-top"><input type="checkbox" data-act="minionForm" data-name="${esc(n)}"${chosen.includes(n) ? ' checked' : ''}${!chosen.includes(n) && chosen.length >= max ? ' disabled' : ''}><span class="ab-name">${esc(abName(n))}</span><span class="ab-type"${tip(tr('Bonus needed to apply this form'))}>${tr('{b} or higher', { b: esc(b) })}</span></div><div class="ab-text">${rulesText(d)}</div></label>`).join('')}</div>
       <p class="muted">${chosen.length}/${max} ${tr('chosen')}.</p>`;
   }
@@ -1123,7 +1126,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const B = R.before.retcon;
     const traitsOf = kind => sortTraits(Object.values(B).filter(t => TRAIT[t.key].kind === kind)).map(t => t.key);
     const H = {
-      pick: () => `<div class="principles">${window.RETCONS.map(x => `<button class="principle${rc.type === x.id ? ' selected' : ''}" data-act="retcon" data-id="${x.id}"${tip(`<h5>${esc(x.rt)}</h5>${esc(x.desc || x.sc)}`)}><div class="pn">${esc(x.rt)}</div><div class="ph">${esc(x.desc || x.sc)}</div></button>`).join('')}</div>`,
+      pick: () => `<div class="principles">${window.RETCONS.map(x => `<button class="principle${rc.type === x.id ? ' selected' : ''}" data-act="retcon" data-id="${x.id}"${x.id === 'red-up' && rc.type !== x.id && persDef() && persDef().status[2] === 'd12' ? ' disabled' : ''}${tip(`<h5>${esc(x.rt)}</h5>${esc(x.desc || x.sc)}`)}><div class="pn">${esc(x.rt)}</div><div class="ph">${esc(x.desc || x.sc)}</div></button>`).join('')}</div>`,
       cfg: () => {
         if (rc.type === 'swap-powers' || rc.type === 'swap-quals') {
           const keys = traitsOf(rc.type === 'swap-powers' ? 'power' : 'quality');
@@ -1136,7 +1139,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
           return socket({ bind: 'retcon.key', d: 'd6', cur: rc.key, groups: traitGroups(keys, k => traitItem(k)), empty: tr('Bind this d6 to any power or quality') });
         }
         if (rc.type === 'change-principle') {
-          const opts = PRINCIPLES.map(p => `<option value="${p.id}"${rc.principle === p.id ? ' selected' : ''}>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}${PT ? ` (${esc(tr(p.cat))})` : ` — ${esc(tr(p.cat))}`}</option>`).join('');
+          const mine = [st.bg.principle, st.arch.principle];   // your current principles can't be taken again
+          const opts = PRINCIPLES.filter(p => !mine.includes(p.id) || rc.principle === p.id).map(p => `<option value="${p.id}"${rc.principle === p.id ? ' selected' : ''}>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}${PT ? ` (${esc(tr(p.cat))})` : ` — ${esc(tr(p.cat))}`}</option>`).join('');
           return `<div class="grid2"><label class="field"><span>${tr('Replace')}</span><select data-bind="retcon.which"><option value="">${tr('— choose —')}</option><option value="bg"${rc.which === 'bg' ? ' selected' : ''}>${tr('Origin principle')}</option><option value="arch"${rc.which === 'arch' ? ' selected' : ''}>${tr('Path principle')}</option></select></label><label class="field"><span>${tr('With (any category)')}</span><select data-bind="retcon.principle"><option value="">${tr('— choose —')}</option>${opts}</select></label></div>`;
         }
         if (rc.type === 'change-ability') return `<p class="muted">${tr('Go back to any ability (Source, Path or Ultimates) and change which power or quality it uses. Everything stays editable — this option simply makes it “official”.')}</p>`;
@@ -2235,6 +2239,17 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       setTimeout(close, 9000);
     }
   } catch (e) { /* storage blocked: skip the hint */ }
+
+  // Read-only view of the computed champion, used by the test suite and the creation simulator.
+  window.ForgeDebug = {
+    state: () => JSON.parse(JSON.stringify(st)),
+    issues: step => stepIssues(step, compute()),
+    traits: () => Object.values(compute().T).map(t => ({ key: t.key, die: t.die, kind: TRAIT[t.key].kind, cat: TRAIT[t.key].cat })),
+    status: () => compute().status,
+    health: () => { const h = healthCalc(compute()); return h && { max: h.max, red: h.red, traitMax: h.traitMax, roll: h.roll, trait: h.chosen && h.chosen.key, green: h.green, yellow: h.yellow, redR: h.redR }; },
+    abilities: () => allAbilities(compute()).map(a => ({ name: a.name, color: a.color, src: a.src, trait: a.entry && a.entry.trait, trait2: a.entry && a.entry.trait2 })),
+    principles: () => principlesFinal().map(x => x.id || (x.p && x.p.id))
+  };
 
   render();
 })();
