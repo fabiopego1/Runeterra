@@ -926,14 +926,10 @@
 
   function renderPeople() {
     const p = peopleDef();
-    const names = (list, arr) => arr.map(id => { const x = byId(list, id); return x ? x.rt : id; }).join(', ');
-    const fits = [[tr('Fitting Homelands'), p && p.regions.map(id => (byId(window.REGIONS, id) || { name: id }).name).join(', ')], [tr('Fitting Origins'), p && names(window.BACKGROUNDS, p.bg)],
-      [tr('Fitting Sources'), p && names(window.POWER_SOURCES, p.ps)], [tr('Fitting Paths'), p && names(window.ARCHETYPES, p.ar)], [tr('Fitting Principles'), p && p.pr.map(id => (window.PRINCIPLE_LORE[id] || [id])[0]).join(', ')]].filter(x => x[1]);
     const H = {
       pick: () => pickSection('people', p && `<div class="chosen chosen-region" style="--rc:${p.color}">${sigil(p.sigil, 'chosen-sigil')}<div class="chosen-sc">${tr('People')}</div><div class="chosen-t">${esc(p.name)}</div><p class="lore">${esc(p.lore)}</p>
           <p class="lore-link"><a href="lore.html#races">${ico('map')} ${tr('Read about the peoples of Runeterra')}</a></p>
           <p class="champs"><b>${tr('Champions:')}</b> ${esc(p.champs)}</p>
-          ${fits.length ? `<div class="grid3">${fits.map(([h, v]) => `<div><h4>${h}</h4><small>${esc(v)}</small></div>`).join('')}</div>` : ''}
           <p class="sc">${tr('No rules effect. Options marked {mark} <b>{place}</b> in later steps are only suggestions.', { mark: ico('mark'), place: esc(p.name) })}</p></div>`,
         `<div class="cards regions">${(window.PEOPLES || []).map(x => `<button class="card region-card${x.id === st.people ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="people" data-id="${x.id}"${tip(`${tipImg('race-' + (PEOPLE_SLOT[x.id] || x.id))}<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.sigil)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
     };
