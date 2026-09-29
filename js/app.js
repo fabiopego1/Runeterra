@@ -84,7 +84,7 @@
     // Saves from before the People chapter: every chapter after the welcome moved one place down.
     if (!('people' in s) && out.maxStep >= 1) out.maxStep += 1;
     // A save that never left the intro has not really started: open it on the default method (Construído).
-    if (out.step === 'intro' && !out.maxStep && !out.region) out.method = 'constructed';
+    out.method = 'constructed';   // the Guided method (rolling for options) is no longer offered
     return out;
   }
   function save() { try { localStorage.setItem(STORE, JSON.stringify(st)); } catch (e) { /* ignore */ } }
@@ -809,14 +809,6 @@
         </div>
       </section>
       <section class="tp-start">
-        <div class="tp-method">
-          <div class="tp-method-l">${tr('Choose how fate is decided')}</div>
-          <div class="tp-options" role="radiogroup" aria-label="${tr('Creation method')}">
-            <button class="tp-option${st.method === 'constructed' ? ' on' : ''}" role="radio" aria-checked="${st.method === 'constructed'}" data-act="method" data-m="constructed"><span class="tp-o-t">${tr('Constructed')}</span><span class="tp-o-d">${tr('Pick freely to build the champion you already imagine. Same dice, your choice.')}</span></button>
-            <button class="tp-option${st.method === 'guided' ? ' on' : ''}" role="radio" aria-checked="${st.method === 'guided'}" data-act="method" data-m="guided"><span class="tp-o-t">${tr('Guided')}</span><span class="tp-o-d">${tr('Roll the dice at every chapter and choose among the paths they open. Let the Runes decide.')}</span></button>
-          </div>
-          <p class="tp-small tp-which">${tr('<b>New to the game?</b> Pick <b>Constructed</b>. You can switch at any time; progress is kept in this browser.')}</p>
-        </div>
         <div class="tp-go">
           <button class="btn primary" data-act="next"><span class="btn-kicker">${tr('Chapter I')}</span>${tr('Begin the chronicle')} ${ico('next')}</button></div>
       </section>
@@ -927,7 +919,7 @@
     const i = stepIndex(st.step);
     return `<header class="chapter"><div class="chapter-num" aria-hidden="true">${ROMAN[i]}</div>
       <div class="chapter-titles"><div class="chapter-kicker">${tr('Chapter')} ${ROMAN[i]} <span>${tr('of {n}', { n: ROMAN[STEPS.length - 1] })}</span></div><h2 class="chapter-title">${esc(title)}</h2></div>
-      <div class="chapter-tools">${window.TOUR && window.TOUR[st.step] ? `<button class="btn small ghost guide-btn" data-act="tourShow">${ico('codex')} ${tr('Guide')}</button>` : ''}${withMethod ? methodToggle() : ''}</div></header>`;
+      <div class="chapter-tools">${window.TOUR && window.TOUR[st.step] ? `<button class="btn small ghost guide-btn" data-act="tourShow">${ico('codex')} ${tr('Guide')}</button>` : ''}</div></header>`;
   };
   const stepPanel = (eyebrow, title, introKey, body, withMethod) => `<div class="panel">${chapterHead(title, withMethod)}
       <p class="chapter-lede">${window.STEP_INTROS[introKey]}</p>${body}${navFooter()}</div>`;
@@ -1664,7 +1656,6 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     return `<div class="step-footer"><div class="footer-left"><button class="btn ghost" data-act="back">${ico('prev')} ${tr('Back')}</button><button class="btn small change-btn change-last" data-act="changeLast" hidden>${ico('reset')} ${tr('Change last choice')}</button></div>
       <div class="next-wrap"><button class="btn primary${ready ? '' : ' is-disabled'}" data-act="next" aria-disabled="${!ready}"><span class="btn-kicker">${next ? tr('Chapter') + ' ' + ROMAN[i + 1] : ''}</span>${next ? esc(next.name) : tr('Next')} ${ico('next')}</button></div></div>`;
   }
-  const methodToggle = () => `<div class="method" role="group" aria-label="${tr('Creation method')}"${tip(tr('<h5>Guided vs Constructed</h5>Guided: roll and choose among the allowed entries. Constructed: pick freely. Die sizes work the same either way.'))}><span class="method-l">${tr('Method')}</span><button class="${st.method === 'constructed' ? 'on' : ''}" data-act="method" data-m="constructed" aria-pressed="${st.method === 'constructed'}">${tr('Constructed')}</button><button class="${st.method === 'guided' ? 'on' : ''}" data-act="method" data-m="guided" aria-pressed="${st.method === 'guided'}">${tr('Guided')}</button></div>`;
 
   // ------------------------------------------------------------------ nav + side
   function renderNav() {
@@ -1775,8 +1766,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       <h4>${s[0]}</h4><div class="tour-body">${s[1]}</div>
       <div class="tour-row">${k ? `<button type="button" class="btn small ghost" data-act="tourPrev">${ico('prev')} ${tr('Back')}</button>` : ''}
         ${k < n - 1 ? `<button type="button" class="btn small primary" data-act="tourNext">${tr('Next')} ${ico('next')}</button><button type="button" class="linkbtn" data-act="tourOk">${tr('Skip')}</button>`
-          : `<button type="button" class="btn small primary" data-act="tourOk">${tr('Got it')}</button>`}
-        <button type="button" class="linkbtn tour-off" data-act="tourOff">${tr('Turn the guide off')}</button></div></div>`;
+          : `<button type="button" class="btn small primary" data-act="tourOk">${tr('Got it')}</button>`}</div></div>`;
     const t = tourTarget(s[2]);
     if (t) {
       const r = t.getBoundingClientRect();
@@ -1965,7 +1955,6 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
     if (act === 'expand' || act === 'collapse') { ui.expand[el.dataset.key] = act === 'expand'; render(); return; }
     if (act === 'jump') { const t = document.getElementById(el.dataset.target); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
-    if (act === 'method') { st.method = el.dataset.m; render(); return; }
     if (act === 'roll') {
       const key = el.dataset.key;
       if (el.dataset.re) st.rerolls[key] = (st.rerolls[key] || 0) + 1;
@@ -2023,7 +2012,6 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     if (act === 'tourOk') { ui.tourForce = false; ui.tourIdx = 0; st.tour.seen[st.step] = true; save(); showTour(); return; }
     if (act === 'tourNext') { ui.tourIdx = (ui.tourIdx || 0) + 1; showTour(); return; }
     if (act === 'tourPrev') { ui.tourIdx = Math.max(0, (ui.tourIdx || 0) - 1); showTour(); return; }
-    if (act === 'tourOff') { ui.tourForce = false; ui.tourIdx = 0; st.tour.on = false; save(); showTour(); return; }
     if (act === 'tourShow') { ui.tourForce = true; ui.tourIdx = 0; showTour(); return; }
     if (act === 'tourOn') { st.tour = { on: true, seen: {} }; save(); if (SHEET_PAGE) location.href = 'index.html'; else showTour(); return; }
     if (act === 'sheetTab') {

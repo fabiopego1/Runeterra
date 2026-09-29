@@ -314,7 +314,7 @@
       <table class="cs-table"><tbody>
         <tr><td><b>Visual</b></td><td>Novo traje, alcunha, cabelo. Livre, sem pedir permissão, mas vale pensar no motivo.</td></tr>
         <tr><td><b>Detalhes</b></td><td>Trocar um poder ou qualidade por outro do <b>mesmo dado</b> (as habilidades passam a usar o novo), trocar um princípio, ou trocar uma habilidade por outra da <b>mesma cor</b>, das mesmas listas da criação, usando o mesmo poder ou qualidade.</td></tr>
-        <tr><td><b>Reescrita</b></td><td>Quando muita coisa mudou: refaça a criação pelo método Construído, mantendo a história e as coleções.</td></tr></tbody></table>
+        <tr><td><b>Reescrita</b></td><td>Quando muita coisa mudou: refaça a criação, mantendo a história e as coleções.</td></tr></tbody></table>
       <p>No site, tudo isso fica na aba <a href="ficha.html#evoluir">Evoluir campeão</a> da página Ficha, com histórico das mudanças. Mudanças também podem acontecer no meio de uma coleção, se a história pedir.</p>` },
 
     { id: 'example', group: MESTRE, title: 'Exemplo de jogo: fumaça nas docas do Entresol', nav: 'Exemplo de jogo', body: `

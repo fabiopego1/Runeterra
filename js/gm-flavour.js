@@ -40,7 +40,6 @@
     ['Rp quality ("high concept")', 'Qualidade Marcante', 'Conceito central do herói'],
     ['Issue / Back Issues', 'Edição / Edições Anteriores', 'Sessões de jogo'],
     ['Collection', 'Coleção', 'Arco da campanha; é quando o herói evolui'],
-    ['Guided / Constructed', 'Guiado / Construído', 'Métodos de criação'],
     ['GM', 'Mestre', '']
   ];
 
