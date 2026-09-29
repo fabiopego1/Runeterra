@@ -1368,9 +1368,7 @@ a.brand, a.hbtn { text-decoration: none; }
 @media (max-width: 900px) { .status-explain { grid-template-columns: minmax(0, 1fr); } }
 
 /* Guided tour popup (new champions) */
-.tour-veil { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 16px; background: rgba(4, 6, 10, .72); backdrop-filter: blur(2px); animation: veil-in .25s ease-out; }
-@keyframes veil-in { from { opacity: 0; } to { opacity: 1; } }
-.tour { position: relative; width: min(620px, 100%); max-height: calc(100vh - 48px); overflow-y: auto; background: var(--ink-2); border: 1px solid var(--gold); box-shadow: var(--shadow), 0 0 0 4px rgba(200, 164, 94, .12); padding: 16px 18px 14px; animation: hint-in .3s ease-out; }
+.tour { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(400px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow-y: auto; z-index: 2; pointer-events: auto; background: var(--ink-2); border: 1px solid var(--gold); box-shadow: var(--shadow), 0 0 0 4px rgba(200, 164, 94, .12); padding: 16px 18px 14px; animation: tour-in .25s ease-out; }
 .tour-k { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
 .tour-k .ico { width: 12px; height: 12px; }
 .tour-k span { margin-left: auto; color: var(--text-3); }
@@ -1379,10 +1377,8 @@ a.brand, a.hbtn { text-decoration: none; }
 .tour p b { color: var(--text); }
 .tour-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .tour .linkbtn { font-size: .82rem; color: var(--text-3); }
-.tour-focus { outline: 2px solid var(--gold); outline-offset: 6px; animation: tour-glow 1.6s ease-in-out 2; }
-@keyframes tour-glow { 50% { outline-color: transparent; } }
-@media print { .tour-veil { display: none !important; } .tour-focus { outline: 0; } }
-@media (prefers-reduced-motion: reduce) { .tour, .tour-veil, .tour-focus { animation: none; } }
+@media print { .tour-layer { display: none !important; } }
+@media (prefers-reduced-motion: reduce) { .tour, .tour-spot { animation: none !important; transition: none !important; } }
 .tour .btn.primary { font: 600 .74rem var(--font-ui); letter-spacing: .12em; text-transform: uppercase; padding: 8px 16px; margin: 0; }
 .status-explain p b { color: var(--text); }
 
@@ -1414,3 +1410,23 @@ html, body { overflow-x: clip; }
 /* Region / people art at the top of their tooltip */
 #tip:has(.tip-img) { width: 360px; }
 #tip .tip-img { display: block; width: calc(100% + 26px); height: 150px; margin: -10px -13px 10px; object-fit: cover; border-bottom: 1px solid var(--gold-lo); }
+
+/* Guide: spotlight on the element being explained, popup beside it */
+.tour-layer { position: fixed; inset: 0; z-index: 70; pointer-events: auto; }
+.tour-layer.no-target { background: rgba(4, 6, 10, .72); }
+.tour-layer.no-target .tour-spot { display: none; }
+.tour-spot { position: fixed; border-radius: 6px; pointer-events: none; box-shadow: 0 0 0 9999px rgba(4, 6, 10, .74), 0 0 0 3px var(--gold-hi), 0 0 28px 6px rgba(240, 206, 120, .55); transition: left .25s, top .25s, width .25s, height .25s; animation: spot-pulse 1.6s ease-in-out infinite; }
+@keyframes spot-pulse { 50% { box-shadow: 0 0 0 9999px rgba(4, 6, 10, .74), 0 0 0 3px var(--gold-hi), 0 0 42px 12px rgba(240, 206, 120, .8); } }
+.tour-layer:not(.no-target) .tour { transform: none; }
+.tour-dots { display: flex; gap: 5px; margin: 8px 0 2px; }
+.tour-dots i { width: 18px; height: 3px; background: var(--line-2); }
+.tour-dots i.past { background: var(--gold-lo); }
+.tour-dots i.on { background: var(--gold-hi); }
+.tour-ex { display: block; margin-top: 10px; padding: 8px 10px; border-left: 2px solid var(--gold); background: rgba(200, 164, 94, .08); font-size: .88rem; color: var(--text); }
+.tour-ex::before { content: 'Exemplo'; display: block; font: 600 .56rem var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--gold); margin-bottom: 3px; }
+.tour-row .tour-off { margin-left: auto; font-size: .74rem; }
+@media (max-width: 699px) {
+  .tour-layer:not(.no-target) .tour { left: 12px !important; right: 12px; top: auto !important; bottom: 12px; width: auto; max-height: 48vh; }
+}
+@keyframes tour-in { from { opacity: 0; } }
+@media (max-width: 699px) { body.tour-open { padding-bottom: 60vh; } }

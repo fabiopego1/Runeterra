@@ -289,42 +289,76 @@
 
 
   // Guia da criação: [título, texto, seletor do que destacar]. Aparece uma vez por capítulo para um campeão novo.
-  // Guia (popup): aparece uma vez por capítulo para um campeão novo e reabre pelo botão "Guia" do capítulo.
-  // Concentra as explicações e o passo a passo; a página mostra só o título, uma frase e as escolhas.
+  // Guia: etapas curtas por capítulo, cada uma apontando para uma parte da página: [título, texto, seletor].
+  // Sem seletor, o popup aparece no centro. Reabre pelo botão "Guia" ao lado do título do capítulo.
   W.TOUR = {
-    intro: ['Bem-vindo à Forja', `<p>Você vai montar a <b>ficha de um herói</b> para jogar com seu grupo e um <b>Mestre</b>, que narra a história. Não precisa saber as regras nem conhecer Runeterra.</p>
-      <h5>Como funciona</h5><ol><li>São <b>dez capítulos</b>, na lista à esquerda. Cada um abre quando o anterior termina.</li><li>Em cada capítulo, este <b>Guia</b> explica o que fazer. Para reabri-lo, use o botão <b>Guia</b> ao lado do título.</li><li>Passe o mouse no que estiver <b>sublinhado</b> ou num cartão para ler a explicação.</li><li>Tudo fica salvo neste navegador, e o menu <b>Arquivo</b> exporta o campeão.</li></ol>
-      <h5>Como escolher o método</h5><p><b>Construído</b>: você escolhe tudo livremente. <b>Guiado</b>: você rola dados e escolhe entre as opções que eles liberam. Na dúvida, fique com Construído.</p>`, '.tp-options'],
-    people: ['Capítulo I: Povo', `<p>Escolha de que <b>povo</b> seu campeão é. É <b>só cosmético</b>: não muda nenhum número.</p>
-      <h5>Por que escolher</h5><p>O povo e a terra natal servem para <b>sugerir</b> escolhas. Nos capítulos seguintes, o que combina com eles ganha a marca <b>✦</b>. Você pode ignorar as sugestões à vontade.</p>
-      <h5>Como fazer</h5><ol><li>Passe o mouse nos cartões para ler sobre cada povo.</li><li>Clique no escolhido e depois em <b>Terra Natal</b>, embaixo.</li></ol>`, '.cards.regions'],
-    region: ['Capítulo II: Terra Natal', `<p>Escolha a <b>região</b> de onde seu campeão vem. Também é só cosmético.</p>
-      <h5>Não conhece Runeterra?</h5><p>Cada região tem um cartão com um resumo. Ao clicar, aparecem a história, campeões famosos de lá e o que combina com ela. O botão <b>Lore</b>, no topo, conta a história do mundo inteiro.</p>
-      <h5>Como fazer</h5><ol><li>Leia os cartões e clique numa região.</li><li>Siga para <b>Origem</b>.</li></ol>`, '.cards.regions'],
-    background: ['Capítulo III: Origem', `<p>Quem seu campeão era <b>antes</b> de ter poderes. Daqui em diante as escolhas viram números.</p>
-      <h5>O que você precisa saber</h5><ul><li><b>Qualidades</b> são o que você sabe fazer: lutar, convencer, investigar. <b>Poderes</b> são o que te torna extraordinário.</li><li>Cada uma tem um <b>dado</b>: d6 é bom, d8 ótimo, d10 excelente, d12 lendário.</li><li>O <b>princípio</b> é aquilo em que você acredita. Agir de acordo com ele rende <b>pontos de herói</b> para o grupo.</li></ul>
-      <h5>Como fazer</h5><ol><li>Clique numa <b>Origem</b> (passe o mouse para ver o que cada uma dá).</li><li>Ligue cada <b>dado</b> a uma qualidade: clique no dado e escolha na lista.</li><li>Escolha seu <b>primeiro princípio</b>.</li></ol>`, ''],
-    powersource: ['Capítulo IV: Fonte de Poder', `<p>O que <b>transformou</b> seu campeão: magia, hextec, um espírito, treino extremo.</p>
-      <h5>O que você precisa saber</h5><ul><li><b>Habilidades</b> são os golpes e truques especiais. A cor diz quando ficam disponíveis: <b>Verdes</b> sempre, <b>Amarelas</b> quando a luta aperta, <b>Vermelhas</b> quando você está por um fio.</li><li>A letra diz o tipo: <b>A</b> ação no seu turno, <b>R</b> reação fora do turno, <b>I</b> sempre ativa.</li><li><b>[poder]</b> no texto de uma habilidade é o poder que você escolhe para ela usar.</li></ul>
-      <h5>Como fazer</h5><ol><li>Clique numa <b>Fonte de Poder</b>.</li><li>Ligue cada dado a um <b>poder</b>. Quanto maior o dado, melhor você é naquilo.</li><li>Se houver <b>Bônus especial</b>, resolva-o.</li><li>Marque as habilidades <b>Amarelas</b> e escolha o poder que cada uma usa.</li></ol>
-      <p>A <b>Arma</b> e a <b>Montaria Emblemática</b> ganham nome próprio no capítulo Lenda.</p>`, ''],
-    archetype: ['Capítulo V: Caminho', `<p>O <b>estilo de luta</b> do seu campeão, parecido com as funções de League of Legends: tanque, atirador, mago, assassino. Os campeões nos cartões são só exemplos.</p>
-      <h5>Como fazer</h5><ol><li>Clique num <b>Caminho</b>.</li><li>Ligue os dados: leia as <b>regras acima dos dados</b>, porque cada Caminho exige coisas diferentes (por exemplo, um dado para uma qualidade específica).</li><li>Marque as habilidades <b>Verdes</b> (e a Amarela, se houver) e escolha o que cada uma usa.</li><li>Escolha seu <b>segundo princípio</b>, diferente do primeiro.</li></ol>
-      <p><b>Duas Almas</b> e <b>Mestre das Posturas</b> são avançados: evite na primeira vez.</p>`, ''],
-    personality: ['Capítulo VI: Temperamento', `<p>Como seu campeão reage <b>sob pressão</b>.</p>
-      <h5>Os três dados de cada cartão</h5><p>São os <b>dados de status</b>. Toda rolagem junta um poder, uma qualidade e um deles. Qual deles depende da sua Vida: <b>Verde</b> enquanto está inteiro, <b>Amarelo</b> quando começa a se machucar, <b>Vermelho</b> quando está por um fio.</p>
-      <ul><li><b>Cresce sob pressão</b> (d6, d8, d10): modesto no começo, perigoso quando tudo dá errado.</li><li><b>Constante</b>: o mesmo dado sempre.</li><li><b>Forte no começo</b> (d10, d8, d6): bate forte cedo e enfraquece sob pressão.</li></ul>
-      <h5>Como fazer</h5><ol><li>Clique num <b>Temperamento</b>, pelo jeito do herói ou pelos dados.</li><li>Escreva a <b>Qualidade Marcante</b>: uma frase livre que resume seu herói, como <em>Última Lâmina da Guarda de Ferro</em>. Ela vale como uma qualidade d8.</li><li>Escolha o que a habilidade de <b>Nocaute</b> usa: é o que você ainda faz depois de cair.</li></ol>`, ''],
-    red: ['Capítulo VII: Supremas', `<p>Suas duas habilidades <b>Vermelhas</b>: as mais fortes, liberadas só quando sua Vida chega à <b>Zona Vermelha</b>.</p>
-      <h5>Como fazer</h5><ol><li>As habilidades estão agrupadas por <b>categoria</b>. Só aparecem as categorias em que você tem um poder ou qualidade <b>d6 ou maior</b>.</li><li>Marque <b>duas</b> habilidades.</li><li>Em cada uma, escolha o <b>poder ou qualidade</b> que ela usa.</li></ol>`, ''],
-    retcon: ['Capítulo VIII: Reviravolta do Destino', `<p>Uma chance de <b>corrigir</b> algo que ficou estranho na ficha: trocar dados de lugar, ganhar um d6 novo, trocar um princípio.</p>
-      <h5>Como fazer</h5><ol><li>Passe o mouse nas opções para ver o que cada uma muda.</li><li>Clique em <b>uma</b> e preencha os detalhes, se houver.</li></ol><p>Na dúvida, <b>Talento Oculto</b> (um poder ou qualidade d6 novo) é a mais simples.</p>`, ''],
-    health: ['Capítulo IX: Vida', `<p>Quanto <b>dano</b> seu campeão aguenta.</p>
-      <h5>As zonas</h5><p>Quando você leva dano, a Vida cai e você muda de zona: <b>Verde</b>, <b>Amarela</b> e <b>Vermelha</b>. Cada zona libera habilidades e troca seu dado de status. Em <b>0</b> você está fora de combate e usa o <b>Nocaute</b>.</p>
-      <h5>Como fazer</h5><ol><li>A Forja já faz a conta: 8 + o dado Vermelho + um poder ou qualidade.</li><li>Escolha qual <b>poder ou qualidade</b> entra na conta (o maior já vem marcado).</li><li>Decida <b>antes</b>: pegar <b>4</b> fixo ou <b>rolar um d8</b>. Se rolar, pode rolar de novo <b>uma vez</b>.</li></ol>`, ''],
-    finish: ['Capítulo X: Lenda', `<p>Nome, aparência e história. Só o <b>nome</b> é obrigatório; o resto pode ser preenchido em qualquer ordem.</p>
-      <h5>Dicas</h5><ul><li>Dê às habilidades e à Arma Emblemática <b>nomes próprios</b>, como os de um campeão: "Golpe Duplo" pode virar "Dança das Lâminas". Deixe vazio para manter o nome original.</li><li>As <b>perguntas do Guia de Lore</b>, ao lado da biografia, ajudam a escrever a história. Clique numa para copiá-la.</li><li>O retrato vai para a ficha e para o PDF; a biografia vai para a página 3 da ficha.</li></ul>
-      <h5>Na mesa</h5><p>Exporte o <b>PDF</b> ou abra a página <b>Ficha</b>: nela, os botões <b>− e +</b> da Vida mudam sua zona, acendem o dado de status certo e liberam as habilidades.</p>`, '']
+    intro: [
+      ['Bem-vindo à Forja', 'Aqui você monta a <b>ficha de um herói</b> para jogar RPG com amigos. Um <b>Mestre</b> narra a história; cada jogador decide o que o seu herói faz.', ''],
+      ['A crônica', 'A criação tem <b>dez capítulos</b>, listados aqui. Cada um abre quando o anterior termina.', '.steps-nav || .rail'],
+      ['Como se rola', 'Para agir, você rola <b>três dados</b>: um <b>poder</b>, uma <b>qualidade</b> e um <b>dado de status</b>. Depois os ordena em <b>Mín</b>, <b>Médio</b> e <b>Máx</b>. O <b>Médio</b> costuma ser o resultado.<span class="tour-ex">Você rola d10, d8 e d6 e tira 7, 3 e 5. Mín = 3, Médio = 5, Máx = 7.</span>', ''],
+      ['Construído ou Guiado', '<b>Construído</b>: você escolhe tudo. <b>Guiado</b>: você rola e escolhe entre o que os dados liberam. Na dúvida, fique com Construído.', '.tp-options'],
+      ['Lore e Regras', 'Não conhece Runeterra? O <b>Lore</b> conta a história do mundo. As <b>Regras</b> resumem o jogo para a mesa.', '.tp-links'],
+      ['Começar', 'Clique aqui para abrir o Capítulo I. O guia volta em cada capítulo, e o botão <b>Guia</b> ao lado do título o reabre.', '.tp-go .btn']
+    ],
+    people: [
+      ['Povo', 'De que povo seu campeão é. É <b>só cosmético</b>: não muda nenhum número.', '.cards.regions'],
+      ['Conheça cada povo', 'Passe o mouse num cartão para ver a <b>arte</b> e um resumo.<span class="tour-ex">Yordles vivem em Bandópolis e são muito mais perigosos do que parecem.</span>', '.cards.regions .region-card'],
+      ['Sugestões ✦', 'O que combina com seu povo ganha a marca <b>✦</b> nos próximos capítulos. São só sugestões: escolha o que quiser.', ''],
+      ['Seguir em frente', 'Escolha um povo e clique aqui. O botão fica apagado enquanto falta algo no capítulo.', '.step-footer [data-act=next]']
+    ],
+    region: [
+      ['Terra Natal', 'A região onde seu campeão cresceu. Também é <b>só cosmético</b>.', '.cards.regions'],
+      ['Conheça o mundo', 'Passe o mouse numa região para ver a arte e os campeões de lá. O <b>Lore</b> conta a história completa.', 'a.hbtn[href="lore.html"]'],
+      ['Voltar e trocar', '<b>Voltar</b> leva ao capítulo anterior. <b>Trocar última escolha</b> desfaz a última decisão.', '.step-footer .footer-left']
+    ],
+    background: [
+      ['Origem', 'Quem seu campeão era <b>antes</b> dos poderes. A partir daqui as escolhas viram números.', '.chapter'],
+      ['Qualidades e poderes', '<b>Qualidades</b> são o que você sabe fazer. <b>Poderes</b> são o que te torna extraordinário. Cada um tem um <b>dado</b>.<span class="tour-ex">Combate Corpo a Corpo d10 (qualidade), Voo d8 (poder).</span>', ''],
+      ['Tamanho do dado', '<b>d6</b> é bom, <b>d8</b> ótimo, <b>d10</b> excelente, <b>d12</b> lendário. Dado maior tira número maior.', ''],
+      ['Escolha uma Origem', 'Passe o mouse num cartão para ver as <b>qualidades</b>, o <b>princípio</b> e os <b>dados</b> que ela dá.', '.cards || #flow-background-pick'],
+      ['Ligue os dados', 'Depois de escolher, clique num <b>dado</b> e escolha a qualidade que ele vira.', '#flow-background-assign'],
+      ['Princípio', 'Aquilo em que seu herói acredita. Agir de acordo com ele rende <b>pontos de herói</b>, que melhoram rolagens.<span class="tour-ex">Princípio da Honra: você cumpre sua palavra mesmo quando custa caro.</span>', '#flow-background-principle']
+    ],
+    powersource: [
+      ['Fonte de Poder', 'O que <b>transformou</b> seu campeão: magia, hextec, um espírito, treino extremo.', '.cards || #flow-powersource-pick'],
+      ['Poderes', 'Cada dado que a Origem deu vira um <b>poder</b>. Quanto maior o dado, melhor você é naquilo.', '#flow-powersource-assign'],
+      ['Habilidades', 'Golpes e truques especiais. A <b>cor</b> diz quando ficam liberadas: <b>Verde</b> sempre, <b>Amarela</b> quando a luta aperta, <b>Vermelha</b> por um fio.', '[id^="flow-powersource-g-"]'],
+      ['Tipos de habilidade', '<b>A</b> é uma ação no seu turno. <b>R</b> é uma reação, fora do turno. <b>I</b> fica sempre ativa.<span class="tour-ex">Campo Reativo (R): quem te ataca de perto sofre o mesmo dano.</span>', '[id^="flow-powersource-g-"]'],
+      ['As seis ações', 'Toda ação é uma de seis: <b>Atacar</b>, <b>Defender</b>, <b>Superar</b> um obstáculo, <b>Fortalecer</b> um aliado, <b>Atrapalhar</b> um inimigo e <b>Recuperar</b> Vida.', '']
+    ],
+    archetype: [
+      ['Caminho', 'Seu <b>estilo de luta</b>, como as funções de League of Legends: tanque, atirador, mago. Os campeões nos cartões são exemplos.', '.cards || #flow-archetype-pick'],
+      ['Regras do Caminho', 'Cada Caminho tem regras para os dados. Leia a lista acima deles.<span class="tour-ex">Duelista: um dado precisa ir para Combate Corpo a Corpo.</span>', '#flow-archetype-assign'],
+      ['Habilidades Verdes', 'Sempre disponíveis. Em cada uma, escolha o <b>poder ou qualidade</b> que ela usa.', '[id^="flow-archetype-g-"]'],
+      ['Segundo princípio', 'Precisa ser <b>diferente</b> do primeiro.', '#flow-archetype-principle']
+    ],
+    personality: [
+      ['Temperamento', 'Como seu campeão reage <b>sob pressão</b>.', '.cards || #flow-personality-pick'],
+      ['Dados de status', 'Os três dados de cada cartão. Um deles entra em <b>toda rolagem</b>: o <b>Verde</b> enquanto você está inteiro, o <b>Amarelo</b> ferido, o <b>Vermelho</b> por um fio.', '.card .status-row'],
+      ['Tendência', '<b>Cresce sob pressão</b>: perigoso quando tudo dá errado. <b>Forte no começo</b>: bate forte cedo. <b>Constante</b>: nunca muda.', '.card .status-trend'],
+      ['Qualidade Marcante', 'Uma frase que resume seu herói. Vale como uma qualidade <b>d8</b>.<span class="tour-ex">Última Lâmina da Guarda de Ferro.</span>', '#flow-personality-qname'],
+      ['Nocaute', 'Com a Vida em 0 você cai, mas ainda faz uma coisa por turno: a habilidade de <b>Nocaute</b>.', '#flow-personality-out || #flow-personality-qname || .cards']
+    ],
+    red: [
+      ['Supremas', 'Suas duas habilidades <b>Vermelhas</b>: as mais fortes, liberadas só na <b>Zona Vermelha</b>.', '.chapter'],
+      ['Escolha duas', 'Só aparecem categorias em que você tem algo <b>d6 ou maior</b>. Marque <b>duas</b> e escolha o que cada uma usa.', '.flow-sec.current'],
+      ['Palavras sublinhadas', 'Passe o mouse para ler a regra.<span class="tour-ex">Dado Máx: o maior dos três dados que você rolou.</span>', '.flow-sec.current .term']
+    ],
+    retcon: [
+      ['Reviravolta do Destino', 'Uma chance de <b>corrigir</b> algo na ficha antes de jogar. Escolha <b>uma</b> opção.', '.principles'],
+      ['Na dúvida', '<b>Talento Oculto</b> dá um poder ou qualidade <b>d6</b> novo. É a opção mais simples.', '.principles [data-id="add-d6"]']
+    ],
+    health: [
+      ['Vida', 'Quanto <b>dano</b> seu campeão aguenta. A Forja faz a conta.', '.flow-sec'],
+      ['Zonas', 'Conforme a Vida cai, você passa de <b>Verde</b> para <b>Amarela</b> e <b>Vermelha</b>. Cada zona libera habilidades e troca o dado de status.<span class="tour-ex">Com Vida 30: Verde de 30 a 23, Amarela de 22 a 12, Vermelha de 11 a 1.</span>', '.hs-health'],
+      ['Fixo ou rolado', 'Decida <b>antes</b>: ficar com <b>4</b> ou rolar um <b>d8</b>. Rolando, dá para rolar de novo <b>uma vez</b>.', '.flow-body .method']
+    ],
+    finish: [
+      ['Nome', 'Só o <b>nome</b> é obrigatório. O resto pode ser preenchido em qualquer ordem.', '#flow-finish-name'],
+      ['História', 'Clique numa pergunta do <b>Guia de Lore</b> para usá-la na biografia.', '.bio-guide'],
+      ['Nomes próprios', 'Renomeie as habilidades como as de um campeão. Deixe vazio para manter o original.<span class="tour-ex">Golpe Duplo vira Dança das Lâminas.</span>', '#flow-finish-abilities'],
+      ['Na mesa', 'Exporte o <b>PDF</b> ou abra a página <b>Ficha</b>: os botões − e + da Vida mudam sua zona e liberam as habilidades.', '.sheet-cta || .export-row']
+    ]
   };
 
   W.STEP_INTROS = {

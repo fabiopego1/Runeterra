@@ -87,7 +87,11 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await next();
     ok(await p.$$eval('.status-trend', e => e.length) > 10, 'Temperament tags each card with how its status dice change');
     await p.click('[data-act=tourShow]');
-    ok(await p.$eval('#tour .tour-body', e => e.textContent.includes('dados de status')), 'the Guide button reopens the chapter guide, which explains the status dice');
+    await p.click('#tour [data-act=tourNext]');
+    ok(await p.$eval('#tour h4', e => e.textContent.includes('Dados de status')), 'the Guide button reopens the chapter guide, whose steps explain the status dice');
+    ok(await p.$eval('#tour', e => !e.classList.contains('no-target')) && await p.$eval('#tour .tour-spot', e => e.getBoundingClientRect().width > 0), 'the guide step highlights the part of the page it talks about');
+    await p.click('#tour [data-act=tourPrev]');
+    ok(await p.$eval('#tour h4', e => e.textContent.includes('Temperamento')), 'the guide can go back a step');
     await p.click('[data-act=tourOk]');
     await p.click('[data-kind=pers][data-id=decisive]');
     await p.fill('input[data-bind="pers.qname"]', 'Dom dos Imaginais'); await p.press('input[data-bind="pers.qname"]', 'Enter'); await p.waitForTimeout(100);

@@ -216,6 +216,7 @@ Object.assign(window.I18N.ui, {
  "<b>Any number of dice</b> (even none) go to powers.": "<b>Qualquer quantidade de dados</b> (até nenhum) vai para poderes.",
  "<b>One or more dice</b> go to powers.": "<b>Um ou mais dados</b> vão para poderes.",
  "Every die left over goes to qualities.": "Todo dado que sobrar vai para qualidades.",
+ "Skip": "Pular",
  "Unknown ability": "Habilidade desconhecida",
  "{cat} power": "poder de {cat}",
  "{cat} quality": "qualidade de {cat}",

@@ -886,7 +886,7 @@
         (state === 'current' && i === cur ? `<span class="flow-here">${tr('You are here')}</span>` : '') +
         (state === 'done' ? `<span class="flow-state">${tr('Done')}</span>` : '') +
         (state === 'locked' ? `<span class="flow-lock">${tr('Sealed — finish the step above')}</span>` : '') + '</div>';
-      if (state === 'locked') return `<section class="flow-sec locked">${head}</section>`;
+      if (state === 'locked') return `<section class="flow-sec locked" id="flow-${stepId}-${s.id}">${head}</section>`;
       const fn = H[s.id] || (s.group && H.group) || null;
       const body = fn ? fn(s) : '';
       const todo = state === 'current' && s.issues.length ? `<div class="flow-todo"><span class="flow-todo-l">${tr('Still to do')}</span><ul>${s.issues.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
@@ -1736,21 +1736,65 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       </main></div>`;
   }
   // Guided tour: the first time a new champion reaches a chapter, a short popup explains it and the key area glows.
+  // The guide: a few short steps per chapter. Each step points at a part of the page (a highlighted
+  // "spotlight" with the popup beside it); steps without a target show the popup in the middle.
+  const tourTarget = sel => {
+    // "a || b": try a first, then b (a comma list would pick whichever comes first in the page)
+    for (const one of (sel || '').split('||').map(x => x.trim()).filter(Boolean))
+      for (const e of document.querySelectorAll(one)) { const r = e.getBoundingClientRect(); if (r.width > 0 && r.height > 0) return e; }
+    return null;
+  };
+  function placeTour() {
+    const box = document.getElementById('tour');
+    if (!box) return;
+    const steps = (window.TOUR || {})[st.step] || [], s = steps[ui.tourIdx || 0];
+    const spot = box.querySelector('.tour-spot'), pop = box.querySelector('.tour');
+    const t = s && tourTarget(s[2]);
+    box.classList.toggle('no-target', !t);
+    if (!t) { pop.style.left = pop.style.top = ''; return; }
+    const pad = 8, vw = innerWidth, vh = innerHeight, r = t.getBoundingClientRect();
+    const R = { left: r.left - pad, top: r.top - pad, width: r.width + pad * 2, height: r.height + pad * 2 };
+    Object.assign(spot.style, { left: R.left + 'px', top: R.top + 'px', width: R.width + 'px', height: R.height + 'px' });
+    if (vw < 700) { pop.style.left = pop.style.top = ''; return; }   // phones: the popup is a bottom sheet (CSS)
+    const pw = pop.offsetWidth, ph = pop.offsetHeight, gap = 16;
+    let x, y;
+    if (R.left + R.width + gap + pw <= vw - 12) { x = R.left + R.width + gap; y = R.top; }            // right of the target
+    else if (R.top + R.height + gap + ph <= vh - 12) { x = R.left; y = R.top + R.height + gap; }     // below
+    else if (R.top - gap - ph >= 12) { x = R.left; y = R.top - gap - ph; }                           // above
+    else if (R.left - gap - pw >= 12) { x = R.left - gap - pw; y = R.top; }                          // left
+    else { x = vw - pw - 12; y = vh - ph - 12; }
+    pop.style.left = Math.max(12, Math.min(x, vw - pw - 12)) + 'px';
+    pop.style.top = Math.max(12, Math.min(y, vh - ph - 12)) + 'px';
+  }
   function showTour() {
-    const T = window.TOUR || {}, t = T[st.step];
-    document.querySelectorAll('.tour-focus').forEach(e => e.classList.remove('tour-focus'));
+    const steps = (window.TOUR || {})[st.step];
     let box = document.getElementById('tour');
     // ui.tourForce: opened from the chapter's Guide button, shown even when the guide is off or already seen
-    if (!t || (!ui.tourForce && (!st.tour || !st.tour.on || st.tour.seen[st.step]))) { if (box) box.remove(); return; }
-    const target = document.querySelector(t[2] || '.flow-sec.current');
-    if (target) target.classList.add('tour-focus');
-    if (!box) { box = document.createElement('div'); box.id = 'tour'; box.className = 'tour-veil'; box.addEventListener('click', ev => { if (ev.target === box) { ui.tourForce = false; st.tour.seen[st.step] = true; save(); showTour(); } }); document.body.appendChild(box); }
+    if (!steps || !steps.length || (!ui.tourForce && (!st.tour || !st.tour.on || st.tour.seen[st.step]))) { if (box) box.remove(); ui.tourIdx = 0; document.body.classList.remove('tour-open'); return; }
+    document.body.classList.add('tour-open');   // phones: room below the page so any target can scroll above the guide
+    const n = steps.length, k = Math.min(ui.tourIdx || 0, n - 1), s = steps[k];
+    if (!box) { box = document.createElement('div'); box.id = 'tour'; box.className = 'tour-layer'; document.body.appendChild(box); }
     const i = stepIndex(st.step);
-    box.innerHTML = `<div class="tour" role="dialog" aria-modal="true" aria-label="${tr('Guide')}"><div class="tour-k">${ico('codex')} ${tr('Guide')} · ${i ? tr('Chapter') + ' ' + ROMAN[i] : esc(STEPS[0].name)}<span>${i + 1}/${STEPS.length}</span></div>
-      <h4>${t[0]}</h4><div class="tour-body">${t[1]}</div>
-      <div class="tour-row"><button type="button" class="btn small primary" data-act="tourOk">${tr('Got it')}</button><button type="button" class="linkbtn" data-act="tourOff">${tr('Turn the guide off')}</button></div></div>`;
-    const ok = box.querySelector('[data-act="tourOk"]'); if (ok && document.activeElement !== ok) ok.focus({ preventScroll: true });
+    box.innerHTML = `<div class="tour-spot" aria-hidden="true"></div><div class="tour" role="dialog" aria-modal="true" aria-label="${tr('Guide')}">
+      <div class="tour-k">${ico('codex')} ${tr('Guide')} · ${i ? tr('Chapter') + ' ' + ROMAN[i] : esc(STEPS[0].name)}<span>${k + 1}/${n}</span></div>
+      <div class="tour-dots">${steps.map((_, j) => `<i class="${j === k ? 'on' : j < k ? 'past' : ''}"></i>`).join('')}</div>
+      <h4>${s[0]}</h4><div class="tour-body">${s[1]}</div>
+      <div class="tour-row">${k ? `<button type="button" class="btn small ghost" data-act="tourPrev">${ico('prev')} ${tr('Back')}</button>` : ''}
+        ${k < n - 1 ? `<button type="button" class="btn small primary" data-act="tourNext">${tr('Next')} ${ico('next')}</button><button type="button" class="linkbtn" data-act="tourOk">${tr('Skip')}</button>`
+          : `<button type="button" class="btn small primary" data-act="tourOk">${tr('Got it')}</button>`}
+        <button type="button" class="linkbtn tour-off" data-act="tourOff">${tr('Turn the guide off')}</button></div></div>`;
+    const t = tourTarget(s[2]);
+    if (t) {
+      const r = t.getBoundingClientRect();
+      if (innerWidth < 700) { if (r.top < 70 || r.bottom > innerHeight * .5) { t.scrollIntoView({ block: 'start' }); scrollBy(0, -80); } }   // phones: above the bottom sheet
+      else if (r.top < 90 || r.bottom > innerHeight - 40) { t.scrollIntoView({ block: r.height > innerHeight * .6 ? 'start' : 'center' }); if (r.height > innerHeight * .6) scrollBy(0, -90); }
+    }
+    placeTour();
+    requestAnimationFrame(placeTour);
+    const go = box.querySelector('[data-act="tourNext"], [data-act="tourOk"]'); if (go && document.activeElement !== go) go.focus({ preventScroll: true });
   }
+  addEventListener('scroll', () => { if (document.getElementById('tour')) requestAnimationFrame(placeTour); }, { passive: true });
+  addEventListener('resize', () => { if (document.getElementById('tour')) placeTour(); });
 
   function render() {
     pendingRender = false;
@@ -1763,7 +1807,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
     flowCurrent = null;
     socketAuto = false;
-    if (lastStep !== st.step) { ui.socket = null; ui.tourForce = false; lastStep = st.step; }
+    if (lastStep !== st.step) { ui.socket = null; ui.tourForce = false; ui.tourIdx = 0; lastStep = st.step; }
     const rg = regionDef();
     document.body.dataset.region = rg ? rg.id : '';
     document.body.style.setProperty('--region', rg ? rg.color : '');
@@ -1982,9 +2026,11 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       el.classList.add('used');
       return;
     }
-    if (act === 'tourOk') { ui.tourForce = false; st.tour.seen[st.step] = true; save(); showTour(); return; }
-    if (act === 'tourOff') { ui.tourForce = false; st.tour.on = false; save(); showTour(); return; }
-    if (act === 'tourShow') { ui.tourForce = true; showTour(); return; }
+    if (act === 'tourOk') { ui.tourForce = false; ui.tourIdx = 0; st.tour.seen[st.step] = true; save(); showTour(); return; }
+    if (act === 'tourNext') { ui.tourIdx = (ui.tourIdx || 0) + 1; showTour(); return; }
+    if (act === 'tourPrev') { ui.tourIdx = Math.max(0, (ui.tourIdx || 0) - 1); showTour(); return; }
+    if (act === 'tourOff') { ui.tourForce = false; ui.tourIdx = 0; st.tour.on = false; save(); showTour(); return; }
+    if (act === 'tourShow') { ui.tourForce = true; ui.tourIdx = 0; showTour(); return; }
     if (act === 'tourOn') { st.tour = { on: true, seen: {} }; save(); if (SHEET_PAGE) location.href = 'index.html'; else showTour(); return; }
     if (act === 'sheetTab') {
       ui.sheetTab = el.dataset.tab;
@@ -2199,7 +2245,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !filePop.hidden) setOpen(false, true); });
   }
   document.addEventListener('keydown', ev => {   // Escape also closes the guide popup for this chapter
-    if (ev.key === 'Escape' && document.getElementById('tour') && st.tour) { ui.tourForce = false; st.tour.seen[st.step] = true; save(); showTour(); }
+    if (ev.key === 'Escape' && document.getElementById('tour') && st.tour) { ui.tourForce = false; ui.tourIdx = 0; st.tour.seen[st.step] = true; save(); showTour(); }
+    if (document.getElementById('tour') && (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft')) { const b = document.querySelector(`#tour [data-act="${ev.key === 'ArrowRight' ? 'tourNext' : 'tourPrev'}"]`); if (b) b.click(); }
   });
 
   // First visit on a touch screen: explain that underlined terms open their explanation with a tap.
