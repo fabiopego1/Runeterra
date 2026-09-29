@@ -1436,6 +1436,11 @@ a.brand, a.hbtn { text-decoration: none; }
 /* Key words in chapter descriptions, the guide and section hints stand out in bright white */
 .chapter-lede b, .chapter-lede .sc b, .guide-text span b, .tour p b, .flow-body > p b, .flow-body > .muted b { color: #fff; font-weight: 600; }
 /* People/Homeland suggestion mark on a power or quality in the socket trays */
+.rune-sugg { display: inline-flex; align-items: center; gap: 3px; justify-self: start; margin-top: 2px; font-family: var(--font-mono); font-size: .56rem; letter-spacing: .1em; text-transform: uppercase; color: var(--region, var(--gold)); }
+.rune-sugg .ico { width: 9px; height: 9px; }
+.sugg-legend { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; padding: 7px 12px; border: 1px dashed var(--region, var(--gold)); color: var(--text-2); font-size: .86rem; width: fit-content; max-width: 100%; }
+.sugg-legend > .ico { flex: none; width: 13px; height: 13px; color: var(--region, var(--gold)); }
+.sugg-legend b { color: var(--region, var(--gold)); }
 .rune-fit { display: inline-grid; vertical-align: -2px; margin-right: 5px; color: var(--region, var(--gold)); }
 .rune-fit .ico { width: 12px; height: 12px; }
 .rune.fits:not(.off) { box-shadow: inset 2px 0 0 var(--region, var(--gold)); }

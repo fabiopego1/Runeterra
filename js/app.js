@@ -690,9 +690,13 @@
   const fitMark = (arr, id) => {
     const r = regionDef(), pp = peopleDef();
     // a list that covers almost everything (humans live in every region) suggests nothing: no marks
-    const m = (src, label) => src && src[arr] && src[arr].length <= 8 && src[arr].includes(id) ?`<span class="fit"${tip(label)}>${ico('mark')}${esc(src.name)}</span>` : '';
+    const m = (src, label) => src && src[arr] && src[arr].length <= 8 && src[arr].includes(id) ? `<span class="fit"${tip(`<h5>${ico('mark')} ${tr('Suggestion')}</h5>${label}. ${tr('Only a suggestion: you can pick any option.')}`)}>${ico('mark')}${tr('Suggestion')}: ${esc(src.name)}</span>` : '';
     return m(pp, tr('Suits a champion of the {people} people', { people: esc(pp && pp.name) })) + m(r, tr('Suits a champion from {place}', { place: esc(r && r.name) }));
   };
+
+  // A one-line key above any list that carries ✦ marks, so nobody mistakes them for rules.
+  const suggLegend = html => /class="(fit|fit-inline|rune-sugg)"/.test(html)
+    ? `<p class="sugg-legend">${ico('mark')} <span>${tr('<b>Suggestion</b> for your People and Homeland. Only a suggestion: you can pick any option.')}</span></p>` : '';
 
   // Powers and qualities suggested by the People or Homeland (✦ in the socket trays).
   const fitTrait = k => {
@@ -782,7 +786,7 @@
       const lore = window.PRINCIPLE_LORE[p.id] || [p.name, ''];
       const t = `<h5>${esc(lore[0])}</h5><b>${tr('During roleplaying:')}</b> ${esc(p.rp)}` + (lore[1] ? `<hr><em>${tr('In Runeterra:')}</em> ${esc(lore[1])}` : '');
       const pp = peopleDef();
-      const fits = (pp && pp.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${esc(pp.name)}</span>` : '') + (r && r.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${esc(r.name)}</span>` : '');
+      const fits = (pp && pp.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${tr('Suggestion')}: ${esc(pp.name)}</span>` : '') + (r && r.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${tr('Suggestion')}: ${esc(r.name)}</span>` : '');
       return `<button class="principle${p.id === cur ? ' selected' : ''}${p.id === other ? ' taken' : ''}" data-act="principle" data-slot="${slot}" data-id="${p.id}"${tip(t)}${p.id === other ? ' disabled' : ''}>` +
         `<div class="pn">${esc(lore[0])}${fits}</div><div class="po">${esc(tr(p.cat))}</div><div class="ph">${esc(lore[1])}</div></button>`;
     }).join('');
@@ -858,8 +862,8 @@
     const filter = all.length > 12 ? `<label class="tray-filter">${ico('mark')}<input type="search" data-filter="1" placeholder="${tr('Filter {n} options…', { n: all.length })}" aria-label="${tr('Filter options')}"></label>` : '';
     const groupHtml = g => `<div class="tray-group"><div class="tray-label">${esc(g.label)}${g.sub ? `<span>${esc(g.sub)}</span>` : ''}</div><div class="tray-grid">${g.items.map(i => {
       const on = i.k === cur, off = !!i.taken && !on, fit = fitTrait(i.k);
-      return `<button class="rune k-${kindOf(i.k)}${on ? ' on' : ''}${off ? ' off' : ''}${fit ? ' fits' : ''}" data-act="socket" data-bind="${bind}" data-val="${i.k}" data-q="${esc((i.name + ' ' + (i.sub || '') + ' ' + g.label).toLowerCase())}"${off ? ' aria-disabled="true"' : ''}${on ? ' aria-pressed="true"' : ''}${tip(traitTip(i.k) + (fit ? `<hr>✦ ${esc(fit)}` : ''))}>
-        <span class="rune-name">${fit ? `<span class="rune-fit" aria-label="${esc(fit)}">${ico('mark')}</span>` : ''}${esc(i.name)}</span>${i.sub ? `<span class="rune-sub">${esc(i.sub)}</span>` : ''}${i.after ? `<span class="rune-badge">${esc(i.after)}</span>` : ''}${off ? `<span class="rune-badge taken">${esc(i.taken)}</span>` : ''}</button>`;
+      return `<button class="rune k-${kindOf(i.k)}${on ? ' on' : ''}${off ? ' off' : ''}${fit ? ' fits' : ''}" data-act="socket" data-bind="${bind}" data-val="${i.k}" data-q="${esc((i.name + ' ' + (i.sub || '') + ' ' + g.label).toLowerCase())}"${off ? ' aria-disabled="true"' : ''}${on ? ' aria-pressed="true"' : ''}${tip(traitTip(i.k) + (fit ? `<hr>✦ <b>${tr('Suggestion')}</b>: ${esc(fit)}. ${tr('Only a suggestion: you can pick any option.')}` : ''))}>
+        <span class="rune-name">${esc(i.name)}</span>${fit ? `<span class="rune-sugg">${ico('mark')} ${tr('Suggestion')}</span>` : ''}${i.sub ? `<span class="rune-sub">${esc(i.sub)}</span>` : ''}${i.after ? `<span class="rune-badge">${esc(i.after)}</span>` : ''}${off ? `<span class="rune-badge taken">${esc(i.taken)}</span>` : ''}</button>`;
     }).join('')}</div></div>`;
     const body = !both ? groups.map(groupHtml).join('')
       : ['power', 'quality'].map(k => {
@@ -893,7 +897,8 @@
         const head = `<div class="flow-head"><span class="flow-num">${state === 'done' ? ico('check') : secs.indexOf(s) + 1}</span><h3>${esc(s.title)}</h3></div>`;
         const fn = H[s.id] || (s.group && H.group) || null;
         const todo = s.issues.length ? `<div class="flow-todo"><span class="flow-todo-l">${tr('Still to do')}</span><ul>${s.issues.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
-        return `<section class="flow-sec ${state}" id="flow-${stepId}-${s.id}">${head}<div class="flow-body">${fn ? fn(s) : ''}${todo}</div></section>`;
+        const body = fn ? fn(s) : '';
+        return `<section class="flow-sec ${state}" id="flow-${stepId}-${s.id}">${head}<div class="flow-body">${suggLegend(body)}${body}${todo}</div></section>`;
       });
       flowCurrent = `${stepId}:open`;
       return parts.join('');
@@ -911,7 +916,8 @@
       if (i === c) {
         const fn = H[s.id] || (s.group && H.group) || null;
         const todo = s.issues.length ? `<div class="flow-todo"><span class="flow-todo-l">${tr('Still to do')}</span><ul>${s.issues.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
-        return `<section class="flow-sec current" id="flow-${stepId}-${s.id}"><div class="flow-head"><span class="flow-num">${i + 1}</span><h3>${esc(s.title)}</h3><span class="flow-here">${tr('You are here')}</span></div><div class="flow-body">${fn ? fn(s) : ''}${todo}</div></section>`;
+        const body = fn ? fn(s) : '';
+        return `<section class="flow-sec current" id="flow-${stepId}-${s.id}"><div class="flow-head"><span class="flow-num">${i + 1}</span><h3>${esc(s.title)}</h3><span class="flow-here">${tr('You are here')}</span></div><div class="flow-body">${suggLegend(body)}${body}${todo}</div></section>`;
       }
       if (i < f) {
         const sum = secSummary(stepId, s);
