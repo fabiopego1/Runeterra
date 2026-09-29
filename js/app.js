@@ -806,12 +806,6 @@
           <div class="tp-kicker">${tr('A codex for the Sentinels roleplaying system')}</div>
           <h2 class="tp-title">${tr('Forge a Champion <span>of Runeterra</span>')}</h2>
           <p class="tp-lede">${tr('Nine chapters take you from a nameless wanderer to a champion ready for the table — where you were born, what gave you power, how you fight, and what you will become when everything is on the line.')}</p>
-          <p class="tp-note">${tr('Every Runeterran name hides the rule behind it:')} <span class="term"${tip(tr('<h5>Hover and learn</h5>Anything underlined like this explains itself. Runeterra names show the Sentinels RPG rule they stand for.'))}>${tr('hover anything underlined')}</span>.</p>
-          <div class="tp-links">
-            <a href="#" data-act="lore">${ico('map')}<span><b>${tr('Lore')}</b><small>${tr('The world, its regions and peoples')}</small></span></a>
-            <a href="#" data-act="rules">${ico('codex')}<span><b>${tr('Rules')}</b><small>${tr('The table summary, key ?')}</small></span></a>
-            <a href="ficha.html">${ico('file')}<span><b>${tr('Sheet')}</b><small>${tr('Your finished champion, full screen')}</small></span></a>
-          </div>
         </div>
       </section>
       <section class="tp-start">

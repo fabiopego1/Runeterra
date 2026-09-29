@@ -543,12 +543,6 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
    ========================================================================== */
 .title-page { display: grid; gap: 30px; }
 .tp-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 56px; align-items: center; }
-.tp-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 24px; }
-.tp-links a { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--line-2); background: var(--ink-1); text-decoration: none; color: var(--text); transition: border-color .15s, background .15s; }
-.tp-links a:hover { border-color: var(--gold); background: var(--ink-2); }
-.tp-links .ico { color: var(--gold); margin-top: 3px; }
-.tp-links b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 1.08rem; color: var(--gold-hi); }
-.tp-links small { display: block; font-size: .82rem; color: var(--text-3); line-height: 1.35; }
 .tp-dice { align-self: stretch; align-content: center; }
 .tp-dice p { margin: 0; font-size: .92rem; color: var(--text-2); }
 .tp-aside-h { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
@@ -561,8 +555,6 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .tp-title { font-size: 3.9rem; line-height: .98; margin: 14px 0 20px; color: var(--text); letter-spacing: -.005em; }
 .tp-title span { display: block; font-size: .56em; color: var(--gold); margin-top: 8px; letter-spacing: .02em; }
 .tp-lede { font-size: 1.2rem; line-height: 1.5; color: var(--text); max-width: 46ch; }
-.tp-note { color: var(--text-2); max-width: 58ch; }
-.tp-note a { display: inline-flex; align-items: center; gap: 4px; }
 .tp-options { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); }
 .tp-option { position: relative; text-align: left; background: var(--ink-0); border: 0; padding: 16px 18px; cursor: pointer; font: inherit; color: var(--text); }
 .tp-option:hover { background: var(--ink-2); }
@@ -864,7 +856,7 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
   .flow-head { margin-left: 0; flex-wrap: wrap; row-gap: 0; }
   .flow-head::after { display: none; }
   .flow-here, .flow-state, .flow-lock { flex-basis: 100%; padding-left: 46px; margin-top: -4px; }
-  .grid2, .grid3, .grid4, .hs-top, .hs-prs, .hs-bottom, .hs-stats, .hs-3, .tp-hero, .tp-start, .tp-links, .tp-options, .hs-aux-grid, .hs-notes { grid-template-columns: minmax(0, 1fr); }
+  .grid2, .grid3, .grid4, .hs-top, .hs-prs, .hs-bottom, .hs-stats, .hs-3, .tp-hero, .tp-start, .tp-options, .hs-aux-grid, .hs-notes { grid-template-columns: minmax(0, 1fr); }
   .tp-title { font-size: 2.7rem; }
   .tp-hero, .tp-start { gap: 24px; }
   .hs-pr + .hs-pr { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; }
