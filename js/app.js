@@ -419,12 +419,16 @@
   }
 
   // block: { traitKey: why } for traits that this choice may not repeat (shown greyed out and not selectable).
-  function traitOptions(keys, sel, placeholder, block = {}) {
-    return `<option value="">${esc(placeholder || tr('— choose —'))}</option>` + keys.map(k => {
-      const no = block[k] && k !== sel;
-      return `<option value="${k}"${k === sel ? ' selected' : ''}${no ? ' disabled' : ''}>${esc(traitName(k))} (${R0.T[k] ? R0.T[k].die : ''})${no ? ' · ' + esc(block[k]) : ''}</option>`;
-    }).join('');
+
+  // The same choice as a row of chips: every option in view, with its die, instead of a closed dropdown.
+  function traitChips(bind, keys, sel, block = {}) {
+    if (!keys.length) return '';
+    return `<div class="tchips" role="radiogroup">${keys.map(k => {
+      const no = block[k] && k !== sel, t = R0.T[k];
+      return `<button type="button" class="tchip${k === sel ? ' on' : ''}" role="radio" aria-checked="${k === sel}" data-act="setBind" data-bind="${bind}" data-val="${k}"${no ? ' disabled' : ''}${tip(traitTip(k) + (no ? `<hr><small>${esc(block[k])}</small>` : ''))}>${t ? die(t.die, 'sm') : ''}<span>${esc(traitName(k))}</span><small>${tr(TRAIT[k].kind)}</small></button>`;
+    }).join('')}</div>`;
   }
+  const valueChips = (bind, vals, sel, label = x => x) => `<div class="tchips" role="radiogroup">${vals.map(v => `<button type="button" class="tchip${v === sel ? ' on' : ''}" role="radio" aria-checked="${v === sel}" data-act="setBind" data-bind="${bind}" data-val="${esc(v)}"><span>${esc(label(v))}</span></button>`).join('')}</div>`;
 
   // ------------------------------------------------------------------ validation, organised as guided sub-steps
   // Each step is a list of sections; a section is done when it has no issues.
@@ -560,7 +564,7 @@
         }
         add('minions', tr('Choose your minion forms'), M, tr('Pick the quality first, then tick as many forms as it allows.'));
       }
-      if (shape && (shape.forms || ar.modular || ar.divided)) add('notes', tr(ar.modular ? 'Notes on your modes (optional)' : 'Notes on your forms (optional)'), [], tr('Optional — jot down which powers each form or mode uses.'));
+      if (shape && (shape.forms || ar.modular || ar.divided)) add('notes', tr(ar.modular ? 'Notes on your modes (optional)' : 'Notes on your forms (optional)'), [], tr('Optional — jot down which powers each form or mode uses.'), { opt: true });
       const pc = archPrincipleCat();
       add('principle', pc ? tr('Choose {p}', { p: aPrinciple(pc) }) : tr('Choose your second principle'), shape && pc ? principleIssues('arch', pc) : [], tr('Click a principle — it must be different from your first one.'));
     }
@@ -598,7 +602,7 @@
       if (rc.type === 'extra-red' && (st.sel.red || []).length < 3) I.push(tr('Go back to Ultimates and pick your third Red ability.'));
       add('cfg', tr('Set it up'), I, tr('Complete the choice for your Twist of Fate.'));
     }
-    if (id === 'health') add('review', tr('Review your Health'), [], tr('Pick the trait that adds to your Health and whether to roll.'));
+    if (id === 'health') add('review', tr('Review your Health'), [], tr('Pick the trait that adds to your Health and whether to roll.'), { opt: true });
     if (id === 'finish') {
       add('name', tr('Name your champion'), st.info.name.trim() ? [] : [tr('Type your champion\'s name.')], tr('Type a hero name — you can fill in the rest below at your own pace.'));
       add('describe', tr('Describe them (optional)'), [], tr('Optional details for your hero sheet.'));
@@ -722,19 +726,19 @@
       if (al.req.kind !== 'none' && !reqFixed) {
         const what = al.req.kind === 'any' ? tr('power or quality') : al.req.cat ? tr(al.req.kind === 'power' ? '{cat} power' : '{cat} quality', { cat: catName(al.req.cat) }) : tr(al.req.kind);
         const catOn2 = ctx.cat && al.req.second && (ctx.cat[0] === 'Q' ? 'quality' : 'power') === al.req.second;
-        cfg += `<label>${tr('Uses {what}', { what })}${ctx.cat && !catOn2 ? ' (' + esc(catName(ctx.cat)) + ')' : ''}<select data-bind="${base}.trait">${traitOptions(al.keys, entry.trait, '', ctx.block || {})}</select></label>`;
+        cfg += `<div class="cfg-l">${tr('Uses {what}', { what })}${ctx.cat && !catOn2 ? ' (' + esc(catName(ctx.cat)) + ')' : ''}</div>${traitChips(`${base}.trait`, al.keys, entry.trait, ctx.block || {})}`;
         if (!al.keys.length) cfg += `<small class="muted">${tr('You have no eligible trait yet.')}</small>`;
       }
       if (reqFixed) cfg += `<small class="muted">${tr('Uses {what}', { what: esc(traitName(reqFixed)) })}${unavailable ? tr(' — which you don\'t have!') : ''}</small>`;
-      if (al.keys2) cfg += `<label>${tr('Quality')}${ctx.cat && al.req.second && ctx.cat[0] === 'Q' ? ' (' + esc(catName(ctx.cat)) + ')' : ''}<select data-bind="${base}.trait2">${traitOptions(al.keys2, entry.trait2)}</select></label>`;
+      if (al.keys2) cfg += `<div class="cfg-l">${tr('Quality')}${ctx.cat && al.req.second && ctx.cat[0] === 'Q' ? ' (' + esc(catName(ctx.cat)) + ')' : ''}</div>${traitChips(`${base}.trait2`, al.keys2, entry.trait2)}`;
       for (const t of choiceTokens(ab.text)) {
         const kind = CHOICE_TOKENS[t];
         const cur = (entry.ch || {})[t] || '';
         if (kind === 'element') {
           const els = CATS['P:elemental'].items.map(i => i[2] + ' (' + i[1] + ')');
-          cfg += `<label>[${esc(tokenLabel(t))}]<select data-bind="${base}.ch.${t}"><option value="">${tr('— choose —')}</option>${els.map(x => `<option${x === cur ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select></label>`;
+          cfg += `<div class="cfg-l">[${esc(tokenLabel(t))}]</div>${valueChips(`${base}.ch.${t}`, els, cur)}`;
         } else if (Array.isArray(kind)) {
-          cfg += `<label>[${esc(tokenLabel(t))}]<select data-bind="${base}.ch.${t}"><option value="">${tr('— choose —')}</option>${kind.map(x => `<option value="${x}"${x === cur ? ' selected' : ''}>${tr(x)}</option>`).join('')}</select></label>`;
+          cfg += `<div class="cfg-l">[${esc(tokenLabel(t))}]</div>${valueChips(`${base}.ch.${t}`, kind, cur, x => tr(x))}`;
         } else {
           cfg += `<label>[${esc(tokenLabel(t))}]<input type="text" data-bind="${base}.ch.${t}" value="${esc(cur)}" placeholder="${tr('e.g. Attack and Overcome')}"></label>`;
         }
@@ -772,9 +776,7 @@
     const r = regionDef();
     const items = list.map(p => {
       const lore = window.PRINCIPLE_LORE[p.id] || [p.name, ''];
-      const t = `<h5>${esc(lore[0])}</h5><div class="sc-line">${esc(tr(p.cat))}</div>` +
-        `<b>${tr('During roleplaying:')}</b> ${esc(p.rp)}<hr><b>${tr('Minor twist:')}</b> ${esc(p.minor)}<br><b>${tr('Major twist:')}</b> ${esc(p.major)}<hr>` +
-        `<b>${tr('Green ability ({t}):', { t: p.type })}</b> ${esc(ruleTip(p.ability))}` + (lore[1] ? `<hr><em>${tr('In Runeterra:')}</em> ${esc(lore[1])}` : '');
+      const t = `<h5>${esc(lore[0])}</h5><b>${tr('During roleplaying:')}</b> ${esc(p.rp)}` + (lore[1] ? `<hr><em>${tr('In Runeterra:')}</em> ${esc(lore[1])}` : '');
       const pp = peopleDef();
       const fits = (pp && pp.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${esc(pp.name)}</span>` : '') + (r && r.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${esc(r.name)}</span>` : '');
       return `<button class="principle${p.id === cur ? ' selected' : ''}${p.id === other ? ' taken' : ''}" data-act="principle" data-slot="${slot}" data-id="${p.id}"${tip(t)}${p.id === other ? ' disabled' : ''}>` +
@@ -790,9 +792,7 @@
         (needsEl ? `<label class="field"><span>${tr('Your element')}</span><select data-bind="pch.${slot}"><option value="">${tr('— choose —')}</option>${CATS['P:elemental'].items.map(i => `<option${st.pch[slot] === i[2] ? ' selected' : ''}>${esc(i[2])}</option>`).join('')}</select></label>` : '') +
         `</div>`;
     }
-    const key = 'pr-' + slot;
-    if (p && !ui.expand[key]) return `<div class="picked-bar"><span>${tr('Chosen:')} <b>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</b></span><button class="btn small change-btn" data-act="expand" data-key="${key}">${ico('reset')} ${tr('Change choice')}</button></div>${detail}`;
-    return (p ? `<div class="picked-bar muted-bar"><span>${tr('Pick a different principle below, or')}</span><button class="btn small ghost keep-btn" data-act="collapse" data-key="${key}">${ico('close')} ${tr('Keep the current choice')}</button></div>` : '') + `<div class="principles">${items}</div>${detail}`;
+    return `<div class="principles">${items}</div>${detail}`;
   }
 
 
@@ -851,70 +851,101 @@
     }).join('')}</div></div>`).join('')}${cur ? `<button class="linkbtn tray-clear" data-act="socket" data-bind="${bind}" data-val="">${tr('Unbind this die')}</button>` : ''}</div>` : '';
     return `<div class="socket${cur ? ' filled' : ''}${open ? ' open' : ''}${freed ? ' freed' : ''}">
       <div class="sock-row">${gem}<span class="sock-link" aria-hidden="true"></span>
-      <button class="sock-slot" data-act="socketOpen" data-bind="${bind}" aria-expanded="${open}">${face}<span class="sock-cta">${tr(open ? 'Close' : cur ? 'Change' : 'Choose')}</span></button>
+      <button class="sock-slot" data-act="socketOpen" data-bind="${bind}" aria-expanded="${open}">${face}${open || !cur ? `<span class="sock-cta">${tr(open ? 'Close' : 'Choose')}</span>` : ''}</button>
 </div>
       ${note ? `<div class="note">${esc(note)}</div>` : ''}${tray}</div>`;
   }
 
   // ------------------------------------------------------------------ guided flow
-  const ui = { expand: {}, lastPick: {}, evo: { tab: 'power', from: '', to: '', ch: {} } };   // transient: re-opened choice grids; most recent choice per chapter; the Evolve form
+  const ui = { expand: {}, lastPick: {}, at: {}, passed: {}, evo: { tab: 'power', from: '', to: '', ch: {} } };   // transient: re-opened choice grids; most recent choice per chapter; the Evolve form
   let flowCurrent = null;           // "step:section" of the section the user should work on now
 
-  // Renders a step's sections in order. Sections after the first unfinished one are locked.
-  // With open = true (the Legend chapter) nothing is sealed: every section can be filled in any order.
+  // Renders a step's sections one at a time, like a wizard. Only the section under the cursor is open;
+  // the finished ones above it fold into a one-line summary and the ones below stay sealed.
+  // The cursor follows the first unfinished section on its own; "Back" (or the browser's back button)
+  // moves it up one section, and "Next" moves it down again. Optional sections wait for "Next".
+  // With open = true (People, Homeland, Legend) nothing is folded or sealed.
+  let flowPos = null;               // { step, c, n, f, secs } of the chapter on screen
   function flowHtml(stepId, secs, H, open = false) {
-    let cur = -1;
     const n = secs.length;
+    if (open) {
+      flowPos = { step: stepId, open: true, c: n, n, f: n, secs };
+      const parts = secs.map(s => {
+        const state = s.issues.length ? 'current' : 'done';
+        const head = `<div class="flow-head"><span class="flow-num">${state === 'done' ? ico('check') : secs.indexOf(s) + 1}</span><h3>${esc(s.title)}</h3></div>`;
+        const fn = H[s.id] || (s.group && H.group) || null;
+        const todo = s.issues.length ? `<div class="flow-todo"><span class="flow-todo-l">${tr('Still to do')}</span><ul>${s.issues.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
+        return `<section class="flow-sec ${state}" id="flow-${stepId}-${s.id}">${head}<div class="flow-body">${fn ? fn(s) : ''}${todo}</div></section>`;
+      });
+      flowCurrent = `${stepId}:open`;
+      return parts.join('');
+    }
+    const pend = i => secs[i].issues.length > 0 || (secs[i].opt && !ui.passed[stepId + ':' + secs[i].id]);
+    let f = secs.findIndex((_, i) => pend(i)); if (f < 0) f = n;
+    let c = ui.at[stepId];
+    if (c === 'last') c = Math.max(0, n - 1);
+    if (c == null || c > f) c = f;
+    if (ui.advance && c < f) c++;   // a single-choice section reopened with Back: choosing moves on, as it did the first time
+    ui.advance = false;
+    if (c === f) delete ui.at[stepId]; else ui.at[stepId] = c;
+    flowPos = { step: stepId, c, n, f, secs };
     const parts = secs.map((s, i) => {
-      const done = !s.issues.length;
-      const state = cur >= 0 && !open ? 'locked' : done ? 'done' : 'current';
-      if (state === 'current' && cur < 0) cur = i;
-      const head = `<div class="flow-head"><span class="flow-num">${state === 'done' ? ico('check') : state === 'locked' ? ico('lock') : i + 1}</span><h3>${esc(s.title)}</h3>` +
-        (state === 'current' && i === cur ? `<span class="flow-here">${tr('You are here')}</span>` : '') +
-        (state === 'done' ? `<span class="flow-state">${tr('Done')}</span>` : '') +
-        (state === 'locked' ? `<span class="flow-lock">${tr('Sealed — finish the step above')}</span>` : '') + '</div>';
-      if (state === 'locked') return `<section class="flow-sec locked" id="flow-${stepId}-${s.id}">${head}</section>`;
-      const fn = H[s.id] || (s.group && H.group) || null;
-      const body = fn ? fn(s) : '';
-      const todo = state === 'current' && s.issues.length ? `<div class="flow-todo"><span class="flow-todo-l">${tr('Still to do')}</span><ul>${s.issues.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
-      return `<section class="flow-sec ${state}" id="flow-${stepId}-${s.id}">${head}<div class="flow-body">${body}${todo}</div></section>`;
+      if (i === c) {
+        const fn = H[s.id] || (s.group && H.group) || null;
+        const todo = s.issues.length ? `<div class="flow-todo"><span class="flow-todo-l">${tr('Still to do')}</span><ul>${s.issues.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
+        return `<section class="flow-sec current" id="flow-${stepId}-${s.id}"><div class="flow-head"><span class="flow-num">${i + 1}</span><h3>${esc(s.title)}</h3><span class="flow-here">${tr('You are here')}</span></div><div class="flow-body">${fn ? fn(s) : ''}${todo}</div></section>`;
+      }
+      if (i < f) {
+        const sum = secSummary(stepId, s);
+        return `<section class="flow-sec done folded" id="flow-${stepId}-${s.id}"><button type="button" class="flow-head" data-act="flowGo" data-i="${i}"${tip(tr('Open this part again'))}><span class="flow-num">${ico('check')}</span><h3>${esc(s.title)}</h3>${sum ? `<span class="flow-sum">${sum}</span>` : ''}</button></section>`;
+      }
+      return `<section class="flow-sec locked" id="flow-${stepId}-${s.id}"><div class="flow-head"><span class="flow-num">${ico('lock')}</span><h3>${esc(s.title)}</h3></div></section>`;
     });
-    flowCurrent = cur >= 0 ? `${stepId}:${secs[cur].id}` : `${stepId}:done`;
-    const idx = STEPS.findIndex(x => x.id === stepId);
-    const next = STEPS[idx + 1];
+    flowCurrent = c < n ? `${stepId}:${secs[c].id}` : `${stepId}:done`;
     return parts.join('');
   }
-
-  // Collapsible choice grid: once something is chosen, show a compact summary with a clear "change choice" button.
-  function pickSection(key, chosenHtml, gridHtml) {
-    if (chosenHtml && !ui.expand[key]) return `<div class="picked-bar">${chosenHtml}<button class="btn small change-btn" data-act="expand" data-key="${key}">${ico('reset')} ${tr('Change choice')}</button></div>`;
-    return (chosenHtml ? `<div class="picked-bar muted-bar"><span>${tr('Pick a different option below, or')}</span><button class="btn small ghost keep-btn" data-act="collapse" data-key="${key}">${ico('close')} ${tr('Keep the current choice')}</button></div>` : '') + gridHtml;
+  // What a finished section chose, in one line.
+  function secSummary(stepId, s) {
+    const R = R0;
+    const tl = list => (list || []).filter(x => x && x.key).map(x => `${esc(traitName(x.key))} ${die(x.die, 'sm')}`).join(' ');
+    const pn = id => id ? esc((window.PRINCIPLE_LORE[id] || [id])[0]) : '';
+    const abl = list => (list || []).map(e => esc(abName(e.name)) + (e.trait ? ` <small>(${esc(traitName(e.trait))})</small>` : '')).join(', ');
+    const def = { background: bgDef, powersource: psDef, archetype: archDef, personality: persDef }[stepId];
+    switch (s.id) {
+      case 'pick':
+        if (stepId === 'red') return abl(st.sel.red);
+        if (stepId === 'retcon') { const r = (window.RETCONS || []).find(x => x.id === st.retcon.type); return r ? esc(r.rt) : ''; }
+        return def && def() ? esc(def().rt) : '';
+      case 'base': return shapeDef() ? esc(shapeDef().rt) : '';
+      case 'assign': {
+        const k = { background: 'bg', powersource: 'ps', archetype: 'arch' }[stepId];
+        return tl((R.slots[k] || []).concat(stepId === 'archetype' ? (R.slots.training || []) : []));
+      }
+      case 'extra': return st.ps.extra.key ? esc(traitName(st.ps.extra.key)) : st.ps.extra.up ? `${esc(traitName(st.ps.extra.down))} −1 · ${esc(traitName(st.ps.extra.up))} +1` : '';
+      case 'principle': return pn(stepId === 'background' ? st.bg.principle : st.arch.principle);
+      case 'divm': { const m = window.DIVIDED.methods.find(x => x.id === st.arch.divMethod); return m ? esc(m.rt) : ''; }
+      case 'minions': return (st.arch.minionForms || []).map(n => esc(abName(n))).join(', ');
+      case 'qname': return esc(st.pers.qname);
+      case 'out': return st.pers.outTrait ? esc(traitName(st.pers.outTrait)) : '';
+      case 'reckless': return st.pers.upgrade ? esc(traitName(st.pers.upgrade)) : '';
+      case 'review': { const h = healthCalc(R); return h ? tr('Health {n}', { n: h.max }) : ''; }
+    }
+    if (s.group) return abl(st.sel[s.group.key]);
+    return '';
   }
+
+  // A choice grid. Finished sections fold into a summary, so the grid only shows while its section is open.
+  const pickSection = (key, chosenHtml, gridHtml) => gridHtml;
   const chosenSummary = (title, sc, lore, champs, extra = '') => `<div class="chosen"><div class="chosen-t">${esc(title)}</div>${lore ? `<p class="lore">${esc(lore)}</p>` : ''}${champs ? `<p class="champs"><span>${tr('Champions')}</span> ${esc(champs)}</p>` : ''}${extra}</div>`;
 
-  // Option lists in hover cards.
-  const optName = o => (PT ? (o.includes(':') ? tr('any {cat}', { cat: catName(o) }) : traitName(o)) : (o.includes(':') ? 'any ' + CATS[o].sc : TRAIT[o].sc));
-  function bgTip(b) {
-    return `<h5>${esc(b.rt)}</h5>${esc(b.lore)}<hr>` +
-      `<b>${tr('Qualities:')}</b> ${tr('assign {dice} to {n} of:', { dice: b.q.dice.join(' + '), n: b.q.count || 2 })} ${esc(b.q.opts.map(optName).join(', '))}` +
-      `<br><b>${tr('Principle:')}</b> ${esc(tr(b.principle))}<br><b>${tr('Power Source dice:')}</b> ${b.psDice.join(' ')}<hr><small>${tr('Champions:')} ${esc(b.champs)}</small>`;
-  }
-  function psTip(p) {
-    return `<h5>${esc(p.rt)}</h5>${esc(p.lore)}<hr>` +
-      `<b>${tr('Powers:')}</b> ${esc(p.opts.map(optName).join(', '))}` +
-      (p.required ? `<br><b>${tr('Required:')}</b> ${tr('one die to {trait}', { trait: esc(optName(p.required.key)) })}` : '') +
-      `<br><b>${tr('Yellow (choose 2):')}</b> ${esc(p.yellow.list.map(abName).join(', '))}` +
-      (p.green ? `<br><b>${tr('Green (choose 1):')}</b> ${esc(p.green.list.map(abName).join(', '))}` : `<br><b>${tr('Instead of Green:')}</b> ${esc(p.extra.text)}`) +
-      `<br><b>${tr('Path dice:')}</b> ${p.archDice.join(' ')}<hr><small>${tr('Champions:')} ${esc(p.champs)}</small>`;
-  }
+  // Hover cards: Legends of Runeterra art, the story and champions who fit. The numbers show up
+  // in the chapter itself once the card is chosen.
+  const cardArt = (kind, id) => `<img class="tip-img" src="assets/cards/${kind}-${id}.webp" alt="">`;
+  const bgTip = b => `${cardArt('bg', b.id)}<h5>${esc(b.rt)}</h5>${esc(b.lore)}<hr><small>${tr('Champions:')} ${esc(b.champs)}</small>`;
+  const psTip = p => `${cardArt('ps', p.id)}<h5>${esc(p.rt)}</h5>${esc(p.lore)}<hr><small>${tr('Champions:')} ${esc(p.champs)}</small>`;
   function archTip(a) {
-    if (a.advanced) return `<h5>${esc(a.rt)}</h5><div class="sc-line">${tr('advanced')}</div>${esc(a.lore)}<hr>${tr(a.divided ? 'Pick a second Path as your base; you gain a civilian and a heroic form plus a transformation method. Principle: Responsibility.' : 'Pick a base Path for your dice, but instead of its abilities you gain switchable modes (Green, Yellow and Red). Principle: from the base Path.')}<hr><small>${tr('Champions:')} ${esc(a.champs)}</small>`;
-    return `<h5>${esc(a.rt)} <small>(${esc(a.role)})</small></h5>${esc(a.lore)}<hr>` +
-      (a.req ? `<b>${tr('Required:')}</b> ${esc(tr(a.req.label))}<br>` : '') +
-      `<b>${tr('Powers:')}</b> ${esc(a.powers.map(optName).join(', '))}<br><b>${tr('Qualities:')}</b> ${esc(a.quals.map(optName).join(', '))}` +
-      `<br><b>${tr('Green:')}</b> ${esc((a.fixedGreen || []).concat(a.green.list).map(abName).join(', '))}` +
-      (a.yellow ? `<br><b>${tr('Yellow:')}</b> ${esc(a.yellow.fromGreen ? tr('one of the Green list') : a.yellow.list.map(abName).join(', '))}` : '') +
-      `<br><b>${tr('Principle:')}</b> ${esc(tr(a.principle))}<hr><small>${tr('Champions:')} ${esc(a.champs)}</small>`;
+    if (a.advanced) return `${cardArt('ar', a.id)}<h5>${esc(a.rt)}</h5><div class="sc-line">${tr('advanced')}</div>${esc(a.lore)}<hr>${tr(a.divided ? 'Two forms, a civilian one and a heroic one, and a way to switch between them.' : 'Switchable modes instead of fixed abilities.')}<hr><small>${tr('Champions:')} ${esc(a.champs)}</small>`;
+    return `${cardArt('ar', a.id)}<h5>${esc(a.rt)} <small>(${esc(a.role)})</small></h5>${esc(a.lore)}<hr><small>${tr('Champions:')} ${esc(a.champs)}</small>`;
   }
   const chapterHead = (title, withMethod) => {
     const i = stepIndex(st.step);
@@ -931,7 +962,7 @@
       pick: () => pickSection('people', '',   // the cards stay on screen; the chosen one is highlighted
         `<div class="cards regions">${(window.PEOPLES || []).map(x => `<button class="card region-card${x.id === st.people ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="people" data-id="${x.id}"${tip(`${tipImg('race-' + (PEOPLE_SLOT[x.id] || x.id))}<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.sigil)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
     };
-    return stepPanel('Step 0 · Runeterra', tr('People'), 'people', flowHtml('people', sectionsFor('people', R0), H), false);
+    return stepPanel('Step 0 · Runeterra', tr('People'), 'people', flowHtml('people', sectionsFor('people', R0), H, true), false);
   }
 
   function renderRegion() {
@@ -941,7 +972,7 @@
       pick: () => pickSection('region', '',   // the cards stay on screen; the chosen one is highlighted
         `<div class="cards regions">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`${tipImg('r-' + x.id)}<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.id)}${fitMark('regions', x.id)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
     };
-    return stepPanel('Step 1 · Runeterra', tr('Homeland'), 'region', flowHtml('region', sectionsFor('region', R0), H), false);
+    return stepPanel('Step 1 · Runeterra', tr('Homeland'), 'region', flowHtml('region', sectionsFor('region', R0), H, true), false);
   }
 
   function renderBackground() {
@@ -1061,20 +1092,21 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   function renderPersonality() {
     const R = R0, a = archDef(), pe = persDef();
     if (!a) return lockedPanel(tr('Temperament'), tr('Choose your Path first.'), 'archetype');
-    const statusCell = x => x.status.map((d, i) => `<span class="z ${'gyr'[i]}">${die(d, 'sm')}</span>`).join('');
+    // Each status die with the zone it belongs to: Green while healthy, Yellow when hurt, Red when on the ropes.
+    const statusCell = x => x.status.map((d, i) => `<span class="zc ${'gyr'[i]}">${die(d, 'sm')}<i>${tr(['Green', 'Yellow', 'Red'][i])}</i></span>`).join('<span class="zc-arrow" aria-hidden="true">›</span>');
     const H = {
       roll: () => rollerHtml('pers', ['d10', 'd10'], tr('Roll 2d10 for your Temperament')),
       pick: () => pickSection('pers', pe && chosenSummary(pe.rt, pe.sc, '', pe.champs,
         `<div class="status-row"${tip(tr('<h5>Status dice</h5>The third die of every roll. Which one you use depends on your current Health zone.'))}><span class="z g">${tr('Green')} ${die(R.status[0])}</span><span class="z y">${tr('Yellow')} ${die(R.status[1])}</span><span class="z r">${tr('Red')} ${die(R.status[2])}</span></div>` +
         (pe.healthAny ? `<p class="sc">${tr('When determining Health you may use <b>any</b> power or quality.')}</p>` : '')),
-        cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div>${statusTrend(x.status)}<span class="info" aria-label="${tr('Details')}"${tip(`<h5>${esc(x.rt)}</h5><b>${tr('Status:')}</b> ${tr('Green')} ${x.status[0]}, ${tr('Yellow')} ${x.status[1]}, ${tr('Red')} ${x.status[2]}<br><b>${tr('Out:')}</b> ${esc(ruleTip(x.out))}<hr><small>${esc(x.champs)}</small>`)}></span>`)),
+        cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div>${statusTrend(x.status)}<span class="info" aria-label="${tr('Details')}"${tip(`${cardArt('pe', x.id)}<h5>${esc(x.rt)}</h5>${x.lore ? esc(x.lore) + '<hr>' : ''}<small>${tr('Champions:')} ${esc(x.champs)}</small>`)}></span>`)),
       qname: () => `
         <input type="text" data-bind="pers.qname" data-live="1" data-commit="1" value="${esc(st.pers.qname)}" placeholder="${tr('Type your Signature Quality, then press Enter')}">`,
       out: () => {
         const rq = reqFromText(pe.out);
         const outKeys = sortTraits(owned(R, rq.kind)).map(t => t.key);
         return `<p class="muted"${tip(`<h5>${tr('Out ability')}</h5>${window.COLOR_INFO.out}`)}>${tr('Used when your champion is knocked out.')}</p><div class="ab out picked"><div class="ab-text">${rulesText(pe.out, { trait: st.pers.outTrait })}</div>
-          <div class="ab-cfg"><label>${tr('Uses')}<select data-bind="pers.outTrait">${traitOptions(outKeys, st.pers.outTrait)}</select></label></div></div>`;
+          <div class="ab-cfg"><div class="cfg-l">${tr('Uses')}</div>${traitChips('pers.outTrait', outKeys, st.pers.outTrait)}</div></div>`;
       },
       reckless: () => {
         const upg = sortTraits(Object.values(R.before.personality).filter(t => dn(t.die) < 12 || t.key === st.pers.upgrade)).map(t => t.key);
@@ -1128,7 +1160,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const B = R.before.retcon;
     const traitsOf = kind => sortTraits(Object.values(B).filter(t => TRAIT[t.key].kind === kind)).map(t => t.key);
     const H = {
-      pick: () => `<div class="principles">${window.RETCONS.map(x => `<button class="principle${rc.type === x.id ? ' selected' : ''}" data-act="retcon" data-id="${x.id}"${x.id === 'red-up' && rc.type !== x.id && persDef() && persDef().status[2] === 'd12' ? ' disabled' : ''}${tip(`<h5>${esc(x.rt)}</h5>${esc(x.desc || x.sc)}`)}><div class="pn">${esc(x.rt)}</div><div class="ph">${esc(x.desc || x.sc)}</div></button>`).join('')}</div>`,
+      pick: () => `<div class="principles">${window.RETCONS.filter(x => !x.back || rc.type === x.id).map(x => `<button class="principle${rc.type === x.id ? ' selected' : ''}" data-act="retcon" data-id="${x.id}"${x.id === 'red-up' && rc.type !== x.id && persDef() && persDef().status[2] === 'd12' ? ' disabled' : ''}${tip(`<h5>${esc(x.rt)}</h5>${esc(x.desc || x.sc)}`)}><div class="pn">${esc(x.rt)}</div><div class="ph">${esc(x.desc || x.sc)}</div></button>`).join('')}</div>`,
       cfg: () => {
         if (rc.type === 'swap-powers' || rc.type === 'swap-quals') {
           const keys = traitsOf(rc.type === 'swap-powers' ? 'power' : 'quality');
@@ -1648,8 +1680,11 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   function navFooter() {
     const i = stepIndex(st.step);
     const next = STEPS[i + 1];
-    const ready = !stepIssues(st.step, R0).length;
-    return `<div class="step-footer"><div class="footer-left"><button class="btn ghost" data-act="back">${ico('prev')} ${tr('Back')}</button><button class="btn small change-btn change-last" data-act="changeLast" hidden>${ico('reset')} ${tr('Change last choice')}</button></div>
+    const P = flowPos && flowPos.step === st.step && !flowPos.open && flowPos.c < flowPos.n - 1 ? flowPos : null;   // more sections to go in this chapter
+    const ready = P ? !P.secs[P.c].issues.length : !stepIssues(st.step, R0).length;
+    if (P) return `<div class="step-footer"><div class="footer-left"><button class="btn ghost" data-act="back">${ico('prev')} ${tr('Back')}</button></div>
+      <div class="next-wrap"><button class="btn primary${ready ? '' : ' is-disabled'}" data-act="next" aria-disabled="${!ready}"><span class="btn-kicker">${esc(P.secs[P.c + 1].title)}</span>${tr('Continue')} ${ico('next')}</button></div></div>`;
+    return `<div class="step-footer"><div class="footer-left"><button class="btn ghost" data-act="back">${ico('prev')} ${tr('Back')}</button></div>
       <div class="next-wrap"><button class="btn primary${ready ? '' : ' is-disabled'}" data-act="next" aria-disabled="${!ready}"><span class="btn-kicker">${next ? tr('Chapter') + ' ' + ROMAN[i + 1] : ''}</span>${next ? esc(next.name) : tr('Next')} ${ico('next')}</button></div></div>`;
   }
 
@@ -1725,10 +1760,29 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       for (const e of document.querySelectorAll(one)) { const r = e.getBoundingClientRect(); if (r.width > 0 && r.height > 0) return e; }
     return null;
   };
+  // A chapter's guide comes in phases: steps with a 4th entry (a selector, usually "#flow-…-assign.current")
+  // wait until that part of the chapter opens, and then show up on their own, once.
+  // The Guide button replays every step that fits what is on screen now.
+  const tourKey = g => st.step + (g ? '|' + g : '');
+  function tourSteps() {
+    const on = ((window.TOUR || {})[st.step] || []).filter(s => !s[3] || tourTarget(s[3]));
+    if (ui.tourForce) { ui.tourPhase = null; return on; }
+    if (!st.tour || !st.tour.on) return [];
+    const g = on.map(s => s[3] || '').find(g => !st.tour.seen[tourKey(g)]);
+    if (g === undefined) return [];
+    if (ui.tourPhase !== g) ui.tourIdx = 0;
+    ui.tourPhase = g;
+    return on.filter(s => (s[3] || '') === g);
+  }
+  function tourDone() {
+    const phases = ui.tourForce ? ((window.TOUR || {})[st.step] || []).filter(s => !s[3] || tourTarget(s[3])).map(s => s[3] || '') : [ui.tourPhase || ''];
+    for (const g of phases) st.tour.seen[tourKey(g)] = true;
+    ui.tourForce = false; ui.tourIdx = 0; ui.tourPhase = null; save(); showTour();
+  }
   function placeTour() {
     const box = document.getElementById('tour');
     if (!box) return;
-    const steps = (window.TOUR || {})[st.step] || [], s = steps[ui.tourIdx || 0];
+    const steps = ui.tourList || [], s = steps[ui.tourIdx || 0];
     const spot = box.querySelector('.tour-spot'), pop = box.querySelector('.tour');
     const t = s && tourTarget(s[2]);
     box.classList.toggle('no-target', !t);
@@ -1748,10 +1802,10 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     pop.style.top = Math.max(12, Math.min(y, vh - ph - 12)) + 'px';
   }
   function showTour() {
-    const steps = (window.TOUR || {})[st.step];
-    let box = document.getElementById('tour');
     // ui.tourForce: opened from the chapter's Guide button, shown even when the guide is off or already seen
-    if (!steps || !steps.length || (!ui.tourForce && (!st.tour || !st.tour.on || st.tour.seen[st.step]))) { if (box) box.remove(); ui.tourIdx = 0; document.body.classList.remove('tour-open'); return; }
+    const steps = ui.tourList = tourSteps();
+    let box = document.getElementById('tour');
+    if (!steps.length) { if (box) box.remove(); ui.tourIdx = 0; document.body.classList.remove('tour-open'); return; }
     document.body.classList.add('tour-open');   // phones: room below the page so any target can scroll above the guide
     const n = steps.length, k = Math.min(ui.tourIdx || 0, n - 1), s = steps[k];
     if (!box) { box = document.createElement('div'); box.id = 'tour'; box.className = 'tour-layer'; document.body.appendChild(box); }
@@ -1786,8 +1840,9 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       renderSheetPage(); save(); return;
     }
     flowCurrent = null;
+    flowPos = null;
     socketAuto = false;
-    if (lastStep !== st.step) { ui.socket = null; ui.tourForce = false; ui.tourIdx = 0; lastStep = st.step; }
+    if (lastStep !== st.step) { ui.socket = null; ui.tourForce = false; ui.tourIdx = 0; ui.tourPhase = null; lastStep = st.step; }
     const rg = regionDef();
     document.body.dataset.region = rg ? rg.id : '';
     document.body.style.setProperty('--region', rg ? rg.color : '');
@@ -1806,9 +1861,60 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
     }
     lastFlow = flowCurrent;
-    updateChangeLast();
+    trackHistory();
     showTour();
   }
+  // Next inside a chapter: open the section after the current one (optional sections count as seen).
+  // Returns false when the chapter is over, so Next moves on to the next chapter.
+  function flowNext() {
+    const P = flowPos;
+    if (!P || P.open || P.step !== st.step || P.c >= P.n) return false;
+    const s = P.secs[P.c];
+    if (s.issues.length) {
+      const cur = document.querySelector('.flow-sec.current');
+      if (cur) { cur.scrollIntoView({ behavior: 'smooth', block: 'start' }); cur.classList.remove('pulse'); void cur.offsetWidth; cur.classList.add('pulse'); }
+      return true;
+    }
+    if (s.opt) ui.passed[P.step + ':' + s.id] = true;
+    if (P.c + 1 >= P.n) return false;
+    ui.at[P.step] = P.c + 1; render();
+    return true;
+  }
+  // Back: reopen the previous section; from the first one, go to the previous chapter's last section.
+  function flowBack() {
+    const P = flowPos;
+    if (P && !P.open && P.step === st.step && P.c > 0) { ui.at[P.step] = Math.min(P.c, P.n) - 1; render(); return; }
+    const i = stepIndex(st.step);
+    if (i > 0) { ui.at[STEPS[i - 1].id] = 'last'; goToStep(STEPS[i - 1].id); }
+    else ui.popping = false;
+  }
+  // The browser's back button walks back the same way: every move forward adds a history entry.
+  function trackHistory() {
+    if (SHEET_PAGE || !history.pushState) return;
+    const pos = st.step + ':' + (flowPos && !flowPos.open ? flowPos.c : '');
+    if (ui.pos == null) {   // first render; after a reload the history entries are still there, so keep counting from this one
+      if (history.state && typeof history.state.forja === 'number') ui.hidx = history.state.forja;
+      else { ui.hidx = 0; history.replaceState({ forja: 0 }, ''); }
+    }
+    else if (pos !== ui.pos && !ui.popping) { ui.hidx++; history.pushState({ forja: ui.hidx }, ''); }
+    ui.popping = false;
+    ui.pos = pos;
+  }
+  addEventListener('popstate', ev => {
+    if (SHEET_PAGE) return;
+    const to = ev.state && typeof ev.state.forja === 'number' ? ev.state.forja : 0, fwd = to > ui.hidx;
+    ui.hidx = to;
+    ui.popping = true; hideTip();
+    if (document.getElementById('tour')) { ui.tourForce = false; document.getElementById('tour').remove(); document.body.classList.remove('tour-open'); }
+    if (!fwd) return flowBack();
+    // forward: the same as Next, when the current part is finished
+    const was = ui.pos;
+    if (flowNext()) { if (ui.pos === was) ui.popping = false; return; }
+    const i = stepIndex(st.step);
+    if (!stepIssues(st.step, R0).length && i < STEPS.length - 1) { st.maxStep = Math.max(st.maxStep, i + 1); goToStep(STEPS[i + 1].id); }
+    else ui.popping = false;
+  });
+
   // Chapter change: fade the old chapter out, jump to the top while it is hidden, then fade the new one in,
   // so the page never swaps content under the reader mid-scroll. Focus moves to the new chapter title.
   let turning = false;
@@ -1833,16 +1939,6 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   }
 
   // "Change last choice" in the footer: reopens the most recent choice of this chapter.
-  function changeLastKey() {
-    const keys = [...document.querySelectorAll('#stage .change-btn[data-key]')].map(b => b.dataset.key);
-    const last = ui.lastPick[st.step];
-    return keys.includes(last) ? last : keys[keys.length - 1];
-  }
-  function updateChangeLast() {
-    const b = document.querySelector('#stage [data-act="changeLast"]');
-    if (b) b.hidden = !changeLastKey();
-  }
-
   function renderSideOnly(fromSheet) {
     R0 = compute();
     if (SHEET_PAGE) {
@@ -1919,16 +2015,11 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       if (i < 0 || i > st.maxStep) return;                     // can't jump ahead to a step never reached
       goToStep(el.dataset.step); return;
     }
-    if (act === 'back') { const i = stepIndex(st.step); if (i > 0) goToStep(STEPS[i - 1].id); return; }
-    if (act === 'changeLast') {
-      const key = changeLastKey();
-      if (!key) return;
-      ui.expand[key] = true; render();
-      const sec = document.querySelector(`#stage .keep-btn[data-key="${key}"]`);
-      if (sec) (sec.closest('.flow-sec') || sec).scrollIntoView({ behavior: 'smooth', block: 'start' });
-      return;
-    }
+    if (act === 'back') { if (ui.hidx > 0) history.back(); else { ui.popping = true; flowBack(); } return; }
+    if (act === 'setBind') { if (el.disabled) return; setPath(st, el.dataset.bind, el.dataset.val); hideTip(); render(); return; }
+    if (act === 'flowGo') { ui.at[st.step] = +el.dataset.i; render(); return; }
     if (act === 'next') {
+      if (flowNext()) return;
       const i = stepIndex(st.step);
       if (stepIssues(st.step, R0).length) {                    // not finished: point at what's missing
         const cur = document.querySelector('.flow-sec.current');
@@ -1959,11 +2050,11 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
     if (act === 'pick') {
       if (el.dataset.locked && st.method === 'guided') { flash(el); return; }
-      pick(el.dataset.kind, el.dataset.id); ui.expand[el.dataset.kind] = false; ui.lastPick[st.step] = el.dataset.kind; render(); return;
+      pick(el.dataset.kind, el.dataset.id); ui.advance = true; ui.lastPick[st.step] = el.dataset.kind; render(); return;
     }
     if (act === 'toggleAb') { toggleAb(el.dataset.g, el.dataset.name, el.dataset.cat); render(); return; }
-    if (act === 'principle') { if (el.dataset.slot === 'bg') st.bg.principle = el.dataset.id; else st.arch.principle = el.dataset.id; ui.expand['pr-' + el.dataset.slot] = false; ui.lastPick[st.step] = 'pr-' + el.dataset.slot; render(); return; }
-    if (act === 'divMethod') { st.arch.divMethod = el.dataset.id; delete st.sel['arch-divmethod']; render(); return; }
+    if (act === 'principle') { ui.advance = !(el.dataset.id === 'energy-element'); if (el.dataset.slot === 'bg') st.bg.principle = el.dataset.id; else st.arch.principle = el.dataset.id; ui.expand['pr-' + el.dataset.slot] = false; ui.lastPick[st.step] = 'pr-' + el.dataset.slot; render(); return; }
+    if (act === 'divMethod') { ui.advance = true; st.arch.divMethod = el.dataset.id; delete st.sel['arch-divmethod']; render(); return; }
     if (act === 'minionForm') {
       const f = st.arch.minionForms = st.arch.minionForms || [];
       const i = f.indexOf(el.dataset.name);
@@ -1972,7 +2063,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
     if (act === 'retcon') {
       const was = st.retcon.type;
-      st.retcon = { type: was === el.dataset.id ? null : el.dataset.id };
+      st.retcon = { type: was === el.dataset.id ? null : el.dataset.id }; ui.advance = true;
       if (was === 'extra-red' && st.sel.red && st.sel.red.length > 2) st.sel.red.length = 2;
       render(); return;
     }
@@ -2005,7 +2096,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       el.classList.add('used');
       return;
     }
-    if (act === 'tourOk') { ui.tourForce = false; ui.tourIdx = 0; st.tour.seen[st.step] = true; save(); showTour(); return; }
+    if (act === 'tourOk') { tourDone(); return; }
     if (act === 'tourNext') { ui.tourIdx = (ui.tourIdx || 0) + 1; showTour(); return; }
     if (act === 'tourPrev') { ui.tourIdx = Math.max(0, (ui.tourIdx || 0) - 1); showTour(); return; }
     if (act === 'tourShow') { ui.tourForce = true; ui.tourIdx = 0; showTour(); return; }
@@ -2223,7 +2314,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !filePop.hidden) setOpen(false, true); });
   }
   document.addEventListener('keydown', ev => {   // Escape also closes the guide popup for this chapter
-    if (ev.key === 'Escape' && document.getElementById('tour') && st.tour) { ui.tourForce = false; ui.tourIdx = 0; st.tour.seen[st.step] = true; save(); showTour(); }
+    if (ev.key === 'Escape' && document.getElementById('tour') && st.tour) tourDone();
     if (document.getElementById('tour') && (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft')) { const b = document.querySelector(`#tour [data-act="${ev.key === 'ArrowRight' ? 'tourNext' : 'tourPrev'}"]`); if (b) b.click(); }
   });
 
