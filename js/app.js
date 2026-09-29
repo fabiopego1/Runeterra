@@ -792,9 +792,8 @@
 
   // ------------------------------------------------------------------ rendering: steps
   function renderIntro() {
-    // The chapters themselves are listed in the chronicle rail on the left; the welcome page sets the scene,
-    // shows how a roll works and asks for the creation method.
-    const rf = (d, label) => `<span class="rf-die">${die(d)}<small>${label}</small></span>`;
+    // The chapters themselves are listed in the chronicle rail on the left; the welcome page sets the scene
+    // and asks for the creation method. How a roll works lives in the Rules page.
     return `<div class="panel title-page">
       <section class="tp-hero">
         <div class="tp-main">
@@ -808,14 +807,6 @@
             <a href="ficha.html">${ico('file')}<span><b>${tr('Sheet')}</b><small>${tr('Your finished champion, full screen')}</small></span></a>
           </div>
         </div>
-        <aside class="tp-dice roll-formula" aria-label="${tr('How a roll works')}">
-          <div class="tp-aside-h">${tr('How a roll works')}</div>
-          <div class="rf-row">${rf('d10', tr('Power'))}<span class="rf-op">+</span>${rf('d8', tr('Quality'))}<span class="rf-op">+</span>${rf('d6', tr('Status'))}</div>
-          <div class="rf-arrow">${tr('roll and sort')}</div>
-          <div class="rf-row rf-result"><span class="rf-slot">${tr('Min')}</span><span class="rf-slot on">${tr('Mid')}</span><span class="rf-slot">${tr('Max')}</span></div>
-          <p>${tr('The <b>Mid</b> die is the effect die, unless an ability says otherwise.')}</p>
-          <p>${tr('As {health} falls you pass from the {g} to the {y} and {r}, unlocking stronger abilities.', { health: rulesText(tr('Health')), g: rulesText(tr('Green zone')), y: rulesText(tr('Yellow zone')), r: rulesText(tr('Red zone')) })}</p>
-        </aside>
       </section>
       <section class="tp-start">
         <div class="tp-method">

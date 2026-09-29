@@ -542,7 +542,7 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
    Title page (Prologue)
    ========================================================================== */
 .title-page { display: grid; gap: 30px; }
-.tp-hero { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .8fr); gap: 56px; align-items: center; }
+.tp-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 56px; align-items: center; }
 .tp-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 24px; }
 .tp-links a { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--line-2); background: var(--ink-1); text-decoration: none; color: var(--text); transition: border-color .15s, background .15s; }
 .tp-links a:hover { border-color: var(--gold); background: var(--ink-2); }
