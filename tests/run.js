@@ -40,23 +40,17 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     let guideCheck = true;   // the first chapters check the guide themselves
     const sel = async (bd, v) => {
       if (await p.$(`select[data-bind="${bd}"]`)) return p.selectOption(`select[data-bind="${bd}"]`, v);
+      if (await p.$(`.tchip[data-bind="${bd}"]`)) { await p.click(`.tchip[data-bind="${bd}"][data-val="${v}"]`); await p.waitForTimeout(30); return; }
       if (!(await p.$(`.rune[data-bind="${bd}"][data-val="${v}"]`))) await p.click(`.sock-slot[data-bind="${bd}"]`);
       await p.click(`.rune[data-bind="${bd}"][data-val="${v}"]`); await p.waitForTimeout(30);
     };
     const ab = (g, n, cat) => p.click(`[data-act=toggleAb][data-g=${g}][data-name="${n}"]${cat ? `[data-cat="${cat}"]` : ''}`);
 
-    ok(await p.$eval('#tour h4', e => e.textContent.includes('Bem-vindo')), 'the guide greets a new champion on the welcome page');
-    await p.click('[data-act=tourOk]');
-    ok(!(await p.$('#tour')), '"Entendi" closes the guide for this chapter');
+    ok(!(await p.$('#tour')) && !(await p.$('[data-act=tourShow]')), 'no guide on the welcome page');
     ok(!(await p.$('[data-act=method]')) && !(await p.$('[data-act=tourOff]')), 'no method choice and no option to turn the guide off');
     ok(await p.$$eval('.rail-item.locked', e => e.length) > 0, 'later chapters are locked on a fresh start');
     await next();
-    ok(await p.$eval('#tour h4', e => e.textContent.includes('Povo')), 'the guide explains the next chapter');
-    await p.click('#tour [data-act=tourNext]');
-    ok(await p.$eval('#tour .tour-dots i.on', e => !!e) && await p.$eval('#tour h4', e => !e.textContent.includes('Povo')), 'the guide moves to its next step');
-    await p.click('#tour [data-act=tourOk]');
-    ok(!(await p.$('#tour')), '"Pular" closes the guide for this chapter');
-    guideCheck = false;
+    ok(!(await p.$('#tour')), 'no guide on the People chapter');
     const peopleStep = await step();
     await next();
     ok(await step() === peopleStep, 'cannot advance without picking a people');
@@ -68,8 +62,30 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await next();
     ok(await step() === regionStep, 'cannot advance without picking a region');
     await p.click('[data-kind=region][data-id=zaun]'); await next();
-    await p.click('[data-kind=bg][data-id=anachronistic]');
-    await sel('bg.assign.b0', 'magical-lore'); await sel('bg.assign.b1', 'history');
+    ok(await p.$eval('#tour h4', e => e.textContent.includes('Origem')), 'the guide opens on the Origin chapter');
+    await p.click('#tour [data-act=tourNext]');
+    ok(await p.$eval('#tour .tour-dots i.on', e => !!e) && await p.$eval('#tour h4', e => e.textContent.includes('dados')), 'the guide moves to its next step, about what the dice do');
+    ok(!(await p.$$eval('#tour .tour-dots i', e => e.length > 5)), 'the dice-binding steps are not shown before an Origin is chosen');
+    await p.click('#tour [data-act=tourOk]');
+    ok(!(await p.$('#tour')), '"Pular" closes the guide');
+    await p.click('[data-kind=bg][data-id=anachronistic]'); await p.waitForTimeout(150);
+    ok(await p.$eval('#tour h4', e => e.textContent.includes('Ligue os dados')), 'once the dice section opens, its guide steps appear');
+    await p.click('#tour [data-act=tourOk]');
+    ok(!!(await p.$('#flow-background-pick.folded')) && !(await p.$('[data-act=expand]')), 'the chosen Origin folds into a summary, with no "change" button');
+    await sel('bg.assign.b0', 'magical-lore'); await sel('bg.assign.b1', 'history'); await p.waitForTimeout(150);
+    ok(await p.$eval('#tour h4', e => e.textContent.includes('Princípio')), 'the principle guide waits for the principle section');
+    await p.click('#tour [data-act=tourOk]');
+    const origHover = await p.$eval('[data-act=principle][data-id=magic]', e => e.dataset.tip);
+    ok(!/Reviravolta|Habilidade verde|Green ability/i.test(origHover) && /Em Runeterra/.test(origHover), 'principle hover keeps only the roleplaying part and the Runeterra example');
+    await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.tour.on = false; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
+    await p.reload(); await p.waitForTimeout(300);
+    guideCheck = false;
+    await p.goBack(); await p.waitForTimeout(250);
+    ok(!!(await p.$('#flow-background-assign.current')) && await step() === 'Origem', "the browser's back button reopens the previous section");
+    await p.goBack(); await p.waitForTimeout(250);
+    ok(!!(await p.$('#flow-background-pick.current')), 'and keeps walking back one section at a time');
+    await p.goForward(); await p.waitForTimeout(250); await p.goForward(); await p.waitForTimeout(250);
+    ok(!!(await p.$('#flow-background-principle.current')), "the browser's forward button moves on again");
     await p.click('[data-act=principle][data-slot=bg][data-id=magic]');
     await next();
     await p.click('[data-kind=ps][data-id=mystical]');
@@ -103,6 +119,8 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     const princ = await p.evaluate(() => { const s = window.ForgeDebug.state(); return [s.bg.principle, s.arch.principle]; });
     const popts = await p.$$eval('select[data-bind="retcon.principle"] option', os => os.map(o => o.value));
     ok(popts.length > 5 && princ.every(x => !popts.includes(x)), 'Twist of Fate cannot swap in a principle you already have');
+    await p.click('.step-footer [data-act=back]'); await p.waitForTimeout(100);
+    ok(!!(await p.$('#flow-retcon-pick.current')), 'Back reopens the previous section of the chapter');
     await p.click('[data-act=retcon][data-id=red-up]');
     await next(); await next();
     await p.fill('input[data-bind="info.name"]', 'Bruxaria'); await p.press('input[data-bind="info.name"]', 'Enter'); await p.waitForTimeout(100);

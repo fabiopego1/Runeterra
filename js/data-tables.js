@@ -523,10 +523,11 @@ window.RED_ABILITIES = [
   { cat: 'Q:social', list: [{ a: 'Heroic Sacrifice' }, { a: 'Inspiring Totem' }, { a: 'Lead by Example' }, { a: 'Ultimatum' }] }
 ];
 
+// back: true = the forge hides it, since going back to that chapter does the same thing.
 window.RETCONS = [
-  { id: 'swap-powers', rt: 'Shifted Gifts', sc: 'Swap any two dice within your powers' },
-  { id: 'swap-quals', rt: 'Retrained', sc: 'Swap any two dice within your qualities' },
-  { id: 'change-ability', rt: 'New Technique', sc: 'Choose a different power or quality used in one of your abilities' },
+  { id: 'swap-powers', back: true, rt: 'Shifted Gifts', sc: 'Swap any two dice within your powers' },
+  { id: 'swap-quals', back: true, rt: 'Retrained', sc: 'Swap any two dice within your qualities' },
+  { id: 'change-ability', back: true, rt: 'New Technique', sc: 'Choose a different power or quality used in one of your abilities' },
   { id: 'add-d6', rt: 'Hidden Talent', sc: 'Add any d6 power or quality from any category' },
   { id: 'red-up', rt: 'Iron Will', sc: 'Increase your Red status die by one size (maximum d12)' },
   { id: 'change-principle', rt: 'Changed Convictions', sc: 'Change either of your principles to any other principle' },
