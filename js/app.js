@@ -49,7 +49,7 @@
     bg: { id: null, assign: {}, principle: null },
     ps: { id: null, assign: {}, extra: {} },
     arch: { id: null, base: null, assign: {}, principle: null, extra: {}, divMethod: null, minionQ: null, minionForms: [], notes: '' },
-    pers: { id: null, qname: '', outTrait: null, upgrade: null },
+    pers: { id: null, qname: '', outTrait: null, upgrade: null, id2: null },
     health: { trait: null, mode: 'fixed', roll: null, rerolled: false },
     pch: {},
     sel: {},
@@ -90,6 +90,11 @@
       if (out.sel && Array.isArray(out.sel.red) && out.sel.red.length > 2) out.sel.red.length = 2;
     }
     out.noRetcon = true; delete out.retcon;
+    // Older saves stored element choices as "Energia Hextec Bruta (Nuclear)": keep only the Runeterra name.
+    const EL = window.TRAIT_CATEGORIES['P:elemental'].items;
+    const clean = v => { if (typeof v !== 'string') return v; const m = EL.find(i => v === i[2] + ' (' + i[1] + ')'); return m ? m[2] : v; };
+    for (const list of Object.values(out.sel || {})) if (Array.isArray(list)) for (const e of list) if (e && e.ch) for (const k of Object.keys(e.ch)) e.ch[k] = clean(e.ch[k]);
+    for (const k of Object.keys(out.pch || {})) out.pch[k] = clean(out.pch[k]);
     if (out.pers && out.pers.qname && out.pers.qok === undefined) out.pers.qok = true;   // named before the Confirm button existed
     // A save that never left the intro has not really started: open it on the default method (Construído).
     out.method = 'constructed';   // the Guided method (rolling for options) is no longer offered
@@ -217,7 +222,7 @@
         if (TRAIT_TOKENS[br] !== undefined) {
           const k = entry ? (br === 'quality' && entry.trait2 ? entry.trait2 : entry.trait) : null;
           if (k && TRAIT[k]) out += `<span class="slot-chip"${tip(traitTip(k))}>${esc(traitName(k))}</span>`;
-          else out += `<span class="slot-chip unset"${tip(`<h5>[${esc(tokenLabel(br))}]</h5>` + tr('Placeholder: when you take this ability you pick which {what} it uses. That choice is fixed on your sheet (it can only change through a Retcon or advancement).', { what: esc(tr(TRAIT_TOKENS[br])) }))}>[${esc(tokenLabel(br))}]</span>`;
+          else out += `<span class="slot-chip unset"${tip(`<h5>[${esc(tokenLabel(br))}]</h5>` + tr('Placeholder: when you take this ability you pick which {what} it uses. That choice is fixed on your sheet (it can only change when your champion evolves).', { what: esc(tr(TRAIT_TOKENS[br])) }))}>[${esc(tokenLabel(br))}]</span>`;
         } else if (CHOICE_TOKENS[br] !== undefined) {
           const v = entry && entry.ch && entry.ch[br];
           out += v ? `<span class="slot-chip"${tip(tr('Chosen for <b>[{what}]</b>', { what: esc(tokenLabel(br)) }))}>${esc(tr(v))}</span>`
@@ -339,6 +344,9 @@
     }
     R.T = T;
     if (pers) R.status = pers.status.slice();   // status dice
+    // Divided (p.95): optionally a second Temperament for the other form. It only changes that form's status dice.
+    const pers2 = ar && ar.divided && st.pers.id2 && st.pers.id2 !== st.pers.id ? byId(window.PERSONALITIES, st.pers.id2) : null;
+    if (pers && pers2) R.status2 = pers2.status.slice();
     return R;
   }
 
@@ -572,6 +580,12 @@
         }
         add('minions', tr('Choose your minion forms'), M, tr('Pick the quality first, then tick as many forms as it allows.'));
       }
+      if (ar && ar.modular && shape) {   // p.96: optional Powerless Mode, one default-mode power at d6 and another at d10
+        const pl = st.arch.powerless || {}, P = [];
+        if (pl.on && (!pl.a || !pl.b || pl.a === pl.b)) P.push(tr('Choose two different powers for your Powerless Mode.'));
+        add('powerless', tr('Powerless Mode (optional)'), P, '', { opt: true });
+      }
+      if (shape && ar.divided && splitOn()) add('split', tr('Split Form: divide your powers and qualities'), splitIssues(R), '');
       if (shape && (shape.forms || ar.modular || ar.divided)) add('notes', tr(ar.modular ? 'Notes on your modes (optional)' : 'Notes on your forms (optional)'), [], tr('Optional — jot down which powers each form or mode uses.'), { opt: true });
       const pc = archPrincipleCat();
       add('principle', pc ? tr('Choose {p}', { p: aPrinciple(pc) }) : tr('Choose your second principle'), shape && pc ? principleIssues('arch', pc) : [], tr('Click a principle — it must be different from your first one.'));
@@ -583,6 +597,7 @@
       if (pers) {
         const rq = reqFromText(pers.out);
         if (rq.kind !== 'none') add('out', tr('Set up your Out ability'), st.pers.outTrait ? [] : [tr('Choose which trait your Out ability uses.')], tr('Pick the power or quality used when you\'re knocked out.'));
+        if (ar && ar.divided) add('pers2', tr('Temperament of your other form (optional)'), [], '', { opt: true });
         if (pers.extra === 'impulsive') add('reckless', tr('Reckless upgrade'), st.pers.upgrade ? [] : [tr('Choose a power or quality to upgrade.')], tr('Pick one trait to raise by one die size.'));
       }
     }
@@ -610,6 +625,17 @@
     return S;
   }
   function stepIssues(id, R) { return sectionsFor(id, R).flatMap(s => s.issues); }
+  // Divided with Split Form (p.95): two powers and two qualities work in both forms, the rest belong to one form.
+  const splitOn = () => { const a = archDef(); return !!(a && a.divided && (st.sel['arch-divafter'] || []).some(e => e.name === 'Split Form')); };
+  function splitIssues(R) {
+    const sp = st.arch.split || {}, keys = Object.keys(R.T).filter(k => k !== 'rp-quality'), I = [];
+    const both = kind => keys.filter(k => sp[k] === 'both' && TRAIT[k].kind === kind).length;
+    if (both('power') !== 2) I.push(tr('Mark exactly two powers as “both forms” ({n} marked).', { n: both('power') }));
+    if (both('quality') !== 2) I.push(tr('Mark exactly two qualities as “both forms” ({n} marked).', { n: both('quality') }));
+    const left = keys.filter(k => !sp[k]).length;
+    if (left) I.push(tr('Put each of the other powers and qualities in one form ({n} left).', { n: left }));
+    return I;
+  }
   function archPrincipleCat() {
     const ar = archDef();
     if (!ar) return null;
@@ -754,7 +780,7 @@
         const kind = CHOICE_TOKENS[t];
         const cur = (entry.ch || {})[t] || '';
         if (kind === 'element') {
-          const els = CATS['P:elemental'].items.map(i => i[2] + ' (' + i[1] + ')');
+          const els = CATS['P:elemental'].items.map(i => i[2]);
           cfg += `<div class="cfg-l">[${esc(tokenLabel(t))}]</div>${valueChips(`${base}.ch.${t}`, els, cur)}`;
         } else if (Array.isArray(kind)) {
           cfg += `<div class="cfg-l">[${esc(tokenLabel(t))}]</div>${valueChips(`${base}.ch.${t}`, kind, cur, x => tr(x))}`;
@@ -808,7 +834,7 @@
       detail = `<div class="detail"><h4>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</h4>` +
         `<p><b>${tr('During roleplaying:')}</b> ${esc(p.rp)}</p><p><b>${tr('Minor twist:')}</b> <em>${esc(p.minor)}</em><br><b>${tr('Major twist:')}</b> <em>${esc(p.major)}</em></p>` +
         `<div class="ab green picked"><div class="ab-top"><span class="ab-name">${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</span><span class="pill green">${tr('green')}</span><span class="ab-type"${tip(`<h5>${tr('Type: {t}', { t: p.type })}</h5>${window.ABILITY_TYPES[p.type]}`)}>${p.type}</span></div><div class="ab-text">${rulesText(p.ability, { ch: { 'energy/element': st.pch[slot] } })}</div></div>` +
-        (needsEl ? `<label class="field"><span>${tr('Your element')}</span><select data-bind="pch.${slot}"><option value="">${tr('— choose —')}</option>${CATS['P:elemental'].items.map(i => `<option${st.pch[slot] === i[2] ? ' selected' : ''}>${esc(i[2])}</option>`).join('')}</select></label>` : '') +
+        (needsEl ? `<div class="ab-cfg"><div class="cfg-l">${tr('Your element')}</div>${valueChips(`pch.${slot}`, CATS['P:elemental'].items.map(i => i[2]), st.pch[slot])}</div>` : '') +
         `</div>`;
     }
     return `<div class="principles">${items}</div>${detail}`;
@@ -961,6 +987,9 @@
       case 'minions': return (st.arch.minionForms || []).map(n => esc(abName(n))).join(', ');
       case 'qname': return esc(st.pers.qname);
       case 'out': return st.pers.outTrait ? esc(traitName(st.pers.outTrait)) : '';
+      case 'pers2': { const p2 = st.pers.id2 && byId(window.PERSONALITIES, st.pers.id2); return p2 ? esc(p2.rt) + ' ' + p2.status.map(d => die(d, 'sm')).join('') : tr('Same in both forms'); }
+      case 'powerless': { const pl = st.arch.powerless || {}; return pl.on && pl.a && pl.b ? `${esc(traitName(pl.a))} ${die('d6', 'sm')} ${esc(traitName(pl.b))} ${die('d10', 'sm')}` : tr('None'); }
+      case 'split': { const sp = st.arch.split || {}; const b = Object.keys(sp).filter(k => sp[k] === 'both'); return b.length ? tr('Both forms: {list}', { list: b.map(k => esc(traitName(k))).join(', ') }) : ''; }
       case 'reckless': return st.pers.upgrade ? esc(traitName(st.pers.upgrade)) : '';
       case 'review': { const h = healthCalc(R); return h ? tr('Health {n}', { n: h.max }) : ''; }
     }
@@ -1094,6 +1123,21 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       divm: () => `<div class="principles">${window.DIVIDED.methods.map(m => `<button class="principle${st.arch.divMethod === m.id ? ' selected' : ''}" data-act="divMethod" data-id="${m.id}"${tip(`<h5>${esc(m.rt)}</h5>${esc(m.text)}`)}><div class="pn">${esc(m.rt)}</div><div class="ph">${esc(m.text)}</div></button>`).join('')}</div>`,
       group: s => groupHtml(s.group, R, true),
       minions: () => minionFormsHtml(R),
+      split: () => {
+        const sp = st.arch.split || {};
+        const row = t => `<div class="split-row"><span class="split-n">${esc(traitName(t.key))} ${die(t.die, 'sm')} <small>${tr(TRAIT[t.key].kind)}</small></span>${valueChips(`arch.split.${t.key}`, ['both', 'civ', 'her'], sp[t.key] || '', v => tr({ both: 'Both forms', civ: 'Civilian form', her: 'Heroic form' }[v]))}</div>`;
+        const list = kind => sortTraits(owned(R, kind).filter(t => t.key !== 'rp-quality')).map(row).join('');
+        return `<p>${tr('With <b>Split Form</b>, choose <b>two powers</b> and <b>two qualities</b> that work in both forms. Every other power and quality works in only one of them. Your Signature Quality works in both.')}</p>
+          <div class="cfg-l">${tr('Powers')}</div>${list('power')}<div class="cfg-l" style="margin-top:10px">${tr('Qualities')}</div>${list('quality')}`;
+      },
+      powerless: () => {
+        const pl = st.arch.powerless || {};
+        const pows = sortTraits(owned(R, 'power')).map(t => t.key);
+        return `<p>${tr('If your champion could be cut off from their power (a Hextech suit, a relic that can be taken away), you may add a <b>Powerless Mode</b>: one of your powers at {d6} and another at {d10}. In this mode you can only use your <b>principle</b> abilities.', { d6: die('d6', 'sm'), d10: die('d10', 'sm') })}</p>
+          <div class="tchips"><button type="button" class="tchip${pl.on ? ' on' : ''}" data-act="powerless" data-v="1">${tr('Add a Powerless Mode')}</button><button type="button" class="tchip${pl.on ? '' : ' on'}" data-act="powerless" data-v="">${tr('No Powerless Mode')}</button></div>
+          ${pl.on ? `<div class="ab-cfg"><div class="cfg-l">${tr('Power at {die}', { die: 'd6' })}</div>${traitChips('arch.powerless.a', pows, pl.a, pl.b ? { [pl.b]: tr('used at d10') } : {})}
+          <div class="cfg-l">${tr('Power at {die}', { die: 'd10' })}</div>${traitChips('arch.powerless.b', pows, pl.b, pl.a ? { [pl.a]: tr('used at d6') } : {})}</div>` : ''}`;
+      },
       notes: () => `<p class="muted">${tr(a.modular ? 'Record which powers/dice each mode uses (this goes on your auxiliary sheet).' : 'Record which powers/dice each form uses (this goes on your auxiliary sheet).')}</p><textarea data-bind="arch.notes" data-live="1">${esc(st.arch.notes)}</textarea>`,
       principle: () => principleHtml('arch', archPrincipleCat(), R) + `<p class="muted" style="margin-top:10px">${tr('Next step: your Temperament, rolled with {dice}.', { dice: die('d10', 'sm') + die('d10', 'sm') })}</p>`
     };
@@ -1135,6 +1179,9 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         return `<p class="muted"${tip(`<h5>${tr('Out ability')}</h5>${window.COLOR_INFO.out}`)}>${tr('Used when your champion is knocked out.')}</p><div class="ab out picked"><div class="ab-text">${rulesText(pe.out, { trait: st.pers.outTrait })}</div>
           <div class="ab-cfg"><div class="cfg-l">${tr('Uses')}</div>${traitChips('pers.outTrait', outKeys, st.pers.outTrait)}</div></div>`;
       },
+      pers2: () => `<p>${tr('Divided heroes may take a <b>second Temperament</b> for their other form. It only changes that form\'s <b>status dice</b>: your Signature Quality and Out ability stay the same, and Health uses your main Temperament.')}</p>
+        <p class="muted">${st.pers.id2 ? `<button type="button" class="linkbtn" data-act="pers2" data-id="">${tr('Use one Temperament for both forms')}</button>` : tr('Skip this to use the same Temperament in both forms.')}</p>` +
+        cardsHtml(window.PERSONALITIES.filter(x => x.id !== st.pers.id), 'pers2', st.pers.id2, null, x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div>`),
       reckless: () => {
         const upg = sortTraits(Object.values(R.before.personality).filter(t => dn(t.die) < 12 || t.key === st.pers.upgrade)).map(t => t.key);
         return `<p>${tr('Upgrade one of your power or quality dice by one step (max {die}).', { die: die('d12') })}</p>${socket({ bind: 'pers.upgrade', mark: '+1', cur: st.pers.upgrade, groups: traitGroups(upg, k => traitItem(k, { after: `${R.before.personality[k].die} → ${upDie(R.before.personality[k].die)}` })), empty: tr('Grow one die by a size') })}`;
@@ -1536,7 +1583,9 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const charLine = (label, d, extra = '') => `<div class="hs-f"><span class="hs-l">${label}</span>${d ? `<span${tip(`${esc(d.lore || '')}`)} class="term">${esc(d.rt + extra)}</span>` : BLANK}</div>`;
     const attr = (label, v) => `<div class="hs-f"><span class="hs-l">${label}</span>${esc(v || '')}</div>`;
     const traitRows = (list, n) => {
-      const out = list.map(t => `<tr><td>${t.key === 'rp-quality' && st.pers.qname ? `<span class="term"${tip(traitTip('rp-quality'))}>${esc(st.pers.qname)}</span>` : traitSpan(t.key)}</td><td class="dt">${die(t.die, 'sm')}</td></tr>`);
+      const sp = splitOn() ? (st.arch.split || {}) : {};
+      const formTag = k => sp[k] && sp[k] !== 'both' ? ` <small class="hs-form-tag"${tip(tr(sp[k] === 'civ' ? 'Only in your civilian form' : 'Only in your heroic form'))}>${tr(sp[k] === 'civ' ? 'civil' : 'heroic')}</small>` : '';
+      const out = list.map(t => `<tr><td>${t.key === 'rp-quality' && st.pers.qname ? `<span class="term"${tip(traitTip('rp-quality'))}>${esc(st.pers.qname)}</span>` : traitSpan(t.key)}${formTag(t.key)}</td><td class="dt">${die(t.die, 'sm')}</td></tr>`);
       while (out.length < n) out.push('<tr><td>&nbsp;</td><td class="dt"></td></tr>');
       return out.join('');
     };
@@ -1579,7 +1628,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         <div class="hs-stats">
           <table class="hs-traits"><thead><tr><th>${tr('Powers')}</th><th>${tr('Die')}</th></tr></thead><tbody>${traitRows(powers, 6)}</tbody></table>
           <table class="hs-traits"><thead><tr><th>${tr('Qualities')}</th><th>${tr('Die')}</th></tr></thead><tbody>${traitRows(quals, 6)}</tbody></table>
-          <div class="hs-status"><div class="hs-h"${tip(window.GLOSSARY['status die'])}>${tr('Status Dice')}</div>${R.status ? ['Green', 'Yellow', 'Red'].map((z, n) => `<div class="hs-sd ${z.toLowerCase()}${zNow === z.toLowerCase() ? ' current' : ''}"><small>${tr(z)}</small>${die(R.status[n])}</div>`).join('') : BLANK}</div>
+          <div class="hs-status"><div class="hs-h"${tip(window.GLOSSARY['status die'])}>${tr('Status Dice')}</div>${R.status ? ['Green', 'Yellow', 'Red'].map((z, n) => `<div class="hs-sd ${z.toLowerCase()}${zNow === z.toLowerCase() ? ' current' : ''}"><small>${tr(z)}</small>${die(R.status[n])}${R.status2 ? `<span class="hs-sd2"${tip(tr('Status die of your other form'))}>${die(R.status2[n], 'sm')}</span>` : ''}</div>`).join('') : BLANK}${R.status2 ? `<div class="hs-sd-note">${tr('Big die: main form. Small die: other form.')}</div>` : ''}</div>
           <div class="hs-hr"><div class="hs-h"${tip(window.GLOSSARY.Health)}>${tr('Health Range')}</div>${h ? `<div class="burst g${zNow === 'green' ? ' now' : ''}">${tr('Green')}<b>${h.green[0]}–${h.green[1]}</b></div><div class="burst y${zNow === 'yellow' ? ' now' : ''}">${tr('Yellow')}<b>${h.yellow[0]}–${h.yellow[1]}</b></div><div class="burst r${zNow === 'red' ? ' now' : ''}">${tr('Red')}<b>${h.redR[0]}–1</b></div>
             <div class="burst c">${tr('Current')}<input type="text" inputmode="numeric" data-bind="play.current" data-live="1" value="${esc(curHealth(h))}" aria-label="${tr('Current Health')}"></div>
             <div class="hs-track hs-noexport" role="group" aria-label="${tr('Adjust Health')}"><button type="button" data-act="hpStep" data-d="-1" aria-label="${tr('Lose 1 Health')}">−</button><button type="button" data-act="hpStep" data-d="1" aria-label="${tr('Recover 1 Health')}">+</button><button type="button" data-act="hpStep" data-d="max" aria-label="${tr('Back to full Health')}"${tip(tr('Back to full Health'))}>${ico('reset')}</button></div>
@@ -1604,6 +1653,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const log = st.evo.log;
     const side = `${forms.length ? `<div class="hs-card"><div class="hs-h"${tip(tr('<h5>Minion forms</h5>When you create a minion you may discard one bonus you have access to in order to add a form with that bonus value or higher. The number of forms you know equals the maximum value of a related quality.'))}>${tr('Minion forms')}</div>
               ${forms.map(n => { const f = window.MINION_FORMS.find(x => x[0] === n) || [n, '', '']; return `<div class="hs-form"><b>${esc(abName(n))}</b> <small>${tr('{b} or higher', { b: esc(f[2]) })}</small><div>${rulesText(f[1])}</div></div>`; }).join('')}</div>` : ''}
+            ${archDef() && archDef().modular && st.arch.powerless && st.arch.powerless.on && st.arch.powerless.a && st.arch.powerless.b ? `<div class="hs-card"><div class="hs-h">${tr('Powerless Mode')}</div><div>${esc(traitName(st.arch.powerless.a))} ${die('d6', 'sm')} · ${esc(traitName(st.arch.powerless.b))} ${die('d10', 'sm')}</div><small class="muted">${tr('Only your principle abilities can be used in this mode.')}</small></div>` : ''}
             ${st.arch.notes ? `<div class="hs-card"><div class="hs-h">${tr('Forms and modes')}</div><div class="hs-pre">${esc(st.arch.notes)}</div></div>` : ''}
             ${log.length ? `<div class="hs-card"><div class="hs-h"${tip(tr('Changes made between collections (Sheet page, “Evolve your champion” tab).'))}>${tr('Evolution')}</div>${log.map(e => `<div class="hs-evo">${e.coll ? `<small>${esc(e.coll)}</small>` : ''}${e.kind === 'rewrite' ? esc(tr('The champion was rewritten from scratch.')) : `${esc(e.from)} → ${esc(e.to)}`}</div>`).join('')}</div>` : ''}`.trim();
     return `<div class="hs-page hs-aux" id="hs-p3">
@@ -2000,7 +2050,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       for (const k of Object.keys(st.sel)) if (k.startsWith('arch-') && !k.startsWith('arch-mod') && !k.startsWith('arch-div')) delete st.sel[k];
       if (archPrincipleCat() !== oldCat) st.arch.principle = null;
     }
-    if (kind === 'pers' && st.pers.id !== id) { st.pers.id = id; st.pers.outTrait = null; st.pers.upgrade = null; }
+    if (kind === 'pers' && st.pers.id !== id) { st.pers.id = id; st.pers.outTrait = null; st.pers.upgrade = null; if (st.pers.id2 === id) st.pers.id2 = null; }
+    if (kind === 'pers2') st.pers.id2 = st.pers.id2 === id ? null : id;
   }
 
   function toggleAb(gkey, name, cat) {
@@ -2038,6 +2089,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
     if (act === 'back') { if (ui.hidx > 0) history.back(); else { ui.popping = true; flowBack(); } return; }
     if (act === 'qok') { confirmQname(); return; }
+    if (act === 'powerless') { st.arch.powerless = Object.assign({}, st.arch.powerless, { on: !!el.dataset.v }); render(); return; }
+    if (act === 'pers2') { st.pers.id2 = el.dataset.id || null; render(); return; }
     if (act === 'redCat') { const c = el.dataset.cat, now = el.getAttribute('aria-expanded') === 'true'; ui.redOpen[c] = !now; render(); return; }
     if (act === 'setBind') { if (el.disabled) return; setPath(st, el.dataset.bind, el.dataset.val); hideTip(); render(); return; }
     if (act === 'flowGo') { ui.at[st.step] = +el.dataset.i; render(); return; }
@@ -2369,6 +2422,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     issues: step => stepIssues(step, compute()),
     traits: () => Object.values(compute().T).map(t => ({ key: t.key, die: t.die, kind: TRAIT[t.key].kind, cat: TRAIT[t.key].cat })),
     status: () => compute().status,
+    status2: () => compute().status2 || null,
     health: () => { const h = healthCalc(compute()); return h && { max: h.max, red: h.red, traitMax: h.traitMax, roll: h.roll, trait: h.chosen && h.chosen.key, green: h.green, yellow: h.yellow, redR: h.redR }; },
     abilities: () => allAbilities(compute()).map(a => ({ name: a.name, color: a.color, src: a.src, trait: a.entry && a.entry.trait, trait2: a.entry && a.entry.trait2 })),
     principles: () => principlesFinal().map(x => x.id || (x.p && x.p.id))
