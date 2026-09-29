@@ -61,7 +61,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await next();
     ok(await step() === peopleStep, 'cannot advance without picking a people');
     await p.click('[data-kind=people][data-id=vastaya]');
-    ok(await p.$eval('.chosen-region', e => e.textContent.includes('Vastaya')), 'people chapter shows the chosen people');
+    ok(await p.$eval('[data-kind=people].selected', e => e.dataset.id === 'vastaya') && await p.$$eval('[data-kind=people]', e => e.length) > 5, 'people chapter keeps every card on screen and highlights the chosen one');
     await next();
     ok(await p.$$eval('.region-card .fit', e => e.some(x => x.textContent.includes('Vastaya'))), 'homelands that suit the people are marked');
     const regionStep = await step();
