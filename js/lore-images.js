@@ -18,7 +18,7 @@ window.LORE_IMAGES = {
   // linha do tempo
   'primordial': { src: 'assets/lore/primordial-yordles.webp', credit: 'Riot Games' },
   'titans': { src: 'assets/lore/guerra-dos-titas.webp', credit: 'Riot Games', pos: '60% 50%' },
-  'migration': { src: 'assets/lore/mapa-runeterra.webp', credit: 'Riot Games' },
+  'migration': { src: 'assets/lore/migracao.webp', credit: 'Mapa de Runeterra · Riot Games' },
   'sisters': { src: 'assets/lore/tres-irmas.webp', credit: 'Riot Games', fit: 'contain' },
   'golden-age': { src: 'assets/lore/era-de-ouro-shurima.webp', credit: 'Riot Games', pos: '50% 30%' },
   'fall-shurima': { src: 'assets/lore/queda-de-shurima.webp', credit: 'Riot Games' },

@@ -349,8 +349,17 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     const W = global.window, miss = [];
     for (const [k, list] of [['bg', W.BACKGROUNDS], ['ps', W.POWER_SOURCES], ['ar', W.ARCHETYPES], ['pe', W.PERSONALITIES]])
       for (const x of list) if (!fs.existsSync(path.join(__dirname, '..', 'assets', 'cards', `${k}-${x.id}.webp`))) miss.push(`${k}-${x.id}`);
-    for (const [slot, im] of Object.entries(W.LORE_IMAGES)) if (/^(r-|race-)/.test(slot) && !fs.existsSync(path.join(__dirname, '..', im.src.replace('assets/lore/', 'assets/lore/tip/')))) miss.push(slot);
+    for (const slot of Object.keys(W.LORE_IMAGES)) if (/^(r-|race-)/.test(slot) && !fs.existsSync(path.join(__dirname, '..', 'assets', 'tip', slot + '.webp'))) miss.push('tip/' + slot);
     ok(!miss.length, `every hover card has its picture${miss.length ? ' (missing: ' + miss.join(', ') + ')' : ''}`);
+    // No picture is used twice on the site: Lore page slots point at different files, and no two image files are the same bytes.
+    const loreSrc = Object.values(W.LORE_IMAGES).map(im => im.src);
+    const dupSrc = loreSrc.filter((x, i) => loreSrc.indexOf(x) !== i);
+    const crypto = require('crypto'), seen = {}, dupFile = [];
+    for (const dir of ['lore', 'cards', 'tip']) for (const f of fs.readdirSync(path.join(__dirname, '..', 'assets', dir)).filter(f => f.endsWith('.webp'))) {
+      const h = crypto.createHash('sha1').update(fs.readFileSync(path.join(__dirname, '..', 'assets', dir, f))).digest('hex');
+      if (seen[h]) dupFile.push(`${seen[h]} = ${dir}/${f}`); else seen[h] = `${dir}/${f}`;
+    }
+    ok(!dupSrc.length && !dupFile.length, `no picture is used twice${dupSrc.length || dupFile.length ? ': ' + dupSrc.concat(dupFile).join(', ') : ''}`);
   }
   errors.forEach(e => console.log('     ', e));
   ok(errors.length === 0, 'no JavaScript errors or missing files');
