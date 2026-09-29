@@ -1,4 +1,4 @@
-// pt-BR: povos de Runeterra para o capítulo "Povo" da Forja. Só cosmético: não muda regras.
+// pt-BR: povos de Runeterra para o capítulo "Povo" da Forja. Só para interpretação: não muda regras.
 // As listas (regions, bg, ps, ar, pr) marcam sugestões nos capítulos seguintes, como a Terra Natal faz.
 window.PEOPLES = [
   { id: 'human', name: 'Humano', sigil: 'compass', color: '#c8a45e',

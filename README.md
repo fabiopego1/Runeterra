@@ -35,7 +35,7 @@ Não há etapa de build: basta abrir `index.html` no navegador ou servir a pasta
 
 O GitHub Pages não tem servidor para conferir senha, então o conteúdo do Escudo é publicado **criptografado** (AES-256-GCM, chave derivada da senha com PBKDF2) e só é aberto no navegador quando a senha certa é digitada. A senha nunca fica no repositório.
 
-Depois de aberto, o Escudo mostra também o **Tradutor Cosmético** (`js/gm-flavour.js`), com a correspondência entre os nomes do sistema original e os nomes de Runeterra.
+Depois de aberto, o Escudo mostra também o **Tradutor de Nomes** (`js/gm-flavour.js`), com a correspondência entre os nomes do sistema original e os nomes de Runeterra.
 
 Para mudar as notas do Mestre (ou a senha):
 1. Escreva o conteúdo em HTML em `gm/content.html` (esse arquivo é ignorado pelo git, então as notas ficam privadas).
