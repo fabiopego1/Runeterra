@@ -1100,14 +1100,6 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       <p class="muted">${chosen.length}/${max} ${tr('chosen')}.</p>`;
   }
 
-  // Temperament cards: what the three status dice mean, and the shape of each set (rising, steady, falling).
-  function statusTrend(ds) {
-    const [g, y, r] = ds.map(dn);
-    const t = g < r ? ['rise', tr('Grows under pressure'), tr('Starts modest and becomes more dangerous as the fight goes badly.')]
-      : g > r ? ['fall', tr('Strong from the start'), tr('Hits hard while things are calm and gets shakier under pressure.')]
-        : ['steady', tr('Steady'), tr('The same die in every zone: reliable from start to finish.')];
-    return `<div class="status-trend ${t[0]}"${tip(`<h5>${t[1]}</h5>${t[2]}`)}>${t[1]}</div>`;
-  }
 
   function renderPersonality() {
     const R = R0, a = archDef(), pe = persDef();
@@ -1119,7 +1111,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       pick: () => pickSection('pers', pe && chosenSummary(pe.rt, pe.sc, '', pe.champs,
         `<div class="status-row"${tip(tr('<h5>Status dice</h5>The third die of every roll. Which one you use depends on your current Health zone.'))}><span class="z g">${tr('Green')} ${die(R.status[0])}</span><span class="z y">${tr('Yellow')} ${die(R.status[1])}</span><span class="z r">${tr('Red')} ${die(R.status[2])}</span></div>` +
         (pe.healthAny ? `<p class="sc">${tr('When determining Health you may use <b>any</b> power or quality.')}</p>` : '')),
-        cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div>${statusTrend(x.status)}<span class="info" aria-label="${tr('Details')}"${tip(`${cardArt('pe', x.id)}<h5>${esc(x.rt)}</h5>${x.lore ? esc(x.lore) + '<hr>' : ''}<small>${tr('Champions:')} ${esc(x.champs)}</small>`)}></span>`)),
+        cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div><span class="info" aria-label="${tr('Details')}"${tip(`${cardArt('pe', x.id)}<h5>${esc(x.rt)}</h5>${x.lore ? esc(x.lore) + '<hr>' : ''}<small>${tr('Champions:')} ${esc(x.champs)}</small>`)}></span>`)),
       qname: () => `
         <div class="qname-row"><input type="text" data-bind="pers.qname" data-live="1" data-commit="1" value="${esc(st.pers.qname)}" placeholder="${tr('Type your Signature Quality')}">
         <button type="button" class="btn primary" data-act="qok"${st.pers.qname.trim() ? '' : ' disabled'}>${ico('check')} ${tr('Confirm')}</button></div>`,

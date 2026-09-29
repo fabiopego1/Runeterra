@@ -1412,10 +1412,6 @@ a.brand, a.hbtn { text-decoration: none; }
 .status-explain > div { background: var(--ink-1); border: 1px solid var(--line-2); border-left: 2px solid var(--gold); padding: 10px 14px; }
 .status-explain > div > b { font-family: var(--font-display); font-weight: 400; font-size: 1.05rem; color: var(--gold-hi); }
 .status-explain p { margin: 4px 0 0; font-size: .9rem; color: var(--text-2); line-height: 1.5; }
-.status-trend { display: inline-block; margin-top: 6px; font-family: var(--font-mono); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; padding: 2px 6px; border: 1px solid; }
-.status-trend.rise { color: var(--zone-r); border-color: color-mix(in srgb, var(--zone-r) 50%, transparent); }
-.status-trend.fall { color: var(--zone-g); border-color: color-mix(in srgb, var(--zone-g) 50%, transparent); }
-.status-trend.steady { color: var(--zone-y); border-color: color-mix(in srgb, var(--zone-y) 50%, transparent); }
 @media (max-width: 900px) { .status-explain { grid-template-columns: minmax(0, 1fr); } }
 
 /* Guided tour popup (new champions) */
