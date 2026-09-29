@@ -781,12 +781,11 @@
         `<p><b>${tr('During roleplaying:')}</b> ${esc(p.rp)}</p><p><b>${tr('Minor twist:')}</b> <em>${esc(p.minor)}</em><br><b>${tr('Major twist:')}</b> <em>${esc(p.major)}</em></p>` +
         `<div class="ab green picked"><div class="ab-top"><span class="ab-name">${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</span><span class="pill green">${tr('green')}</span><span class="ab-type"${tip(`<h5>${tr('Type: {t}', { t: p.type })}</h5>${window.ABILITY_TYPES[p.type]}`)}>${p.type}</span></div><div class="ab-text">${rulesText(p.ability, { ch: { 'energy/element': st.pch[slot] } })}</div></div>` +
         (needsEl ? `<label class="field"><span>${tr('Your element')}</span><select data-bind="pch.${slot}"><option value="">${tr('— choose —')}</option>${CATS['P:elemental'].items.map(i => `<option${st.pch[slot] === i[2] ? ' selected' : ''}>${esc(i[2])}</option>`).join('')}</select></label>` : '') +
-        `<small class="muted">${tr('The twist questions are prompts the GM may ask when a twist happens. Record the questions, not answers.')}</small></div>`;
+        `</div>`;
     }
-    const intro = `<p class="muted"${tip(`<h5>${esc(tr('{cat} principles', { cat: tr(cat) }))}</h5>${esc(pc)}<hr>` + tr('Each principle gives roleplaying guidance, a Minor and Major twist question, and a Green ability that earns hero points for the whole team.'))}>${esc(pc)}</p>`;
     const key = 'pr-' + slot;
     if (p && !ui.expand[key]) return `<div class="picked-bar"><span>${tr('Chosen:')} <b>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</b></span><button class="btn small change-btn" data-act="expand" data-key="${key}">${ico('reset')} ${tr('Change choice')}</button></div>${detail}`;
-    return intro + (p ? `<div class="picked-bar muted-bar"><span>${tr('Pick a different principle below, or')}</span><button class="btn small ghost keep-btn" data-act="collapse" data-key="${key}">${ico('close')} ${tr('Keep the current choice')}</button></div>` : '') + `<div class="principles">${items}</div>${detail}`;
+    return (p ? `<div class="picked-bar muted-bar"><span>${tr('Pick a different principle below, or')}</span><button class="btn small ghost keep-btn" data-act="collapse" data-key="${key}">${ico('close')} ${tr('Keep the current choice')}</button></div>` : '') + `<div class="principles">${items}</div>${detail}`;
   }
 
 
@@ -899,10 +898,7 @@
     flowCurrent = cur >= 0 ? `${stepId}:${secs[cur].id}` : `${stepId}:done`;
     const idx = STEPS.findIndex(x => x.id === stepId);
     const next = STEPS[idx + 1];
-    const guide = cur >= 0
-      ? `<div class="guide"><span class="guide-label">${tr('Now')}</span><div class="guide-text"><b>${esc(secs[cur].title)}.</b> <span>${secs[cur].hint}</span></div><span class="guide-count">${cur + 1}<i>/</i>${n}</span><button class="linkbtn" data-act="jump" data-target="flow-${stepId}-${secs[cur].id}">${tr('Show me')}</button></div>`
-      : `<div class="guide done"><span class="guide-label">${ico('check')}</span><div class="guide-text"><b>${tr('This chapter is complete.')}</b> ${next ? tr('Continue to <b>{next}</b> when you are ready.', { next: esc(next.name) }) : ''}</div><span class="guide-count">${n}<i>/</i>${n}</span></div>`;
-    return guide + parts.join('');
+    return parts.join('');
   }
 
   // Collapsible choice grid: once something is chosen, show a compact summary with a clear "change choice" button.
@@ -940,7 +936,7 @@
     const i = stepIndex(st.step);
     return `<header class="chapter"><div class="chapter-num" aria-hidden="true">${ROMAN[i]}</div>
       <div class="chapter-titles"><div class="chapter-kicker">${tr('Chapter')} ${ROMAN[i]} <span>${tr('of {n}', { n: ROMAN[STEPS.length - 1] })}</span></div><h2 class="chapter-title">${esc(title)}</h2></div>
-      ${withMethod ? methodToggle() : ''}</header>`;
+      <div class="chapter-tools">${window.TOUR && window.TOUR[st.step] ? `<button class="btn small ghost guide-btn" data-act="tourShow">${ico('codex')} ${tr('Guide')}</button>` : ''}${withMethod ? methodToggle() : ''}</div></header>`;
   };
   const stepPanel = (eyebrow, title, introKey, body, withMethod) => `<div class="panel">${chapterHead(title, withMethod)}
       <p class="chapter-lede">${window.STEP_INTROS[introKey]}</p>${body}${navFooter()}</div>`;
@@ -969,7 +965,7 @@
           <p class="champs"><b>${tr('Champions:')}</b> ${esc(r.champs)}</p>
           <div class="grid4"><div><h4>${tr('Fitting Origins')}</h4><small>${esc(names(window.BACKGROUNDS, r.bg))}</small></div><div><h4>${tr('Fitting Sources')}</h4><small>${esc(names(window.POWER_SOURCES, r.ps))}</small></div>${r.ar && r.ar.length ? `<div><h4>${tr('Fitting Paths')}</h4><small>${esc(names(window.ARCHETYPES, r.ar))}</small></div>` : ''}<div><h4>${tr('Fitting Principles')}</h4><small>${esc(r.pr.map(id => (window.PRINCIPLE_LORE[id] || [id])[0]).join(', '))}</small></div></div>
           <p class="sc">${tr('No rules effect. Options marked {mark} <b>{place}</b> in later steps are only suggestions.', { mark: ico('mark'), place: esc(r.name) })}</p></div>`,
-        `<p class="muted">${tr('New to Runeterra? Read the <a href="#" data-act="lore" data-section="lore-planet">world lore</a> first.')}</p><div class="cards regions">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.id)}${fitMark('regions', x.id)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
+        `<div class="cards regions">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.id)}${fitMark('regions', x.id)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
     };
     return stepPanel('Step 1 · Runeterra', tr('Homeland'), 'region', flowHtml('region', sectionsFor('region', R0), H), false);
   }
@@ -980,7 +976,7 @@
       roll: () => rollerHtml('bg', ['d10', 'd10'], tr('Roll 2d10 for your Origin')),
       pick: () => pickSection('bg', b && chosenSummary(b.rt, b.sc, b.lore, b.champs),
         (st.method !== 'guided' ? '' : `<p class="muted">${tr('Highlighted cards match your roll.')}</p>`) + cardsHtml(window.BACKGROUNDS, 'bg', st.bg.id, 'bg', x => `<span class="n">${pad2(x.n)}</span>${fitMark('bg', x.id)}<div class="t">${esc(x.rt)}</div><div class="d">${esc(x.sub)}</div><span class="info" aria-label="${tr('Details')}"${tip(bgTip(x))}></span>`)),
-      assign: () => `<p>${tr('Assign {dice} to {n} of: {opts}.', { dice: b.q.dice.map(d => die(d)).join(' '), n: b.q.count || 2, opts: optsText(b.q.opts) })}${b.q.mustInclude ? ' ' + tr('One die <b>must</b> go to {trait}.', { trait: traitSpan(b.q.mustInclude) }) : ''}</p>${assignHtml(R.slots.bg, expand(b.q.opts), R.before.background, 'bg', tr('Assign each die to a quality:'))}`,
+      assign: () => `${b.q.mustInclude ? `<p>${tr('One die <b>must</b> go to {trait}.', { trait: traitSpan(b.q.mustInclude) })}</p>` : ''}${assignHtml(R.slots.bg, expand(b.q.opts), R.before.background, 'bg', tr('Assign each die to a quality:'))}`,
       principle: () => principleHtml('bg', b.principle, R) + `<p class="muted" style="margin-top:10px">${tr('Next step: your Source of Power, rolled with {dice}.', { dice: b.psDice.map(d => die(d, 'sm')).join('') })}</p>`
     };
     return stepPanel('Step 2 · Sentinels: Background', tr('Origin'), 'background', flowHtml('background', sectionsFor('background', R), H), true);
@@ -1021,9 +1017,8 @@
       assign: () => {
         let optKeys = expand(p.opts);
         if (p.required && !optKeys.includes(p.required.key)) optKeys = [p.required.key].concat(optKeys);
-        const dice = b.psDice.map(d => die(d)).join(' ');
-        return `<p>${p.required ? tr('Assign one of the dice from your Origin ({dice}) to {trait} — this one is required. Every other die goes to a power: {opts}.', { dice, trait: traitSpan(p.required.key), opts: optsText(p.opts) }) : tr('Every die from your Origin ({dice}) goes to a power: {opts}.', { dice, opts: optsText(p.opts) })}</p>
-          <p class="muted">${tr('Signature Weapon / Mount can be renamed in the last step (e.g. “Hextech Rifle”, “Valor”).')}</p>${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each die to a power:'))}`;
+        return `${p.required ? `<p>${tr('One die <b>must</b> go to {trait}.', { trait: traitSpan(p.required.key) })}</p>` : ''}
+${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each die to a power:'))}`;
       },
       extra: () => psExtraBody(p, R),
       group: s => groupHtml(s.group, R, true)
@@ -1045,11 +1040,11 @@
       assign: () => {
         const optKeys = expand((shape.req ? shape.req.any : []).concat(shape.powers, shape.quals));
         const rem = shape.remPowers === 'one' ? (shape.req ? 'exactly one' : 'Exactly one die') : shape.remPowers === 'any' ? (shape.req ? 'any number' : 'Any number of dice') : (shape.req ? 'one or more' : 'One or more dice');
-        const remLine = tr((shape.req ? 'Of the other dice, ' : '') + '<b>' + rem + '</b>' + (shape.remPowers === 'one' ? ' goes' : shape.remPowers === 'any' ? ' (even none) go' : ' go') + ' to powers: {opts}.', { opts: optsText(shape.powers) });
-        return `<p>${tr('Assign the dice from your Source ({dice}).', { dice: p.archDice.map(d => die(d)).join(' ') })}</p><ul class="rules-list">
+        const remLine = tr((shape.req ? 'Of the other dice, ' : '') + '<b>' + rem + '</b>' + (shape.remPowers === 'one' ? ' goes' : shape.remPowers === 'any' ? ' (even none) go' : ' go') + ' to powers.');
+        return `<ul class="rules-list">
             ${shape.req ? (shape.req.count ? `<li>${tr('You <b>must</b> end this step with <b>{what}</b> — ones you already have count, so put dice there only until you have two.', { what: esc(tr(shape.req.label)) })}</li>` : `<li>${tr('First, one die <b>must</b> go to <b>{what}</b>. If you already have it, you may skip this and use the die below instead.', { what: esc(tr(shape.req.label)) })}</li>`) : ''}
             <li>${remLine}</li>
-            <li>${tr('Every die left over goes to qualities: {opts}.', { opts: optsText(shape.quals) })}${shape.remPowers !== 'one' ? ` <span class="muted">${tr('It is fine to put every die into powers and take no quality here.')}</span>` : ''}</li></ul>
+            <li>${tr('Every die left over goes to qualities.')}</li></ul>
           ${assignHtml(R.slots.arch, optKeys, R.before.archetype, 'arch', tr('Assign each die:'), R.slots.training || [])}
           ${p.id === 'training' ? `<p style="margin-top:12px">${tr('From your <b>{src}</b> source: one extra quality from this Path\'s list at {die}.', { src: esc(p.rt), die: die('d8') })}</p>${assignHtml(R.slots.training, expand(shape.quals), R.before.archetype, 'arch', tr('Training bonus quality:'), R.slots.arch || [])}` : ''}
           ${shape.extra ? `<p style="margin-top:12px">${esc(shape.extra.text)}</p>${socket({ bind: 'arch.extra.key', d: shape.extra.die, cur: st.arch.extra.key, groups: traitGroups(expand(shape.extra.opts).filter(k => !R.before.archetype[k]), k => traitItem(k)), empty: tr('Bind this {die} to a trait', { die: shape.extra.die }) })}` : ''}
@@ -1086,10 +1081,6 @@
         : ['steady', tr('Steady'), tr('The same die in every zone: reliable from start to finish.')];
     return `<div class="status-trend ${t[0]}"${tip(`<h5>${t[1]}</h5>${t[2]}`)}>${t[1]}</div>`;
   }
-  const statusExplainer = () => `<div class="status-explain">
-      <div><b>${tr('What are these three dice?')}</b><p>${tr('They are your <b>status dice</b>. Every roll uses one of them, together with a power and a quality. Which one depends on your zone: <b>Green</b> while you are fine, <b>Yellow</b> when you start to get hurt (or the scene heats up) and <b>Red</b> when you are hanging by a thread.')}</p></div>
-      <div><b>${tr('How to choose')}</b><p>${tr('<b>Growing dice</b> (d6, d8, d10) start modest and shine when things go badly. <b>Equal dice</b> are steady. <b>Shrinking dice</b> (d10, d8, d6) are strong early and weaker under pressure. Your <b>Red</b> die also adds to your maximum Health, and each Temperament gives an <b>Out</b> ability for when you are knocked out.')}</p></div>
-    </div>`;
 
   function renderPersonality() {
     const R = R0, a = archDef(), pe = persDef();
@@ -1100,8 +1091,8 @@
       pick: () => pickSection('pers', pe && chosenSummary(pe.rt, pe.sc, '', pe.champs,
         `<div class="status-row"${tip(tr('<h5>Status dice</h5>The third die of every roll. Which one you use depends on your current Health zone.'))}><span class="z g">${tr('Green')} ${die(R.status[0])}</span><span class="z y">${tr('Yellow')} ${die(R.status[1])}</span><span class="z r">${tr('Red')} ${die(R.status[2])}</span></div>` +
         (pe.healthAny ? `<p class="sc">${tr('When determining Health you may use <b>any</b> power or quality.')}</p>` : '')),
-        statusExplainer() + cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div>${statusTrend(x.status)}<span class="info" aria-label="${tr('Details')}"${tip(`<h5>${esc(x.rt)}</h5><b>${tr('Status:')}</b> ${tr('Green')} ${x.status[0]}, ${tr('Yellow')} ${x.status[1]}, ${tr('Red')} ${x.status[2]}<br><b>${tr('Out:')}</b> ${esc(ruleTip(x.out))}<hr><small>${esc(x.champs)}</small>`)}></span>`)),
-      qname: () => `<p class="muted"${tip(traitTip('rp-quality'))}>${tr('A {die} quality that sums up your champion — your “high concept”. Examples: <em>Hextech Prodigy of the Academy</em>, <em>Last Kinkou of the Eastern Isles</em>, <em>Bilgewater\'s Luckiest Liar</em>.', { die: die('d8', 'sm') })}</p>
+        cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div>${statusTrend(x.status)}<span class="info" aria-label="${tr('Details')}"${tip(`<h5>${esc(x.rt)}</h5><b>${tr('Status:')}</b> ${tr('Green')} ${x.status[0]}, ${tr('Yellow')} ${x.status[1]}, ${tr('Red')} ${x.status[2]}<br><b>${tr('Out:')}</b> ${esc(ruleTip(x.out))}<hr><small>${esc(x.champs)}</small>`)}></span>`)),
+      qname: () => `
         <input type="text" data-bind="pers.qname" data-live="1" data-commit="1" value="${esc(st.pers.qname)}" placeholder="${tr('Type your Signature Quality, then press Enter')}">`,
       out: () => {
         const rq = reqFromText(pe.out);
@@ -1222,7 +1213,6 @@
         <label class="field"><span>${tr('Trait added to Health (highest by default)')}</span><select data-bind="health.trait">${h.elig.map(t => `<option value="${t.key}"${h.chosen && h.chosen.key === t.key ? ' selected' : ''}>${esc(traitName(t.key))} (${t.die})</option>`).join('')}${h.elig.length ? '' : `<option value="">${tr('none — use d4')}</option>`}</select></label>
         <div class="method" role="group"><button class="${st.health.mode !== 'roll' ? 'on' : ''}" data-act="hmode" data-m="fixed"${st.health.roll ? ' disabled' : ''}>${tr('Take 4')}</button><button class="${st.health.mode === 'roll' ? 'on' : ''}" data-act="hmode" data-m="roll"${st.health.roll ? ' disabled' : ''}>${tr('Roll')} ${die('d8', 'sm')}</button></div>
         ${st.health.mode === 'roll' ? (st.health.rerolled ? ` <p class="muted">${tr('Rolled {n}. Re-roll already used.', { n: st.health.roll })}</p>` : ` <button class="btn small" data-act="hroll">${st.health.roll ? tr('Rolled {n}. Re-roll once', { n: st.health.roll }) : tr('Roll d8')}</button>`) : ''}
-        <p class="muted" style="margin-top:8px">${tr('Decide whether to roll <em>before</em> rolling. You may re-roll once, and then the result stays.')}</p>
       </div><div class="detail">
         <table style="width:100%;font-size:.95rem"><tbody>
         <tr><td>${tr('Base')}</td><td style="text-align:right">8</td></tr>
@@ -1648,26 +1638,22 @@
         ${field('build', tr('Build'), tr('e.g. wiry, towering, clockwork'))}
         <label class="field"><span>${tr('Costume / equipment')}</span><textarea data-bind="info.costume" data-live="1" placeholder="${tr('What do they wear and carry into battle?')}">${esc(i.costume)}</textarea></label>
         <div class="portrait-row"><div class="hs-portrait small">${i.portrait ? `<img src="${i.portrait}" alt="${tr('Portrait')}">` : `<span class="muted">${tr('No portrait')}</span>`}</div>
-          <div><label class="btn small" for="portrait-file">${tr(i.portrait ? 'Change portrait' : 'Add portrait')}</label> ${i.portrait ? `<button class="btn small ghost" data-act="clearPortrait">${tr('Remove')}</button>` : ''}<input id="portrait-file" type="file" accept="image/*" hidden>
-          <p class="muted">${tr('Goes in the picture box of the hero sheet (and the PDF).')}</p></div></div>`,
+          <div><label class="btn small" for="portrait-file">${tr(i.portrait ? 'Change portrait' : 'Add portrait')}</label> ${i.portrait ? `<button class="btn small ghost" data-act="clearPortrait">${tr('Remove')}</button>` : ''}<input id="portrait-file" type="file" accept="image/*" hidden></div></div>`,
       bio: () => `<div class="bio-grid">
-        <div class="bio-write"><label class="field"><span>${tr('Biography')}</span><textarea id="bio-text" data-bind="info.notes" data-live="1" placeholder="${tr('Where did they come from? Who do they fight for? What do they want?')}">${esc(i.notes)}</textarea></label>
-          <p class="muted">${tr('Goes on the auxiliary sheet of your hero sheet and in the PDF.')}</p></div>
+        <div class="bio-write"><label class="field"><span>${tr('Biography')}</span><textarea id="bio-text" data-bind="info.notes" data-live="1" placeholder="${tr('Where did they come from? Who do they fight for? What do they want?')}">${esc(i.notes)}</textarea></label></div>
         <div class="bio-guide"><div class="bio-guide-h">${ico('map')} ${tr('Lore guide')}</div>${loreGuide().map(c => `<section class="guide-card"${c.color ? ` style="--rc:${c.color}"` : ''}>
           <div class="gc-k">${esc(c.kicker)}</div><h4>${esc(c.title)}</h4>${c.text ? `<p>${c.text}</p>` : ''}
           <div class="gc-qs">${c.qs.filter(Boolean).map(q => `<button type="button" class="bio-q" data-act="bioQ" data-q="${esc(q)}">${ico('next')}<span>${esc(q)}</span></button>`).join('')}</div>
           ${c.link ? `<a class="gc-link" href="${c.link}">${tr('Read in the Lore')} ${ico('next')}</a>` : ''}</section>`).join('')}</div></div>`,
-      abilities: () => `<p class="muted"${tip(tr('The rulebook asks you to rename every ability to fit your hero. The original Sentinels name stays on the sheet in small print so you and your GM can look it up.'))}>${tr('Leave a box empty to keep the original name.')}</p>
-        <div class="grid2">${abs.map(x => `<label class="field"><span>${esc(abName(x.name))} <span class="pill ${x.color}">${tr(x.color)}</span></span><input type="text" data-rename="${esc(x.iid)}" data-bind="renames" data-live="1" value="${esc(st.renames[x.iid] || '')}" placeholder="${esc(abName(x.name))}"></label>`).join('') || `<small class="muted">${tr('No abilities yet.')}</small>`}</div>`,
-      gear: () => `<p class="muted"${tip(tr('Signature Weapon and Mount are meant to be renamed (e.g. "Hextech Rifle", "Valor"). You can rename any other trait too, the way the rulebook renames Power Suit to "Power Arm".'))}>${tr('Leave a box empty to keep the original name.')}</p>
-        <div class="grid3">${renameTraits.map(k => `<label class="field"><span>${esc(TRAIT[k].rt)} ${die(R.T[k].die, 'sm')}</span><input type="text" data-bind="traitNames.${k}" data-live="1" value="${esc(st.traitNames[k] || '')}" placeholder="${esc(TRAIT[k].rt)}"></label>`).join('')}</div>`
+      abilities: () => `        <div class="grid2">${abs.map(x => `<label class="field"><span>${esc(abName(x.name))} <span class="pill ${x.color}">${tr(x.color)}</span></span><input type="text" data-rename="${esc(x.iid)}" data-bind="renames" data-live="1" value="${esc(st.renames[x.iid] || '')}" placeholder="${esc(abName(x.name))}"></label>`).join('') || `<small class="muted">${tr('No abilities yet.')}</small>`}</div>`,
+      gear: () => `        <div class="grid3">${renameTraits.map(k => `<label class="field"><span>${esc(TRAIT[k].rt)} ${die(R.T[k].die, 'sm')}</span><input type="text" data-bind="traitNames.${k}" data-live="1" value="${esc(st.traitNames[k] || '')}" placeholder="${esc(TRAIT[k].rt)}"></label>`).join('')}</div>`
     };
     const done = !stepIssues('finish', R).length;
     return `<div class="panel no-print">${chapterHead(tr('Legend'))}
       <p class="chapter-lede">${window.STEP_INTROS.finish}</p>
       ${flowHtml('finish', sectionsFor('finish', R), H, true)}
       <section class="flow-sec ${done ? 'current' : 'locked'}" id="flow-finish-export"><div class="flow-head"><span class="flow-num">${done ? ico('mark') : ico('lock')}</span><h3>${tr('Your hero sheet')}</h3>${done ? '' : `<span class="flow-lock">${tr('Sealed — name your champion first')}</span>`}</div>
-      ${done ? `<div class="flow-body"><p class="muted">${tr('Your sheet is below, laid out like the official two-page <em>Sentinel Comics RPG</em> hero sheet. Hero points, back issues, collections and current Health can be ticked and edited right on it during play.')}</p><div id="pdf-status"></div><input id="template-file" type="file" accept="application/pdf,.pdf" hidden>
+      ${done ? `<div class="flow-body"><div id="pdf-status"></div><input id="template-file" type="file" accept="application/pdf,.pdf" hidden>
         <div class="export-row"><button class="btn primary" data-act="pdf">${ico('download')} ${tr('Export PDF hero sheet')}</button><button class="btn" data-act="print">${tr('Print')}</button><button class="btn" data-act="export">${tr('Export JSON')}</button></div></div>` : ''}</section>
       ${done ? `<div class="sheet-cta"><div><b>${tr('Your sheet has its own page')}</b><p class="muted">${tr('Full screen, with the Health tracker always at hand for play and the Evolve your champion tools.')}</p></div>
         <div class="export-row"><a class="btn primary" href="ficha.html">${ico('file')} ${tr('Open the sheet')}</a><a class="btn" href="ficha.html#evoluir">${ico('reset')} ${tr('Evolve your champion')}</a></div></div>` : ''}
@@ -1685,7 +1671,7 @@
     const next = STEPS[i + 1];
     const ready = !stepIssues(st.step, R0).length;
     return `<div class="step-footer"><div class="footer-left"><button class="btn ghost" data-act="back">${ico('prev')} ${tr('Back')}</button><button class="btn small change-btn change-last" data-act="changeLast" hidden>${ico('reset')} ${tr('Change last choice')}</button></div>
-      <div class="next-wrap">${ready ? '' : `<span class="next-hint">${tr('Finish the step marked “You are here” to continue')}</span>`}<button class="btn primary${ready ? '' : ' is-disabled'}" data-act="next" aria-disabled="${!ready}"><span class="btn-kicker">${next ? tr('Chapter') + ' ' + ROMAN[i + 1] : ''}</span>${next ? esc(next.name) : tr('Next')} ${ico('next')}</button></div></div>`;
+      <div class="next-wrap"><button class="btn primary${ready ? '' : ' is-disabled'}" data-act="next" aria-disabled="${!ready}"><span class="btn-kicker">${next ? tr('Chapter') + ' ' + ROMAN[i + 1] : ''}</span>${next ? esc(next.name) : tr('Next')} ${ico('next')}</button></div></div>`;
   }
   const methodToggle = () => `<div class="method" role="group" aria-label="${tr('Creation method')}"${tip(tr('<h5>Guided vs Constructed</h5>Guided: roll and choose among the allowed entries. Constructed: pick freely. Die sizes work the same either way.'))}><span class="method-l">${tr('Method')}</span><button class="${st.method === 'constructed' ? 'on' : ''}" data-act="method" data-m="constructed" aria-pressed="${st.method === 'constructed'}">${tr('Constructed')}</button><button class="${st.method === 'guided' ? 'on' : ''}" data-act="method" data-m="guided" aria-pressed="${st.method === 'guided'}">${tr('Guided')}</button></div>`;
 
@@ -1785,13 +1771,14 @@
     const T = window.TOUR || {}, t = T[st.step];
     document.querySelectorAll('.tour-focus').forEach(e => e.classList.remove('tour-focus'));
     let box = document.getElementById('tour');
-    if (!st.tour || !st.tour.on || !t || st.tour.seen[st.step]) { if (box) box.remove(); return; }
+    // ui.tourForce: opened from the chapter's Guide button, shown even when the guide is off or already seen
+    if (!t || (!ui.tourForce && (!st.tour || !st.tour.on || st.tour.seen[st.step]))) { if (box) box.remove(); return; }
     const target = document.querySelector(t[2] || '.flow-sec.current');
     if (target) target.classList.add('tour-focus');
-    if (!box) { box = document.createElement('div'); box.id = 'tour'; box.className = 'tour-veil'; box.addEventListener('click', ev => { if (ev.target === box) { st.tour.seen[st.step] = true; save(); showTour(); } }); document.body.appendChild(box); }
+    if (!box) { box = document.createElement('div'); box.id = 'tour'; box.className = 'tour-veil'; box.addEventListener('click', ev => { if (ev.target === box) { ui.tourForce = false; st.tour.seen[st.step] = true; save(); showTour(); } }); document.body.appendChild(box); }
     const i = stepIndex(st.step);
     box.innerHTML = `<div class="tour" role="dialog" aria-modal="true" aria-label="${tr('Guide')}"><div class="tour-k">${ico('codex')} ${tr('Guide')} · ${i ? tr('Chapter') + ' ' + ROMAN[i] : esc(STEPS[0].name)}<span>${i + 1}/${STEPS.length}</span></div>
-      <h4>${t[0]}</h4><p>${t[1]}</p>
+      <h4>${t[0]}</h4><div class="tour-body">${t[1]}</div>
       <div class="tour-row"><button type="button" class="btn small primary" data-act="tourOk">${tr('Got it')}</button><button type="button" class="linkbtn" data-act="tourOff">${tr('Turn the guide off')}</button></div></div>`;
     const ok = box.querySelector('[data-act="tourOk"]'); if (ok && document.activeElement !== ok) ok.focus({ preventScroll: true });
   }
@@ -1807,7 +1794,7 @@
     }
     flowCurrent = null;
     socketAuto = false;
-    if (lastStep !== st.step) { ui.socket = null; lastStep = st.step; }
+    if (lastStep !== st.step) { ui.socket = null; ui.tourForce = false; lastStep = st.step; }
     const rg = regionDef();
     document.body.dataset.region = rg ? rg.id : '';
     document.body.style.setProperty('--region', rg ? rg.color : '');
@@ -2027,8 +2014,9 @@
       el.classList.add('used');
       return;
     }
-    if (act === 'tourOk') { st.tour.seen[st.step] = true; save(); showTour(); return; }
-    if (act === 'tourOff') { st.tour.on = false; save(); showTour(); return; }
+    if (act === 'tourOk') { ui.tourForce = false; st.tour.seen[st.step] = true; save(); showTour(); return; }
+    if (act === 'tourOff') { ui.tourForce = false; st.tour.on = false; save(); showTour(); return; }
+    if (act === 'tourShow') { ui.tourForce = true; showTour(); return; }
     if (act === 'tourOn') { st.tour = { on: true, seen: {} }; save(); if (SHEET_PAGE) location.href = 'index.html'; else showTour(); return; }
     if (act === 'sheetTab') {
       ui.sheetTab = el.dataset.tab;
@@ -2243,7 +2231,7 @@
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !filePop.hidden) setOpen(false, true); });
   }
   document.addEventListener('keydown', ev => {   // Escape also closes the guide popup for this chapter
-    if (ev.key === 'Escape' && document.getElementById('tour') && st.tour) { st.tour.seen[st.step] = true; save(); showTour(); }
+    if (ev.key === 'Escape' && document.getElementById('tour') && st.tour) { ui.tourForce = false; st.tour.seen[st.step] = true; save(); showTour(); }
   });
 
   // First visit on a touch screen: explain that underlined terms open their explanation with a tap.
