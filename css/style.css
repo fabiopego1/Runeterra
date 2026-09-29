@@ -245,6 +245,31 @@ main.stage.entering { opacity: 0; transform: translateY(14px); transition: none;
 .chapter-lede b { color: var(--text); font-weight: 600; }
 
 /* method switch: a compact engraved toggle */
+.qname-row { display: flex; gap: 10px; align-items: stretch; }
+.qname-row input { flex: 1; min-width: 0; }
+.qname-row .btn[disabled] { opacity: .45; cursor: not-allowed; }
+.redcat { border: 1px solid var(--line-2); margin-bottom: 8px; background: var(--ink-1); }
+.redcat.open { border-color: var(--zone-r); }
+.redcat-h { width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 10px 14px; background: none; border: 0; color: var(--text-1); font: inherit; text-align: left; cursor: pointer; }
+.redcat-h:hover .redcat-t { color: var(--gold-hi); }
+.redcat-t { display: inline-block; font-family: var(--font-display); font-size: 1.05rem; }
+.redcat-t::first-letter { text-transform: uppercase; }
+.redcat-have { font-size: .82rem; color: var(--text-2); display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.redcat-n { margin-left: auto; font-family: var(--font-mono); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); }
+.redcat-n b { color: var(--zone-r); font-weight: 600; }
+.redcat-arrow .ico { width: 12px; height: 12px; }
+.redcat .ab-list { padding: 0 12px 12px; }
+.hchoice { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 10px; }
+.hc { display: grid; gap: 4px; text-align: left; padding: 10px 12px; border: 1px solid var(--line-2); background: var(--ink-1); color: var(--text-1); font: inherit; cursor: pointer; }
+.hc:hover:not([disabled]) { border-color: var(--gold); }
+.hc.on { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+.hc-t { font-family: var(--font-display); font-size: 1.05rem; display: flex; align-items: center; gap: 8px; }
+.hc-d { font-size: .8rem; color: var(--text-2); }
+.hc-warn { color: var(--zone-r); font-weight: 600; }
+.hc.locked { opacity: .5; cursor: not-allowed; }
+.hc.locked .ico { width: 11px; height: 11px; vertical-align: -1px; }
+.hc[disabled]:not(.locked) { cursor: default; }
+@media (max-width: 520px) { .hchoice { grid-template-columns: 1fr; } }
 .method { display: inline-flex; align-items: stretch; border: 1px solid var(--line-2); align-self: end; margin-bottom: 6px; }
 .method-l { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); padding: 6px 10px; border-right: 1px solid var(--line-2); display: flex; align-items: center; }
 .method button { font: 600 .72rem var(--font-ui); letter-spacing: .12em; text-transform: uppercase; background: transparent; color: var(--text-2); border: 0; padding: 6px 12px; cursor: pointer; }
@@ -427,24 +452,37 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .assign-row .die { justify-self: center; }
 
 /* Die sockets — a die waiting to be bound to a trait; its tray of runes opens beneath it */
-.socket { border-bottom: 1px solid var(--line); }
-.assign > .muted + .socket, p + .socket { border-top: 1px solid var(--line); }
-.sock-row { display: grid; grid-template-columns: 44px 22px minmax(0, 1fr); align-items: center; min-height: 56px; }
+.socket { padding: 5px 0; }
+.sock-row { display: grid; grid-template-columns: 44px 58px minmax(0, 1fr); align-items: center; min-height: 60px; }
 .sock-row .die { justify-self: center; width: 2rem; height: 2rem; font-size: .72rem; }
 .sock-mark { position: relative; justify-self: center; display: grid; place-items: center; width: 34px; height: 34px; font: 500 .74rem var(--font-mono); color: var(--gold); }
 .sock-mark::before { content: ''; position: absolute; inset: 5px; border: 1px solid var(--gold-lo); transform: rotate(45deg); }
-.sock-link { height: 1px; background: var(--line-2); position: relative; }
-.sock-link::after { content: ''; position: absolute; right: -3px; top: -3px; width: 5px; height: 5px; border: 1px solid var(--line-2); background: var(--ink-0); transform: rotate(45deg); }
-.socket.filled .sock-link, .socket.filled .sock-link::after { background: var(--gold-lo); border-color: var(--gold); }
+.sock-arrow { position: relative; height: 1px; background: var(--line-2); margin-right: 6px; }
+.sock-arrow::after { content: ''; position: absolute; right: -1px; top: -4px; border: 4px solid transparent; border-left: 6px solid var(--line-2); border-right: 0; }
+.sock-arrow i { position: absolute; left: 50%; top: -9px; transform: translate(-50%, -50%); font-style: normal; font-family: var(--font-mono); font-size: .56rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); }
+.socket.filled .sock-arrow { background: var(--gold); }
+.socket.filled .sock-arrow::after { border-left-color: var(--gold); }
+.socket.open .sock-arrow { background: var(--hex); } .socket.open .sock-arrow::after { border-left-color: var(--hex); }
+.socket.open .sock-arrow i, .socket.filled .sock-arrow i { color: var(--text-2); }
+.sock-kind { align-self: center; font-family: var(--font-mono); font-size: .56rem; letter-spacing: .12em; text-transform: uppercase; padding: 2px 6px; border: 1px solid; }
+.sock-kind.k-power { color: var(--hex); border-color: var(--hex); }
+.sock-kind.k-quality { color: var(--gold); border-color: var(--gold); }
+.sock-slot .die { align-self: center; }
+.tray-kind { display: grid; gap: 12px; padding: 10px 0 10px 12px; border-left: 3px solid; }
+.tray-kind.k-power { border-color: var(--hex); }
+.tray-kind.k-quality { border-color: var(--gold); }
+.tray-kind-h { display: flex; gap: 10px; align-items: center; font-size: .86rem; color: var(--text-2); }
+.rune.k-power::before { border-color: var(--hex); }
+.tray.both .rune.k-power.on { box-shadow: inset 0 0 0 1px var(--hex); }
 .sock-slot {
-  display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; min-width: 0; text-align: left; font: inherit; color: var(--text); cursor: pointer;
-  background: none; border: 0; border-bottom: 1px dashed var(--line-2); padding: 10px 2px 8px 12px; margin: 0; transition: border-color .15s, background .15s;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; text-align: left; font: inherit; color: var(--text); cursor: pointer;
+  background: rgba(255, 255, 255, .015); border: 1px dashed var(--line-2); padding: 10px 10px 10px 12px; margin: 0; transition: border-color .15s, background .15s;
 }
-.sock-slot:hover { border-bottom-color: var(--gold-lo); background: rgba(200, 164, 94, .04); }
-.socket.filled .sock-slot { border-bottom-style: solid; border-bottom-color: transparent; }
-.socket.filled .sock-slot:hover { border-bottom-color: var(--gold-lo); }
-.socket.open .sock-slot { border-bottom: 1px solid var(--hex); }
-.sock-empty { font-style: italic; color: var(--text-3); }
+.sock-slot:hover { border-color: var(--gold-lo); background: rgba(200, 164, 94, .04); }
+.socket.filled .sock-slot { border-style: solid; border-color: var(--gold-lo); background: rgba(200, 164, 94, .05); }
+.socket.filled .sock-slot:hover { border-color: var(--gold); }
+.socket.open .sock-slot { border: 1px solid var(--hex); }
+.sock-empty { color: var(--text-2); }
 .socket.open .sock-empty { color: var(--hex); font-style: normal; }
 .sock-name { font-family: var(--font-display); font-size: 1.12rem; color: var(--gold-hi); animation: bind .5s ease-out; }
 .sock-cat { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); }
@@ -889,7 +927,7 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
   .picked-bar { flex-direction: column; gap: 8px; }
   .change-btn { align-self: stretch; justify-content: center; padding: 9px 12px; }
   .assign-row { grid-template-columns: 40px minmax(0, 1fr) 22px; }
-  .sock-row { grid-template-columns: 40px 12px minmax(0, 1fr) 22px; }
+  .sock-row { grid-template-columns: 40px 40px minmax(0, 1fr); }
   .tray, .socket .note { margin-left: 20px; }
   .tray-grid { grid-template-columns: 1fr 1fr; }
   .step-footer { flex-direction: column-reverse; align-items: stretch; }

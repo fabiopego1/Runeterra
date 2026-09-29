@@ -1,4 +1,4 @@
-// pt-BR: Origens, Fontes de Poder, Caminhos, Temperamentos, Supremas e Reviravoltas.
+// pt-BR: Origens, Fontes de Poder, Caminhos, Temperamentos e Supremas.
 // Só os textos exibidos mudam; ids, dados e listas (a lógica das regras) ficam intactos.
 (() => {
   'use strict';
@@ -132,14 +132,4 @@
   };
   for (const list of [W.BACKGROUNDS, W.POWER_SOURCES, W.ARCHETYPES, W.PERSONALITIES]) for (const x of list) if (CHAMPS[x.champs]) x.champs = CHAMPS[x.champs];
 
-  // Reviravoltas do Destino: nome + descrição em pt (sc continua sendo a regra em inglês)
-  patch(W.RETCONS, {
-    'swap-powers': ['Dons Trocados', 'Troque dois dados quaisquer entre os seus poderes.'],
-    'swap-quals': ['Retreinado', 'Troque dois dados quaisquer entre as suas qualidades.'],
-    'change-ability': ['Nova Técnica', 'Escolha um poder ou qualidade diferente para uma das suas habilidades.'],
-    'add-d6': ['Talento Oculto', 'Adicione um poder ou qualidade d6 de qualquer categoria.'],
-    'red-up': ['Vontade de Ferro', 'Aumente seu dado de status Vermelho em um tamanho (máximo d12).'],
-    'change-principle': ['Convicções Mudadas', 'Troque um dos seus princípios por qualquer outro princípio.'],
-    'extra-red': ['Reservas Ocultas', 'Ganhe uma habilidade Vermelha extra, como descrito no passo das Supremas.']
-  }, (x, v) => { x.rt = v[0]; x.desc = v[1]; });
 })();

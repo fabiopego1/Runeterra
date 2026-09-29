@@ -294,29 +294,23 @@
   // Boas-vindas, Povo e Terra Natal não têm guia.
   W.TOUR = {
     background: [
-      ['Origem', 'Quem seu campeão era <b>antes</b> dos poderes. A partir daqui cada escolha vira um <b>dado</b> na ficha.', '.chapter'],
       ['Para que servem os dados', 'Quando seu herói tenta algo arriscado, você rola <b>três dados</b>: um <b>poder</b>, uma <b>qualidade</b> e o seu <b>dado de status</b>. Não se soma nada: a habilidade diz se vale o <b>maior</b> dado (Máx), o do <b>meio</b> (Médio) ou o <b>menor</b> (Mín).<span class="tour-ex">Força d10, Combate d8 e status d6 tiram 7, 5 e 2. Um Ataque com o dado Máx causa 7 de dano.</span>', ''],
       ['Qualidades e poderes', '<b>Qualidades</b> são o que você sabe fazer: lutar, convencer, investigar. <b>Poderes</b> são o que te torna extraordinário: voar, magia, força sobre-humana. Cada um tem o seu dado.', ''],
       ['Tamanho do dado', 'Dado maior tira número maior. <b>d6</b> é bom, <b>d8</b> ótimo, <b>d10</b> excelente, <b>d12</b> lendário.<span class="tour-ex">Combate d10 acerta mais forte que Combate d6.</span>', ''],
-      ['Passe o mouse', 'Cada cartão mostra a história e campeões parecidos. Escolha o que combina com o seu herói: os números aparecem depois.', '.cards'],
       ['Ligue os dados', 'Sua Origem te deu estes dados. Clique num <b>dado</b> e escolha a <b>qualidade</b> que ele vira.<span class="tour-ex">d10 em Medicina e d8 em Ciência: seu herói é um curandeiro excelente e um cientista ótimo.</span>', '#flow-background-assign', '#flow-background-assign.current'],
       ['O dado maior', 'Coloque o <b>dado maior</b> naquilo em que seu herói é melhor. Ele vai entrar nas rolagens dessa qualidade o jogo todo.', '#flow-background-assign .socket', '#flow-background-assign.current'],
       ['Princípio', 'Aquilo em que seu herói acredita. Não é um dado: é um guia para interpretar.', '#flow-background-principle', '#flow-background-principle.current'],
       ['Pontos de herói', 'Quando você age de acordo com o princípio mesmo quando custa caro, o Mestre te dá <b>pontos de herói</b>, que melhoram rolagens.<span class="tour-ex">Princípio da Honra: você cumpre sua palavra mesmo quando custa caro.</span>', '#flow-background-principle .principles', '#flow-background-principle.current']
     ],
     powersource: [
-      ['Fonte de Poder', 'O que <b>transformou</b> seu campeão: magia, hextec, um espírito, treino extremo. Aqui nascem os seus <b>poderes</b>.', '.chapter'],
       ['Dados vindos da Origem', 'Os dados deste capítulo vêm da <b>Origem</b> que você escolheu. Cada Origem dá tamanhos diferentes.', ''],
-      ['Passe o mouse', 'Cada cartão mostra a história e campeões parecidos. Os poderes aparecem depois que você escolhe.', '.cards'],
       ['Poderes', 'Clique num <b>dado</b> e escolha o <b>poder</b> que ele vira. Quanto maior o dado, mais forte o poder.<span class="tour-ex">Chama d10: seu fogo é excelente. Voo d6: você voa, mas sem muita graça.</span>', '#flow-powersource-assign', '#flow-powersource-assign.current'],
       ['Habilidades', 'Golpes e truques especiais. A <b>cor</b> diz quando ficam liberadas: <b>Verde</b> sempre, <b>Amarela</b> quando a luta aperta, <b>Vermelha</b> por um fio.', '[id^="flow-powersource-g-"].current', '[id^="flow-powersource-g-"].current'],
       ['Qual dado ela usa', 'Depois de marcar uma habilidade, clique no <b>poder ou qualidade</b> que ela usa. É o dado dele que entra na rolagem.', '[id^="flow-powersource-g-"].current .ab-list', '[id^="flow-powersource-g-"].current'],
       ['Tipos de habilidade', '<b>A</b> é uma ação no seu turno. <b>R</b> é uma reação, fora do turno. <b>I</b> fica sempre ativa.<span class="tour-ex">Campo Reativo (R): quem te ataca de perto sofre o mesmo dano.</span>', '[id^="flow-powersource-g-"].current', '[id^="flow-powersource-g-"].current'],
-      ['As seis ações', 'Toda ação é uma de seis: <b>Atacar</b>, <b>Defender</b>, <b>Superar</b> um obstáculo, <b>Fortalecer</b> um aliado, <b>Atrapalhar</b> um inimigo e <b>Recuperar</b> Vida.', '', '[id^="flow-powersource-g-"].current']
     ],
     archetype: [
       ['Caminho', 'Seu <b>estilo de luta</b>, como as funções de League of Legends: tanque, atirador, mago. Dá mais <b>poderes e qualidades</b>.', '.chapter'],
-      ['Passe o mouse', 'Cada cartão mostra a história e campeões parecidos. As regras do Caminho aparecem depois que você escolhe.', '.cards'],
       ['Regras do Caminho', 'Cada Caminho tem regras para os dados. Leia a lista acima deles antes de ligar.<span class="tour-ex">Duelista: um dado precisa ir para Combate Corpo a Corpo.</span>', '#flow-archetype-assign .rules-list || #flow-archetype-assign', '#flow-archetype-assign.current'],
       ['Poder ou qualidade', 'Aqui um dado pode virar <b>poder</b> ou <b>qualidade</b>. Algo que você já tem não pode ser escolhido de novo.', '#flow-archetype-assign .socket', '#flow-archetype-assign.current'],
       ['Habilidades Verdes', 'Sempre disponíveis. Marque as habilidades e clique no <b>poder ou qualidade</b> que cada uma usa.', '[id^="flow-archetype-g-"].current', '[id^="flow-archetype-g-"].current'],
@@ -334,21 +328,10 @@
       ['Escolha duas', 'Só aparecem categorias em que você tem algo <b>d6 ou maior</b>. Marque <b>duas</b> e escolha o que cada uma usa.', '.flow-sec.current'],
       ['Palavras sublinhadas', 'Passe o mouse para ler a regra.<span class="tour-ex">Dado Máx: o maior dos três dados que você rolou.</span>', '.flow-sec.current .term']
     ],
-    retcon: [
-      ['Reviravolta do Destino', 'Uma chance de <b>corrigir</b> algo na ficha antes de jogar. Escolha <b>uma</b> opção.', '.principles'],
-      ['Na dúvida', '<b>Talento Oculto</b> dá um poder ou qualidade <b>d6</b> novo. É a opção mais simples.', '.principles [data-id="add-d6"]']
-    ],
     health: [
-      ['Vida', 'Quanto <b>dano</b> seu campeão aguenta. A Forja faz a conta.', '.flow-sec'],
       ['Zonas', 'Conforme a Vida cai, você passa de <b>Verde</b> para <b>Amarela</b> e <b>Vermelha</b>. Cada zona libera habilidades e troca o dado de status.<span class="tour-ex">Com Vida 30: Verde de 30 a 23, Amarela de 22 a 12, Vermelha de 11 a 1.</span>', '.hs-health'],
-      ['Fixo ou rolado', 'Decida <b>antes</b>: ficar com <b>4</b> ou rolar um <b>d8</b>. Rolando, dá para rolar de novo <b>uma vez</b>.', '.flow-body .method']
+      ['Fixo ou rolado', 'Decida <b>antes</b>: ficar com <b>4</b> ou rolar um <b>d8</b>. Rolando, dá para rolar de novo <b>uma vez</b>.', '.hchoice']
     ],
-    finish: [
-      ['Nome', 'Só o <b>nome</b> é obrigatório. O resto pode ser preenchido em qualquer ordem.', '#flow-finish-name'],
-      ['História', 'Clique numa pergunta do <b>Guia de Lore</b> para usá-la na biografia.', '.bio-guide'],
-      ['Nomes próprios', 'Renomeie as habilidades como as de um campeão. Deixe vazio para manter o original.<span class="tour-ex">Golpe Duplo vira Dança das Lâminas.</span>', '#flow-finish-abilities'],
-      ['Na mesa', 'Exporte o <b>PDF</b> ou abra a página <b>Ficha</b>: os botões − e + da Vida mudam sua zona e liberam as habilidades.', '.sheet-cta || .export-row']
-    ]
   };
 
   W.STEP_INTROS = {
@@ -359,8 +342,7 @@
     archetype: 'Como seu campeão luta e que papel cumpre no grupo. Dá mais <b>poderes e qualidades</b>, habilidades <b>Verdes</b> e o <b>segundo princípio</b>.',
     personality: 'Como seu campeão reage sob pressão. Dá os <b>dados de status</b>, a <b>Qualidade Marcante</b> e a habilidade de <b>Nocaute</b>.',
     red: 'Suas duas habilidades <b>mais fortes</b>, liberadas quando você está <b>por um fio</b>.',
-    retcon: 'Um último <b>ajuste</b> antes de fechar a ficha.',
     health: 'Quanto <b>dano</b> seu campeão aguenta. A conta é feita sozinha; você só escolhe o que entra nela e se quer <b>rolar</b>.',
-    finish: 'Dê <b>nome</b> e história ao seu campeão. Só o <b>nome</b> é obrigatório; o resto pode ser preenchido em qualquer ordem.'
+    finish: 'Dê <b>nome</b> e história ao seu campeão. <b>Nada aqui é obrigatório</b>: preencha o que quiser, em qualquer ordem.'
   };
 })();

@@ -10,7 +10,7 @@ try { playwright = require('playwright'); } catch (e) { playwright = require(req
 
 const BASE = (process.env.BASE_URL || 'http://localhost:8765').replace(/\/$/, '');
 const FIXTURE = fs.readFileSync(path.join(__dirname, 'fixtures', 'champion.json'), 'utf8');
-const STEPS = ['intro', 'people', 'region', 'background', 'powersource', 'archetype', 'personality', 'red', 'retcon', 'health', 'finish'];
+const STEPS = ['intro', 'people', 'region', 'background', 'powersource', 'archetype', 'personality', 'red', 'health', 'finish'];
 
 let failures = 0;
 const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if (!cond) failures++; };
@@ -44,7 +44,11 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
       if (!(await p.$(`.rune[data-bind="${bd}"][data-val="${v}"]`))) await p.click(`.sock-slot[data-bind="${bd}"]`);
       await p.click(`.rune[data-bind="${bd}"][data-val="${v}"]`); await p.waitForTimeout(30);
     };
-    const ab = (g, n, cat) => p.click(`[data-act=toggleAb][data-g=${g}][data-name="${n}"]${cat ? `[data-cat="${cat}"]` : ''}`);
+    const ab = async (g, n, cat) => {
+      const q = `[data-act=toggleAb][data-g=${g}][data-name="${n}"]${cat ? `[data-cat="${cat}"]` : ''}`;
+      if (!(await p.$(q)) && cat && await p.$(`[data-act=redCat][data-cat="${cat}"]`)) { await p.click(`[data-act=redCat][data-cat="${cat}"]`); await p.waitForTimeout(50); }
+      return p.click(q);
+    };
 
     ok(!(await p.$('#tour')) && !(await p.$('[data-act=tourShow]')), 'no guide on the welcome page');
     ok(!(await p.$('[data-act=method]')) && !(await p.$('[data-act=tourOff]')), 'no method choice and no option to turn the guide off');
@@ -62,10 +66,10 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await next();
     ok(await step() === regionStep, 'cannot advance without picking a region');
     await p.click('[data-kind=region][data-id=zaun]'); await next();
-    ok(await p.$eval('#tour h4', e => e.textContent.includes('Origem')), 'the guide opens on the Origin chapter');
+    ok(await p.$eval('#tour h4', e => e.textContent.includes('dados')), 'the Origin guide opens by explaining what the dice do');
     await p.click('#tour [data-act=tourNext]');
-    ok(await p.$eval('#tour .tour-dots i.on', e => !!e) && await p.$eval('#tour h4', e => e.textContent.includes('dados')), 'the guide moves to its next step, about what the dice do');
-    ok(!(await p.$$eval('#tour .tour-dots i', e => e.length > 5)), 'the dice-binding steps are not shown before an Origin is chosen');
+    ok(await p.$eval('#tour .tour-dots i.on', e => !!e) && await p.$eval('#tour h4', e => e.textContent.includes('Qualidades')), 'the guide moves to its next step');
+    ok(await p.$$eval('#tour .tour-dots i', e => e.length) === 3, 'the dice-binding steps are not shown before an Origin is chosen');
     await p.click('#tour [data-act=tourOk]');
     ok(!(await p.$('#tour')), '"Pular" closes the guide');
     await p.click('[data-kind=bg][data-id=anachronistic]'); await p.waitForTimeout(150);
@@ -110,19 +114,21 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('#tour h4', e => e.textContent.includes('Temperamento')), 'the guide can go back a step');
     await p.click('[data-act=tourOk]');
     await p.click('[data-kind=pers][data-id=decisive]');
-    await p.fill('input[data-bind="pers.qname"]', 'Dom dos Imaginais'); await p.press('input[data-bind="pers.qname"]', 'Enter'); await p.waitForTimeout(100);
+    await p.fill('input[data-bind="pers.qname"]', 'Dom dos Imaginais'); await p.waitForTimeout(100);
+    ok(!!(await p.$('#flow-personality-qname.current')) && await p.$eval('[data-act=qok]', b => !b.disabled), 'the Signature Quality waits for the Confirm button');
+    await p.click('[data-act=qok]'); await p.waitForTimeout(150);
+    ok(!!(await p.$('#flow-personality-qname.folded')), 'Confirm keeps the name and moves on');
     await sel('pers.outTrait', 'cosmic');
     await next();
+    ok(await p.$$eval('.redcat', e => e.length) > 2 && !(await p.$('.redcat .ab')), 'Ultimates list their categories closed, so the page is not a wall of abilities');
     await ab('red', 'Purification', 'Q:mental'); await ab('red', 'Summoned Allies', 'P:elemental'); await sel('sel.red.1.trait', 'cosmic');
     await next();
-    await p.click('[data-act=retcon][data-id=change-principle]'); await p.waitForTimeout(100);
-    const princ = await p.evaluate(() => { const s = window.ForgeDebug.state(); return [s.bg.principle, s.arch.principle]; });
-    const popts = await p.$$eval('select[data-bind="retcon.principle"] option', os => os.map(o => o.value));
-    ok(popts.length > 5 && princ.every(x => !popts.includes(x)), 'Twist of Fate cannot swap in a principle you already have');
-    await p.click('.step-footer [data-act=back]'); await p.waitForTimeout(100);
-    ok(!!(await p.$('#flow-retcon-pick.current')), 'Back reopens the previous section of the chapter');
-    await p.click('[data-act=retcon][data-id=red-up]');
+    ok(!(await p.$$eval('.rail-name', e => e.some(x => /Reviravolta/.test(x.textContent)))), 'there is no Twist of Fate chapter');
+    ok(await p.$eval('.hchoice', e => /Definitivo/.test(e.textContent)), 'rolling for Health warns it cannot be undone');
+    await p.click('.step-footer [data-act=back]'); await p.waitForTimeout(600);
+    ok(await step() === 'Supremas', 'Back from the first section goes to the previous chapter');
     await next(); await next();
+    ok(!(await p.$('#stage .flow-todo')) && await p.$eval('.step-footer', f => !!f), 'nothing in the Legend chapter is required');
     await p.fill('input[data-bind="info.name"]', 'Bruxaria'); await p.press('input[data-bind="info.name"]', 'Enter'); await p.waitForTimeout(100);
     ok(await p.$$eval('.rail-item.locked', e => e.length) === 0, 'every chapter unlocked at the end');
     ok(!!(await p.$('[data-act=pdf]')), 'PDF export available');
@@ -332,6 +338,16 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.context().close();
   } else console.log('skip GM Screen unlock (GM_PASSWORD not set)');
 
+  // Everything under assets/ must reach GitHub Pages (the tooltip art once went missing there).
+  ok(/cp -r assets _site\//.test(fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'pages.yml'), 'utf8')), 'the Pages deploy copies the whole assets folder');
+  {
+    global.window = {}; for (const f of ['data-tables.js', 'lore-images.js']) require(path.join(__dirname, '..', 'js', f));
+    const W = global.window, miss = [];
+    for (const [k, list] of [['bg', W.BACKGROUNDS], ['ps', W.POWER_SOURCES], ['ar', W.ARCHETYPES], ['pe', W.PERSONALITIES]])
+      for (const x of list) if (!fs.existsSync(path.join(__dirname, '..', 'assets', 'cards', `${k}-${x.id}.webp`))) miss.push(`${k}-${x.id}`);
+    for (const [slot, im] of Object.entries(W.LORE_IMAGES)) if (/^(r-|race-)/.test(slot) && !fs.existsSync(path.join(__dirname, '..', im.src.replace('assets/lore/', 'assets/lore/tip/')))) miss.push(slot);
+    ok(!miss.length, `every hover card has its picture${miss.length ? ' (missing: ' + miss.join(', ') + ')' : ''}`);
+  }
   errors.forEach(e => console.log('     ', e));
   ok(errors.length === 0, 'no JavaScript errors or missing files');
   await browser.close();
