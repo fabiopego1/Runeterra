@@ -30,7 +30,7 @@ window.LORE_IMAGES = {
   'resurgence': { src: 'assets/lore/mapa-regioes.webp', credit: 'Riot Games' },
   'demacia-noxus-war': { src: 'assets/lore/guerra-demacia-noxus.webp', credit: 'Riot Games', pos: '50% 35%' },
 
-  // artes conceituais do Mapa de Runeterra (map.leagueoflegends.com, Riot Games)
+  // artes conceituais do Mapa de Runeterra (map.leagueoflegends.com) e artes de contos do Universo (universe.leagueoflegends.com), Riot Games
   'planet': { src: 'assets/lore/planet.webp', credit: "As Primeiras Terras · Mapa de Runeterra · Riot Games" },
   'runes': { src: 'assets/lore/runes.webp', credit: "Encarando o Vazio · Mapa de Runeterra · Riot Games" },
   'realms': { src: 'assets/lore/realms.webp', credit: "Os Grandes Monastérios · Mapa de Runeterra · Riot Games" },
@@ -49,12 +49,12 @@ window.LORE_IMAGES = {
   'r-shurima': { src: 'assets/lore/r-shurima.webp', credit: "A Cidade do Sol · Mapa de Runeterra · Riot Games" },
   'r-targon': { src: 'assets/lore/r-targon.webp', credit: "Cume do Monte Targon · Mapa de Runeterra · Riot Games" },
   'r-void': { src: 'assets/lore/r-void.webp', credit: "O Toque do Vazio · Mapa de Runeterra · Riot Games" },
-  'race-humano': { src: 'assets/lore/race-humano.webp', credit: "O Grande Rio · Mapa de Runeterra · Riot Games" },
-  'race-plantifero': { src: 'assets/lore/race-plantifero.webp', credit: "Os Luonn-Kon · Mapa de Runeterra · Riot Games" },
-  'race-construto': { src: 'assets/lore/race-construto.webp', credit: "Baronesa Velveteen Lenare · Mapa de Runeterra · Riot Games", pos: '50% 20%' },
-  'race-meio-dragao': { src: 'assets/lore/race-meio-dragao.webp', credit: "Os dragões elementais · Mapa de Runeterra · Riot Games" },
-  'race-troll': { src: 'assets/lore/race-troll.webp', credit: "Diplomacia Freljordana · Mapa de Runeterra · Riot Games" },
-  'race-vastaya': { src: 'assets/lore/race-vastaya.webp', credit: "Neeko · Mapa de Runeterra · Riot Games" },
-  'race-espirito': { src: 'assets/lore/race-espirito.webp', credit: "Lago dos lírios iluminados · Mapa de Runeterra · Riot Games", pos: '50% 60%' },
+  'race-humano': { src: 'assets/lore/race-humano.webp', credit: "O Grande Rio · Mapa de Runeterra · Riot Games", pos: '88% 40%' },
+  'race-plantifero': { src: 'assets/lore/race-plantifero.webp', credit: "Zyra, “Com as flores” · Universo de League of Legends · Riot Games" },
+  'race-construto': { src: 'assets/lore/race-construto.webp', credit: "Galio, “Um Herói Desperta” · Universo de League of Legends · Riot Games", pos: '78% 15%' },
+  'race-meio-dragao': { src: 'assets/lore/race-meio-dragao.webp', credit: "Shyvana, “A Fera Alada” · Universo de League of Legends · Riot Games", pos: '72% 40%' },
+  'race-troll': { src: 'assets/lore/race-troll.webp', credit: "Diplomacia Freljordana · Mapa de Runeterra · Riot Games", pos: '62% 50%' },
+  'race-vastaya': { src: 'assets/lore/race-vastaya.webp', credit: "Ahri, “Jardim do Esquecimento” · Universo de League of Legends · Riot Games", pos: '30% 35%' },
+  'race-espirito': { src: 'assets/lore/race-espirito.webp', credit: "Kindred, “Floresta para as Árvores” · Universo de League of Legends · Riot Games" },
   'race-yordle': { src: 'assets/lore/race-yordle.webp', credit: "Geometria de Trânsito · Mapa de Runeterra · Riot Games" },
 };
