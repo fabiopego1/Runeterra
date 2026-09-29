@@ -369,6 +369,27 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(!dupSrc.length && !dupFile.length, `no picture is used twice${dupSrc.length || dupFile.length ? ': ' + dupSrc.concat(dupFile).join(', ') : ''}`);
   }
   errors.forEach(e => console.log('     ', e));
+  // Book p.44 "I've Already Got That": a Path's required trait you already have can take a bigger new die,
+  // and its old die comes back to be used in the same step.
+  {
+    const p = await newPage();
+    await p.goto(`${BASE}/index.html`);
+    const S = JSON.parse(FIXTURE);
+    Object.assign(S, { step: 'archetype', maxStep: 9, tour: { on: false, seen: {} }, noRetcon: true });
+    S.bg = { id: 'struggling', assign: { b0: 'banter', b1: 'underworld', b2: 'acrobatics' }, principle: S.bg.principle };
+    S.ps = { id: 'genetic', assign: { p0: 'agility', p1: 'flight', p2: 'strength' }, extra: {} };
+    S.arch = { id: 'powerhouse', base: null, assign: { a0: 'strength' }, principle: null, extra: {}, notes: '' };
+    S.sel = { 'ps-yellow': [], 'ps-green': [] };
+    await p.evaluate(s => localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)), S);
+    await p.reload(); await p.waitForTimeout(400);
+    const tr = await p.evaluate(() => window.ForgeDebug.traits().find(t => t.key === 'strength'));
+    ok(tr && tr.die === 'd10', 'a required trait you already have (Strength d6) can take the bigger new die (d10)');
+    ok(!!(await p.$('.sock-slot[data-bind="arch.assign.fa0"]')), 'and its old d6 comes back as a die to use in the same step');
+    await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.arch.assign.a0 = 'agility'; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
+    await p.reload(); await p.waitForTimeout(300);
+    ok(/Força|Strength/.test(await p.$eval('#flow-archetype-assign', e => e.textContent)) && !(await p.$('.sock-slot[data-bind="arch.assign.fa0"]')), 'any other trait you already have still cannot be taken again');
+    await p.context().close();
+  }
   ok(errors.length === 0, 'no JavaScript errors or missing files');
   await browser.close();
   console.log(failures ? `\n${failures} failing` : '\nall passing');

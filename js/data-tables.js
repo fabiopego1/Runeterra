@@ -355,7 +355,7 @@ window.ARCHETYPES = [
     lore: 'Metal and Hextech define you, whether you were built from scratch or rebuilt by the Glorious Evolution.',
     champs: 'Blitzcrank, Viktor, Camille, Orianna',
     powers: ['sig-vehicle', 'sig-weapon', 'P:athletic', 'P:intellectual', 'P:mobility', 'P:selfcontrol', 'P:technological'], quals: ['Q:information', 'Q:mental'], remPowers: 'oneOrMore',
-    extra: { type: 'addTrait', kind: 'power', opts: ['P:technological'], die: 'd8', text: 'Assign d8 to a Technological power you do not already possess.' },
+    extra: { type: 'addTrait', kind: 'power', opts: ['P:technological'], die: 'd10', text: 'Assign d10 to a Technological power you do not already possess.' },
     green: { count: 2, diff: true, list: ['Adaptive Programming', 'Living Arsenal', 'Metal Skin', 'Self-Improvement', 'Something for Everyone'] },
     yellow: { count: 1, fromGreen: true, note: 'One of the Automaton abilities above at Yellow.' },
     healthAlt: ['P:technological'],
