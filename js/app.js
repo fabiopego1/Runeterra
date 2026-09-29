@@ -44,13 +44,12 @@
   // ------------------------------------------------------------------ state
   const STORE = 'runeterra-forge-v1';
   const blank = () => ({
-    v: 1, step: 'intro', maxStep: 0, method: 'constructed', people: null, region: null,   // Construído is the default method
+    v: 1, noRetcon: true, step: 'intro', maxStep: 0, method: 'constructed', people: null, region: null,   // Construído is the default method
     rolls: {}, rerolls: {},
     bg: { id: null, assign: {}, principle: null },
     ps: { id: null, assign: {}, extra: {} },
     arch: { id: null, base: null, assign: {}, principle: null, extra: {}, divMethod: null, minionQ: null, minionForms: [], notes: '' },
     pers: { id: null, qname: '', outTrait: null, upgrade: null },
-    retcon: { type: null },
     health: { trait: null, mode: 'fixed', roll: null, rerolled: false },
     pch: {},
     sel: {},
@@ -83,6 +82,15 @@
     out.maxStep = typeof s.maxStep === 'number' ? s.maxStep : -1;   // older saves: recomputed after load
     // Saves from before the People chapter: every chapter after the welcome moved one place down.
     if (!('people' in s) && out.maxStep >= 1) out.maxStep += 1;
+    // Saves from before the Twist of Fate chapter was removed: the chapters after Ultimates moved up one place,
+    // and a third Ultimate from "Hidden Reserves" no longer has a source.
+    if (!s.noRetcon) {
+      if (out.maxStep >= 9) out.maxStep -= 1;
+      if (out.step === 'retcon') out.step = 'health';
+      if (out.sel && Array.isArray(out.sel.red) && out.sel.red.length > 2) out.sel.red.length = 2;
+    }
+    out.noRetcon = true; delete out.retcon;
+    if (out.pers && out.pers.qname && out.pers.qok === undefined) out.pers.qok = true;   // named before the Confirm button existed
     // A save that never left the intro has not really started: open it on the default method (Construído).
     out.method = 'constructed';   // the Guided method (rolling for options) is no longer offered
     return out;
@@ -321,19 +329,8 @@
       T['rp-quality'] = { key: 'rp-quality', die: 'd8', src: ['Temperament'] };
       if (pers.extra === 'impulsive' && st.pers.upgrade && T[st.pers.upgrade] && dn(T[st.pers.upgrade].die) < 12) T[st.pers.upgrade].die = upDie(T[st.pers.upgrade].die);
     }
-    R.before.retcon = snap(T);
-    const rc = st.retcon;
-    if ((rc.type === 'swap-powers' || rc.type === 'swap-quals') && rc.a && rc.b && T[rc.a] && T[rc.b] && rc.a !== rc.b) {
-      const t = T[rc.a].die; T[rc.a].die = T[rc.b].die; T[rc.b].die = t;
-    }
-    if (rc.type === 'add-d6' && rc.key && !T[rc.key]) T[rc.key] = { key: rc.key, die: 'd6', src: ['Twist of Fate'] };
     R.T = T;
-    // status dice
-    if (pers) {
-      const s = pers.status.slice();
-      if (rc.type === 'red-up') s[2] = upDie(s[2]);
-      R.status = s;
-    }
+    if (pers) R.status = pers.status.slice();   // status dice
     return R;
   }
 
@@ -571,7 +568,7 @@
     if (id === 'personality') {
       rollSec('pers', tr('Roll for your Temperament'), !!pers);
       add('pick', tr('Choose your Temperament'), pers ? [] : [tr('Choose a Temperament.')], tr('Click how your champion behaves under pressure. The three dice are your Green / Yellow / Red status.'));
-      add('qname', tr('Name your Signature Quality'), pers && !st.pers.qname.trim() ? [tr('Type a name for your Signature Quality.')] : [], tr('Type a short phrase that sums up your champion, like <em>Last Kinkou of the Eastern Isles</em>.'));
+      add('qname', tr('Name your Signature Quality'), pers && !st.pers.qname.trim() ? [tr('Type a name for your Signature Quality.')] : pers && !st.pers.qok ? [tr('Press Confirm to keep this name.')] : [], tr('Type a short phrase that sums up your champion, like <em>Last Kinkou of the Eastern Isles</em>.'));
       if (pers) {
         const rq = reqFromText(pers.out);
         if (rq.kind !== 'none') add('out', tr('Set up your Out ability'), st.pers.outTrait ? [] : [tr('Choose which trait your Out ability uses.')], tr('Pick the power or quality used when you\'re knocked out.'));
@@ -579,7 +576,7 @@
       }
     }
     if (id === 'red') {
-      const need = 2 + (st.retcon.type === 'extra-red' ? 1 : 0);
+      const need = 2;
       const s = st.sel.red || [];
       const I = [];
       if (s.length !== need) I.push(tr('Pick {n} Ultimates ({have}/{n} chosen).', { n: need, have: s.length }));
@@ -591,20 +588,9 @@
       }
       add('pick', tr('Choose {n} Ultimates', { n: need }), I, tr('Only categories marked <b>eligible</b> can be picked — they match powers and qualities you have. Tick {n} abilities, then choose the trait each one uses.', { n: need }));
     }
-    if (id === 'retcon') {
-      const rc = st.retcon, I = [];
-      add('pick', tr('Choose one Twist of Fate'), rc.type ? [] : [tr('Choose one option.')], tr('Pick one small tweak to your champion.'));
-      if ((rc.type === 'swap-powers' || rc.type === 'swap-quals') && (!rc.a || !rc.b || rc.a === rc.b)) I.push(tr('Pick two different traits to swap.'));
-      if (rc.type === 'add-d6' && !rc.key) I.push(tr('Pick the new d6 power or quality.'));
-      if (rc.type === 'change-principle' && (!rc.which || !rc.principle)) I.push(tr('Pick which principle to change and its replacement.'));
-      if (rc.type === 'change-principle' && rc.principle && [st.bg.principle, st.arch.principle].includes(rc.principle)) I.push(tr('Your two principles must be different.'));
-      if (rc.type === 'red-up' && pers && pers.status[2] === 'd12') I.push(tr('Your Red status die is already d12 — pick another option.'));
-      if (rc.type === 'extra-red' && (st.sel.red || []).length < 3) I.push(tr('Go back to Ultimates and pick your third Red ability.'));
-      add('cfg', tr('Set it up'), I, tr('Complete the choice for your Twist of Fate.'));
-    }
     if (id === 'health') add('review', tr('Review your Health'), [], tr('Pick the trait that adds to your Health and whether to roll.'), { opt: true });
     if (id === 'finish') {
-      add('name', tr('Name your champion'), st.info.name.trim() ? [] : [tr('Type your champion\'s name.')], tr('Type a hero name — you can fill in the rest below at your own pace.'));
+      add('name', tr('Name your champion (optional)'), [], tr('Type a hero name — you can fill in the rest below at your own pace.'));
       add('describe', tr('Describe them (optional)'), [], tr('Optional details for your hero sheet.'));
       add('bio', tr('Biography (optional)'), [], tr('Tell your champion\'s story. The lore guide gathers questions from your choices; click one to add it to the text.'));
       add('abilities', tr('Name your abilities (optional)'), [], tr('Optional — give your abilities Runeterran names.'));
@@ -631,7 +617,6 @@
     { id: 'archetype', name: tr('Path'), sub: '' },
     { id: 'personality', name: tr('Temperament'), sub: '' },
     { id: 'red', name: tr('Ultimates'), sub: '' },
-    { id: 'retcon', name: tr('Twist of Fate'), sub: '' },
     { id: 'health', name: tr('Health'), sub: '' },
     { id: 'finish', name: tr('Legend'), sub: tr('Finishing Touches & Sheet') }
   ];
@@ -678,10 +663,29 @@
   }
   // Lore art at the top of a region or people tooltip (the same pictures as the Lore page).
   const PEOPLE_SLOT = { human: 'humano', spirit: 'espirito', construct: 'construto', plant: 'plantifero', dragonkin: 'meio-dragao', minotaur: 'minotauro' };
+  // Tooltips use small copies (assets/lore/tip/, 480px) of the Lore page's pictures.
+  const tipSrc = src => src.replace('assets/lore/', 'assets/lore/tip/');
   const tipImg = slot => {
     const im = (window.LORE_IMAGES || {})[slot];
-    return im ? `<img class="tip-img" src="${im.src}" alt="" style="object-position:${im.pos || '50% 50%'}">` : '';
+    return im ? `<img class="tip-img" src="${tipSrc(im.src)}" alt="" decoding="async" style="object-position:${im.pos || '50% 50%'}">` : '';
   };
+  // Fetch the current chapter's tooltip pictures in the background, so hovering shows them at once.
+  const warmed = new Set();
+  function warmImages() {
+    const L = window.LORE_IMAGES || {};
+    const urls = {
+      people: (window.PEOPLES || []).map(x => L['race-' + (PEOPLE_SLOT[x.id] || x.id)]).filter(Boolean).map(im => tipSrc(im.src)),
+      region: (window.REGIONS || []).map(x => L['r-' + x.id]).filter(Boolean).map(im => tipSrc(im.src)),
+      background: window.BACKGROUNDS.map(x => `assets/cards/bg-${x.id}.webp`),
+      powersource: window.POWER_SOURCES.map(x => `assets/cards/ps-${x.id}.webp`),
+      archetype: window.ARCHETYPES.map(x => `assets/cards/ar-${x.id}.webp`),
+      personality: window.PERSONALITIES.map(x => `assets/cards/pe-${x.id}.webp`)
+    }[st.step] || [];
+    const todo = urls.filter(u => !warmed.has(u));
+    if (!todo.length) return;
+    const go = () => todo.forEach(u => { warmed.add(u); const i = new Image(); i.decoding = 'async'; i.src = u; });
+    if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 1500 }); else setTimeout(go, 300);
+  }
   // Suggestion marks from the flavour chapters (People and Homeland): no rules effect.
   const fitMark = (arr, id) => {
     const r = regionDef(), pp = peopleDef();
@@ -834,30 +838,44 @@
     return Object.entries(G).map(([c, items]) => ({ label: catName(c), items }));
   };
   const traitItem = (k, extra = {}) => ({ k, name: traitName(k), ...extra });
+  // One die and the trait it becomes, read left to right: [d10] becomes → [Medicine · QUALITY].
+  // An empty slot asks the question in words. When a die may become either a power or a quality,
+  // the tray splits into a Powers block and a Qualities block, each with its own colour.
+  const kindOf = k => (TRAIT[k] ? TRAIT[k].kind : '');
+  const kindTag = k => `<span class="sock-kind k-${k}">${tr(k)}</span>`;
   function socket({ bind, d, mark, cur, groups, empty, note, freed }) {
     const all = groups.flatMap(g => g.items);
     const curItem = all.find(i => i.k === cur);
+    const kinds = [...new Set(all.map(i => kindOf(i.k)).filter(Boolean))];
+    const both = kinds.length > 1;
     let open = ui.socket === bind;
     if (!open && !cur && ui.socket == null && !socketAuto) { open = socketAuto = true; }
     const gem = d ? die(d) : `<span class="sock-mark">${esc(mark || '')}</span>`;
+    const ask = d ? tr(both ? 'Which power or quality does this {die} become?' : kinds[0] === 'power' ? 'Which power does this {die} become?' : 'Which quality does this {die} become?', { die: d }) : (empty || tr('Choose'));
     const face = curItem
-      ? `<span class="sock-name"${TRAIT[cur] ? tip(traitTip(cur)) : ''}>${esc(curItem.name)}</span><span class="sock-cat">${esc(TRAIT[cur] ? catName(TRAIT[cur].cat) : '')}${curItem.after ? ` · ${esc(curItem.after)}` : ''}</span>`
-      : `<span class="sock-empty">${esc(empty || tr('Choose'))}</span>`;
+      ? `${kindOf(cur) ? kindTag(kindOf(cur)) : ''}<span class="sock-name"${TRAIT[cur] ? tip(traitTip(cur)) : ''}>${esc(curItem.name)}</span>${d ? die(d, 'sm') : ''}<span class="sock-cat">${esc(TRAIT[cur] ? catName(TRAIT[cur].cat) : '')}${curItem.after ? ` · ${esc(curItem.after)}` : ''}</span>`
+      : `<span class="sock-empty">${esc(ask)}</span>`;
     const filter = all.length > 12 ? `<label class="tray-filter">${ico('mark')}<input type="search" data-filter="1" placeholder="${tr('Filter {n} options…', { n: all.length })}" aria-label="${tr('Filter options')}"></label>` : '';
-    const tray = open ? `<div class="tray" role="group" aria-label="${esc(empty || tr('Options'))}">${filter}${groups.map(g => `<div class="tray-group"><div class="tray-label">${esc(g.label)}${g.sub ? `<span>${esc(g.sub)}</span>` : ''}</div><div class="tray-grid">${g.items.map(i => {
+    const groupHtml = g => `<div class="tray-group"><div class="tray-label">${esc(g.label)}${g.sub ? `<span>${esc(g.sub)}</span>` : ''}</div><div class="tray-grid">${g.items.map(i => {
       const on = i.k === cur, off = !!i.taken && !on, fit = fitTrait(i.k);
-      return `<button class="rune${on ? ' on' : ''}${off ? ' off' : ''}${fit ? ' fits' : ''}" data-act="socket" data-bind="${bind}" data-val="${i.k}" data-q="${esc((i.name + ' ' + (i.sub || '') + ' ' + g.label).toLowerCase())}"${off ? ' aria-disabled="true"' : ''}${on ? ' aria-pressed="true"' : ''}${tip(traitTip(i.k) + (fit ? `<hr>✦ ${esc(fit)}` : ''))}>
+      return `<button class="rune k-${kindOf(i.k)}${on ? ' on' : ''}${off ? ' off' : ''}${fit ? ' fits' : ''}" data-act="socket" data-bind="${bind}" data-val="${i.k}" data-q="${esc((i.name + ' ' + (i.sub || '') + ' ' + g.label).toLowerCase())}"${off ? ' aria-disabled="true"' : ''}${on ? ' aria-pressed="true"' : ''}${tip(traitTip(i.k) + (fit ? `<hr>✦ ${esc(fit)}` : ''))}>
         <span class="rune-name">${fit ? `<span class="rune-fit" aria-label="${esc(fit)}">${ico('mark')}</span>` : ''}${esc(i.name)}</span>${i.sub ? `<span class="rune-sub">${esc(i.sub)}</span>` : ''}${i.after ? `<span class="rune-badge">${esc(i.after)}</span>` : ''}${off ? `<span class="rune-badge taken">${esc(i.taken)}</span>` : ''}</button>`;
-    }).join('')}</div></div>`).join('')}${cur ? `<button class="linkbtn tray-clear" data-act="socket" data-bind="${bind}" data-val="">${tr('Unbind this die')}</button>` : ''}</div>` : '';
+    }).join('')}</div></div>`;
+    const body = !both ? groups.map(groupHtml).join('')
+      : ['power', 'quality'].map(k => {
+        const gs = groups.filter(g => g.items.length && kindOf(g.items[0].k) === k);
+        return gs.length ? `<div class="tray-kind k-${k}"><div class="tray-kind-h">${kindTag(k)}<span>${tr(k === 'power' ? 'Powers: what makes you extraordinary.' : 'Qualities: what you know how to do.')}</span></div>${gs.map(groupHtml).join('')}</div>` : '';
+      }).join('');
+    const tray = open ? `<div class="tray${both ? ' both' : ''}" role="group" aria-label="${esc(ask)}">${filter}${body}${cur ? `<button class="linkbtn tray-clear" data-act="socket" data-bind="${bind}" data-val="">${tr('Unbind this die')}</button>` : ''}</div>` : '';
     return `<div class="socket${cur ? ' filled' : ''}${open ? ' open' : ''}${freed ? ' freed' : ''}">
-      <div class="sock-row">${gem}<span class="sock-link" aria-hidden="true"></span>
+      <div class="sock-row">${gem}<span class="sock-arrow" aria-hidden="true"><i>${tr('becomes')}</i></span>
       <button class="sock-slot" data-act="socketOpen" data-bind="${bind}" aria-expanded="${open}">${face}${open || !cur ? `<span class="sock-cta">${tr(open ? 'Close' : 'Choose')}</span>` : ''}</button>
 </div>
       ${note ? `<div class="note">${esc(note)}</div>` : ''}${tray}</div>`;
   }
 
   // ------------------------------------------------------------------ guided flow
-  const ui = { expand: {}, lastPick: {}, at: {}, passed: {}, evo: { tab: 'power', from: '', to: '', ch: {} } };   // transient: re-opened choice grids; most recent choice per chapter; the Evolve form
+  const ui = { expand: {}, lastPick: {}, at: {}, passed: {}, redOpen: {}, evo: { tab: 'power', from: '', to: '', ch: {} } };   // transient: re-opened choice grids; most recent choice per chapter; the Evolve form
   let flowCurrent = null;           // "step:section" of the section the user should work on now
 
   // Renders a step's sections one at a time, like a wizard. Only the section under the cursor is open;
@@ -914,7 +932,6 @@
     switch (s.id) {
       case 'pick':
         if (stepId === 'red') return abl(st.sel.red);
-        if (stepId === 'retcon') { const r = (window.RETCONS || []).find(x => x.id === st.retcon.type); return r ? esc(r.rt) : ''; }
         return def && def() ? esc(def().rt) : '';
       case 'base': return shapeDef() ? esc(shapeDef().rt) : '';
       case 'assign': {
@@ -940,7 +957,7 @@
 
   // Hover cards: Legends of Runeterra art, the story and champions who fit. The numbers show up
   // in the chapter itself once the card is chosen.
-  const cardArt = (kind, id) => `<img class="tip-img" src="assets/cards/${kind}-${id}.webp" alt="">`;
+  const cardArt = (kind, id) => `<img class="tip-img" src="assets/cards/${kind}-${id}.webp" alt="" decoding="async">`;
   const bgTip = b => `${cardArt('bg', b.id)}<h5>${esc(b.rt)}</h5>${esc(b.lore)}<hr><small>${tr('Champions:')} ${esc(b.champs)}</small>`;
   const psTip = p => `${cardArt('ps', p.id)}<h5>${esc(p.rt)}</h5>${esc(p.lore)}<hr><small>${tr('Champions:')} ${esc(p.champs)}</small>`;
   function archTip(a) {
@@ -1101,7 +1118,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         (pe.healthAny ? `<p class="sc">${tr('When determining Health you may use <b>any</b> power or quality.')}</p>` : '')),
         cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div>${statusTrend(x.status)}<span class="info" aria-label="${tr('Details')}"${tip(`${cardArt('pe', x.id)}<h5>${esc(x.rt)}</h5>${x.lore ? esc(x.lore) + '<hr>' : ''}<small>${tr('Champions:')} ${esc(x.champs)}</small>`)}></span>`)),
       qname: () => `
-        <input type="text" data-bind="pers.qname" data-live="1" data-commit="1" value="${esc(st.pers.qname)}" placeholder="${tr('Type your Signature Quality, then press Enter')}">`,
+        <div class="qname-row"><input type="text" data-bind="pers.qname" data-live="1" data-commit="1" value="${esc(st.pers.qname)}" placeholder="${tr('Type your Signature Quality')}">
+        <button type="button" class="btn primary" data-act="qok"${st.pers.qname.trim() ? '' : ' disabled'}>${ico('check')} ${tr('Confirm')}</button></div>`,
       out: () => {
         const rq = reqFromText(pe.out);
         const outKeys = sortTraits(owned(R, rq.kind)).map(t => t.key);
@@ -1119,7 +1137,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   function renderRed() {
     const R = R0;
     if (!persDef()) return lockedPanel(tr('Ultimates'), tr('Choose your Temperament first.'), 'personality');
-    const need = 2 + (st.retcon.type === 'extra-red' ? 1 : 0);
+    const need = 2;
     const s = st.sel.red = st.sel.red || [];
     const cats = window.RED_ABILITIES.slice();
     const shape = shapeDef();
@@ -1132,58 +1150,32 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       const eligible = isX || inCat.length > 0;
       const label = isX ? c.label : catLabel(c.cat);
       const sub = '';
-      const cards = c.list.map(({ a, use }) => {
+      // abilities tied to a trait you do not have are left out (the book only allows them with that trait)
+      const usable = c.list.filter(({ use }) => !use || use.some(k => R.T[k]));
+      const mine = usable.filter(({ a }) => s.some(e => e.name === a && e.cat === c.cat)).length;
+      const open = ui.redOpen[c.cat] != null ? ui.redOpen[c.cat] : mine > 0;
+      const cards = !open ? '' : usable.map(({ a, use }) => {
         const idx = s.findIndex(e => e.name === a && e.cat === c.cat);
         const picked = idx >= 0;
         const takenElsewhere = !picked && s.some(e => displayName(e.name) === displayName(a));
-        const useOk = !use || use.some(k => R.T[k]);
         const card = abilityCard({ key: 'red', color: 'red', count: need, list: [] }, a, s[idx], picked, R, { idx, cat: isX ? null : c.cat, dataCat: c.cat, use, color: 'red' });
-        const block = !useOk || takenElsewhere || (!picked && s.length >= need);
+        const block = takenElsewhere || (!picked && s.length >= need);
         return block && !picked ? card.replace('type="checkbox"', 'type="checkbox" disabled').replace('class="ab red', 'class="ab red disabled') : card;
       }).join('');
-      return `<div class="subsec"><h4>${esc(label)}${sub} <span class="pill green">${tr('eligible')}</span></h4>${!isX ? `<p class="muted">${tr('You have:')} ${inCat.map(t => traitSpan(t.key) + ' ' + die(t.die, 'sm')).join(', ')}</p>` : ''}<div class="ab-list">${cards}</div></div>`;
+      if (!usable.length) return '';
+      return `<div class="redcat${open ? ' open' : ''}"><button type="button" class="redcat-h" data-act="redCat" data-cat="${esc(c.cat)}" aria-expanded="${open}">` +
+        `<span class="redcat-t">${esc(label)}</span>${!isX ? `<span class="redcat-have">${inCat.map(t => esc(traitName(t.key)) + ' ' + die(t.die, 'sm')).join(' ')}</span>` : ''}` +
+        `<span class="redcat-n">${mine ? `<b>${tr('{n} chosen', { n: mine })}</b> · ` : ''}${tr('{n} abilities', { n: usable.length })}</span><span class="redcat-arrow" aria-hidden="true">${ico(open ? 'close' : 'next')}</span></button>` +
+        (open ? `<div class="ab-list">${cards}</div>` : '') + '</div>';
     };
     const eligibleCats = cats.filter(c => c.cat.startsWith('X:') || Object.values(R.T).some(t => TRAIT[t.key].cat === c.cat && dn(t.die) >= 6));
     const lockedCats = cats.filter(c => !eligibleCats.includes(c));
     const H = {
-      pick: () => `<p class="count-line"><b>${s.length}/${need}</b> ${tr('chosen')}. ${need > 2 ? `<span class="pill red">${tr('+1 from Twist of Fate')}</span>` : ''}</p>` +
+      pick: () => `<p class="count-line"><b>${s.length}/${need}</b> ${tr('chosen')}. <span class="muted">${tr('Open a category to see its abilities.')}</span></p>` +
         eligibleCats.map(catHtml).join('') +
         (lockedCats.length ? `<p class="muted"${tip(tr('You need a power or quality of these categories rated d6 or higher to take their Red abilities.'))}>${tr('Not available to you (you have no traits in these categories):')} ${lockedCats.map(c => esc(catLabel(c.cat))).join(', ')}.</p>` : '')
     };
     return stepPanel('Step 6 · Sentinels: Red Abilities', tr('Ultimates'), 'red', flowHtml('red', sectionsFor('red', R), H), false);
-  }
-
-  function renderRetcon() {
-    const R = R0;
-    if (!persDef()) return lockedPanel(tr('Twist of Fate'), tr('Choose your Temperament first.'), 'personality');
-    const rc = st.retcon;
-    const B = R.before.retcon;
-    const traitsOf = kind => sortTraits(Object.values(B).filter(t => TRAIT[t.key].kind === kind)).map(t => t.key);
-    const H = {
-      pick: () => `<div class="principles">${window.RETCONS.filter(x => !x.back || rc.type === x.id).map(x => `<button class="principle${rc.type === x.id ? ' selected' : ''}" data-act="retcon" data-id="${x.id}"${x.id === 'red-up' && rc.type !== x.id && persDef() && persDef().status[2] === 'd12' ? ' disabled' : ''}${tip(`<h5>${esc(x.rt)}</h5>${esc(x.desc || x.sc)}`)}><div class="pn">${esc(x.rt)}</div><div class="ph">${esc(x.desc || x.sc)}</div></button>`).join('')}</div>`,
-      cfg: () => {
-        if (rc.type === 'swap-powers' || rc.type === 'swap-quals') {
-          const keys = traitsOf(rc.type === 'swap-powers' ? 'power' : 'quality');
-          const it = k => traitItem(k, { after: B[k] ? B[k].die : '' });
-          return socket({ bind: 'retcon.a', mark: 'A', cur: rc.a, groups: traitGroups(keys, it), empty: tr('First trait to swap') }) +
-            socket({ bind: 'retcon.b', mark: 'B', cur: rc.b, groups: traitGroups(keys.filter(k => k !== rc.a), it), empty: tr('Swap its die with…') });
-        }
-        if (rc.type === 'add-d6') {
-          const keys = Object.values(CATS).flatMap(def => def.items.map(i => i[0])).filter(k => TRAIT[k] && !B[k]);
-          return socket({ bind: 'retcon.key', d: 'd6', cur: rc.key, groups: traitGroups(keys, k => traitItem(k)), empty: tr('Bind this d6 to any power or quality') });
-        }
-        if (rc.type === 'change-principle') {
-          const mine = [st.bg.principle, st.arch.principle];   // your current principles can't be taken again
-          const opts = PRINCIPLES.filter(p => !mine.includes(p.id) || rc.principle === p.id).map(p => `<option value="${p.id}"${rc.principle === p.id ? ' selected' : ''}>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}${PT ? ` (${esc(tr(p.cat))})` : ` — ${esc(tr(p.cat))}`}</option>`).join('');
-          return `<div class="grid2"><label class="field"><span>${tr('Replace')}</span><select data-bind="retcon.which"><option value="">${tr('— choose —')}</option><option value="bg"${rc.which === 'bg' ? ' selected' : ''}>${tr('Origin principle')}</option><option value="arch"${rc.which === 'arch' ? ' selected' : ''}>${tr('Path principle')}</option></select></label><label class="field"><span>${tr('With (any category)')}</span><select data-bind="retcon.principle"><option value="">${tr('— choose —')}</option>${opts}</select></label></div>`;
-        }
-        if (rc.type === 'change-ability') return `<p class="muted">${tr('Go back to any ability (Source, Path or Ultimates) and change which power or quality it uses. Everything stays editable — this option simply makes it “official”.')}</p>`;
-        if (rc.type === 'red-up' && R.status) return `<p>${tr('Red status die:')} ${die(persDef().status[2])} → ${die(R.status[2])}</p>`;
-        if (rc.type === 'extra-red') return `<p>${tr('Go back to <a href="#" data-act="go" data-step="red">Ultimates</a> and pick a third Red ability ({n}/3 chosen).', { n: (st.sel.red || []).length })}</p>`;
-        return '';
-      }
-    };
-    return stepPanel('Step 7 · Sentinels: Retcon', tr('Twist of Fate'), 'retcon', flowHtml('retcon', sectionsFor('retcon', R), H), false);
   }
 
   function healthCalc(R) {
@@ -1215,6 +1207,19 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     return c >= h.green[1] ? 'green' : c >= h.yellow[1] ? 'yellow' : c >= 1 ? 'red' : 'out';
   }
 
+  // Take 4 or roll a d8. Rolling cannot be undone (the book lets you re-roll once, never go back to 4),
+  // so the roll option says so up front and, once used, Take 4 shows as locked.
+  function healthChoice() {
+    const H = st.health, rolled = !!H.roll;
+    const fixedOn = !rolled && H.mode !== 'roll';
+    return `<div class="hchoice" role="group" aria-label="${tr('Health roll')}">
+      <button type="button" class="hc${fixedOn ? ' on' : ''}${rolled ? ' locked' : ''}" data-act="hmode" data-m="fixed"${rolled ? ' disabled' : ''}>
+        <span class="hc-t">${tr('Take 4')}</span><span class="hc-d">${rolled ? `${ico('lock')} ${tr('Not available after rolling.')}` : tr('Safe: always 4.')}</span></button>
+      <button type="button" class="hc roll${rolled ? ' on' : ''}" data-act="${rolled ? (H.rerolled ? '' : 'hroll') : 'hmode'}" data-m="roll"${rolled && H.rerolled ? ' disabled' : ''}>
+        <span class="hc-t">${rolled ? tr('Rolled {n}', { n: H.roll }) : tr('Roll')} ${die('d8', 'sm')}</span>
+        <span class="hc-d">${!rolled ? `<b class="hc-warn">${tr('Final: after rolling you cannot go back to 4.')}</b> ${tr('You may re-roll once.')}` : H.rerolled ? tr('Re-roll already used.') : tr('Click to re-roll (once).')}</span></button></div>`;
+  }
+
   function renderHealth() {
     const R = R0;
     const h = healthCalc(R);
@@ -1222,8 +1227,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const H = {
       review: () => `<div class="grid2"><div class="detail">
         <label class="field"><span>${tr('Trait added to Health (highest by default)')}</span><select data-bind="health.trait">${h.elig.map(t => `<option value="${t.key}"${h.chosen && h.chosen.key === t.key ? ' selected' : ''}>${esc(traitName(t.key))} (${t.die})</option>`).join('')}${h.elig.length ? '' : `<option value="">${tr('none — use d4')}</option>`}</select></label>
-        <div class="method" role="group"><button class="${st.health.mode !== 'roll' ? 'on' : ''}" data-act="hmode" data-m="fixed"${st.health.roll ? ' disabled' : ''}>${tr('Take 4')}</button><button class="${st.health.mode === 'roll' ? 'on' : ''}" data-act="hmode" data-m="roll"${st.health.roll ? ' disabled' : ''}>${tr('Roll')} ${die('d8', 'sm')}</button></div>
-        ${st.health.mode === 'roll' ? (st.health.rerolled ? ` <p class="muted">${tr('Rolled {n}. Re-roll already used.', { n: st.health.roll })}</p>` : ` <button class="btn small" data-act="hroll">${st.health.roll ? tr('Rolled {n}. Re-roll once', { n: st.health.roll }) : tr('Roll d8')}</button>`) : ''}
+        ${healthChoice()}
       </div><div class="detail">
         <table style="width:100%;font-size:.95rem"><tbody>
         <tr><td>${tr('Base')}</td><td style="text-align:right">8</td></tr>
@@ -1241,10 +1245,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   function principlesFinal() {
     const out = [];
     const bgP = st.bg.principle, arP = st.arch.principle;
-    const rc = st.retcon;
-    const pick = (slot, id) => (rc.type === 'change-principle' && rc.which === slot && rc.principle ? rc.principle : id);
-    if (bgP) out.push({ slot: 'bg', id: st.evo.principles.bg || pick('bg', bgP) });
-    if (arP) out.push({ slot: 'arch', id: st.evo.principles.arch || pick('arch', arP) });
+    if (bgP) out.push({ slot: 'bg', id: st.evo.principles.bg || bgP });
+    if (arP) out.push({ slot: 'arch', id: st.evo.principles.arch || arP });
     return out.map(x => ({ ...x, p: PRINCIPLES.find(p => p.id === x.id) })).filter(x => x.p);
   }
 
@@ -1619,6 +1621,15 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   async function exportPdf() {
     const status = document.getElementById('pdf-status');
     const say = (msg, isErr) => { if (status) { status.innerHTML = msg; status.className = isErr ? 'issues' : 'okbox'; } };
+    // The PDF library is big (half a megabyte), so it is only fetched the first time someone exports.
+    if (!window.PDFLib) {
+      const ref = document.querySelector('script[src*="sheet-pdf.js"]');
+      await new Promise(done => {
+        const sc = document.createElement('script');
+        sc.src = ref ? ref.src.replace('sheet-pdf.js', 'vendor/pdf-lib.min.js') : 'js/vendor/pdf-lib.min.js';
+        sc.onload = sc.onerror = done; document.head.appendChild(sc);
+      });
+    }
     if (!window.PDFLib || !window.SheetPDF) { say(tr('The PDF library failed to load.'), true); return; }
     const link = sel => { const l = document.querySelector(sel); return l ? l.href : ''; };
     try {
@@ -1703,7 +1714,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   }
 
   // ------------------------------------------------------------------ main render
-  const RENDER = { intro: renderIntro, people: renderPeople, region: renderRegion, background: renderBackground, powersource: renderPowerSource, archetype: renderArchetype, personality: renderPersonality, red: renderRed, retcon: renderRetcon, health: renderHealth, finish: renderFinish };
+  const RENDER = { intro: renderIntro, people: renderPeople, region: renderRegion, background: renderBackground, powersource: renderPowerSource, archetype: renderArchetype, personality: renderPersonality, red: renderRed, health: renderHealth, finish: renderFinish };
   // For saves made before step locking existed: unlock up to the first incomplete step.
   function reachedStep() {
     const R = compute();
@@ -1862,6 +1873,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
     lastFlow = flowCurrent;
     trackHistory();
+    warmImages();
     showTour();
   }
   // Next inside a chapter: open the section after the current one (optional sections count as seen).
@@ -2016,6 +2028,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       goToStep(el.dataset.step); return;
     }
     if (act === 'back') { if (ui.hidx > 0) history.back(); else { ui.popping = true; flowBack(); } return; }
+    if (act === 'qok') { confirmQname(); return; }
+    if (act === 'redCat') { const c = el.dataset.cat, now = el.getAttribute('aria-expanded') === 'true'; ui.redOpen[c] = !now; render(); return; }
     if (act === 'setBind') { if (el.disabled) return; setPath(st, el.dataset.bind, el.dataset.val); hideTip(); render(); return; }
     if (act === 'flowGo') { ui.at[st.step] = +el.dataset.i; render(); return; }
     if (act === 'next') {
@@ -2059,12 +2073,6 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       const f = st.arch.minionForms = st.arch.minionForms || [];
       const i = f.indexOf(el.dataset.name);
       if (i >= 0) f.splice(i, 1); else f.push(el.dataset.name);
-      render(); return;
-    }
-    if (act === 'retcon') {
-      const was = st.retcon.type;
-      st.retcon = { type: was === el.dataset.id ? null : el.dataset.id }; ui.advance = true;
-      if (was === 'extra-red' && st.sel.red && st.sel.red.length > 2) st.sel.red.length = 2;
       render(); return;
     }
     if (act === 'hmode') { if (st.health.roll) return; st.health.mode = el.dataset.m; if (el.dataset.m === 'roll') { st.health.roll = roll(['d8'])[0]; st.health.rerolled = false; } render(); return; }
@@ -2145,6 +2153,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     render();
   });
   document.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter' && ev.target.dataset && ev.target.dataset.bind === 'pers.qname') { ev.preventDefault(); confirmQname(); return; }
     if (ev.key === 'Enter' && ev.target.dataset && ev.target.dataset.commit) { ev.preventDefault(); ev.target.blur(); }
   });
   document.addEventListener('input', ev => {
@@ -2165,6 +2174,10 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
     if (!el.dataset.bind || !el.dataset.live) return;
     bindValue(el);
+    if (el.dataset.bind === 'pers.qname') {   // a new name needs confirming again
+      st.pers.qok = false;
+      const b = document.querySelector('[data-act="qok"]'); if (b) b.disabled = !el.value.trim();
+    }
     if (el.dataset.bind === 'play.current' && el.closest('#sheet-preview')) {   // redraw zones as Health is typed, keeping the caret
       const pos = el.selectionStart;
       renderSideOnly(false);
@@ -2194,6 +2207,14 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   // click to land first, otherwise the button would be replaced under the pointer and the click lost.
   document.addEventListener('pointerdown', () => { pointerDown = true; }, true);
   document.addEventListener('pointerup', () => { pointerDown = false; if (pendingRender) setTimeout(() => { if (pendingRender) render(); }, 0); }, true);
+
+  // Signature Quality: the Confirm button (or Enter) keeps the typed name and moves on.
+  function confirmQname() {
+    const inp = document.querySelector('input[data-bind="pers.qname"]');
+    if (inp) { bindValue(inp); if (document.activeElement === inp) inp.blur(); }   // blur first: its own redraw must not land inside ours
+    if (!st.pers.qname.trim()) return;
+    st.pers.qok = true; pendingRender = false; render();
+  }
 
   // Downscale the portrait so it fits comfortably in browser storage and the PDF.
   function loadPortrait(file) {
