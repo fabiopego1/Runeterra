@@ -270,14 +270,22 @@
   const abName = n => (PT && window.I18N.names[n]) || displayName(n);
 
   // ------------------------------------------------------------------ core computation
-  function assignStep(prefix, dice, assign, T, src) {
+  // swap: traits this step names (a Path's required power or quality). The book's "I've Already Got That"
+  // (p.44): if you already have it, you may put a bigger new die on it and use its old die elsewhere in this step.
+  // Any other trait you already have cannot be taken again.
+  function assignStep(prefix, dice, assign, T, src, swap = []) {
     const slots = dice.map((d, i) => ({ id: prefix + i, die: d }));
     for (let i = 0; i < slots.length; i++) {
       const s = slots[i];
       const k = assign[s.id];
       if (!k || !TRAIT[k]) continue;
       s.key = k;
-      if (T[k]) {   // already owned: not allowed any more, flagged by slotIssues until the player picks something else
+      if (T[k] && swap.includes(k) && dn(s.die) > dn(T[k].die) && !s.freed) {
+        const old = T[k].die;
+        s.swap = { from: old, to: s.die };
+        T[k].die = s.die; T[k].src.push(src);
+        slots.push({ id: 'f' + s.id, die: old, freed: true, from: k });
+      } else if (T[k]) {   // already owned: flagged by slotIssues until the player picks something else
         s.upgrade = { from: T[k].die, to: T[k].die };
       } else {
         T[k] = { key: k, die: s.die, src: [src] };
@@ -315,7 +323,7 @@
     }
     R.before.archetype = snap(T);
     if (ps && ar && shape) {
-      R.slots.arch = assignStep('a', ps.archDice, st.arch.assign, T, 'Path');
+      R.slots.arch = assignStep('a', ps.archDice, st.arch.assign, T, 'Path', shape.req ? expand(shape.req.any) : []);
       if (ps.id === 'training') R.slots.training = assignStep('t', ['d8'], st.arch.assign, T, 'Path (Training)');
       if (shape.extra && shape.extra.type === 'addTrait' && st.arch.extra.key) addTrait(T, st.arch.extra.key, shape.extra.die, 'Path');
       if (ar.modular) {
@@ -443,6 +451,7 @@
     const s = selOf(g);
     if (!g.fixed && s.length !== g.count) I.push(tr('Pick {n} ({have}/{n} chosen).', { n: g.count, have: s.length }));
     const used = [];
+    let missing = 0;
     for (const e of s) {
       const al = allowedTraits(R, e.name, { powersOnly: g.powersOnly, use: groupUse(g, R) });
       if (al.req.kind !== 'none' && !al.req.fixed && !e.trait) I.push(tr('Choose which power/quality “{ab}” uses.', { ab: abName(e.name) }));
@@ -451,10 +460,12 @@
       if (al.req.second && !e.trait2) I.push(tr('Choose the quality for “{ab}”.', { ab: abName(e.name) }));
       for (const t of choiceTokens(A[e.name] && A[e.name].text)) if (!(e.ch && e.ch[t])) I.push(tr('Choose [{what}] for “{ab}”.', { what: tokenLabel(t), ab: abName(e.name) }));
       if (e.trait) used.push(e.trait);
+      if (al.req.kind !== 'none' && !al.req.fixed && !e.trait) missing++;
     }
     if (g.diff && new Set(used).size !== used.length) I.push(tr('Each ability must use a different power/quality.'));
     const ru = g.rules || {};
-    const full = s.length === g.count && used.length === s.length;
+    // complete: every ability picked and every one that uses a trait has it (some, like Deflect, use none)
+    const full = s.length === g.count && !missing;
     if (full && ru.minDistinct && new Set(used.filter(k => !ru.distinctKind || TRAIT[k].kind === ru.distinctKind)).size < ru.minDistinct) I.push(tr(ru.distinctKind === 'power' ? 'Use at least {n} different powers across these abilities.' : 'Use at least {n} different powers/qualities across these abilities.', { n: ru.minDistinct }));
     if (full && ru.needs) {
       const fits = (k, n) => (n.any ? expand(n.any).includes(k) : true) && (n.kind ? TRAIT[k].kind === n.kind : true);
@@ -467,7 +478,7 @@
     }
     return I;
   }
-  const slotIssues = slots => (slots || []).filter(s => !s.key).map(s => tr(s.freed ? 'Assign your {die} (freed die).' : 'Assign your {die}.', { die: s.die }))
+  const slotIssues = slots => (slots || []).filter(s => !s.key).map(s => tr(s.freed ? 'Assign your {die} (the old die of {trait}).' : 'Assign your {die}.', { die: s.die, trait: traitName(s.from || '') }))
     .concat((slots || []).filter(s => s.key && s.upgrade).map(s => tr('You already had {trait}: bind this {die} to something else.', { trait: traitName(s.key), die: s.die })));
   function principleIssues(slot, cat) {
     const cur = slot === 'bg' ? st.bg.principle : st.arch.principle;
@@ -702,14 +713,17 @@
   };
 
   // others: slots of another group in the same step (e.g. the Training bonus next to the Path dice), also off-limits
-  function assignHtml(slots, optionKeys, before, stepPrefix, label, others = []) {
+  function assignHtml(slots, optionKeys, before, stepPrefix, label, others = [], swap = []) {
     if (!slots || !slots.length) return '';
     const rows = slots.map(s => {
-      const takenBy = k => { if (before[k] && s.key !== k) return tr('you already have {die}', { die: before[k].die }); const o = slots.concat(others).find(x => x !== s && x.key === k); return o ? tr('on your {die}', { die: o.die }) : ''; };
-      const groups = traitGroups(optionKeys, k => traitItem(k, { taken: takenBy(k) }));
+      // a required trait you already have can take a bigger new die; its old die then comes back to this step
+      const onOther = k => slots.concat(others).some(x => x !== s && x.key === k);
+      const canSwap = k => swap.includes(k) && before[k] && !s.freed && dn(s.die) > dn(before[k].die) && !onOther(k);
+      const takenBy = k => { const o = slots.concat(others).find(x => x !== s && x.key === k); if (o) return tr('on your {die}', { die: o.die }); if (before[k] && s.key !== k && !canSwap(k)) return tr('you already have {die}', { die: before[k].die }); return ''; };
+      const groups = traitGroups(optionKeys, k => traitItem(k, { taken: takenBy(k), after: canSwap(k) && s.key !== k ? tr('{from} → {to}, the {from} comes back', { from: before[k].die, to: s.die }) : '' }));
       let note = '';
-      if (s.key) note = s.upgrade ? tr('You already had {trait}: bind this {die} to something else.', { trait: traitName(s.key), die: s.die }) : '';
-      if (s.freed) note = note || tr('Freed die from {trait} (“I\'ve already got that” rule).', { trait: traitName(s.from) });
+      if (s.key) note = s.upgrade ? tr('You already had {trait}: bind this {die} to something else.', { trait: traitName(s.key), die: s.die }) : s.swap ? tr('{trait} goes from {from} to {to}; its old {from} is below for you to use in this step.', { trait: traitName(s.key), from: s.swap.from, to: s.swap.to }) : '';
+      if (s.freed) note = note || tr('This is the old {die} of {trait}. Use it for something else in this step.', { die: s.die, trait: traitName(s.from) });
       return socket({ bind: `${stepPrefix}.assign.${s.id}`, d: s.die, cur: s.key, groups, empty: tr('Bind this {die} to a trait', { die: s.die }), note, freed: s.freed });
     }).join('');
     return `<div class="assign"><div class="muted"${tip(tr('<h5>Assigning dice</h5>Only the die <b>size</b> matters. Each die becomes the rating of one power or quality. Powers and qualities you already have cannot be chosen again.'))}>${label}</div>${rows}</div>`;
@@ -1067,10 +1081,10 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         const rem = shape.remPowers === 'one' ? (shape.req ? 'exactly one' : 'Exactly one die') : shape.remPowers === 'any' ? (shape.req ? 'any number' : 'Any number of dice') : (shape.req ? 'one or more' : 'One or more dice');
         const remLine = tr((shape.req ? 'Of the other dice, ' : '') + '<b>' + rem + '</b>' + (shape.remPowers === 'one' ? ' goes' : shape.remPowers === 'any' ? ' (even none) go' : ' go') + ' to powers.');
         return `<ul class="rules-list">
-            ${shape.req ? (shape.req.count ? `<li>${tr('You <b>must</b> end this step with <b>{what}</b> — ones you already have count, so put dice there only until you have two.', { what: esc(tr(shape.req.label)) })}</li>` : `<li>${tr('First, one die <b>must</b> go to <b>{what}</b>. If you already have it, you may skip this and use the die below instead.', { what: esc(tr(shape.req.label)) })}</li>`) : ''}
+            ${shape.req ? (shape.req.count ? `<li>${tr('You <b>must</b> end this step with <b>{what}</b> — ones you already have count, so put dice there only until you have two.', { what: esc(tr(shape.req.label)) })}</li>` : `<li>${tr('First, one die <b>must</b> go to <b>{what}</b>. If you already have it, either skip this, or put a bigger new die on it and use its old die elsewhere.', { what: esc(tr(shape.req.label)) })}</li>`) : ''}
             <li>${remLine}</li>
             <li>${tr('Every die left over goes to qualities.')}</li></ul>
-          ${assignHtml(R.slots.arch, optKeys, R.before.archetype, 'arch', tr('Assign each die:'), R.slots.training || [])}
+          ${assignHtml(R.slots.arch, optKeys, R.before.archetype, 'arch', tr('Assign each die:'), R.slots.training || [], shape.req ? expand(shape.req.any) : [])}
           ${p.id === 'training' ? `<p style="margin-top:12px">${tr('From your <b>{src}</b> source: one extra quality from this Path\'s list at {die}.', { src: esc(p.rt), die: die('d8') })}</p>${assignHtml(R.slots.training, expand(shape.quals), R.before.archetype, 'arch', tr('Training bonus quality:'), R.slots.arch || [])}` : ''}
           ${shape.extra ? `<p style="margin-top:12px">${esc(shape.extra.text)}</p>${socket({ bind: 'arch.extra.key', d: shape.extra.die, cur: st.arch.extra.key, groups: traitGroups(expand(shape.extra.opts).filter(k => !R.before.archetype[k]), k => traitItem(k)), empty: tr('Bind this {die} to a trait', { die: shape.extra.die }) })}` : ''}
           ${a.modular && R.modExtra ? `<p style="margin-top:12px">${tr('Stance Masters need at least four powers — add {n} {die} power(s):', { n: R.modExtra, die: die('d6') })}</p>` + Array.from({ length: R.modExtra }, (_, i) => socket({ bind: `arch.extra.m${i}`, d: 'd6', cur: st.arch.extra['m' + i], groups: traitGroups(allOf('power').filter(k => !R.before.personality[k] || k === st.arch.extra['m' + i]), k => traitItem(k, { taken: Object.keys(st.arch.extra).some(x => x !== 'm' + i && /^m\d/.test(x) && st.arch.extra[x] === k) ? tr('on another d6') : '' })), empty: tr('Bind this d6 to any power') })).join('') : ''}
