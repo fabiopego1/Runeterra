@@ -99,6 +99,10 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await next();
     await ab('red', 'Purification', 'Q:mental'); await ab('red', 'Summoned Allies', 'P:elemental'); await sel('sel.red.1.trait', 'cosmic');
     await next();
+    await p.click('[data-act=retcon][data-id=change-principle]'); await p.waitForTimeout(100);
+    const princ = await p.evaluate(() => { const s = window.ForgeDebug.state(); return [s.bg.principle, s.arch.principle]; });
+    const popts = await p.$$eval('select[data-bind="retcon.principle"] option', os => os.map(o => o.value));
+    ok(popts.length > 5 && princ.every(x => !popts.includes(x)), 'Twist of Fate cannot swap in a principle you already have');
     await p.click('[data-act=retcon][data-id=red-up]');
     await next(); await next();
     await p.fill('input[data-bind="info.name"]', 'Bruxaria'); await p.press('input[data-bind="info.name"]', 'Enter'); await p.waitForTimeout(100);

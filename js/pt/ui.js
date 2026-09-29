@@ -134,7 +134,7 @@ Object.assign(window.I18N.ui, {
  "Press <b>Roll</b> for your base Path.": "Aperte <b>Rolar</b> para seu Caminho base.",
  "Your second Path provides your dice and abilities.": "Seu segundo Caminho fornece seus dados e habilidades.",
  "Your base Path decides how your dice are assigned.": "Seu Caminho base decide como seus dados são atribuídos.",
- "You need {what}.": "Você precisa de {what}.",
+ "You need {what}.": "Você precisa ter {what}.",
  "Only one of the remaining dice may go to a power (the rest go to qualities).": "Só um dos dados restantes pode ir para um poder (o resto vai para qualidades).",
  "One of the remaining dice must go to a power.": "Um dos dados restantes precisa ir para um poder.",
  "At least one die must go to a power.": "Pelo menos um dado precisa ir para um poder.",

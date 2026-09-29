@@ -177,6 +177,7 @@ kbd { font-family: var(--font-mono); font-size: .7em; border: 1px solid var(--li
 .btn-kicker { flex-basis: 100%; font-family: var(--font-mono); font-size: .62rem; letter-spacing: .16em; text-transform: uppercase; opacity: .72; line-height: 1.4; }
 .btn-kicker:empty { display: none; }
 .btn[disabled] { opacity: .45; cursor: not-allowed; }
+.principle[disabled] { opacity: .4; cursor: not-allowed; }
 .linkbtn {
   background: none; border: 0; padding: 2px 0; cursor: pointer;
   font: 500 .72rem var(--font-mono); letter-spacing: .12em; text-transform: uppercase;
