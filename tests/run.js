@@ -339,7 +339,11 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
   } else console.log('skip GM Screen unlock (GM_PASSWORD not set)');
 
   // Everything under assets/ must reach GitHub Pages (the tooltip art once went missing there).
-  ok(/cp -r assets _site\//.test(fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'pages.yml'), 'utf8')), 'the Pages deploy copies the whole assets folder');
+  {
+    const wf = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'pages.yml'), 'utf8');
+    const mk = wf.indexOf('mkdir -p _site'), cp = wf.indexOf('cp index.html');
+    ok(/cp -r assets _site\//.test(wf) && mk >= 0 && mk < cp, 'the Pages deploy creates _site first and copies the whole assets folder');
+  }
   {
     global.window = {}; for (const f of ['data-tables.js', 'lore-images.js']) require(path.join(__dirname, '..', 'js', f));
     const W = global.window, miss = [];
