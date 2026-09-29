@@ -1,4 +1,4 @@
-/* GM Screen: "Tradutor de Sabor". Shows, from the app's live data, how each Sentinels Comics RPG
+/* GM Screen: "Tradutor Cosmético". Shows, from the app's live data, how each Sentinels Comics RPG
    element was re-skinned for Runeterra, so the GM can check any player choice against the book.
    Sentinels names stay in English (as in the rulebook); the Runeterra side is what players see. */
 (() => {
@@ -17,8 +17,8 @@
     ['Retcon', 'Reviravolta do Destino', 'Passo 6'],
     ['Health', 'Vida', 'Passo 7'],
     ['Finishing Touches', 'Lenda', 'Nome, visual e a ficha'],
-    ['(não existe)', 'Povo', 'Passo extra, só de sabor: humano, vastaya, yordle, espírito e outros'],
-    ['(não existe)', 'Terra Natal', 'Passo extra, só de sabor: a região de Runeterra'],
+    ['(não existe)', 'Povo', 'Passo extra, só cosmético: humano, vastaya, yordle, espírito e outros'],
+    ['(não existe)', 'Terra Natal', 'Passo extra, só cosmético: a região de Runeterra'],
     ['Power', 'Poder', ''], ['Quality', 'Qualidade', ''], ['Principle', 'Princípio', ''],
     ['Ability', 'Habilidade', ''],
     ['Green / Yellow / Red / Out', 'Verde / Amarelo / Vermelho / Nocaute', 'Zonas de status'],
@@ -95,8 +95,8 @@
           <div class="gm-fl-head">
             <div>
               <div class="eyebrow">Ferramenta do Mestre</div>
-              <h2>Tradutor de Sabor</h2>
-              <p class="muted">Como cada elemento do <em>Sentinel Comics RPG</em> foi adaptado para Runeterra. A coluna <b>Sentinels</b> mantém o nome do livro, em inglês, para você conferir as regras; a coluna <b>Runeterra</b> é o que os jogadores veem no app. As regras não mudam, só o nome e o sabor.</p>
+              <h2>Tradutor Cosmético</h2>
+              <p class="muted">Como cada elemento do <em>Sentinel Comics RPG</em> foi adaptado para Runeterra. A coluna <b>Sentinels</b> mantém o nome do livro, em inglês, para você conferir as regras; a coluna <b>Runeterra</b> é o que os jogadores veem no app. As regras não mudam, só os nomes e a ambientação para o roleplay.</p>
               <p class="muted gm-fl-credit">Regras de <em>Sentinel Comics: The Roleplaying Game</em> © Greater Than Games. Runeterra e League of Legends © Riot Games.</p>
             </div>
             <input type="search" class="gm-fl-search" placeholder="Buscar em ${total} termos… (ex.: Speedster, Vazio, Retcon)" aria-label="Buscar no tradutor">

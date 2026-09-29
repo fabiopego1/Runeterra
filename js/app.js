@@ -269,12 +269,8 @@
       const k = assign[s.id];
       if (!k || !TRAIT[k]) continue;
       s.key = k;
-      if (T[k]) {
-        const old = T[k].die;
-        s.upgrade = { from: old, to: hiDie(old, s.die) };
-        T[k].die = hiDie(old, s.die);
-        T[k].src.push(src);
-        if (slots.length < 12) slots.push({ id: 'f' + s.id, die: loDie(old, s.die), freed: true, from: k });
+      if (T[k]) {   // already owned: not allowed any more, flagged by slotIssues until the player picks something else
+        s.upgrade = { from: T[k].die, to: T[k].die };
       } else {
         T[k] = { key: k, die: s.die, src: [src] };
       }
@@ -448,11 +444,11 @@
     const used = [];
     for (const e of s) {
       const al = allowedTraits(R, e.name, { powersOnly: g.powersOnly, use: groupUse(g, R) });
-      if (al.req.kind !== 'none' && !al.req.fixed && !e.trait) I.push(tr('Choose which power/quality “{ab}” uses.', { ab: displayName(e.name) }));
-      if (al.req.fixed && !R.T[al.req.only[0]]) I.push(tr('“{ab}” requires {trait}, which you don\'t have.', { ab: displayName(e.name), trait: traitName(al.req.only[0]) }));
-      if (e.trait && !R.T[e.trait]) I.push(tr('“{ab}” uses {trait}, which you no longer have.', { ab: displayName(e.name), trait: traitName(e.trait) }));
-      if (al.req.second && !e.trait2) I.push(tr('Choose the quality for “{ab}”.', { ab: displayName(e.name) }));
-      for (const t of choiceTokens(A[e.name] && A[e.name].text)) if (!(e.ch && e.ch[t])) I.push(tr('Choose [{what}] for “{ab}”.', { what: tokenLabel(t), ab: displayName(e.name) }));
+      if (al.req.kind !== 'none' && !al.req.fixed && !e.trait) I.push(tr('Choose which power/quality “{ab}” uses.', { ab: abName(e.name) }));
+      if (al.req.fixed && !R.T[al.req.only[0]]) I.push(tr('“{ab}” requires {trait}, which you don\'t have.', { ab: abName(e.name), trait: traitName(al.req.only[0]) }));
+      if (e.trait && !R.T[e.trait]) I.push(tr('“{ab}” uses {trait}, which you no longer have.', { ab: abName(e.name), trait: traitName(e.trait) }));
+      if (al.req.second && !e.trait2) I.push(tr('Choose the quality for “{ab}”.', { ab: abName(e.name) }));
+      for (const t of choiceTokens(A[e.name] && A[e.name].text)) if (!(e.ch && e.ch[t])) I.push(tr('Choose [{what}] for “{ab}”.', { what: tokenLabel(t), ab: abName(e.name) }));
       if (e.trait) used.push(e.trait);
     }
     if (g.diff && new Set(used).size !== used.length) I.push(tr('Each ability must use a different power/quality.'));
@@ -466,11 +462,12 @@
     }
     if (ru.notGreen) {
       const greens = (st.sel['arch-green'] || []).map(e => e.trait).filter(Boolean);
-      for (const e of s) if (e.trait && greens.includes(e.trait)) I.push(tr('“{ab}” must use a different power or quality than your Green abilities ({trait} is already used there).', { ab: displayName(e.name), trait: traitName(e.trait) }));
+      for (const e of s) if (e.trait && greens.includes(e.trait)) I.push(tr('“{ab}” must use a different power or quality than your Green abilities ({trait} is already used there).', { ab: abName(e.name), trait: traitName(e.trait) }));
     }
     return I;
   }
-  const slotIssues = slots => (slots || []).filter(s => !s.key).map(s => tr(s.freed ? 'Assign your {die} (freed die).' : 'Assign your {die}.', { die: s.die }));
+  const slotIssues = slots => (slots || []).filter(s => !s.key).map(s => tr(s.freed ? 'Assign your {die} (freed die).' : 'Assign your {die}.', { die: s.die }))
+    .concat((slots || []).filter(s => s.key && s.upgrade).map(s => tr('You already had {trait}: bind this {die} to something else.', { trait: traitName(s.key), die: s.die })));
   function principleIssues(slot, cat) {
     const cur = slot === 'bg' ? st.bg.principle : st.arch.principle;
     if (!cur) return [tr('Choose {p}.', { p: aPrinciple(cat) })];
@@ -584,9 +581,9 @@
       if (s.length !== need) I.push(tr('Pick {n} Ultimates ({have}/{n} chosen).', { n: need, have: s.length }));
       for (const e of s) {
         const al = allowedTraits(R, e.name, { cat: e.cat && e.cat.startsWith('X:') ? null : e.cat, use: e.use });
-        if (al.req.kind !== 'none' && !e.trait) I.push(tr('Choose which trait “{ab}” uses.', { ab: displayName(e.name) }));
-        if (al.req.second && !e.trait2) I.push(tr('Choose the quality for “{ab}”.', { ab: displayName(e.name) }));
-        for (const t of choiceTokens(A[e.name] && A[e.name].text)) if (!(e.ch && e.ch[t])) I.push(tr('Choose [{what}] for “{ab}”.', { what: tokenLabel(t), ab: displayName(e.name) }));
+        if (al.req.kind !== 'none' && !e.trait) I.push(tr('Choose which trait “{ab}” uses.', { ab: abName(e.name) }));
+        if (al.req.second && !e.trait2) I.push(tr('Choose the quality for “{ab}”.', { ab: abName(e.name) }));
+        for (const t of choiceTokens(A[e.name] && A[e.name].text)) if (!(e.ch && e.ch[t])) I.push(tr('Choose [{what}] for “{ab}”.', { what: tokenLabel(t), ab: abName(e.name) }));
       }
       add('pick', tr('Choose {n} Ultimates', { n: need }), I, tr('Only categories marked <b>eligible</b> can be picked — they match powers and qualities you have. Tick {n} abilities, then choose the trait each one uses.', { n: need }));
     }
@@ -681,13 +678,20 @@
     return m(pp, tr('Suits a champion of the {people} people', { people: esc(pp && pp.name) })) + m(r, tr('Suits a champion from {place}', { place: esc(r && r.name) }));
   };
 
-  function assignHtml(slots, optionKeys, before, stepPrefix, label) {
+  // Powers and qualities suggested by the People or Homeland (✦ in the socket trays).
+  const fitTrait = k => {
+    const who = [peopleDef(), regionDef()].filter(x => x && x.tr && x.tr.includes(k)).map(x => x.name);
+    return who.length ? tr('Suits {who}', { who: who.join(tr(' and ')) }) : '';
+  };
+
+  // others: slots of another group in the same step (e.g. the Training bonus next to the Path dice), also off-limits
+  function assignHtml(slots, optionKeys, before, stepPrefix, label, others = []) {
     if (!slots || !slots.length) return '';
     const rows = slots.map(s => {
-      const takenBy = k => { if (before[k] && s.key !== k) return tr('you already have {die}', { die: before[k].die }); const o = slots.find(x => x !== s && x.key === k); return o ? tr('on your {die}', { die: o.die }) : ''; };
+      const takenBy = k => { if (before[k] && s.key !== k) return tr('you already have {die}', { die: before[k].die }); const o = slots.concat(others).find(x => x !== s && x.key === k); return o ? tr('on your {die}', { die: o.die }) : ''; };
       const groups = traitGroups(optionKeys, k => traitItem(k, { taken: takenBy(k) }));
       let note = '';
-      if (s.key) note = s.upgrade ? tr('Already had {trait} at {from}: it becomes {to} and the other die is freed below.', { trait: traitName(s.key), from: s.upgrade.from, to: s.upgrade.to }) : '';
+      if (s.key) note = s.upgrade ? tr('You already had {trait}: bind this {die} to something else.', { trait: traitName(s.key), die: s.die }) : '';
       if (s.freed) note = note || tr('Freed die from {trait} (“I\'ve already got that” rule).', { trait: traitName(s.from) });
       return socket({ bind: `${stepPrefix}.assign.${s.id}`, d: s.die, cur: s.key, groups, empty: tr('Bind this {die} to a trait', { die: s.die }), note, freed: s.freed });
     }).join('');
@@ -839,6 +843,7 @@
   // ------------------------------------------------------------------ die sockets (replace die-choice drop-downs)
   // A socket is one die waiting for a trait. Its tray lists the candidates grouped by category.
   // Only one tray is open at a time: the one the player opened, else the first empty socket.
+  let pointerDown = false, pendingRender = false;   // see the pointerdown/pointerup listeners below
   let socketAuto = false;           // set once per render when an empty socket has claimed the auto-open
   const traitGroups = (keys, item) => {
     const G = {};
@@ -857,9 +862,9 @@
       : `<span class="sock-empty">${esc(empty || tr('Choose'))}</span>`;
     const filter = all.length > 12 ? `<label class="tray-filter">${ico('mark')}<input type="search" data-filter="1" placeholder="${tr('Filter {n} options…', { n: all.length })}" aria-label="${tr('Filter options')}"></label>` : '';
     const tray = open ? `<div class="tray" role="group" aria-label="${esc(empty || tr('Options'))}">${filter}${groups.map(g => `<div class="tray-group"><div class="tray-label">${esc(g.label)}${g.sub ? `<span>${esc(g.sub)}</span>` : ''}</div><div class="tray-grid">${g.items.map(i => {
-      const on = i.k === cur, off = !!i.taken && !on;
-      return `<button class="rune${on ? ' on' : ''}${off ? ' off' : ''}" data-act="socket" data-bind="${bind}" data-val="${i.k}" data-q="${esc((i.name + ' ' + (i.sub || '') + ' ' + g.label).toLowerCase())}"${off ? ' aria-disabled="true"' : ''}${on ? ' aria-pressed="true"' : ''}${tip(traitTip(i.k))}>
-        <span class="rune-name">${esc(i.name)}</span>${i.sub ? `<span class="rune-sub">${esc(i.sub)}</span>` : ''}${i.after ? `<span class="rune-badge">${esc(i.after)}</span>` : ''}${off ? `<span class="rune-badge taken">${esc(i.taken)}</span>` : ''}</button>`;
+      const on = i.k === cur, off = !!i.taken && !on, fit = fitTrait(i.k);
+      return `<button class="rune${on ? ' on' : ''}${off ? ' off' : ''}${fit ? ' fits' : ''}" data-act="socket" data-bind="${bind}" data-val="${i.k}" data-q="${esc((i.name + ' ' + (i.sub || '') + ' ' + g.label).toLowerCase())}"${off ? ' aria-disabled="true"' : ''}${on ? ' aria-pressed="true"' : ''}${tip(traitTip(i.k) + (fit ? `<hr>✦ ${esc(fit)}` : ''))}>
+        <span class="rune-name">${fit ? `<span class="rune-fit" aria-label="${esc(fit)}">${ico('mark')}</span>` : ''}${esc(i.name)}</span>${i.sub ? `<span class="rune-sub">${esc(i.sub)}</span>` : ''}${i.after ? `<span class="rune-badge">${esc(i.after)}</span>` : ''}${off ? `<span class="rune-badge taken">${esc(i.taken)}</span>` : ''}</button>`;
     }).join('')}</div></div>`).join('')}${cur ? `<button class="linkbtn tray-clear" data-act="socket" data-bind="${bind}" data-val="">${tr('Unbind this die')}</button>` : ''}</div>` : '';
     return `<div class="socket${cur ? ' filled' : ''}${open ? ' open' : ''}${freed ? ' freed' : ''}">
       <div class="sock-row">${gem}<span class="sock-link" aria-hidden="true"></span>
@@ -962,7 +967,7 @@
     const H = {
       pick: () => pickSection('region', r && `<div class="chosen chosen-region" style="--rc:${r.color}">${sigil(r.id, 'chosen-sigil')}<div class="chosen-sc">${tr('Homeland')}</div><div class="chosen-t">${esc(r.name)}</div><p class="lore">${esc(r.lore)}</p>${window.LORE_FOR_REGION && window.LORE_FOR_REGION[r.id] ? `<p class="lore-link"><a href="#" data-act="lore" data-section="${window.LORE_FOR_REGION[r.id]}">${ico('map')} ${tr('Read the full lore of {place}', { place: esc(r.name) })}</a></p>` : ''}
           <p class="champs"><b>${tr('Champions:')}</b> ${esc(r.champs)}</p>
-          <div class="grid3"><div><h4>${tr('Fitting Origins')}</h4><small>${esc(names(window.BACKGROUNDS, r.bg))}</small></div><div><h4>${tr('Fitting Sources')}</h4><small>${esc(names(window.POWER_SOURCES, r.ps))}</small></div><div><h4>${tr('Fitting Principles')}</h4><small>${esc(r.pr.map(id => (window.PRINCIPLE_LORE[id] || [id])[0]).join(', '))}</small></div></div>
+          <div class="grid4"><div><h4>${tr('Fitting Origins')}</h4><small>${esc(names(window.BACKGROUNDS, r.bg))}</small></div><div><h4>${tr('Fitting Sources')}</h4><small>${esc(names(window.POWER_SOURCES, r.ps))}</small></div>${r.ar && r.ar.length ? `<div><h4>${tr('Fitting Paths')}</h4><small>${esc(names(window.ARCHETYPES, r.ar))}</small></div>` : ''}<div><h4>${tr('Fitting Principles')}</h4><small>${esc(r.pr.map(id => (window.PRINCIPLE_LORE[id] || [id])[0]).join(', '))}</small></div></div>
           <p class="sc">${tr('No rules effect. Options marked {mark} <b>{place}</b> in later steps are only suggestions.', { mark: ico('mark'), place: esc(r.name) })}</p></div>`,
         `<p class="muted">${tr('New to Runeterra? Read the <a href="#" data-act="lore" data-section="lore-planet">world lore</a> first.')}</p><div class="cards regions">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.id)}${fitMark('regions', x.id)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
     };
@@ -1044,8 +1049,8 @@
             ${shape.req ? (shape.req.count ? `<li>${tr('You <b>must</b> end this step with <b>{what}</b> — ones you already have count, so put dice there only until you have two.', { what: esc(tr(shape.req.label)) })}</li>` : `<li>${tr('First, one die <b>must</b> go to <b>{what}</b>. If you already have it, you may skip this and use the die below instead.', { what: esc(tr(shape.req.label)) })}</li>`) : ''}
             <li>${remLine}</li>
             <li>${tr('Every die left over goes to qualities: {opts}.', { opts: optsText(shape.quals) })}${shape.remPowers !== 'one' ? ` <span class="muted">${tr('It is fine to put every die into powers and take no quality here.')}</span>` : ''}</li></ul>
-          ${assignHtml(R.slots.arch, optKeys, R.before.archetype, 'arch', tr('Assign each die:'))}
-          ${p.id === 'training' ? `<p style="margin-top:12px">${tr('From your <b>{src}</b> source: one extra quality from this Path\'s list at {die}.', { src: esc(p.rt), die: die('d8') })}</p>${assignHtml(R.slots.training, expand(shape.quals), R.before.archetype, 'arch', tr('Training bonus quality:'))}` : ''}
+          ${assignHtml(R.slots.arch, optKeys, R.before.archetype, 'arch', tr('Assign each die:'), R.slots.training || [])}
+          ${p.id === 'training' ? `<p style="margin-top:12px">${tr('From your <b>{src}</b> source: one extra quality from this Path\'s list at {die}.', { src: esc(p.rt), die: die('d8') })}</p>${assignHtml(R.slots.training, expand(shape.quals), R.before.archetype, 'arch', tr('Training bonus quality:'), R.slots.arch || [])}` : ''}
           ${shape.extra ? `<p style="margin-top:12px">${esc(shape.extra.text)}</p>${socket({ bind: 'arch.extra.key', d: shape.extra.die, cur: st.arch.extra.key, groups: traitGroups(expand(shape.extra.opts).filter(k => !R.before.archetype[k]), k => traitItem(k)), empty: tr('Bind this {die} to a trait', { die: shape.extra.die }) })}` : ''}
           ${a.modular && R.modExtra ? `<p style="margin-top:12px">${tr('Stance Masters need at least four powers — add {n} {die} power(s):', { n: R.modExtra, die: die('d6') })}</p>` + Array.from({ length: R.modExtra }, (_, i) => socket({ bind: `arch.extra.m${i}`, d: 'd6', cur: st.arch.extra['m' + i], groups: traitGroups(allOf('power').filter(k => !R.before.personality[k] || k === st.arch.extra['m' + i]), k => traitItem(k, { taken: Object.keys(st.arch.extra).some(x => x !== 'm' + i && /^m\d/.test(x) && st.arch.extra[x] === k) ? tr('on another d6') : '' })), empty: tr('Bind this d6 to any power') })).join('') : ''}
           ${shape.healthAlt ? `<p class="sc">${tr('When determining Health you may use a {cat} power instead of an Athletic power or Mental quality.', { cat: esc(shape.healthAlt.map(catName).join(tr(' or '))) })}</p>` : ''}
@@ -1791,6 +1796,7 @@
   }
 
   function render() {
+    pendingRender = false;
     R0 = compute();
     if (SHEET_PAGE) {
       const rg = regionDef();
@@ -2062,6 +2068,7 @@
     }
     if (!el.dataset.bind) return;
     bindValue(el);
+    if (el.dataset.commit && pointerDown) { pendingRender = true; renderSideOnly(false); return; }
     if (el.dataset.live && !el.dataset.commit) { renderSideOnly(!!el.closest('#sheet-preview')); if (!SHEET_PAGE) document.getElementById('nav').innerHTML = renderNav(); return; }
     render();
   });
@@ -2093,8 +2100,28 @@
       if (again) { again.value = el.value; again.focus(); again.setSelectionRange(pos, pos); }
       return;
     }
+    const before = el.dataset.commit ? stepIssues(st.step, R0).length : 0;
     renderSideOnly(!!el.closest('#sheet-preview'));
+    if (!el.dataset.commit) return;
+    if (stepIssues(st.step, R0).length !== before) {   // the section just became done (or not): redraw it, keeping the caret
+      const bind = el.dataset.bind, pos = el.selectionStart;
+      render();
+      const again = document.querySelector(`input[data-bind="${bind}"]`);
+      if (again) { again.focus(); again.setSelectionRange(pos, pos); }
+    } else syncNext();
   });
+  // Typed answers (Signature Quality, name…) unlock "Next" as soon as they are not empty, without waiting for Enter.
+  function syncNext() {
+    const b = document.querySelector('.step-footer [data-act="next"]');
+    if (!b) return;
+    const ready = !stepIssues(st.step, R0).length;
+    b.classList.toggle('is-disabled', !ready); b.setAttribute('aria-disabled', String(!ready));
+    const hint = document.querySelector('.step-footer .next-hint'); if (hint) hint.hidden = ready;
+  }
+  // A typed field commits (and re-renders) on blur. If that blur comes from pressing a button, wait for the
+  // click to land first, otherwise the button would be replaced under the pointer and the click lost.
+  document.addEventListener('pointerdown', () => { pointerDown = true; }, true);
+  document.addEventListener('pointerup', () => { pointerDown = false; if (pendingRender) setTimeout(() => { if (pendingRender) render(); }, 0); }, true);
 
   // Downscale the portrait so it fits comfortably in browser storage and the PDF.
   function loadPortrait(file) {
