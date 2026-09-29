@@ -1,0 +1,26 @@
+Art for the People and Homeland hover cards in the forge (480px). Different from the Lore page pictures on purpose:
+no picture is used twice on the site.
+
+- r-bandle: A Árvore de Papel (06BC035)
+- r-bilgewater: Docas da Matança (03BW001)
+- r-demacia: A Luz de Demacia (09DE039)
+- r-freljord: O Abismo Uivante (03FR009)
+- r-ionia: O Coração da Árvore (09IO058)
+- r-ixtal: Arapuca (07SH011)
+- r-nazumah: Mapa de Runeterra (map.leagueoflegends.com) shurima_valley_01
+- r-noxus: Treinamento Trifariano (06NX040)
+- r-piltover: A Forja do Amanhã (05PZ021)
+- r-shadow-isles: O Arvoredo Retorcido (04SI018)
+- r-shurima: O Exército do Imperador (09SH009)
+- r-targon: Pico Pontestrelado (04MT010)
+- r-void: Aberração do Vazio (06SH014)
+- r-zaun: Fundição de Núcleos Hex (03PZ020)
+- race-construto: Porobot Recauchutado (03PZ019)
+- race-espirito: Mãe-Espírito (09IO048)
+- race-humano: Sargento Fiscalizador (07DE014)
+- race-meio-dragao: Dragão Furioso (03DE006)
+- race-minotauro: Desafiador Caído (05NX015)
+- race-plantifero: Dona Raiz (09IO053)
+- race-troll: Troll Devastadora (03FR005)
+- race-vastaya: Cantora Marai (05BW013)
+- race-yordle: Tristana (05BC133)

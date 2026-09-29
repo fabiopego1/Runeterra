@@ -663,19 +663,16 @@
   }
   // Lore art at the top of a region or people tooltip (the same pictures as the Lore page).
   const PEOPLE_SLOT = { human: 'humano', spirit: 'espirito', construct: 'construto', plant: 'plantifero', dragonkin: 'meio-dragao', minotaur: 'minotauro' };
-  // Tooltips use small copies (assets/lore/tip/, 480px) of the Lore page's pictures.
-  const tipSrc = src => src.replace('assets/lore/', 'assets/lore/tip/');
-  const tipImg = slot => {
-    const im = (window.LORE_IMAGES || {})[slot];
-    return im ? `<img class="tip-img" src="${tipSrc(im.src)}" alt="" decoding="async" style="object-position:${im.pos || '50% 50%'}">` : '';
-  };
+  // People and Homeland tooltips have their own Legends of Runeterra art (assets/tip/, 480px), different
+  // from the Lore page's pictures: no image appears twice anywhere on the site.
+  const tipSrc = slot => `assets/tip/${slot}.webp`;
+  const tipImg = slot => `<img class="tip-img" src="${tipSrc(slot)}" alt="" decoding="async">`;
   // Fetch the current chapter's tooltip pictures in the background, so hovering shows them at once.
   const warmed = new Set();
   function warmImages() {
-    const L = window.LORE_IMAGES || {};
     const urls = {
-      people: (window.PEOPLES || []).map(x => L['race-' + (PEOPLE_SLOT[x.id] || x.id)]).filter(Boolean).map(im => tipSrc(im.src)),
-      region: (window.REGIONS || []).map(x => L['r-' + x.id]).filter(Boolean).map(im => tipSrc(im.src)),
+      people: (window.PEOPLES || []).map(x => tipSrc('race-' + (PEOPLE_SLOT[x.id] || x.id))),
+      region: (window.REGIONS || []).map(x => tipSrc('r-' + x.id)),
       background: window.BACKGROUNDS.map(x => `assets/cards/bg-${x.id}.webp`),
       powersource: window.POWER_SOURCES.map(x => `assets/cards/ps-${x.id}.webp`),
       archetype: window.ARCHETYPES.map(x => `assets/cards/ar-${x.id}.webp`),
