@@ -295,9 +295,6 @@
     intro: [
       ['Bem-vindo à Forja', 'Aqui você monta a <b>ficha de um herói</b> para jogar RPG com amigos. Um <b>Mestre</b> narra a história; cada jogador decide o que o seu herói faz.', ''],
       ['A crônica', 'A criação tem <b>dez capítulos</b>, listados aqui. Cada um abre quando o anterior termina.', '.steps-nav || .rail'],
-      ['Como se rola', 'Para agir, você rola <b>três dados</b>: um <b>poder</b>, uma <b>qualidade</b> e um <b>dado de status</b>. Depois os ordena em <b>Mín</b>, <b>Médio</b> e <b>Máx</b>. O <b>Médio</b> costuma ser o resultado.<span class="tour-ex">Você rola d10, d8 e d6 e tira 7, 3 e 5. Mín = 3, Médio = 5, Máx = 7.</span>', ''],
-      ['Construído ou Guiado', '<b>Construído</b>: você escolhe tudo. <b>Guiado</b>: você rola e escolhe entre o que os dados liberam. Na dúvida, fique com Construído.', '.tp-options'],
-      ['Ficha, Lore e Regras', 'No topo: a <b>Ficha</b> mostra seu campeão pronto, o <b>Lore</b> conta a história do mundo e as <b>Regras</b> resumem o jogo (tecla <b>?</b>).', '.header-actions'],
       ['Começar', 'Clique aqui para abrir o Capítulo I. O guia volta em cada capítulo, e o botão <b>Guia</b> ao lado do título o reabre.', '.tp-go .btn']
     ],
     people: [

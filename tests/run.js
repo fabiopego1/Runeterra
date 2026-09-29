@@ -36,7 +36,8 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.evaluate(() => localStorage.clear()); await p.reload();
     await p.evaluate(() => document.fonts.ready);
     const step = () => p.$eval('.rail-item.active .rail-name', e => e.textContent.trim());
-    const next = async () => { await p.click('[data-act=next]', { force: true }); await p.waitForTimeout(450); };
+    const next = async () => { await p.click('[data-act=next]', { force: true }); await p.waitForTimeout(450); if (await p.$('#tour') && !guideCheck) { await p.click('#tour [data-act=tourOk]'); await p.waitForTimeout(100); } };
+    let guideCheck = true;   // the first chapters check the guide themselves
     const sel = async (bd, v) => {
       if (await p.$(`select[data-bind="${bd}"]`)) return p.selectOption(`select[data-bind="${bd}"]`, v);
       if (!(await p.$(`.rune[data-bind="${bd}"][data-val="${v}"]`))) await p.click(`.sock-slot[data-bind="${bd}"]`);
@@ -47,12 +48,15 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('#tour h4', e => e.textContent.includes('Bem-vindo')), 'the guide greets a new champion on the welcome page');
     await p.click('[data-act=tourOk]');
     ok(!(await p.$('#tour')), '"Entendi" closes the guide for this chapter');
-    ok(await p.$eval('[data-act=method][data-m=constructed]', e => e.getAttribute('aria-pressed') === 'true' || e.classList.contains('on') || e.classList.contains('active')), 'Construído is the default method');
+    ok(!(await p.$('[data-act=method]')) && !(await p.$('[data-act=tourOff]')), 'no method choice and no option to turn the guide off');
     ok(await p.$$eval('.rail-item.locked', e => e.length) > 0, 'later chapters are locked on a fresh start');
     await next();
     ok(await p.$eval('#tour h4', e => e.textContent.includes('Povo')), 'the guide explains the next chapter');
-    await p.click('[data-act=tourOff]');
-    ok(!(await p.$('#tour')), 'the guide can be turned off');
+    await p.click('#tour [data-act=tourNext]');
+    ok(await p.$eval('#tour .tour-dots i.on', e => !!e) && await p.$eval('#tour h4', e => !e.textContent.includes('Povo')), 'the guide moves to its next step');
+    await p.click('#tour [data-act=tourOk]');
+    ok(!(await p.$('#tour')), '"Pular" closes the guide for this chapter');
+    guideCheck = false;
     const peopleStep = await step();
     await next();
     ok(await step() === peopleStep, 'cannot advance without picking a people');
@@ -64,10 +68,6 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await next();
     ok(await step() === regionStep, 'cannot advance without picking a region');
     await p.click('[data-kind=region][data-id=zaun]'); await next();
-    await p.click('[data-act=method][data-m=guided]');
-    await p.click('[data-act=roll]');
-    ok(await p.$$eval('.card.valid', e => e.length) > 0, 'guided roll marks valid origins');
-    await p.click('[data-act=method][data-m=constructed]');
     await p.click('[data-kind=bg][data-id=anachronistic]');
     await sel('bg.assign.b0', 'magical-lore'); await sel('bg.assign.b1', 'history');
     await p.click('[data-act=principle][data-slot=bg][data-id=magic]');
