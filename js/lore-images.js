@@ -52,10 +52,10 @@ window.LORE_IMAGES = {
   'race-humano': { src: 'assets/lore/race-humano.webp', credit: "Garen · Legends of Runeterra · Riot Games", pos: '72% 40%' },
   'race-plantifero': { src: 'assets/lore/race-plantifero.webp', credit: "Maokai · Legends of Runeterra · Riot Games" },
   'race-construto': { src: 'assets/lore/race-construto.webp', credit: "Galio · Legends of Runeterra · Riot Games", pos: '62% 30%' },
-  'race-meio-dragao': { src: 'assets/lore/race-meio-dragao.webp', credit: "Shyvana · Legends of Runeterra · Riot Games", pos: '35% 40%' },
+  'race-meio-dragao': { src: 'assets/lore/race-meio-dragao.webp', credit: "Shyvana · Legends of Runeterra · Riot Games", pos: '50% 30%' },
   'race-troll': { src: 'assets/lore/race-troll.webp', credit: "Trundle · Legends of Runeterra · Riot Games" },
   'race-vastaya': { src: 'assets/lore/race-vastaya.webp', credit: "Ahri · Legends of Runeterra · Riot Games" },
-  'race-espirito': { src: 'assets/lore/race-espirito.webp', credit: "Kindred · Legends of Runeterra · Riot Games", pos: '60% 50%' },
+  'race-espirito': { src: 'assets/lore/race-espirito.webp', credit: "Kindred · Legends of Runeterra · Riot Games", pos: '72% 50%' },
   'race-yordle': { src: 'assets/lore/race-yordle.webp', credit: "Teemo · Legends of Runeterra · Riot Games", pos: '62% 50%' },
   'race-minotauro': { src: 'assets/lore/race-minotauro.webp', credit: "Desafiador Minotauro · Legends of Runeterra · Riot Games" },
 };

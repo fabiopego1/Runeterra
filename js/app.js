@@ -671,6 +671,12 @@
       return `<button class="${cls}" data-act="pick" data-kind="${kind}" data-id="${it.id}"${v === false ? ' data-locked="1"' : ''}${it.id === selId ? ' aria-pressed="true"' : ''}${tipAttr}>${inner}</button>`;
     }).join('')}</div>`;
   }
+  // Lore art at the top of a region or people tooltip (the same pictures as the Lore page).
+  const PEOPLE_SLOT = { human: 'humano', spirit: 'espirito', construct: 'construto', plant: 'plantifero', dragonkin: 'meio-dragao', minotaur: 'minotauro' };
+  const tipImg = slot => {
+    const im = (window.LORE_IMAGES || {})[slot];
+    return im ? `<img class="tip-img" src="${im.src}" alt="" style="object-position:${im.pos || '50% 50%'}">` : '';
+  };
   // Suggestion marks from the flavour chapters (People and Homeland): no rules effect.
   const fitMark = (arr, id) => {
     const r = regionDef(), pp = peopleDef();
@@ -943,7 +949,7 @@
           <p class="champs"><b>${tr('Champions:')}</b> ${esc(p.champs)}</p>
           ${fits.length ? `<div class="grid3">${fits.map(([h, v]) => `<div><h4>${h}</h4><small>${esc(v)}</small></div>`).join('')}</div>` : ''}
           <p class="sc">${tr('No rules effect. Options marked {mark} <b>{place}</b> in later steps are only suggestions.', { mark: ico('mark'), place: esc(p.name) })}</p></div>`,
-        `<div class="cards regions">${(window.PEOPLES || []).map(x => `<button class="card region-card${x.id === st.people ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="people" data-id="${x.id}"${tip(`<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.sigil)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
+        `<div class="cards regions">${(window.PEOPLES || []).map(x => `<button class="card region-card${x.id === st.people ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="people" data-id="${x.id}"${tip(`${tipImg('race-' + (PEOPLE_SLOT[x.id] || x.id))}<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.sigil)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
     };
     return stepPanel('Step 0 · Runeterra', tr('People'), 'people', flowHtml('people', sectionsFor('people', R0), H), false);
   }
@@ -956,7 +962,7 @@
           <p class="champs"><b>${tr('Champions:')}</b> ${esc(r.champs)}</p>
           <div class="grid4"><div><h4>${tr('Fitting Origins')}</h4><small>${esc(names(window.BACKGROUNDS, r.bg))}</small></div><div><h4>${tr('Fitting Sources')}</h4><small>${esc(names(window.POWER_SOURCES, r.ps))}</small></div>${r.ar && r.ar.length ? `<div><h4>${tr('Fitting Paths')}</h4><small>${esc(names(window.ARCHETYPES, r.ar))}</small></div>` : ''}<div><h4>${tr('Fitting Principles')}</h4><small>${esc(r.pr.map(id => (window.PRINCIPLE_LORE[id] || [id])[0]).join(', '))}</small></div></div>
           <p class="sc">${tr('No rules effect. Options marked {mark} <b>{place}</b> in later steps are only suggestions.', { mark: ico('mark'), place: esc(r.name) })}</p></div>`,
-        `<div class="cards regions">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.id)}${fitMark('regions', x.id)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
+        `<div class="cards regions">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`${tipImg('r-' + x.id)}<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.id)}${fitMark('regions', x.id)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
     };
     return stepPanel('Step 1 · Runeterra', tr('Homeland'), 'region', flowHtml('region', sectionsFor('region', R0), H), false);
   }
