@@ -390,6 +390,22 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(/Força|Strength/.test(await p.$eval('#flow-archetype-assign', e => e.textContent)) && !(await p.$('.sock-slot[data-bind="arch.assign.fa0"]')), 'any other trait you already have still cannot be taken again');
     await p.context().close();
   }
+  // Armored (p.79): three Green abilities using at least two different powers, even when one of them (Deflect) uses none.
+  {
+    const p = await newPage();
+    await p.goto(`${BASE}/index.html`);
+    const S = JSON.parse(FIXTURE);
+    Object.assign(S, { step: 'archetype', maxStep: 9, tour: { on: false, seen: {} }, noRetcon: true });
+    S.arch = { id: 'armored', base: null, assign: {}, principle: null, extra: {}, notes: '' };
+    await p.evaluate(s => localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)), S);
+    await p.reload(); await p.waitForTimeout(300);
+    const owned = await p.evaluate(() => window.ForgeDebug.traits().filter(t => t.kind === 'power').map(t => t.key));
+    const iss = await p.evaluate(pw => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.sel['arch-green'] = [{ name: 'Deflect', ch: {} }, { name: 'Dual Offense', ch: {}, trait: pw }, { name: 'Repair', ch: {}, trait: pw }]; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); return true; }, owned[0]);
+    await p.reload(); await p.waitForTimeout(300);
+    const issues = await p.evaluate(() => window.ForgeDebug.issues('archetype').join(' | '));
+    ok(/pelo menos 2 poderes diferentes|at least 2 different powers/.test(issues), 'Armored Green abilities must use two different powers even with Deflect picked');
+    await p.context().close();
+  }
   ok(errors.length === 0, 'no JavaScript errors or missing files');
   await browser.close();
   console.log(failures ? `\n${failures} failing` : '\nall passing');

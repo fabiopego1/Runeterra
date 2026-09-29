@@ -451,6 +451,7 @@
     const s = selOf(g);
     if (!g.fixed && s.length !== g.count) I.push(tr('Pick {n} ({have}/{n} chosen).', { n: g.count, have: s.length }));
     const used = [];
+    let missing = 0;
     for (const e of s) {
       const al = allowedTraits(R, e.name, { powersOnly: g.powersOnly, use: groupUse(g, R) });
       if (al.req.kind !== 'none' && !al.req.fixed && !e.trait) I.push(tr('Choose which power/quality “{ab}” uses.', { ab: abName(e.name) }));
@@ -459,10 +460,12 @@
       if (al.req.second && !e.trait2) I.push(tr('Choose the quality for “{ab}”.', { ab: abName(e.name) }));
       for (const t of choiceTokens(A[e.name] && A[e.name].text)) if (!(e.ch && e.ch[t])) I.push(tr('Choose [{what}] for “{ab}”.', { what: tokenLabel(t), ab: abName(e.name) }));
       if (e.trait) used.push(e.trait);
+      if (al.req.kind !== 'none' && !al.req.fixed && !e.trait) missing++;
     }
     if (g.diff && new Set(used).size !== used.length) I.push(tr('Each ability must use a different power/quality.'));
     const ru = g.rules || {};
-    const full = s.length === g.count && used.length === s.length;
+    // complete: every ability picked and every one that uses a trait has it (some, like Deflect, use none)
+    const full = s.length === g.count && !missing;
     if (full && ru.minDistinct && new Set(used.filter(k => !ru.distinctKind || TRAIT[k].kind === ru.distinctKind)).size < ru.minDistinct) I.push(tr(ru.distinctKind === 'power' ? 'Use at least {n} different powers across these abilities.' : 'Use at least {n} different powers/qualities across these abilities.', { n: ru.minDistinct }));
     if (full && ru.needs) {
       const fits = (k, n) => (n.any ? expand(n.any).includes(k) : true) && (n.kind ? TRAIT[k].kind === n.kind : true);
