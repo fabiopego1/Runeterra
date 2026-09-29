@@ -301,13 +301,13 @@
       ['Começar', 'Clique aqui para abrir o Capítulo I. O guia volta em cada capítulo, e o botão <b>Guia</b> ao lado do título o reabre.', '.tp-go .btn']
     ],
     people: [
-      ['Povo', 'De que povo seu campeão é. É <b>só cosmético</b>: não muda nenhum número.', '.cards.regions'],
+      ['Povo', 'De que povo seu campeão é. Serve <b>só para a interpretação</b>: não muda nenhum número.', '.cards.regions'],
       ['Conheça cada povo', 'Passe o mouse num cartão para ver a <b>arte</b> e um resumo.<span class="tour-ex">Yordles vivem em Bandópolis e são muito mais perigosos do que parecem.</span>', '.cards.regions .region-card'],
       ['Sugestões ✦', 'O que combina com seu povo ganha a marca <b>✦</b> nos próximos capítulos. São só sugestões: escolha o que quiser.', ''],
       ['Seguir em frente', 'Escolha um povo e clique aqui. O botão fica apagado enquanto falta algo no capítulo.', '.step-footer [data-act=next]']
     ],
     region: [
-      ['Terra Natal', 'A região onde seu campeão cresceu. Também é <b>só cosmético</b>.', '.cards.regions'],
+      ['Terra Natal', 'A região onde seu campeão cresceu. Também serve <b>só para a interpretação</b>.', '.cards.regions'],
       ['Conheça o mundo', 'Passe o mouse numa região para ver a arte e os campeões de lá. O <b>Lore</b> conta a história completa.', 'a.hbtn[href="lore.html"]'],
       ['Voltar e trocar', '<b>Voltar</b> leva ao capítulo anterior. <b>Trocar última escolha</b> desfaz a última decisão.', '.step-footer .footer-left']
     ],
@@ -362,8 +362,8 @@
   };
 
   W.STEP_INTROS = {
-    people: 'Escolha o <b>povo</b> do seu campeão: humano, vastaya, yordle, espírito e outros. É <b>só cosmético</b> e não muda nenhuma regra.',
-    region: 'Escolha a <b>terra</b> que moldou seu campeão. Também é <b>só cosmético</b>.',
+    people: 'Escolha o <b>povo</b> do seu campeão: humano, vastaya, yordle, espírito e outros. Serve <b>só para a interpretação</b> e não muda nenhuma regra.',
+    region: 'Escolha a <b>terra</b> que moldou seu campeão. Também serve <b>só para a interpretação</b>.',
     background: 'De onde seu campeão veio antes de virar uma lenda. Dá <b>2 qualidades</b>, seu <b>primeiro princípio</b> e os <b>dados da Fonte de Poder</b>.',
     powersource: 'O que transformou seu campeão. Dá <b>poderes</b>, habilidades <b>Amarelas</b> e os <b>dados do Caminho</b>.',
     archetype: 'Como seu campeão luta e que papel cumpre no grupo. Dá mais <b>poderes e qualidades</b>, habilidades <b>Verdes</b> e o <b>segundo princípio</b>.',

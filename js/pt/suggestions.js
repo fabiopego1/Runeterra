@@ -1,4 +1,4 @@
-// pt-BR: sugestões extras de Terra Natal e Povo (só cosméticas, não mudam regras).
+// pt-BR: sugestões extras de Terra Natal e Povo (só para interpretação, não mudam regras).
 // Completa as listas de window.REGIONS e window.PEOPLES com Caminhos (ar), poderes e qualidades (tr)
 // e mais Princípios (pr). A Forja mostra a marca ✦ em cada opção sugerida.
 (() => {
