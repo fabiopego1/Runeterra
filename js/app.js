@@ -674,7 +674,8 @@
   // Suggestion marks from the flavour chapters (People and Homeland): no rules effect.
   const fitMark = (arr, id) => {
     const r = regionDef(), pp = peopleDef();
-    const m = (src, label) => src && src[arr] && src[arr].includes(id) ? `<span class="fit"${tip(label)}>${ico('mark')}${esc(src.name)}</span>` : '';
+    // a list that covers almost everything (humans live in every region) suggests nothing: no marks
+    const m = (src, label) => src && src[arr] && src[arr].length <= 8 && src[arr].includes(id) ?`<span class="fit"${tip(label)}>${ico('mark')}${esc(src.name)}</span>` : '';
     return m(pp, tr('Suits a champion of the {people} people', { people: esc(pp && pp.name) })) + m(r, tr('Suits a champion from {place}', { place: esc(r && r.name) }));
   };
 
@@ -824,10 +825,9 @@
             <button class="tp-option${st.method === 'constructed' ? ' on' : ''}" role="radio" aria-checked="${st.method === 'constructed'}" data-act="method" data-m="constructed"><span class="tp-o-t">${tr('Constructed')}</span><span class="tp-o-d">${tr('Pick freely to build the champion you already imagine. Same dice, your choice.')}</span></button>
             <button class="tp-option${st.method === 'guided' ? ' on' : ''}" role="radio" aria-checked="${st.method === 'guided'}" data-act="method" data-m="guided"><span class="tp-o-t">${tr('Guided')}</span><span class="tp-o-d">${tr('Roll the dice at every chapter and choose among the paths they open. Let the Runes decide.')}</span></button>
           </div>
-          <p class="tp-small tp-which">${tr('<b>Which one?</b> Constructed is the most direct: you choose everything, ideal when you already have a champion in mind or are new to the game. Guided is for those who like surprises: at each chapter you roll the dice and pick among the options they unlock, with one re-roll per chapter.')}</p>
-          <p class="tp-small">${tr('You can switch at any time. Progress is kept in this browser.')}</p>
+          <p class="tp-small tp-which">${tr('<b>New to the game?</b> Pick <b>Constructed</b>. You can switch at any time; progress is kept in this browser.')}</p>
         </div>
-        <div class="tp-go"><p class="tp-small">${tr('The chapters are listed in the chronicle: each one opens once the previous is complete.')}</p>
+        <div class="tp-go">
           <button class="btn primary" data-act="next"><span class="btn-kicker">${tr('Chapter I')}</span>${tr('Begin the chronicle')} ${ico('next')}</button></div>
       </section>
     </div>`;
@@ -956,7 +956,7 @@
           <p class="champs"><b>${tr('Champions:')}</b> ${esc(p.champs)}</p>
           ${fits.length ? `<div class="grid3">${fits.map(([h, v]) => `<div><h4>${h}</h4><small>${esc(v)}</small></div>`).join('')}</div>` : ''}
           <p class="sc">${tr('No rules effect. Options marked {mark} <b>{place}</b> in later steps are only suggestions.', { mark: ico('mark'), place: esc(p.name) })}</p></div>`,
-        `<p class="muted">${tr('Runeterra is home to many peoples. Your people is pure flavour: it changes no rule, but suggests homelands and choices that suit it.')}</p><div class="cards regions">${(window.PEOPLES || []).map(x => `<button class="card region-card${x.id === st.people ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="people" data-id="${x.id}"${tip(`<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.sigil)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
+        `<div class="cards regions">${(window.PEOPLES || []).map(x => `<button class="card region-card${x.id === st.people ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="people" data-id="${x.id}"${tip(`<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.sigil)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
     };
     return stepPanel('Step 0 · Runeterra', tr('People'), 'people', flowHtml('people', sectionsFor('people', R0), H), false);
   }
@@ -1003,6 +1003,7 @@
       const keys = expand(p.opts).filter(k => !(R.before.psExtra || {})[k]);
       return `<p>${esc(ex.text)}</p><p class="muted">${tr('You have no d6 powers, so instead add a new power from the list at d6.')}</p>${socket({ bind: 'ps.extra.key', d: 'd6', cur: e.key, groups: traitGroups(keys, k => traitItem(k)), empty: tr('Bind this d6 to a new power') })}`;
     }
+    if (ex.type !== 'cosmos') return `<p>${esc(ex.text)}</p><p class="muted">${tr('Nothing to choose here: this bonus shows up in the Path chapter.')}</p>`;
     const pw = Object.values(R.before.psExtra || {}).filter(t => TRAIT[t.key].kind === 'power');
     const downs = sortTraits(pw.filter(t => dn(t.die) >= 8));
     const ups = sortTraits(pw.filter(t => dn(t.die) <= 10 && t.key !== e.down));

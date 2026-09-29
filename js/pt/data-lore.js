@@ -289,30 +289,32 @@
 
 
   // Guia da criação: [título, texto, seletor do que destacar]. Aparece uma vez por capítulo para um campeão novo.
+  // Guia (popup, uma vez por capítulo): explica conceitos e jargão para quem nunca jogou, sem repetir a tela.
+  // A tela (STEP_INTROS e as dicas "Agora") diz só o que o capítulo dá e o que fazer.
   W.TOUR = {
-    intro: ['Bem-vindo à Forja', 'Aqui você cria seu campeão em <b>dez capítulos</b>. Primeiro escolha como o destino será decidido: <b>Construído</b>, em que você escolhe tudo, ou <b>Guiado</b>, em que os dados sugerem. Depois é só clicar em <b>Começar a crônica</b>.', '.tp-options'],
-    people: ['Capítulo I: Povo', '<b>Só cosmético</b>, sem regras: escolha de que <b>povo</b> seu campeão é. As opções que combinam com ele ganham a marca <b>✦</b> nos próximos capítulos.', '.cards.regions'],
-    region: ['Capítulo II: Terra Natal', 'Também <b>só cosmético</b>: a <b>região</b> de onde ele vem. As Origens, Fontes, Caminhos e Princípios que combinam com ela ganham a marca <b>✦</b>.', '.cards.regions'],
-    background: ['Capítulo III: Origem', 'Aqui as <b>regras</b> começam. A Origem te dá <b>qualidades</b> (o que você sabe fazer), seu primeiro <b>princípio</b> e os <b>dados da sua Fonte de Poder</b>. Passe o mouse em cada cartão para ver o que ele dá.', ''],
-    powersource: ['Capítulo IV: Fonte de Poder', 'O que te deu poderes. Você liga cada dado a um <b>poder</b> (quanto <b>maior o dado</b>, melhor) e escolhe suas habilidades <b>Amarelas</b> e <b>Verdes</b>.', ''],
-    archetype: ['Capítulo V: Caminho', 'Como você <b>luta</b>. Você ganha mais <b>poderes</b> ou <b>qualidades</b>, habilidades <b>Verdes</b> e o seu <b>segundo princípio</b>.', ''],
-    personality: ['Capítulo VI: Temperamento', 'Como você reage sob <b>pressão</b>. Ele define os seus três <b>dados de status</b> (Verde, Amarelo e Vermelho), a sua <b>qualidade marcante</b> e a habilidade de <b>Nocaute</b>.', '.status-explain'],
-    red: ['Capítulo VII: Supremas', 'Duas habilidades <b>Vermelhas</b>, as mais fortes, liberadas quando você está <b>por um fio</b>. Só aparecem as categorias em que você tem um poder ou qualidade <b>d6 ou maior</b>.', ''],
-    retcon: ['Capítulo VIII: Reviravolta do Destino', 'Um <b>último ajuste</b> antes de fechar: trocar dados de lugar, ganhar um <b>d6 novo</b>, mudar um <b>princípio</b> ou outra opção.', ''],
-    health: ['Capítulo IX: Vida', 'Quanto <b>dano</b> você aguenta. A Forja faz a <b>conta sozinha</b>; você só escolhe qual <b>poder ou qualidade</b> entra nela.', ''],
-    finish: ['Capítulo X: Lenda', '<b>Nome</b>, aparência e biografia, em qualquer ordem. Com o nome preenchido, a ficha fica pronta para <b>imprimir</b>, exportar em <b>PDF</b> ou abrir na página <b>Ficha</b>.', '']
+    intro: ['Bem-vindo à Forja', 'Você vai montar a <b>ficha de um herói</b> para jogar com seu grupo e um <b>Mestre</b>, que narra a história. Não precisa saber as regras: cada capítulo diz <b>o que escolher</b> e <b>o que ele te dá</b>. O quadro <b>Como funciona uma rolagem</b> resume o jogo em uma linha.', '.tp-options'],
+    people: ['Capítulo I: Povo', 'Os dois primeiros capítulos são <b>só história</b>. Eles servem para <b>sugerir</b> escolhas: nos capítulos seguintes, o que combina com seu povo e sua terra ganha a marca <b>✦</b>.', '.cards.regions'],
+    region: ['Capítulo II: Terra Natal', 'Não conhece Runeterra? Clique numa região para ler um <b>resumo</b> e ver campeões famosos de lá. O botão <b>Lore</b>, no topo, conta a história do mundo.', '.cards.regions'],
+    background: ['Capítulo III: Origem', 'Daqui em diante as escolhas viram <b>números</b>. Seu herói tem <b>qualidades</b> (o que sabe fazer: lutar, convencer, investigar) e <b>poderes</b> (o que o torna extraordinário). Cada uma tem um <b>dado</b>: d6 é bom, d8 ótimo, d10 excelente, d12 lendário.<br><br>O <b>princípio</b> é aquilo em que você acredita. Agir de acordo com ele rende <b>pontos de herói</b>.', ''],
+    powersource: ['Capítulo IV: Fonte de Poder', '<b>Habilidades</b> são os golpes e truques especiais do herói. A cor diz quando ficam disponíveis: <b>Verdes</b> sempre, <b>Amarelas</b> quando a luta aperta, <b>Vermelhas</b> quando você está por um fio.<br><br>A letra ao lado diz o tipo: <b>A</b> é uma ação no seu turno, <b>R</b> uma reação fora do turno e <b>I</b> algo sempre ativo.', ''],
+    archetype: ['Capítulo V: Caminho', 'O Caminho é o seu <b>estilo de luta</b>, parecido com as funções de League of Legends: tanque, atirador, mago, assassino. Os campeões em cada cartão são só <b>exemplos</b>.<br><br>Algumas regras de dados aqui são específicas do Caminho: leia a lista acima dos dados.', ''],
+    personality: ['Capítulo VI: Temperamento', 'Escolha pelo <b>jeito</b> do herói ou pelos <b>dados</b>: os dois funcionam. A caixa logo abaixo explica o que os dados de status fazem.<br><br>A <b>Qualidade Marcante</b> é uma frase livre que resume seu herói, e o <b>Nocaute</b> é o que você ainda consegue fazer depois de cair em combate.', '.status-explain'],
+    red: ['Capítulo VII: Supremas', 'As Supremas são habilidades <b>Vermelhas</b>: as mais fortes, mas só liberadas quando sua Vida chega à <b>Zona Vermelha</b>. Só aparecem categorias em que você tem um poder ou qualidade <b>d6 ou maior</b>.', ''],
+    retcon: ['Capítulo VIII: Reviravolta do Destino', 'Uma chance de <b>corrigir</b> algo que ficou estranho na ficha. Na dúvida, <b>Talento Oculto</b> (um d6 novo) é a opção mais simples.', ''],
+    health: ['Capítulo IX: Vida', 'Quando você leva dano, a Vida cai e você muda de <b>zona</b>: Verde, Amarela e Vermelha. Cada zona libera habilidades e troca seu dado de status. Em <b>0</b> você está fora de combate e usa a habilidade de <b>Nocaute</b>.', ''],
+    finish: ['Capítulo X: Lenda', 'Dê às habilidades <b>nomes próprios</b>, como os de um campeão: "Golpe Duplo" pode virar "Dança das Lâminas". As <b>perguntas do Guia de Lore</b> ajudam a escrever a história. Depois abra a página <b>Ficha</b> para jogar.', '']
   };
 
   W.STEP_INTROS = {
-    people: 'Escolha o <b>povo</b> do seu campeão: humano, vastaya, yordle, espírito e outros. Assim como a Terra Natal, é <b>puramente cosmético</b> e <b>não muda nenhuma regra</b>, mas cada povo <b>sugere</b> terras natais, Origens, Fontes, Caminhos e Princípios que combinam com ele.',
-    region: 'Escolha a <b>terra</b> que moldou seu campeão. Esta escolha é <b>puramente cosmética</b> e <b>não muda nenhuma regra</b>, mas cada região <b>destaca</b> Origens, Fontes, Caminhos e Princípios que combinam com ela.',
-    background: 'Sua <b>Origem</b> é de onde seu campeão veio antes de virar uma lenda. <span class="sc">Ela te dá <b>qualidades</b>, seu <b>primeiro princípio</b> e os <b>dados da sua Fonte de Poder</b>.</span>',
-    powersource: 'Sua <b>Fonte de Poder</b> é o que te transformou e o que alimenta suas habilidades. <span class="sc">Atribua os dados da sua Origem a <b>poderes</b>, ganhe habilidades <b>Amarelas</b> e <b>Verdes</b> e os <b>dados do seu Caminho</b>.</span>',
-    archetype: 'Seu <b>Caminho</b> é como você luta e que papel cumpre no grupo. <span class="sc">Atribua os dados da sua Fonte de Poder a <b>poderes e qualidades</b>, ganhe habilidades <b>Verdes</b> (e às vezes Amarelas) e seu <b>segundo princípio</b>.</span>',
-    personality: 'Seu <b>Temperamento</b> é como você reage sob pressão. <span class="sc">Ele define seus <b>dados de status</b> Verde, Amarelo e Vermelho, sua habilidade de <b>Nocaute</b> e sua <b>Qualidade Marcante</b> em d8.</span>',
-    red: 'Escolha duas <b>técnicas Supremas</b>, aquilo que você libera quando tudo está em jogo. <span class="sc">Escolha entre categorias em que você tenha um <b>poder ou qualidade em d6 ou mais</b>.</span>',
-    retcon: 'Uma <b>Reviravolta do Destino</b> deixa você ajustar sua lenda antes que ela comece. <span class="sc">Escolha <b>exatamente uma</b> opção.</span>',
-    health: 'Quanto <b>castigo</b> você aguenta? <span class="sc">Sua Vida é <b>8</b> + o valor máximo do seu <b>dado de status Vermelho</b> + o valor máximo de um <b>poder Atlético ou qualidade Mental</b> (d4 se não tiver) + uma rolagem de <b>d8</b> (ou 4).</span>',
-    finish: 'Dê <b>nome</b> ao seu campeão, descreva-o e dê <b>nomes runeterranos</b> de verdade às suas habilidades. <span class="sc">Preencha na <b>ordem que quiser</b>.</span>'
+    people: 'Escolha o <b>povo</b> do seu campeão: humano, vastaya, yordle, espírito e outros. É <b>só cosmético</b> e não muda nenhuma regra.',
+    region: 'Escolha a <b>terra</b> que moldou seu campeão. Também é <b>só cosmético</b>.',
+    background: 'De onde seu campeão veio antes de virar uma lenda. Dá <b>2 qualidades</b>, seu <b>primeiro princípio</b> e os <b>dados da Fonte de Poder</b>.',
+    powersource: 'O que transformou seu campeão. Dá <b>poderes</b>, habilidades <b>Amarelas</b> e os <b>dados do Caminho</b>.',
+    archetype: 'Como seu campeão luta e que papel cumpre no grupo. Dá mais <b>poderes e qualidades</b>, habilidades <b>Verdes</b> e o <b>segundo princípio</b>.',
+    personality: 'Como seu campeão reage sob pressão. Dá os <b>dados de status</b>, a <b>Qualidade Marcante</b> e a habilidade de <b>Nocaute</b>.',
+    red: 'Suas duas habilidades <b>mais fortes</b>, liberadas quando você está <b>por um fio</b>.',
+    retcon: 'Um último <b>ajuste</b> antes de fechar a ficha.',
+    health: 'Quanto <b>dano</b> seu campeão aguenta. A conta é feita sozinha; você só escolhe o que entra nela e se quer <b>rolar</b>.',
+    finish: 'Dê <b>nome</b> e história ao seu campeão. Só o <b>nome</b> é obrigatório; o resto pode ser preenchido em qualquer ordem.'
   };
 })();
