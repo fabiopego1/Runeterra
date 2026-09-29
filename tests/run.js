@@ -85,7 +85,10 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await ab('arch-yellow', 'Cords of Magic'); await sel('sel.arch-yellow.0.trait', 'cosmic');
     await p.click('[data-act=principle][data-slot=arch][data-id=destiny]');
     await next();
-    ok(await p.$$eval('.status-explain', e => e.length) === 1 && await p.$$eval('.status-trend', e => e.length) > 10, 'Temperament explains the status dice and tags each card');
+    ok(await p.$$eval('.status-trend', e => e.length) > 10, 'Temperament tags each card with how its status dice change');
+    await p.click('[data-act=tourShow]');
+    ok(await p.$eval('#tour .tour-body', e => e.textContent.includes('dados de status')), 'the Guide button reopens the chapter guide, which explains the status dice');
+    await p.click('[data-act=tourOk]');
     await p.click('[data-kind=pers][data-id=decisive]');
     await p.fill('input[data-bind="pers.qname"]', 'Dom dos Imaginais'); await p.press('input[data-bind="pers.qname"]', 'Enter'); await p.waitForTimeout(100);
     await sel('pers.outTrait', 'cosmic');
