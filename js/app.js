@@ -825,9 +825,10 @@
 
   // others: slots of another group in the same step (e.g. the Training bonus next to the Path dice), also off-limits
   // Every power and quality is listed; the ones this step does not offer stay locked, with why (lockWhy).
-  function assignHtml(slots, optionKeys, before, stepPrefix, label, others = [], swap = [], lockWhy = '') {
+  // onlyKind: the step gives only powers or only qualities, so the other kind is left out of the list.
+  function assignHtml(slots, optionKeys, before, stepPrefix, label, others = [], swap = [], lockWhy = '', onlyKind = '') {
     if (!slots || !slots.length) return '';
-    const everyKey = lockWhy ? allOf('power').concat(allOf('quality')) : optionKeys;
+    const everyKey = !lockWhy ? optionKeys : onlyKind ? allOf(onlyKind) : allOf('power').concat(allOf('quality'));
     const rows = slots.map(s => {
       // a required trait you already have can take a bigger new die; its old die then comes back to this step
       const onOther = k => slots.concat(others).some(x => x !== s && x.key === k);
@@ -1186,7 +1187,8 @@
       roll: () => rollerHtml('bg', ['d10', 'd10'], tr('Roll 2d10 for your Origin')),
       pick: () => pickSection('bg', b && chosenSummary(b.rt, b.sc, b.lore, b.champs),
         (st.method !== 'guided' ? '' : `<p class="muted">${tr('Highlighted cards match your roll.')}</p>`) + cardsHtml(window.BACKGROUNDS, 'bg', st.bg.id, 'bg', x => `<span class="n">${pad2(x.n)}</span>${fitMark('bg', x.id)}<div class="t">${esc(x.rt)}</div><div class="d">${esc(x.sub)}</div><span class="info" aria-label="${tr('Details')}"${tip(bgTip(x))}></span>`)),
-      assign: () => `${b.q.mustInclude ? `<p>${tr('One die <b>must</b> go to {trait}.', { trait: traitSpan(b.q.mustInclude) })}</p>` : ''}${assignHtml(R.slots.bg, expand(b.q.opts), R.before.background, 'bg', tr('Assign each die to a quality:'), [], [], tr('Your Origin does not offer this.'))}`,
+      assign: () => `${b.q.mustInclude ? `<p>${tr('One die <b>must</b> go to {trait}.', { trait: traitSpan(b.q.mustInclude) })}</p>` : ''}${assignHtml(R.slots.bg, expand(b.q.opts), R.before.background, 'bg', tr('Assign each die to a quality:'), [], [], tr('Your Origin does not offer this.'), 'quality')}
+        <p class="muted" style="margin-top:12px">${tr('Powers come in chapter IV, Source of Power, with the dice this Origin passes on: {dice}.', { dice: b.psDice.map(d => die(d, 'sm')).join('') })}</p>`,
       principle: () => principleHtml('bg', b.principle, R) + `<p class="muted" style="margin-top:10px">${tr('Next step: your Source of Power, rolled with {dice}.', { dice: b.psDice.map(d => die(d, 'sm')).join('') })}</p>`
     };
     return stepPanel('Step 2 · Sentinels: Background', tr('Origin'), 'background', flowHtml('background', sectionsFor('background', R), H), true);
@@ -1228,7 +1230,7 @@
         let optKeys = expand(p.opts);
         if (p.required && !optKeys.includes(p.required.key)) optKeys = [p.required.key].concat(optKeys);
         return `${p.required ? `<p>${tr('One die <b>must</b> go to {trait}.', { trait: traitSpan(p.required.key) })}</p>` : ''}
-${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each die to a power:'), [], [], tr('Your Source of Power does not offer this.'))}`;
+${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each die to a power:'), [], [], tr('Your Source of Power does not offer this.'), 'power')}`;
       },
       extra: () => psExtraBody(p, R),
       group: s => groupHtml(s.group, R, true)
@@ -1257,7 +1259,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
             <li>${remLine}</li>
             <li>${tr('Every die left over goes to qualities.')}</li></ul>
           ${assignHtml(R.slots.arch, optKeys, R.before.archetype, 'arch', tr('Assign each die:'), R.slots.training || [], shape.req ? expand(shape.req.any) : [], tr('Your Path does not offer this.'))}
-          ${p.id === 'training' ? `<p style="margin-top:12px">${tr('From your <b>{src}</b> source: one extra quality from this Path\'s list at {die}.', { src: esc(p.rt), die: die('d8') })}</p>${assignHtml(R.slots.training, expand(shape.quals), R.before.archetype, 'arch', tr('Training bonus quality:'), R.slots.arch || [], [], tr('Training gives one of your Path\'s qualities.'))}` : ''}
+          ${p.id === 'training' ? `<p style="margin-top:12px">${tr('From your <b>{src}</b> source: one extra quality from this Path\'s list at {die}.', { src: esc(p.rt), die: die('d8') })}</p>${assignHtml(R.slots.training, expand(shape.quals), R.before.archetype, 'arch', tr('Training bonus quality:'), R.slots.arch || [], [], tr('Training gives one of your Path\'s qualities.'), 'quality')}` : ''}
           ${shape.extra ? `<p style="margin-top:12px">${esc(shape.extra.text)}</p>${socket({ bind: 'arch.extra.key', d: shape.extra.die, cur: st.arch.extra.key, groups: traitGroups(expand(shape.extra.opts).filter(k => !R.before.archetype[k]), k => traitItem(k)), empty: tr('Bind this {die} to a trait', { die: shape.extra.die }) })}` : ''}
           ${a.modular && R.modExtra ? `<p style="margin-top:12px">${tr('Stance Masters need at least four powers — add {n} {die} power(s):', { n: R.modExtra, die: die('d6') })}</p>` + Array.from({ length: R.modExtra }, (_, i) => socket({ bind: `arch.extra.m${i}`, d: 'd6', cur: st.arch.extra['m' + i], groups: traitGroups(allOf('power').filter(k => !R.before.personality[k] || k === st.arch.extra['m' + i]), k => traitItem(k, { taken: Object.keys(st.arch.extra).some(x => x !== 'm' + i && /^m\d/.test(x) && st.arch.extra[x] === k) ? tr('on another d6') : '' })), empty: tr('Bind this d6 to any power') })).join('') : ''}
           ${shape.healthAlt ? `<p class="sc">${tr('When determining Health you may use {what} instead of an Athletic power or Mental quality.', { what: esc(shape.healthAlt.map(c => (PT ? 'um ' : 'a ') + catPhrase(c)).join(PT ? ' ou ' : ' or ')) })}</p>` : ''}
