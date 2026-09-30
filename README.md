@@ -6,7 +6,7 @@ Site publicado: https://fabiopego1.github.io/Runeterra/
 
 ## O que tem no site
 
-* **Forja** (`index.html`): cria o campeão em nove capítulos (Terra Natal, Origem, Fonte de Poder, Caminho, Temperamento, Supremas, Reviravolta do Destino, Vida e Lenda).
+* **Forja** (`index.html`): cria o campeão em nove capítulos (Terra Natal, Origem, Fonte de Poder, Caminho, Personalidade, Supremas, Reviravolta do Destino, Vida e Lenda).
   * Método **Construído** (você escolhe tudo) ou **Guiado** (rola os dados e escolhe entre o que eles liberam, com uma nova rolagem por capítulo).
   * Todo termo sublinhado explica o que significa ao passar o mouse (ou tocar, no celular).
   * O progresso fica salvo no navegador. O menu **Arquivo** exporta e importa o campeão em `.json`, imprime a ficha e recomeça do zero.

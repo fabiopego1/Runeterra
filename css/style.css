@@ -352,6 +352,8 @@ button.flow-head:hover h3, button.flow-head:focus-visible h3 { color: var(--gold
 .card .d { font-size: .88rem; color: var(--text-2); margin-top: 6px; line-height: 1.35; }
 .card .fit { display: flex; margin: -2px 0 4px; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--region); }
 .card .fit .ico { width: 11px; height: 11px; }
+.card .warn-mark { position: absolute; left: 14px; top: 36px; color: var(--warn); line-height: 0; }
+.card .warn-mark .ico { width: 16px; height: 16px; }
 .card.valid .n { color: var(--hex); }
 .card.valid .n::before { content: ''; display: inline-block; width: 6px; height: 6px; background: var(--hex); transform: rotate(45deg); margin-right: 6px; vertical-align: 1px; }
 .card.invalid { opacity: .32; }
@@ -643,6 +645,8 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 #tip hr { border: 0; border-top: 1px solid var(--line-2); margin: 7px 0; }
 #tip ul { margin: 4px 0; padding-left: 16px; }
 #tip em { color: var(--text); }
+#tip .tip-warn { margin: 7px 0; padding: 6px 0 6px 10px; border-left: 2px solid var(--warn); color: var(--text); }
+#tip .tip-warn .ico { width: 12px; height: 12px; color: var(--warn); vertical-align: -1px; margin-right: 3px; }
 
 /* ==========================================================================
    Hero sheet (mirrors the official two-page Sentinels sheet)

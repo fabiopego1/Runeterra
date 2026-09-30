@@ -90,9 +90,15 @@
       if (out.sel && Array.isArray(out.sel.red) && out.sel.red.length > 2) out.sel.red.length = 2;
     }
     out.noRetcon = true; delete out.retcon;
-    // Older saves stored element choices as "Energia Hextec Bruta (Nuclear)": keep only the Runeterra name.
+    // Older saves stored element choices as "Energia Hextec Bruta (Nuclear)", or under an earlier name: use the current name.
     const EL = window.TRAIT_CATEGORIES['P:elemental'].items;
-    const clean = v => { if (typeof v !== 'string') return v; const m = EL.find(i => v === i[2] + ' (' + i[1] + ')'); return m ? m[2] : v; };
+    const OLD_EL = { 'Gelo & Gelo Verdadeiro': 'cold', 'Poder Celestial': 'cosmic', 'Relâmpago': 'electricity', 'Chama': 'fire', 'Sombra & Névoa Negra': 'infernal', 'Energia Hextec Bruta': 'nuclear', 'Luz': 'radiant', 'Tempestade & Vento': 'weather' };
+    const clean = v => {
+      if (typeof v !== 'string') return v;
+      const base = v.replace(/ \([^)]*\)$/, '');
+      const m = EL.find(i => v === i[2] + ' (' + i[1] + ')') || EL.find(i => i[0] === OLD_EL[base]);
+      return m ? m[2] : v;
+    };
     for (const list of Object.values(out.sel || {})) if (Array.isArray(list)) for (const e of list) if (e && e.ch) for (const k of Object.keys(e.ch)) e.ch[k] = clean(e.ch[k]);
     for (const k of Object.keys(out.pch || {})) out.pch[k] = clean(out.pch[k]);
     if (out.pers && out.pers.qname && out.pers.qok === undefined) out.pers.qok = true;   // named before the Confirm button existed
@@ -205,7 +211,7 @@
   // Rules text shown to the player: pt-BR version of the same text when Portuguese is on (tokens stay in English).
   const ruleSrc = s => (PT && window.I18N.text[s]) || s;
   const TOKEN_PT = { 'power': 'poder', 'quality': 'qualidade', 'power/quality': 'poder/qualidade', 'Self Control power': 'poder de Autocontrole', 'Psychic power': 'poder Psíquico', 'Mental quality': 'qualidade Mental', 'Signature Vehicle': 'Montaria Emblemática', 'Signature Weaponry': 'Arma Emblemática', 'a power gained from your archetype': 'um poder ganho do seu Caminho', 'a quality gained from your archetype': 'uma qualidade ganha do seu Caminho', 'energy/element': 'energia/elemento', 'element/energy': 'elemento/energia', 'elemental/energy': 'elemental/energia', 'element': 'elemento', 'basic action': 'ação básica', 'actions': 'ações', 'action': 'ação',
-    'element/energy you have a related power for': 'elemento/energia de um poder que você tem', 'energy/element you have a related power for': 'energia/elemento de um poder que você tem', 'physical or energy': 'físico ou de energia', 'Boost or Hinder': 'Fortaleça ou Atrapalhe', 'choose two basic actions': 'escolha duas ações básicas', 'any Physical or Mental quality': 'qualquer qualidade de Combate & Ofício ou Vontade & Astúcia' };
+    'element/energy you have a related power for': 'elemento/energia de um poder que você tem', 'energy/element you have a related power for': 'energia/elemento de um poder que você tem', 'physical or energy': 'físico ou de energia', 'Boost or Hinder': 'Fortaleça ou Atrapalhe', 'choose two basic actions': 'escolha duas ações básicas', 'any Physical or Mental quality': 'qualquer qualidade Física ou Mental' };
   const tokenLabel = br => (PT && TOKEN_PT[br]) || br;
   // Plain (tooltip) version of a rules text: pt-BR text with its [tokens] shown in pt-BR too.
   const ruleTip = s => ruleSrc(s).replace(/\[([^\]]+)\]/g, (m, b) => '[' + tokenLabel(b) + ']');
@@ -821,7 +827,7 @@
     const r = regionDef();
     const items = list.map(p => {
       const lore = window.PRINCIPLE_LORE[p.id] || [p.name, ''];
-      const t = `<h5>${esc(lore[0])}</h5><b>${tr('During roleplaying:')}</b> ${esc(p.rp)}` + (lore[1] ? `<hr><em>${tr('In Runeterra:')}</em> ${esc(lore[1])}` : '');
+      const t = `<h5>${esc(lore[0])}</h5><b>${tr('During roleplaying:')}</b> ${esc(p.rp)}`;
       const pp = peopleDef();
       const fits = (pp && pp.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${tr('Suggestion')}: ${esc(pp.name)}</span>` : '') + (r && r.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${tr('Suggestion')}: ${esc(r.name)}</span>` : '');
       return `<button class="principle${p.id === cur ? ' selected' : ''}${p.id === other ? ' taken' : ''}" data-act="principle" data-slot="${slot}" data-id="${p.id}"${tip(t)}${p.id === other ? ' disabled' : ''}>` +
@@ -1007,7 +1013,7 @@
   const bgTip = b => `${cardArt('bg', b.id)}<h5>${esc(b.rt)}</h5>${esc(b.lore)}<hr><small>${tr('Champions:')} ${esc(b.champs)}</small>`;
   const psTip = p => `${cardArt('ps', p.id)}<h5>${esc(p.rt)}</h5>${esc(p.lore)}<hr><small>${tr('Champions:')} ${esc(p.champs)}</small>`;
   function archTip(a) {
-    if (a.advanced) return `${cardArt('ar', a.id)}<h5>${esc(a.rt)}</h5><div class="sc-line">${tr('advanced')}</div>${esc(a.lore)}<hr>${tr(a.divided ? 'Two forms, a civilian one and a heroic one, and a way to switch between them.' : 'Switchable modes instead of fixed abilities.')}<hr><small>${tr('Champions:')} ${esc(a.champs)}</small>`;
+    if (a.advanced) return `${cardArt('ar', a.id)}<h5>${esc(a.rt)}</h5><div class="sc-line">${tr('advanced')}</div><div class="tip-warn">${ico('warn')}${tr(a.divided ? 'DIVIDED_WARNING' : 'MODULAR_WARNING')}</div>${esc(a.lore)}<hr>${tr(a.divided ? 'Two forms, a civilian one and a heroic one, and a way to switch between them.' : 'Switchable modes instead of fixed abilities.')}<hr><small>${tr('Champions:')} ${esc(a.champs)}</small>`;
     return `${cardArt('ar', a.id)}<h5>${esc(a.rt)} <small>(${esc(a.role)})</small></h5>${esc(a.lore)}<hr><small>${tr('Champions:')} ${esc(a.champs)}</small>`;
   }
   const chapterHead = (title, withMethod) => {
@@ -1100,7 +1106,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const H = {
       roll: () => rollerHtml('arch', p.archDice, tr('Roll your Source dice')),
       pick: () => pickSection('arch', a && chosenSummary(a.rt + ' · ' + a.role, a.sc, a.lore, a.champs),
-        cardsHtml(window.ARCHETYPES, 'arch', st.arch.id, 'arch', x => `<span class="n">${pad2(x.n)}</span>${fitMark('ar', x.id)}<div class="t">${esc(x.rt)}</div><div class="s">${esc(x.role)}${x.advanced ? ' · ' + tr('advanced') : ''}</div><div class="d">${esc(x.champs)}</div><span class="info" aria-label="${tr('Details')}"${tip(archTip(x))}></span>`)),
+        cardsHtml(window.ARCHETYPES, 'arch', st.arch.id, 'arch', x => `<span class="n">${pad2(x.n)}</span>${x.advanced ? `<span class="warn-mark" aria-label="${tr('Complex option')}">${ico('warn')}</span>` : ''}${fitMark('ar', x.id)}<div class="t">${esc(x.rt)}</div><div class="s">${esc(x.role)}${x.advanced ? ' · ' + tr('advanced') : ''}</div><div class="d">${esc(x.champs)}</div><span class="info" aria-label="${tr('Details')}"${tip(archTip(x))}></span>`)),
       broll: () => rollerHtml('base', p.archDice, tr('Roll for your base Path')),
       base: () => `<p class="muted">${a.divided ? tr('Your full Path becomes “{name}”.', { name: esc(a.rt) + ' ' + (shape ? esc(shape.rt) : '…') }) : tr('You follow this Path\'s dice rules, but gain modes instead of its abilities.')}</p>` +
         pickSection('base', shape && chosenSummary(shape.rt + ' · ' + shape.role, shape.sc, shape.lore, shape.champs),

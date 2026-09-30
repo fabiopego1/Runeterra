@@ -320,9 +320,9 @@
     { id: 'example', group: MESTRE, title: 'Exemplo de jogo: fumaça nas docas do Entresol', nav: 'Exemplo de jogo', body: `
       <p>Três heróis seguem a pista de um carregamento de química ilegal até as docas do Entresol, em Zaun:</p>
       <table class="cs-table"><tbody>
-        <tr><td><b>Rix Ferrugem</b> (Zaun)</td><td>Inventor de dispositivos químicos. Poder <i>Química</i> d10, qualidade <i>Tecnologia</i> d8. Temperamento Imprudente: status Verde d6, Amarelo d6, Vermelho d8.</td></tr>
-        <tr><td><b>Aldric Valmont</b> (Demacia)</td><td>Soldado da Vanguarda. Poder <i>Força</i> d10, qualidade <i>Combate</i> d8. Temperamento Comandante Nato: status d6, d8, d10. Vida 28 (Verde 28 a 22, Amarela 21 a 11, Vermelha 10 a 1).</td></tr>
-        <tr><td><b>Sen Hayari</b> (Ionia)</td><td>Espiritualista. Poder <i>Energia Espiritual</i> d8, qualidade <i>Percepção</i> d10. Temperamento Curioso: status d6, d8, d10.</td></tr></tbody></table>
+        <tr><td><b>Rix Ferrugem</b> (Zaun)</td><td>Inventor de dispositivos químicos. Poder <i>Química</i> d10, qualidade <i>Tecnologia</i> d8. Personalidade Impulsivo: status Verde d6, Amarelo d6, Vermelho d8.</td></tr>
+        <tr><td><b>Aldric Valmont</b> (Demacia)</td><td>Soldado da Vanguarda. Poder <i>Força</i> d10, qualidade <i>Combate</i> d8. Personalidade Líder Nato: status d6, d8, d10. Vida 28 (Verde 28 a 22, Amarela 21 a 11, Vermelha 10 a 1).</td></tr>
+        <tr><td><b>Sen Hayari</b> (Ionia)</td><td>Espiritualista. Poder <i>Energia Espiritual</i> d8, qualidade <i>Percepção</i> d10. Personalidade Inquisitivo: status d6, d8, d10.</td></tr></tbody></table>
       <p><b>A cena (moderada).</b> Marcador padrão ${track(2, 4, 2)}. Três <b>capangas turbinados</b> (lacaios d8), o <b>Capataz Gorn</b> (tenente d10, "+1 para Atacar quem estiver Atrapalhado") e um desafio com contador: <b>vazamento de gás químico</b>, 1 sucesso, contador de 2 turnos. Se disparar, todos na doca sofrem dano.</p>
 
       <h4>Rodada 1</h4>

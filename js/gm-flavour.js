@@ -12,7 +12,7 @@
     ['Background', 'Origem', 'Passo 1 da criação'],
     ['Power Source', 'Fonte de Poder', 'Passo 2'],
     ['Archetype', 'Caminho', 'Passo 3'],
-    ['Personality', 'Temperamento', 'Passo 4'],
+    ['Personality', 'Personalidade', 'Passo 4'],
     ['Red Abilities', 'Supremas', 'Passo 5'],
     ['Retcon', '(não usado)', 'A Forja pula este passo do livro'],
     ['Health', 'Vida', 'Passo 6'],
@@ -60,7 +60,7 @@
         ...W.DIVIDED.methods.map(m => [m.name, m.rt, 'Caminho Dividido: como a forma muda']),
         ...['green', 'yellow', 'red'].flatMap(z => W.MODULAR[z].map(m => [m.name, ptName(m.name), `Modo do Caminho Modular (${{ green: 'Verde', yellow: 'Amarelo', red: 'Vermelho' }[z]})`]))
       ] });
-    S.push({ id: 'temperamentos', title: 'Temperamentos', sc: 'Personalities', cols: ['Sentinels', 'Runeterra', 'Dados de status', 'Campeões'],
+    S.push({ id: 'temperamentos', title: 'Personalidades', sc: 'Personalities', cols: ['Sentinels', 'Runeterra', 'Dados de status', 'Campeões'],
       rows: W.PERSONALITIES.map(p => [p.sc, p.rt, p.status.join(' · '), p.champs]) });
     const cats = Object.entries(W.TRAIT_CATEGORIES);
     S.push({ id: 'categorias', title: 'Categorias de poderes e qualidades', sc: 'Power & Quality categories', cols: ['Sentinels', 'Runeterra', 'Tipo'],

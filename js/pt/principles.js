@@ -163,7 +163,7 @@
   }
   delete window.__PR_PT;
 
-  // Habilidades de Nocaute (Temperamentos)
+  // Habilidades de Nocaute (Personalidades)
   Object.assign(I.text, {
     'Boost an ally by rolling your single [quality] die.': 'Fortaleça um aliado rolando só o seu dado de [quality].',
     'The hero who goes directly after you may take 1 damage to reroll their dice pool.': 'O herói que age logo depois de você pode sofrer 1 de dano para rolar de novo a reserva de dados dele.',
