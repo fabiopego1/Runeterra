@@ -74,6 +74,7 @@ Object.assign(window.I18N.ui, {
  "“{ab}” uses {trait}, which you no longer have.": "“{ab}” usa {trait}, que você não tem mais.",
  "“{ab}” cannot use {trait}: choose another.": "“{ab}” não pode usar {trait}: escolha outra.",
  "You picked the same ability twice.": "Você escolheu a mesma habilidade duas vezes.",
+ "Your champion": "Seu campeão", "Ready for the table. Everything above is optional.": "Pronto para a mesa. Tudo acima é opcional.", "See the sheet": "Ver a ficha",
  "your quality dice": "os dados de qualidade", "your first principle": "o primeiro princípio", "your power dice": "os dados de poder",
  "your Source bonus": "o bônus da Fonte", "your Source abilities": "as habilidades da Fonte", "your Path dice": "os dados do Caminho",
  "your Path abilities": "as habilidades do Caminho", "your second principle": "o segundo princípio", "your Out ability trait": "a característica do Nocaute",

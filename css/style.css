@@ -1545,3 +1545,42 @@ html, body { overflow-x: clip; }
 .title-page .tp-hero, .title-page .tp-main { justify-items: center; }
 .title-page .tp-lede { margin-left: auto; margin-right: auto; }
 .title-page .tp-start { justify-content: center; width: 100%; max-width: 640px; }
+
+/* ==========================================================================
+   Phones: a shorter header, denser People/Homeland grids, cards without the side gutter
+   ========================================================================== */
+@media (max-width: 600px) {
+  .site-header { padding: 8px 12px; row-gap: 2px; }
+  .brand-kicker { display: none; }
+  .brand-mark .sigil { width: 28px; height: 28px; }
+  .brand-title { font-size: 1.1rem; }
+  .header-actions { margin: 0 -6px; flex-wrap: nowrap; justify-content: space-between; }
+  .hbtn { padding: 6px 6px; gap: 5px; font-size: .7rem; letter-spacing: .08em; }
+  .hbtn kbd { display: none; }
+  .cards.regions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .region-card { grid-template-columns: minmax(0, 1fr); padding: 12px 12px 14px; row-gap: 4px; }
+  .region-card .sigil { grid-row: auto; width: 26px; height: 26px; }
+  .region-card > :not(.sigil) { grid-column: 1; }
+  .region-card .t { font-size: 1rem; }
+  .region-card .d { font-size: .8rem; }
+  .card:not(.region-card) { padding-left: 16px; padding-right: 16px; }
+  .card:not(.region-card) .n { left: auto; right: 14px; top: 14px; }
+  .card:not(.region-card) .warn-mark { left: auto; right: 44px; top: 13px; }
+}
+
+/* Legend: the sheet actions stay at hand while you fill in the optional details */
+.finish-bar {
+  position: sticky; bottom: 0; z-index: 15; margin: 22px -4px 0; padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;
+  background: rgba(18, 20, 25, .97); border: 1px solid var(--gold-lo); box-shadow: 0 -10px 24px rgba(0, 0, 0, .45);
+}
+.finish-bar .fb-t { font-family: var(--font-display); color: var(--gold-hi); font-size: 1.05rem; margin-right: auto; }
+.finish-bar .fb-t small { display: block; font-family: var(--font-ui); font-size: .78rem; color: var(--text-3); }
+.finish-bar .btn { white-space: nowrap; text-decoration: none; }
+.finish-bar #pdf-status { flex-basis: 100%; }
+@media (max-width: 600px) {
+  .finish-bar { margin: 18px -16px 0; border-left: 0; border-right: 0; gap: 8px; }
+  .finish-bar .fb-t { display: none; }
+  .finish-bar .btn.primary { flex-basis: 100%; }
+  .finish-bar .btn { flex: 1 1 auto; justify-content: center; padding-left: 10px; padding-right: 10px; }
+}

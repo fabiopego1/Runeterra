@@ -1929,10 +1929,12 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       <p class="chapter-lede">${window.STEP_INTROS.finish}</p>
       ${flowHtml('finish', sectionsFor('finish', R), H, true)}
       <section class="flow-sec ${done ? 'current' : 'locked'}" id="flow-finish-export"><div class="flow-head"><span class="flow-num">${done ? ico('mark') : ico('lock')}</span><h3>${tr('Your hero sheet')}</h3>${done ? '' : `<span class="flow-lock">${tr('Sealed — name your champion first')}</span>`}</div>
-      ${done ? `<div class="flow-body"><div id="pdf-status"></div><input id="template-file" type="file" accept="application/pdf,.pdf" hidden>
-        <div class="export-row"><button class="btn primary" data-act="pdf">${ico('download')} ${tr('Export PDF hero sheet')}</button><button class="btn" data-act="print">${tr('Print')}</button><button class="btn" data-act="export">${tr('Export JSON')}</button></div></div>` : ''}</section>
+      ${done ? `<div class="flow-body"><input id="template-file" type="file" accept="application/pdf,.pdf" hidden>
+        <div class="export-row"><button class="btn" data-act="print">${tr('Print')}</button><button class="btn" data-act="export">${tr('Export JSON')}</button></div></div>` : ''}</section>
       ${done ? `<div class="sheet-cta"><div><b>${tr('Your sheet has its own page')}</b><p class="muted">${tr('Full screen, with the Health tracker always at hand for play and the Evolve your champion tools.')}</p></div>
         <div class="export-row"><a class="btn primary" href="ficha.html">${ico('file')} ${tr('Open the sheet')}</a><a class="btn" href="ficha.html#evoluir">${ico('reset')} ${tr('Evolve your champion')}</a></div></div>` : ''}
+      ${done ? `<div class="finish-bar"><div class="fb-t">${esc(i.name || tr('Your champion'))}<small>${tr('Ready for the table. Everything above is optional.')}</small></div>
+        <button class="btn primary" data-act="pdf">${ico('download')} ${tr('Export PDF hero sheet')}</button><button class="btn" data-act="toSheet">${ico('file')} ${tr('See the sheet')}</button><a class="btn" href="ficha.html">${tr('Open the sheet')}</a><div id="pdf-status"></div></div>` : ''}
       <div class="step-footer"><button class="btn ghost" data-act="back">${ico('prev')} ${tr('Back')}</button><span></span></div></div>
       <div class="panel" id="sheet-preview">${sheetHtml(R)}</div>`;
   }
@@ -2382,6 +2384,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     if (act === 'evoUndo') { evoUndo(); return; }
     if (act === 'evoRewrite') { evoRewrite(); return; }
     if (act === 'export') { exportJson(); return; }
+    if (act === 'toSheet') { const sp = document.getElementById('sheet-preview'); if (sp) sp.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     if (act === 'pdf') { exportPdf(); return; }
     if (act === 'clearPortrait') { st.info.portrait = null; render(); return; }
     if (act === 'bioQ') {   // add a guide question to the biography, ready to be answered
