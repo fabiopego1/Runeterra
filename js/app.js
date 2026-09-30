@@ -27,6 +27,17 @@
   };
   const kindWord = (k, plural) => tr(plural ? k + 's' : k).replace(/^qualitys$/, 'qualities');
   const catName = c => (c === 'Q:special' ? tr('Special') : (CATS[c] ? CATS[c].rt : c));
+  // "an Athletic power" / "Athletic powers" as a phrase: Portuguese agrees the adjective ("poderes Atléticos", "qualidades Físicas").
+  const PT_CAT = {
+    'P:athletic': ['poder Atlético', 'poderes Atléticos'], 'P:elemental': ['poder Elemental/de Energia', 'poderes Elementais/de Energia'],
+    'P:hallmark': ['poder Emblemático', 'poderes Emblemáticos'], 'P:intellectual': ['poder Intelectual', 'poderes Intelectuais'],
+    'P:materials': ['poder de Materiais', 'poderes de Materiais'], 'P:mobility': ['poder de Mobilidade', 'poderes de Mobilidade'],
+    'P:psychic': ['poder Psíquico', 'poderes Psíquicos'], 'P:selfcontrol': ['poder de Autocontrole', 'poderes de Autocontrole'],
+    'P:technological': ['poder Tecnológico', 'poderes Tecnológicos'], 'Q:information': ['qualidade de Informação', 'qualidades de Informação'],
+    'Q:mental': ['qualidade Mental', 'qualidades Mentais'], 'Q:physical': ['qualidade Física', 'qualidades Físicas'], 'Q:social': ['qualidade Social', 'qualidades Sociais']
+  };
+  const catPhrase = (c, plural) => (PT && PT_CAT[c] ? PT_CAT[c][plural ? 1 : 0]
+    : tr(CATS[c] && CATS[c].kind === 'power' ? (plural ? '{cat} powers' : '{cat} power') : (plural ? '{cat} qualities' : '{cat} quality'), { cat: catName(c) }));
   const catSc = c => (c === 'Q:special' ? 'Special' : (CATS[c] ? CATS[c].sc : c));
   const allOf = kind => Object.values(TRAIT).filter(t => t.kind === kind && t.cat !== 'Q:special').map(t => t.key);
 
@@ -171,6 +182,7 @@
       if (o.includes(':')) {
         const c = CATS[o];
         const span = `<span class="term"${tip(`<h5>${esc(c.rt)}</h5><div class="sc-line">${tr(c.kind === 'power' ? 'Powers' : 'Qualities')}</div>` + c.items.map(i => esc(i[2])).join(', '))}>${esc(c.rt)}</span>`;
+        if (PT && PT_CAT[o]) return `qualquer <span class="term"${span.match(/ data-tip="[^"]*"/)[0]}>${esc(PT_CAT[o][0])}</span>`;
         return tr(c.kind === 'power' ? 'any {cat} power' : 'any {cat} quality', { cat: span });
       }
       return TRAIT[o] ? traitSpan(o) : esc(o);
@@ -844,7 +856,7 @@
       const idx = ctx.idx;
       const base = ctx.bind || `sel.${g.key}.${idx}`;
       if (al.req.kind !== 'none' && !reqFixed) {
-        const what = al.req.kind === 'any' ? tr('power or quality') : al.req.cat ? tr(al.req.kind === 'power' ? '{cat} power' : '{cat} quality', { cat: catName(al.req.cat) }) : tr(al.req.kind);
+        const what = al.req.kind === 'any' ? tr('power or quality') : al.req.cat ? catPhrase(al.req.cat) : tr(al.req.kind);
         const catOn2 = ctx.cat && al.req.second && (ctx.cat[0] === 'Q' ? 'quality' : 'power') === al.req.second;
         cfg += `<div class="cfg-l">${tr('Uses {what}', { what })}${ctx.cat && !catOn2 ? ' (' + esc(catName(ctx.cat)) + ')' : ''}</div>${traitChips(`${base}.trait`, al.keys, entry.trait, ctx.block || {})}`;
         if (!al.keys.length) cfg += `<small class="muted">${tr('You have no eligible trait yet.')}</small>`;
@@ -995,6 +1007,7 @@
 
   // ------------------------------------------------------------------ guided flow
   const ui = { expand: {}, lastPick: {}, at: {}, passed: {}, redOpen: {}, evo: { tab: 'power', from: '', to: '', ch: {} } };   // transient: re-opened choice grids; most recent choice per chapter; the Evolve form
+  const tipHooks = { reset: () => {} };   // set by the tooltip code: hides the tooltip whenever the page is redrawn
   let flowCurrent = null;           // "step:section" of the section the user should work on now
 
   // Renders a step's sections one at a time, like a wizard. Only the section under the cursor is open;
@@ -1221,7 +1234,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       pick: () => pickSection('arch', a && chosenSummary(a.rt + ' · ' + a.role, a.sc, a.lore, a.champs),
         cardsHtml(window.ARCHETYPES, 'arch', st.arch.id, 'arch', x => `<span class="n">${pad2(x.n)}</span>${x.advanced ? `<span class="warn-mark" aria-label="${tr('Complex option')}">${ico('warn')}</span>` : ''}${fitMark('ar', x.id)}<div class="t">${esc(x.rt)}</div><div class="s">${esc(x.role)}${x.advanced ? ' · ' + tr('advanced') : ''}</div><div class="d">${esc(x.champs)}</div><span class="info" aria-label="${tr('Details')}"${tip(archTip(x))}></span>`)),
       broll: () => rollerHtml('base', p.archDice, tr('Roll for your base Path')),
-      base: () => `<p class="muted">${a.divided ? tr('Your full Path becomes “{name}”.', { name: esc(a.rt) + ' ' + (shape ? esc(shape.rt) : '…') }) : tr('You follow this Path\'s dice rules, but gain modes instead of its abilities.')}</p>` +
+      base: () => `<p class="base-why">${a.divided ? tr('A <b>Two Souls</b> champion still fights like one of the Paths below: pick it. It gives this chapter its <b>dice rules and abilities</b>; Two Souls adds how you <b>change form</b> and what each form keeps.') : tr('A <b>Stance Master</b> follows the <b>dice rules</b> of one of the Paths below: pick it. Instead of that Path\'s abilities you gain <b>modes</b> to switch between.')}` +
+        (a.divided && shape ? ` ${tr('Your full Path: <b>{name}</b>.', { name: esc(a.rt) + ' · ' + esc(shape.rt) })}` : '') + '</p>' +
         pickSection('base', shape && chosenSummary(shape.rt + ' · ' + shape.role, shape.sc, shape.lore, shape.champs),
           cardsHtml(window.ARCHETYPES.filter(x => !x.advanced), 'base', st.arch.base, 'base', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="s">${esc(x.role)}</div><span class="info" aria-label="${tr('Details')}"${tip(archTip(x))}></span>`)),
       assign: () => {
@@ -1236,7 +1250,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
           ${p.id === 'training' ? `<p style="margin-top:12px">${tr('From your <b>{src}</b> source: one extra quality from this Path\'s list at {die}.', { src: esc(p.rt), die: die('d8') })}</p>${assignHtml(R.slots.training, expand(shape.quals), R.before.archetype, 'arch', tr('Training bonus quality:'), R.slots.arch || [])}` : ''}
           ${shape.extra ? `<p style="margin-top:12px">${esc(shape.extra.text)}</p>${socket({ bind: 'arch.extra.key', d: shape.extra.die, cur: st.arch.extra.key, groups: traitGroups(expand(shape.extra.opts).filter(k => !R.before.archetype[k]), k => traitItem(k)), empty: tr('Bind this {die} to a trait', { die: shape.extra.die }) })}` : ''}
           ${a.modular && R.modExtra ? `<p style="margin-top:12px">${tr('Stance Masters need at least four powers — add {n} {die} power(s):', { n: R.modExtra, die: die('d6') })}</p>` + Array.from({ length: R.modExtra }, (_, i) => socket({ bind: `arch.extra.m${i}`, d: 'd6', cur: st.arch.extra['m' + i], groups: traitGroups(allOf('power').filter(k => !R.before.personality[k] || k === st.arch.extra['m' + i]), k => traitItem(k, { taken: Object.keys(st.arch.extra).some(x => x !== 'm' + i && /^m\d/.test(x) && st.arch.extra[x] === k) ? tr('on another d6') : '' })), empty: tr('Bind this d6 to any power') })).join('') : ''}
-          ${shape.healthAlt ? `<p class="sc">${tr('When determining Health you may use a {cat} power instead of an Athletic power or Mental quality.', { cat: esc(shape.healthAlt.map(catName).join(tr(' or '))) })}</p>` : ''}
+          ${shape.healthAlt ? `<p class="sc">${tr('When determining Health you may use {what} instead of an Athletic power or Mental quality.', { what: esc(shape.healthAlt.map(c => (PT ? 'um ' : 'a ') + catPhrase(c)).join(PT ? ' ou ' : ' or ')) })}</p>` : ''}
           ${shape.extraRed && !a.modular ? `<p class="sc">${tr('As a {path}, the Red abilities {list} are added to your options in the Ultimates step.', { path: esc(shape.rt), list: esc(shape.extraRed.map(abName).join(', ')) })}</p>` : ''}`;
       },
       divm: () => `<div class="principles">${window.DIVIDED.methods.map(m => `<button class="principle${st.arch.divMethod === m.id ? ' selected' : ''}" data-act="divMethod" data-id="${m.id}"${tip(`<h5>${esc(m.rt)}</h5>${esc(m.text)}`)}><div class="pn">${esc(m.rt)}</div><div class="ph">${esc(m.text)}</div></button>`).join('')}</div>`,
@@ -1246,8 +1260,14 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         const sp = st.arch.split || {};
         const row = t => `<div class="split-row"><span class="split-n">${esc(traitName(t.key))} ${die(t.die, 'sm')} <small>${tr(TRAIT[t.key].kind)}</small></span>${valueChips(`arch.split.${t.key}`, ['both', 'civ', 'her'], sp[t.key] || '', v => tr({ both: 'Both forms', civ: 'Civilian form', her: 'Heroic form' }[v]))}</div>`;
         const list = kind => sortTraits(owned(R, kind).filter(t => t.key !== 'rp-quality')).map(row).join('');
+        // live count next to each list: how many are marked "both forms" and how many still need a form
+        const count = kind => {
+          const ks = owned(R, kind).filter(t => t.key !== 'rp-quality').map(t => t.key);
+          const both = ks.filter(k => sp[k] === 'both').length, left = ks.filter(k => !sp[k]).length;
+          return `<span class="split-count${both === 2 ? ' ok' : ''}">${tr('{n}/2 in both forms', { n: both })}</span>${left ? `<span class="split-count">${tr('{n} without a form', { n: left })}</span>` : ''}`;
+        };
         return `<p>${tr('With <b>Split Form</b>, choose <b>two powers</b> and <b>two qualities</b> that work in both forms. Every other power and quality works in only one of them. Your Signature Quality works in both.')}</p>
-          <div class="cfg-l">${tr('Powers')}</div>${list('power')}<div class="cfg-l" style="margin-top:10px">${tr('Qualities')}</div>${list('quality')}`;
+          <div class="cfg-l">${tr('Powers')} ${count('power')}</div>${list('power')}<div class="cfg-l" style="margin-top:10px">${tr('Qualities')} ${count('quality')}</div>${list('quality')}`;
       },
       powerless: () => {
         const pl = st.arch.powerless || {};
@@ -1642,7 +1662,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     Attack: ['ATK', 'Attack'], Defend: ['DEF', 'Defend'], Overcome: ['OVR', 'Overcome'],
     Boost: ['BST', 'Boost'], Hinder: ['HIN', 'Hinder'], Recover: ['REC', 'Recover']
   };
-  const catLabel = c => tr(CATS[c].kind === 'power' ? '{cat} powers' : '{cat} qualities', { cat: catName(c) });
+  const catLabel = c => catPhrase(c, true);
   function actionIcons(text) {
     const out = [];
     (text || '').replace(/\b(Attack|Defend|Overcome|Boost|Hinder|Recover)\b/g, (m, a) => { if (!out.includes(a)) out.push(a); return m; });
@@ -2022,6 +2042,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
 
   function render() {
     pendingRender = false;
+    tipHooks.reset();
     R0 = compute();
     if (SHEET_PAGE) {
       const rg = regionDef();
@@ -2270,7 +2291,16 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       if (el.dataset.kind === 'region') { ui.lockAsk = null; ui.lockErr = false; }
       pick(el.dataset.kind, el.dataset.id); ui.advance = true; ui.lastPick[st.step] = el.dataset.kind; render(); return;
     }
-    if (act === 'toggleAb') { toggleAb(el.dataset.g, el.dataset.name, el.dataset.cat); render(); return; }
+    if (act === 'toggleAb') {
+      const { g, name, cat } = el.dataset;
+      toggleAb(g, name, cat); render();
+      // just picked: bring its choices (which trait it uses, which element…) into view if they fell below the screen
+      const q = `[data-act=toggleAb][data-g="${g}"][data-name="${CSS.escape(name)}"]${cat ? `[data-cat="${CSS.escape(cat)}"]` : ''}`;
+      const box = document.querySelector(q + ':checked');
+      const card = box && box.closest('.ab'), cfg = card && card.querySelector('.ab-cfg');
+      if (cfg && cfg.getBoundingClientRect().bottom > window.innerHeight - 16) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      return;
+    }
     if (act === 'principle') { ui.advance = !(el.dataset.id === 'energy-element'); if (el.dataset.slot === 'bg') st.bg.principle = el.dataset.id; else st.arch.principle = el.dataset.id; ui.expand['pr-' + el.dataset.slot] = false; ui.lastPick[st.step] = 'pr-' + el.dataset.slot; render(); return; }
     if (act === 'divMethod') { ui.advance = true; st.arch.divMethod = el.dataset.id; delete st.sel['arch-divmethod']; render(); return; }
     if (act === 'minionForm') {
@@ -2483,17 +2513,27 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     place(x, y);
   }
   function hideTip() { tipEl.classList.remove('show'); tipTarget = null; }
+  // A redraw puts new elements under a still pointer, and a tap on a phone also fires mouseover: neither is the
+  // player pointing at something, so hover tooltips wait for a real mouse move (taps use the touch handler below).
+  let pointerMoved = true, lastTouch = 0;
+  tipHooks.reset = () => { hideTip(); pointerMoved = false; };
   document.addEventListener('mouseover', ev => {
+    if (!pointerMoved || Date.now() - lastTouch < 1000) return;
     const el = ev.target.closest('[data-tip]');
     if (!el) { if (tipTarget) hideTip(); return; }
     if (el === tipTarget) return;
     tipTarget = el;
     showTipFor(el, el.dataset.tip, ev.clientX, ev.clientY);
   });
-  document.addEventListener('mousemove', ev => { if (tipTarget) place(ev.clientX, ev.clientY); });
+  document.addEventListener('mousemove', ev => {
+    if (Date.now() - lastTouch < 1000) return;
+    if (!pointerMoved) { pointerMoved = true; const el = ev.target.closest('[data-tip]'); if (el) { tipTarget = el; showTipFor(el, el.dataset.tip, ev.clientX, ev.clientY); } return; }
+    if (tipTarget) place(ev.clientX, ev.clientY);
+  });
   document.addEventListener('scroll', () => { if (tipTarget) hideTip(); }, { passive: true });
   // Touch: tap an info/term element to toggle its tooltip.
   document.addEventListener('touchstart', ev => {
+    lastTouch = Date.now();
     const el = ev.target.closest('.term, .info, .die, .ab-type, .pill, .slot-chip, .muted[data-tip], .sock-name');
     if (el && el.dataset.tip) {
       if (tipTarget === el) { hideTip(); return; }

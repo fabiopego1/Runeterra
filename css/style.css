@@ -261,6 +261,9 @@ main.stage.entering { opacity: 0; transform: translateY(14px); transition: none;
 .redcat .ab-list { padding: 0 12px 12px; }
 .hs-sd2 { margin-left: 4px; opacity: .85; }
 .hs-sd-note { font-size: .62rem; color: var(--text-3); margin-top: 2px; }
+.split-count { display: inline-block; white-space: nowrap; margin: 2px 0 2px 10px; padding: 2px 8px; border: 1px solid var(--line); font-size: .72rem; letter-spacing: .06em; color: var(--text-2); text-transform: none; }
+.split-count.ok { color: var(--zone-g); border-color: currentColor; }
+.base-why { max-width: 70ch; margin-bottom: 14px; }
 .split-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
 .split-n { flex: 0 0 290px; display: inline-flex; align-items: center; gap: 6px; }
 @media (max-width: 700px) { .split-n { flex-basis: 100%; } }
