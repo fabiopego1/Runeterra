@@ -134,6 +134,9 @@
     if (a.divided || a.modular) return byId(window.ARCHETYPES, st.arch.base);
     return a;
   }
+  // The Path whose abilities you gain: a Modular hero only takes its base Path's dice rules (p.96), so no minion
+  // forms or extra Red abilities from it.
+  const abilityShape = () => { const a = archDef(), s = shapeDef(); return a && s && !a.modular ? s : null; };
 
   // ------------------------------------------------------------------ html helpers
   const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -255,8 +258,8 @@
     if (t.includes('[Self Control power]')) return { kind: 'power', cat: 'P:selfcontrol' };
     if (t.includes('[Psychic power]')) return { kind: 'power', cat: 'P:psychic' };
     if (t.includes('[Mental quality]')) return { kind: 'quality', cat: 'Q:mental' };
-    if (t.includes('[a power gained from your archetype]')) return { kind: 'power' };
-    if (t.includes('[a quality gained from your archetype]')) return { kind: 'quality' };
+    if (t.includes('[a power gained from your archetype]')) return { kind: 'power', path: true };
+    if (t.includes('[a quality gained from your archetype]')) return { kind: 'quality', path: true };
     if (t.includes('[power/quality]')) return { kind: 'any' };
     if (t.includes('[power]') && t.includes('[quality]')) return { kind: 'power', second: 'quality' };
     if (t.includes('[power]')) return { kind: 'power' };
@@ -271,6 +274,17 @@
     'element/energy you have a related power for': 'element', 'energy/element you have a related power for': 'element',
     'choose two basic actions': 'text'
   };
+  // Is a choice made for a bracketed word valid? Elements must be real ones; "you have a related power for" needs that power.
+  const elementKey = v => { const i = CATS['P:elemental'].items.find(x => v && (v === x[0] || v === x[1] || v === x[2])); return i ? i[0] : null; };
+  const relatedToken = t => /you have a related power for/.test(t);
+  function tokenOk(t, v, pool) {
+    const kind = CHOICE_TOKENS[t];
+    if (Array.isArray(kind)) return kind.includes(v);
+    if (kind === 'element') return !!elementKey(v) && (!relatedToken(t) || pool.includes(elementKey(v)));
+    return !!(v && String(v).trim());
+  }
+  // Does the ability use one of your traits that you pick (not a fixed one like Telepathy)?
+  const usesTrait = n => { const q = reqFromText(A[n] && A[n].text); return q.kind !== 'none' && !q.fixed; };
   function choiceTokens(t) {
     const out = [];
     (t || '').replace(/\[([^\]]+)\]/g, (m, b) => { if (CHOICE_TOKENS[b] && !out.includes(b)) out.push(b); return m; });
@@ -304,6 +318,8 @@
     }
     return slots;
   }
+  // Traits a Source's "gain a trait" bonus may take (p.57-72).
+  const psExtraKeys = p => { const ex = p.extra, skip = ex.notInOpts ? expand(p.opts) : []; return expand(ex.opts).filter(k => !skip.includes(k)); };
   const addTrait = (T, k, d, src) => {
     if (!k || !TRAIT[k]) return;
     if (T[k]) { T[k].die = hiDie(T[k].die, d); T[k].src.push(src); } else T[k] = { key: k, die: d, src: [src] };
@@ -321,25 +337,32 @@
       R.slots.ps = assignStep('p', bg.psDice, st.ps.assign, T, 'Source');
       R.before.psExtra = snap(T);
       const ex = ps.extra, e = st.ps.extra;
-      if (ex && ex.type === 'addTrait' && e.key) addTrait(T, e.key, ex.die, 'Source');
+      R.psExtraOk = true;   // a bonus choice that no longer fits (the dice changed since) is ignored and flagged
+      if (ex && ex.type === 'addTrait' && e.key) {
+        if (psExtraKeys(ps).includes(e.key) && !(T[e.key] && dn(T[e.key].die) >= dn(ex.die))) addTrait(T, e.key, ex.die, 'Source'); else R.psExtraOk = false;
+      }
       if (ex && ex.type === 'alien' && e.key) {
         const hasD6Power = Object.values(R.before.psExtra).some(t => t.die === 'd6' && TRAIT[t.key].kind === 'power');
         if (hasD6Power && T[e.key] && T[e.key].die === 'd6') T[e.key].die = 'd8';
-        else if (!hasD6Power && !T[e.key]) addTrait(T, e.key, 'd6', 'Source');
+        else if (!hasD6Power && !T[e.key] && expand(ps.opts).includes(e.key) && TRAIT[e.key].kind === 'power') addTrait(T, e.key, 'd6', 'Source');
+        else R.psExtraOk = false;
       }
-      if (ex && ex.type === 'cosmos') {
-        if (e.down && T[e.down] && dn(T[e.down].die) >= 8) T[e.down].die = upDie(T[e.down].die, -1);
-        if (e.up && T[e.up] && e.up !== e.down && dn(T[e.up].die) <= 10) T[e.up].die = upDie(T[e.up].die, 1);
+      if (ex && ex.type === 'cosmos' && (e.down || e.up)) {
+        const isP = k => k && T[k] && TRAIT[k].kind === 'power';
+        if (isP(e.down) && dn(T[e.down].die) >= 8) T[e.down].die = upDie(T[e.down].die, -1); else if (e.down) R.psExtraOk = false;
+        if (isP(e.up) && e.up !== e.down && dn(T[e.up].die) <= 10) T[e.up].die = upDie(T[e.up].die, 1); else if (e.up) R.psExtraOk = false;
       }
     }
     R.before.archetype = snap(T);
     if (ps && ar && shape) {
       R.slots.arch = assignStep('a', ps.archDice, st.arch.assign, T, 'Path', shape.req ? expand(shape.req.any) : []);
       if (ps.id === 'training') R.slots.training = assignStep('t', ['d8'], st.arch.assign, T, 'Path (Training)');
+      R.before.archExtra = snap(T);
       if (shape.extra && shape.extra.type === 'addTrait' && st.arch.extra.key) addTrait(T, st.arch.extra.key, shape.extra.die, 'Path');
       if (ar.modular) {
         const n = Object.values(T).filter(t => TRAIT[t.key].kind === 'power').length;
         R.modExtra = Math.max(0, Math.min(2, 4 - n));
+        R.before.modExtra = snap(T);
         for (let i = 0; i < R.modExtra; i++) addTrait(T, st.arch.extra['m' + i], 'd6', 'Path (Modular)');
       }
     }
@@ -421,9 +444,11 @@
   function allowedTraits(R, name, ctx = {}) {
     const ab = A[name];
     const req = reqFromText(ab && ab.text);
-    let pool = Object.keys(R.T);
+    const base = ctx.pool || Object.keys(R.T);
+    let pool = base.slice();
     if (req.kind === 'none') return { req, keys: [] };
     if (req.only) pool = pool.filter(k => req.only.includes(k));
+    if (req.path) pool = pool.filter(k => R.T[k].src.some(x => /^Path/.test(x)));   // a trait gained from your Path
     if (ctx.use) pool = pool.filter(k => ctx.use.includes(k));
     if (req.cat) pool = pool.filter(k => TRAIT[k].cat === req.cat);
     // An Ultimate's category narrows the trait of the same kind: for "[power] ... [quality]" in a quality
@@ -433,7 +458,7 @@
     if (ctx.cat && !catOnSecond) pool = pool.filter(k => TRAIT[k].cat === ctx.cat);
     if (req.kind !== 'any') pool = pool.filter(k => TRAIT[k].kind === req.kind);
     if (ctx.powersOnly && req.kind === 'any') pool = pool.filter(k => TRAIT[k].kind === 'power');
-    const keys2 = req.second ? Object.keys(R.T).filter(k => TRAIT[k].kind === req.second && (!catOnSecond || TRAIT[k].cat === ctx.cat)) : null;
+    const keys2 = req.second ? base.filter(k => TRAIT[k].kind === req.second && (!catOnSecond || TRAIT[k].cat === ctx.cat)) : null;
     return { req, keys: sortTraits(pool.map(k => R.T[k])).map(t => t.key), keys2 };
   }
 
@@ -460,21 +485,35 @@
     const list = ru.fromList && shape ? expand((shape.req ? shape.req.any : []).concat(shape.powers || [], shape.quals || [])) : null;
     return Object.keys(R.T).filter(k => (!list || list.includes(k)) && (!ru.cat || TRAIT[k].cat === ru.cat) && (!ru.kind || TRAIT[k].kind === ru.kind));
   }
+  // An ability uses the traits you had when you took it: a Source's abilities those of the first two chapters,
+  // a Path's those you have by the end of the Path chapter (p.46).
+  const groupPool = (g, R) => Object.keys(g.step === 'powersource' ? R.before.archetype : R.before.personality);
+  // The trait checks shared by every chosen ability (Source, Path and Ultimates).
+  function traitIssues(e, al, R, pool) {
+    const I = [], ab = abName(e.name);
+    if (al.req.kind !== 'none' && !al.req.fixed && !e.trait) I.push(tr('Choose which power/quality “{ab}” uses.', { ab }));
+    if (al.req.fixed && !R.T[al.req.only[0]]) I.push(tr('“{ab}” requires {trait}, which you don\'t have.', { ab, trait: traitName(al.req.only[0]) }));
+    const uses = al.req.kind !== 'none' && !al.req.fixed;   // (a trait left on an ability that uses none is ignored)
+    if (uses && e.trait && !R.T[e.trait]) I.push(tr('“{ab}” uses {trait}, which you no longer have.', { ab, trait: traitName(e.trait) }));
+    else if (uses && e.trait && !al.keys.includes(e.trait)) I.push(tr('“{ab}” cannot use {trait}: choose another.', { ab, trait: traitName(e.trait) }));
+    if (al.req.second && !e.trait2) I.push(tr('Choose the quality for “{ab}”.', { ab }));
+    else if (al.req.second && !(al.keys2 || []).includes(e.trait2)) I.push(tr('“{ab}” cannot use {trait}: choose another.', { ab, trait: traitName(e.trait2) }));
+    for (const t of choiceTokens(A[e.name] && A[e.name].text)) if (!tokenOk(t, (e.ch || {})[t], pool)) I.push(tr('Choose [{what}] for “{ab}”.', { what: tokenLabel(t), ab }));
+    return I;
+  }
   function groupIssues(g, R) {
     const I = [];
     const s = selOf(g);
     if (!g.fixed && s.length !== g.count) I.push(tr('Pick {n} ({have}/{n} chosen).', { n: g.count, have: s.length }));
+    if (new Set(s.map(e => e.name)).size !== s.length) I.push(tr('You picked the same ability twice.'));
     const used = [];
     let missing = 0;
+    const pool = groupPool(g, R);
     for (const e of s) {
-      const al = allowedTraits(R, e.name, { powersOnly: g.powersOnly, use: groupUse(g, R) });
-      if (al.req.kind !== 'none' && !al.req.fixed && !e.trait) I.push(tr('Choose which power/quality “{ab}” uses.', { ab: abName(e.name) }));
-      if (al.req.fixed && !R.T[al.req.only[0]]) I.push(tr('“{ab}” requires {trait}, which you don\'t have.', { ab: abName(e.name), trait: traitName(al.req.only[0]) }));
-      if (e.trait && !R.T[e.trait]) I.push(tr('“{ab}” uses {trait}, which you no longer have.', { ab: abName(e.name), trait: traitName(e.trait) }));
-      if (al.req.second && !e.trait2) I.push(tr('Choose the quality for “{ab}”.', { ab: abName(e.name) }));
-      for (const t of choiceTokens(A[e.name] && A[e.name].text)) if (!(e.ch && e.ch[t])) I.push(tr('Choose [{what}] for “{ab}”.', { what: tokenLabel(t), ab: abName(e.name) }));
-      if (e.trait) used.push(e.trait);
-      if (al.req.kind !== 'none' && !al.req.fixed && !e.trait) missing++;
+      const al = allowedTraits(R, e.name, { powersOnly: g.powersOnly, use: groupUse(g, R), pool });
+      I.push(...traitIssues(e, al, R, pool));
+      if (e.trait && usesTrait(e.name)) used.push(e.trait);
+      if (usesTrait(e.name) && !e.trait) missing++;
     }
     if (g.diff && new Set(used).size !== used.length) I.push(tr('Each ability must use a different power/quality.'));
     const ru = g.rules || {};
@@ -487,18 +526,21 @@
       if (!cover(0, used)) I.push(tr('These abilities must include: {list}.', { list: ru.needs.map(n => tr('one using {what}', { what: tr(n.label) })).join(tr(', and ')) }));
     }
     if (ru.notGreen) {
-      const greens = (st.sel['arch-green'] || []).map(e => e.trait).filter(Boolean);
-      for (const e of s) if (e.trait && greens.includes(e.trait)) I.push(tr('“{ab}” must use a different power or quality than your Green abilities ({trait} is already used there).', { ab: abName(e.name), trait: traitName(e.trait) }));
+      const greens = (st.sel['arch-green'] || []).filter(e => usesTrait(e.name)).map(e => e.trait).filter(Boolean);
+      for (const e of s) if (e.trait && usesTrait(e.name) && greens.includes(e.trait)) I.push(tr('“{ab}” must use a different power or quality than your Green abilities ({trait} is already used there).', { ab: abName(e.name), trait: traitName(e.trait) }));
     }
     return I;
   }
+  // Dice placed on something the step does not offer (the list, or a trait of the wrong kind).
+  const offList = (slots, keys) => (slots || []).filter(s => s.key && !keys.includes(s.key)).map(s => tr('{trait} is not an option for this {die}.', { trait: traitName(s.key), die: s.die }));
   const slotIssues = slots => (slots || []).filter(s => !s.key).map(s => tr(s.freed ? 'Assign your {die} (the old die of {trait}).' : 'Assign your {die}.', { die: s.die, trait: traitName(s.from || '') }))
     .concat((slots || []).filter(s => s.key && s.upgrade).map(s => tr('You already had {trait}: bind this {die} to something else.', { trait: traitName(s.key), die: s.die })));
   function principleIssues(slot, cat) {
     const cur = slot === 'bg' ? st.bg.principle : st.arch.principle;
-    if (!cur) return [tr('Choose {p}.', { p: aPrinciple(cat) })];
+    const p = PRINCIPLES.find(x => x.id === cur);
+    if (!p || p.cat !== cat) return [tr('Choose {p}.', { p: aPrinciple(cat) })];
     const I = [];
-    if (cur === 'energy-element' && !st.pch[slot]) I.push(tr('Choose your element for this principle.'));
+    if (cur === 'energy-element' && !elementKey(st.pch[slot])) I.push(tr('Choose your element for this principle.'));
     if (slot === 'arch' && cur === st.bg.principle) I.push(tr('Your two principles must be different.'));
     return I;
   }
@@ -524,7 +566,7 @@
     if (id === 'background') {
       rollSec('bg', tr('Roll for your Origin'), !!bg);
       add('pick', tr('Choose your Origin'), bg ? [] : [tr('Choose an Origin.')], tr(st.method === 'guided' ? 'Click one of the Origins highlighted by your roll. Hover the <b>i</b> to see what it gives you.' : 'Click one of the Origins. Hover the <b>i</b> to see what it gives you.'));
-      const I = bg ? slotIssues(R.slots.bg) : [];
+      const I = bg ? slotIssues(R.slots.bg).concat(offList(R.slots.bg, expand(bg.q.opts).filter(k => TRAIT[k].kind === 'quality'))) : [];
       if (bg && bg.q.mustInclude && !(R.slots.bg || []).some(s => s.key === bg.q.mustInclude)) I.push(tr('One die must go to {trait}.', { trait: traitName(bg.q.mustInclude) }));
       add('assign', tr('Assign your quality dice'), I, tr('Click a die, then choose the quality it becomes. Bigger dice mean you are better at it.'));
       add('principle', bg ? tr('Choose {p}', { p: aPrinciple(bg.principle) }) : tr('Choose your first principle'), bg ? principleIssues('bg', bg.principle) : [], tr('Principles are what your champion believes in. Click one — hover to read it in full.'));
@@ -532,7 +574,7 @@
     if (id === 'powersource') {
       rollSec('ps', tr('Roll your Origin dice'), !!ps);
       add('pick', tr('Choose your Source of Power'), ps ? [] : [tr('Choose a Source of Power.')], tr('Click where your champion\'s power comes from. Hover the <b>i</b> for details.'));
-      const I = ps ? slotIssues(R.slots.ps) : [];
+      const I = ps ? slotIssues(R.slots.ps).concat(offList(R.slots.ps, expand(ps.opts).concat(ps.required ? [ps.required.key] : []).filter(k => TRAIT[k].kind === 'power'))) : [];
       if (ps && ps.required && !R.T[ps.required.key]) I.push(tr('One die must go to {trait}.', { trait: traitName(ps.required.key) }));
       add('assign', tr('Assign your power dice'), I, tr('Click a die, then choose the power it becomes.'));
       if (ps && ps.extra) {
@@ -540,6 +582,7 @@
         if (ex.type === 'addTrait' && !e.key) X.push(tr('Make your choice.'));
         if (ex.type === 'alien' && !e.key) X.push(tr('Choose the Void-touched upgrade.'));
         if (ex.type === 'cosmos' && (!e.down || !e.up)) X.push(tr('Choose which power to downgrade and which to upgrade.'));
+        if (!R.psExtraOk) X.push(tr('Your bonus choice no longer fits your dice: choose again.'));
         add('extra', tr('Special bonus'), X, esc(ex.text));
       }
       if (ps) groupSecs('powersource');
@@ -555,21 +598,35 @@
       const I = [];
       if (shape) {
         I.push(...slotIssues(R.slots.arch));
-        if (ps && ps.id === 'training') I.push(...slotIssues(R.slots.training));
+        const pathKeys = expand((shape.req ? shape.req.any : []).concat(shape.powers, shape.quals));
+        I.push(...offList((R.slots.arch || []).filter(x => !x.freed), pathKeys), ...offList((R.slots.arch || []).filter(x => x.freed), expand(shape.powers.concat(shape.quals))));
+        if (ps && ps.id === 'training') I.push(...slotIssues(R.slots.training), ...offList(R.slots.training, expand(shape.quals).filter(k => TRAIT[k].kind === 'quality')));
+        const xk = st.arch.extra.key;
+        if (shape.extra && shape.extra.type === 'addTrait' && xk && (!expand(shape.extra.opts).includes(xk) || R.before.archExtra[xk])) I.push(tr('{trait} is not an option for this {die}.', { trait: traitName(xk), die: shape.extra.die }));
+        if (ar.modular) for (let i = 0; i < (R.modExtra || 0); i++) {
+          const k = st.arch.extra['m' + i];
+          if (k && (!TRAIT[k] || TRAIT[k].kind !== 'power' || R.before.modExtra[k] || Object.keys(st.arch.extra).some(x => x !== 'm' + i && /^m\d$/.test(x) && +x.slice(1) < R.modExtra && st.arch.extra[x] === k))) I.push(tr('{trait} is not an option for this {die}.', { trait: traitName(k), die: 'd6' }));
+        }
         if (shape.req) {
           const cands = expand(shape.req.any);
           if (Object.keys(R.T).filter(k => cands.includes(k)).length < (shape.req.count || 1)) I.push(tr('You need {what}.', { what: tr(shape.req.label) }));
         }
-        const archSlots = (R.slots.arch || []).filter(s => s.key);
+        // How many of the "remaining" dice went to powers. The required die is not one of them, but a Path whose
+        // required trait you already have lets you skip that die (then every die is a remaining one), put it on
+        // another trait of the list, or swap it (the swapped die is then the required one), pp.75-93 and p.44.
+        const archSlots = (R.slots.arch || []).filter(s => s.key && !s.upgrade);
         const powerSlots = archSlots.filter(s => TRAIT[s.key].kind === 'power');
         const reqKeys = shape.req ? expand(shape.req.any) : [];
         const reqIsPower = reqKeys.some(k => TRAIT[k].kind === 'power');
-        const reqInStep = reqIsPower ? Math.min(shape.req.count || 1, powerSlots.filter(s => reqKeys.includes(s.key)).length) : 0;
-        const nonReq = powerSlots.length - reqInStep;
-        const dice = (R.slots.arch || []).length;
-        if (shape.remPowers === 'one' && nonReq > 1) I.push(tr('Only one of the remaining dice may go to a power (the rest go to qualities).'));
-        if (shape.remPowers === 'one' && nonReq < 1 && archSlots.length === dice && dice > 1) I.push(tr('One of the remaining dice must go to a power.'));
-        if (shape.remPowers === 'oneOrMore' && nonReq < 1 && archSlots.length === dice && dice > 1) I.push(tr('At least one die must go to a power.'));
+        const before = R.before.archetype;
+        const had = Object.keys(before).filter(k => reqKeys.includes(k)).length >= ((shape.req && shape.req.count) || 1);
+        const reqCands = powerSlots.filter(s => reqKeys.includes(s.key) && (s.swap || !before[s.key])).length;
+        const n = powerSlots.length;
+        const remOpts = !reqIsPower ? [n] : archSlots.some(s => s.swap) ? [n - 1] : (reqCands ? [n - 1] : []).concat(had || !reqCands ? [n] : []);
+        const dice = (R.slots.arch || []).length, allSet = (R.slots.arch || []).every(s => s.key);
+        if (shape.remPowers === 'one' && Math.min(...remOpts) > 1) I.push(tr('Only one of the remaining dice may go to a power (the rest go to qualities).'));
+        else if (shape.remPowers === 'one' && allSet && dice > 1 && !remOpts.includes(1)) I.push(tr('One of the remaining dice must go to a power.'));
+        if (shape.remPowers === 'oneOrMore' && allSet && dice > 1 && !remOpts.some(r => r >= 1)) I.push(tr('At least one die must go to a power.'));
         if (shape.extra && shape.extra.type === 'addTrait' && !st.arch.extra.key) I.push(shape.extra.text);
         if (ar.modular) for (let i = 0; i < (R.modExtra || 0); i++) if (!st.arch.extra['m' + i]) I.push(tr('Add a d6 power (Stance Masters need four powers).'));
       }
@@ -577,18 +634,20 @@
       if (ar && ar.divided && shape) add('divm', tr('Choose your method of transformation'), st.arch.divMethod ? [] : [tr('Choose a method.')], tr('How does your champion switch between their two forms?'));
       if (shape) groupSecs('archetype');
       else add('g-ph', tr('Choose your abilities'), []);
-      if (shape && shape.minionForms) {
+      if (abilityShape() && shape.minionForms) {
         const M = [];
-        if (!st.arch.minionQ) M.push(tr('Choose the quality that sets your number of minion forms.'));
+        const mq = R.before.personality[st.arch.minionQ];
+        if (!mq || TRAIT[mq.key].kind !== 'quality') M.push(tr('Choose the quality that sets your number of minion forms.'));
         else {
-          const max = R.T[st.arch.minionQ] ? dn(R.T[st.arch.minionQ].die) : 0;
+          const max = dn(mq.die);
           if ((st.arch.minionForms || []).length !== max) M.push(tr('Choose {n} minion forms ({have} chosen).', { n: max, have: (st.arch.minionForms || []).length }));
         }
         add('minions', tr('Choose your minion forms'), M, tr('Pick the quality first, then tick as many forms as it allows.'));
       }
       if (ar && ar.modular && shape) {   // p.96: optional Powerless Mode, one default-mode power at d6 and another at d10
         const pl = st.arch.powerless || {}, P = [];
-        if (pl.on && (!pl.a || !pl.b || pl.a === pl.b)) P.push(tr('Choose two different powers for your Powerless Mode.'));
+        const isPow = k => k && R.T[k] && TRAIT[k].kind === 'power';
+        if (pl.on && (!isPow(pl.a) || !isPow(pl.b) || pl.a === pl.b)) P.push(tr('Choose two different powers for your Powerless Mode.'));
         add('powerless', tr('Powerless Mode (optional)'), P, '', { opt: true });
       }
       if (shape && ar.divided && splitOn()) add('split', tr('Split Form: divide your powers and qualities'), splitIssues(R), '');
@@ -602,9 +661,11 @@
       add('qname', tr('Name your Signature Quality'), pers && !st.pers.qname.trim() ? [tr('Type a name for your Signature Quality.')] : pers && !st.pers.qok ? [tr('Press Confirm to keep this name.')] : [], tr('Type a short phrase that sums up your champion, like <em>Last Kinkou of the Eastern Isles</em>.'));
       if (pers) {
         const rq = reqFromText(pers.out);
-        if (rq.kind !== 'none') add('out', tr('Set up your Out ability'), st.pers.outTrait ? [] : [tr('Choose which trait your Out ability uses.')], tr('Pick the power or quality used when you\'re knocked out.'));
+        const outOk = st.pers.outTrait && owned(R, rq.kind).some(t => t.key === st.pers.outTrait);
+        if (rq.kind !== 'none') add('out', tr('Set up your Out ability'), outOk ? [] : [tr('Choose which trait your Out ability uses.')], tr('Pick the power or quality used when you\'re knocked out.'));
         if (ar && ar.divided) add('pers2', tr('Temperament of your other form (optional)'), [], '', { opt: true });
-        if (pers.extra === 'impulsive') add('reckless', tr('Reckless upgrade'), st.pers.upgrade ? [] : [tr('Choose a power or quality to upgrade.')], tr('Pick one trait to raise by one die size.'));
+        const up = R.before.personality[st.pers.upgrade];
+        if (pers.extra === 'impulsive') add('reckless', tr('Reckless upgrade'), up && dn(up.die) < 12 ? [] : [tr('Choose a power or quality to upgrade.')], tr('Pick one trait to raise by one die size.'));
       }
     }
     if (id === 'red') {
@@ -612,15 +673,21 @@
       const s = st.sel.red || [];
       const I = [];
       if (s.length !== need) I.push(tr('Pick {n} Ultimates ({have}/{n} chosen).', { n: need, have: s.length }));
+      const ashape = abilityShape(), pool = Object.keys(R.T);
       for (const e of s) {
-        const al = allowedTraits(R, e.name, { cat: e.cat && e.cat.startsWith('X:') ? null : e.cat, use: e.use });
-        if (al.req.kind !== 'none' && !e.trait) I.push(tr('Choose which trait “{ab}” uses.', { ab: abName(e.name) }));
-        if (al.req.second && !e.trait2) I.push(tr('Choose the quality for “{ab}”.', { ab: abName(e.name) }));
-        for (const t of choiceTokens(A[e.name] && A[e.name].text)) if (!(e.ch && e.ch[t])) I.push(tr('Choose [{what}] for “{ab}”.', { what: tokenLabel(t), ab: abName(e.name) }));
+        const isX = !!(e.cat && e.cat.startsWith('X:'));
+        // p.106: a Red ability comes from a category where you have a power or quality of d6 or more (or your Path's own list)
+        const def = isX ? null : ((window.RED_ABILITIES.find(c => c.cat === e.cat) || { list: [] }).list.find(x => x.a === e.name));
+        if (isX ? !(ashape && e.cat === 'X:' + ashape.id && (ashape.extraRed || []).includes(e.name)) : !def) { I.push(tr('“{ab}” is not one of your Ultimate options: untick it.', { ab: abName(e.name) })); continue; }
+        if (!isX && !Object.values(R.T).some(t => TRAIT[t.key].cat === e.cat && dn(t.die) >= 6)) I.push(tr('“{ab}” needs one of your {cat} at d6 or more: untick it.', { ab: abName(e.name), cat: catLabel(e.cat) }));
+        const use = def && def.use;
+        if (use && !use.some(k => R.T[k])) I.push(tr('“{ab}” requires {trait}, which you don\'t have.', { ab: abName(e.name), trait: traitName(use[0]) }));
+        I.push(...traitIssues(e, allowedTraits(R, e.name, { cat: isX ? null : e.cat, use }), R, pool));
       }
+      if (new Set(s.map(e => displayName(e.name))).size !== s.length) I.push(tr('You picked the same Ultimate twice.'));
       add('pick', tr('Choose {n} Ultimates', { n: need }), I, tr('Only categories marked <b>eligible</b> can be picked — they match powers and qualities you have. Tick {n} abilities, then choose the trait each one uses.', { n: need }));
     }
-    if (id === 'health') add('review', tr('Review your Health'), [], tr('Pick the trait that adds to your Health and whether to roll.'), { opt: true });
+    if (id === 'health') add('review', tr('Review your Health'), st.health.mode === 'roll' && st.health.roll != null && !(st.health.roll >= 1 && st.health.roll <= 8) ? [tr('Roll the d8 again.')] : [], tr('Pick the trait that adds to your Health and whether to roll.'), { opt: true });
     if (id === 'finish') {
       add('name', tr('Name your champion (optional)'), [], tr('Type a hero name — you can fill in the rest below at your own pace.'));
       add('describe', tr('Describe them (optional)'), [], tr('Optional details for your hero sheet.'));
@@ -767,7 +834,9 @@
     const color = ctx.color || g.color;
     const al = allowedTraits(R, name, ctx);
     const reqFixed = al.req.fixed ? al.req.only[0] : null;
-    const unavailable = reqFixed && !R.T[reqFixed];
+    // needs a power you don't have: a named one (Telepathy…), or an Elemental/Energy one for "[element you have a related power for]"
+    const noEl = choiceTokens(ab.text).some(relatedToken) && !CATS['P:elemental'].items.some(i => (ctx.pool || Object.keys(R.T)).includes(i[0]));
+    const unavailable = (reqFixed && !R.T[reqFixed]) || noEl;
     const orig = displayName(name);
     const mode = g.modes ? g.modes.find(m => m.name === name) : null;
     let cfg = '';
@@ -786,7 +855,10 @@
         const kind = CHOICE_TOKENS[t];
         const cur = (entry.ch || {})[t] || '';
         if (kind === 'element') {
-          const els = CATS['P:elemental'].items.map(i => i[2]);
+          // "[element/energy you have a related power for]": only the elements of your own Elemental/Energy powers
+          const mine = ctx.pool || Object.keys(R.T);
+          const els = CATS['P:elemental'].items.filter(i => !relatedToken(t) || mine.includes(i[0])).map(i => i[2]);
+          if (!els.length) { cfg += `<small class="muted">${tr('You have no Elemental/Energy power for this.')}</small>`; continue; }
           cfg += `<div class="cfg-l">[${esc(tokenLabel(t))}]</div>${valueChips(`${base}.ch.${t}`, els, cur)}`;
         } else if (Array.isArray(kind)) {
           cfg += `<div class="cfg-l">[${esc(tokenLabel(t))}]</div>${valueChips(`${base}.ch.${t}`, kind, cur, x => tr(x))}`;
@@ -798,7 +870,7 @@
     const typeTip = `<h5>${tr('Type: {t}', { t: ab.type })}</h5>${window.ABILITY_TYPES[ab.type] || ''}`;
     const colorTip = `<h5>${tr(color[0].toUpperCase() + color.slice(1) + ' ability')}</h5>${window.COLOR_INFO[color] || ''}`;
     const inputType = g.count === 1 && !g.fixed ? 'radio' : 'checkbox';
-    const control = g.fixed ? '' : `<input type="checkbox" data-act="toggleAb" data-g="${g.key}" data-name="${esc(name)}"${ctx.cat || ctx.dataCat ? ` data-cat="${esc(ctx.dataCat || ctx.cat)}"` : ''}${picked ? ' checked' : ''}${unavailable ? ' disabled' : ''} aria-label="${tr(inputType === 'radio' ? 'Select' : 'Toggle')} ${esc(abName(name))}">`;
+    const control = g.fixed ? '' : `<input type="checkbox" data-act="toggleAb" data-g="${g.key}" data-name="${esc(name)}"${ctx.cat || ctx.dataCat ? ` data-cat="${esc(ctx.dataCat || ctx.cat)}"` : ''}${picked ? ' checked' : ''}${unavailable && !picked ? ' disabled' : ''} aria-label="${tr(inputType === 'radio' ? 'Select' : 'Toggle')} ${esc(abName(name))}">`;
     return `<div class="ab ${color}${picked ? ' picked' : ''}${unavailable ? ' disabled' : ''}">` +
       `<div class="ab-top">${control}<span class="ab-name">${esc(abName(name))}</span><span class="pill ${color}"${tip(colorTip)}>${tr(color)}</span><span class="ab-type"${tip(typeTip)}>${ab.type}</span></div>` +
       (mode ? `<div class="ab-text"><em>${tr('Mode:')}</em> ${esc(mode.text)}</div>` : '') +
@@ -813,9 +885,9 @@
         const i = s.findIndex(e => e.name === n);
         // Groups that need a different power/quality per ability (or different from the Green ones) block repeats up front.
         const block = {};
-        if (g.diff) s.forEach((e, j) => { if (j !== i && e.trait) block[e.trait] = tr('used by {ab}', { ab: abName(e.name) }); });
-        if (g.rules && g.rules.notGreen) (st.sel['arch-green'] || []).forEach(e => { if (e.trait) block[e.trait] = tr('used by {ab}', { ab: abName(e.name) }); });
-        return abilityCard(g, n, s[i], i >= 0, R, { idx: i, powersOnly: g.powersOnly, use: groupUse(g, R), block });
+        if (g.diff) s.forEach((e, j) => { if (j !== i && e.trait && usesTrait(e.name)) block[e.trait] = tr('used by {ab}', { ab: abName(e.name) }); });
+        if (g.rules && g.rules.notGreen) (st.sel['arch-green'] || []).forEach(e => { if (e.trait && usesTrait(e.name)) block[e.trait] = tr('used by {ab}', { ab: abName(e.name) }); });
+        return abilityCard(g, n, s[i], i >= 0, R, { idx: i, powersOnly: g.powersOnly, use: groupUse(g, R), pool: groupPool(g, R), block });
       }).join('') + '</div></div>';
   }
 
@@ -1165,7 +1237,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
           ${shape.extra ? `<p style="margin-top:12px">${esc(shape.extra.text)}</p>${socket({ bind: 'arch.extra.key', d: shape.extra.die, cur: st.arch.extra.key, groups: traitGroups(expand(shape.extra.opts).filter(k => !R.before.archetype[k]), k => traitItem(k)), empty: tr('Bind this {die} to a trait', { die: shape.extra.die }) })}` : ''}
           ${a.modular && R.modExtra ? `<p style="margin-top:12px">${tr('Stance Masters need at least four powers — add {n} {die} power(s):', { n: R.modExtra, die: die('d6') })}</p>` + Array.from({ length: R.modExtra }, (_, i) => socket({ bind: `arch.extra.m${i}`, d: 'd6', cur: st.arch.extra['m' + i], groups: traitGroups(allOf('power').filter(k => !R.before.personality[k] || k === st.arch.extra['m' + i]), k => traitItem(k, { taken: Object.keys(st.arch.extra).some(x => x !== 'm' + i && /^m\d/.test(x) && st.arch.extra[x] === k) ? tr('on another d6') : '' })), empty: tr('Bind this d6 to any power') })).join('') : ''}
           ${shape.healthAlt ? `<p class="sc">${tr('When determining Health you may use a {cat} power instead of an Athletic power or Mental quality.', { cat: esc(shape.healthAlt.map(catName).join(tr(' or '))) })}</p>` : ''}
-          ${shape.extraRed ? `<p class="sc">${tr('As a {path}, the Red abilities {list} are added to your options in the Ultimates step.', { path: esc(shape.rt), list: esc(shape.extraRed.map(abName).join(', ')) })}</p>` : ''}`;
+          ${shape.extraRed && !a.modular ? `<p class="sc">${tr('As a {path}, the Red abilities {list} are added to your options in the Ultimates step.', { path: esc(shape.rt), list: esc(shape.extraRed.map(abName).join(', ')) })}</p>` : ''}`;
       },
       divm: () => `<div class="principles">${window.DIVIDED.methods.map(m => `<button class="principle${st.arch.divMethod === m.id ? ' selected' : ''}" data-act="divMethod" data-id="${m.id}"${tip(`<h5>${esc(m.rt)}</h5>${esc(m.text)}`)}><div class="pn">${esc(m.rt)}</div><div class="ph">${esc(m.text)}</div></button>`).join('')}</div>`,
       group: s => groupHtml(s.group, R, true),
@@ -1194,12 +1266,13 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   function minionFormsHtml(R) {
     // The book lists these as examples; any quality the hero has may fit, so the examples come first.
     const EX = ['creativity', 'magical-lore', 'otherworldly-mythos', 'science', 'technology'];
-    const q = EX.filter(k => R.T[k]).concat(Object.keys(R.T).filter(k => !EX.includes(k) && TRAIT[k] && TRAIT[k].kind === 'quality'));
+    const Q = R.before.personality;   // the qualities you have at the end of this chapter
+    const q = EX.filter(k => Q[k]).concat(Object.keys(Q).filter(k => !EX.includes(k) && TRAIT[k] && TRAIT[k].kind === 'quality'));
     const cur = st.arch.minionQ;
-    const max = cur && R.T[cur] ? dn(R.T[cur].die) : 0;
+    const max = cur && Q[cur] ? dn(Q[cur].die) : 0;
     const chosen = st.arch.minionForms || [];
     return `<p class="muted"${tip(tr('<h5>Minion forms</h5>When you create a minion you may discard one bonus you have access to in order to add a form with that bonus value or higher. The number of forms you know equals the maximum value of a related quality.'))}>${tr('You know as many minion forms as the maximum value of a related quality.')}</p>
-      <label class="field"><span>${tr('Related quality')}</span><select data-bind="arch.minionQ"><option value="">${tr('— choose —')}</option>${q.map(k => `<option value="${k}"${cur === k ? ' selected' : ''}>${esc(traitName(k))} (${R.T[k].die})</option>`).join('')}</select></label>
+      <label class="field"><span>${tr('Related quality')}</span><select data-bind="arch.minionQ"><option value="">${tr('— choose —')}</option>${q.map(k => `<option value="${k}"${cur === k ? ' selected' : ''}>${esc(traitName(k))} (${Q[k].die})</option>`).join('')}</select></label>
 
       <div class="ab-list">${window.MINION_FORMS.map(([n, d, b]) => `<label class="ab${chosen.includes(n) ? ' picked' : ''}"><div class="ab-top"><input type="checkbox" data-act="minionForm" data-name="${esc(n)}"${chosen.includes(n) ? ' checked' : ''}${!chosen.includes(n) && chosen.length >= max ? ' disabled' : ''}><span class="ab-name">${esc(abName(n))}</span><span class="ab-type"${tip(tr('Bonus needed to apply this form'))}>${tr('{b} or higher', { b: esc(b) })}</span></div><div class="ab-text">${rulesText(d)}</div></label>`).join('')}</div>
       <p class="muted">${chosen.length}/${max} ${tr('chosen')}.</p>`;
@@ -1243,7 +1316,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const need = 2;
     const s = st.sel.red = st.sel.red || [];
     const cats = window.RED_ABILITIES.slice();
-    const shape = shapeDef();
+    const shape = abilityShape();
     if (shape && shape.extraRed) cats.push({ cat: 'X:' + shape.id, label: shape.rt + ' (' + tr('Path') + ')', list: shape.extraRed.map(a => ({ a })) });
     // Older saves stored Path Red abilities without their category.
     if (shape && shape.extraRed) for (const e of s) if (!e.cat && shape.extraRed.includes(e.name)) e.cat = 'X:' + shape.id;
@@ -1393,7 +1466,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     let list = [];
     if (x.gkey === 'red') {
       const cat = x.entry.cat || '';
-      if (cat.startsWith('X:')) list = (shapeDef() && shapeDef().extraRed) || [];
+      if (cat.startsWith('X:')) list = (abilityShape() && abilityShape().extraRed) || [];
       else { const c = window.RED_ABILITIES.find(r => r.cat === cat); list = c ? c.list.filter(o => !o.use || o.use.includes(x.entry.trait)).map(o => o.a) : []; }
     } else { const g = groups().find(y => y.key === x.gkey); list = g ? g.list : []; }
     const RT = evolvedR(R0).T;
@@ -2494,7 +2567,19 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     status2: () => compute().status2 || null,
     health: () => { const h = healthCalc(compute()); return h && { max: h.max, red: h.red, traitMax: h.traitMax, roll: h.roll, trait: h.chosen && h.chosen.key, green: h.green, yellow: h.yellow, redR: h.redR }; },
     abilities: () => allAbilities(compute()).map(a => ({ name: a.name, color: a.color, src: a.src, trait: a.entry && a.entry.trait, trait2: a.entry && a.entry.trait2 })),
-    principles: () => principlesFinal().map(x => x.id || (x.p && x.p.id))
+    principles: () => principlesFinal().map(x => x.id || (x.p && x.p.id)),
+    // Validate any saved state without showing it: the issues of every chapter and the computed values.
+    check: s => {
+      const keep = st;
+      try {
+        st = upgradeState(JSON.parse(JSON.stringify(s)));
+        const R = compute(), h = healthCalc(R), issues = {};
+        for (const id of ['background', 'powersource', 'archetype', 'personality', 'red', 'health']) issues[id] = stepIssues(id, R);
+        const T = {};
+        for (const t of Object.values(R.T)) T[t.key] = t.die;
+        return { issues, T, status: R.status || null, status2: R.status2 || null, health: h ? h.max : null };
+      } finally { st = keep; }
+    }
   };
 
   render();

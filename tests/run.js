@@ -435,6 +435,31 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(/Modo sem Poderes|Powerless Mode/.test(await p.evaluate(() => window.ForgeDebug.issues('archetype').join(' | '))), 'Modular: a Powerless Mode needs two different powers');
     await p.context().close();
   }
+  // Rule fixes found by the rules test (tests/rules.js).
+  {
+    const p = await newPage();
+    await p.goto(`${BASE}/index.html`);
+    const check = (f, step) => p.evaluate(([src, fx, step]) => { const S = JSON.parse(fx); new Function('S', src)(S); return window.ForgeDebug.check(S).issues[step].join(' | '); }, [f, FIXTURE, step]);
+    // Blaster p.80: already having an Elemental power (Cosmic), the required die may be skipped, so a new Fire is the one other power
+    const bl = await check("S.arch={id:'blaster',base:null,assign:{a0:'fire',a1:'alertness',a2:'fitness'},principle:'destiny',extra:{},notes:''}; S.sel['arch-green']=[]; S.sel['arch-yellow']=[];", 'archetype');
+    ok(!/dados restantes|remaining dice/.test(bl), 'Blaster: with an Elemental power already, one new Elemental power counts as the other power');
+    const bl2 = await check("S.arch={id:'blaster',base:null,assign:{a0:'fire',a1:'cold',a2:'fitness'},principle:'destiny',extra:{},notes:''};", 'archetype');
+    ok(!/dados restantes|remaining dice/.test(bl2), 'Blaster: or it is the required die and another Elemental power the other one');
+    const bl3 = await check("S.arch={id:'blaster',base:null,assign:{a0:'fire',a1:'cold',a2:'agility'},principle:'destiny',extra:{},notes:''};", 'archetype');
+    ok(/dados restantes|remaining dice/.test(bl3), 'Blaster: but never two other powers');
+    // Major Regeneration (p.106) names Vitality: there is nothing to pick, so it must not block the Ultimates chapter
+    const mr = await check("S.ps.assign.p2='vitality'; S.sel.red=[{name:'Major Regeneration',cat:'P:athletic',use:['vitality'],ch:{}},S.sel.red[0]];", 'red');
+    ok(!mr, 'Major Regeneration can be taken without picking a trait');
+    // Modular (p.96) only takes its base Path's dice rules: no minion forms from a Minion-Maker base
+    const mm = await check("S.arch={id:'modular',base:'minion-maker',assign:{a0:'robotics',a1:'science',a2:'creativity'},principle:'destiny',extra:{},notes:''};", 'archetype');
+    ok(!/lacaio|minion/.test(mm), 'Modular with a Minion-Maker base asks for no minion forms');
+    // "[element/energy you have a related power for]" needs that power; Ultimates need a d6+ trait of their category
+    const ei = el => check(`S.arch.id='blaster'; S.arch.assign={a0:'fire',a1:'alertness',a2:'fitness'}; S.sel['arch-yellow']=[{name:'Energy Immunity',ch:{'element/energy you have a related power for':'${el}'}},{name:'Heedless Blast',ch:{},trait:'fire'}];`, 'archetype');
+    ok(/Imunidade|Energy Immunity/.test(await ei('weather')) && !/Imunidade a Energia|Energy Immunity/.test(await ei('cosmic')), 'Energy Immunity only takes an element you have a power for');
+    const rc = await check("S.sel.red=[{name:'Book It',cat:'Q:physical',use:null,ch:{},trait:'history'},S.sel.red[0]];", 'red');
+    ok(/Física|Physical/.test(rc), 'an Ultimate from a category you have no d6+ trait in is flagged');
+    await p.context().close();
+  }
   // Older saves stored element choices with the English name, e.g. "Energia Hextec Bruta (Nuclear)", or under an earlier name.
   {
     const p = await newPage();
