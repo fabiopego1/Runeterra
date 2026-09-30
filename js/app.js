@@ -53,9 +53,12 @@
   }
 
   // ------------------------------------------------------------------ state
-  const STORE = 'runeterra-forge-v1';
+  const STORE = 'runeterra-forge-v1';   // the champion open now (the Forge and the Ficha page both read it)
+  // Every champion also has its own slot, and the roster lists them in the order they were made.
+  const ROSTER = 'runeterra-forge-roster-v1', SLOT = id => 'runeterra-forge-c-' + id;
+  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   const blank = () => ({
-    v: 1, noRetcon: true, step: 'intro', maxStep: 0, method: 'constructed', people: null, region: null, unlocked: {},   // Construído is the default method
+    v: 1, cid: newId(), updated: Date.now(), noRetcon: true, step: 'intro', maxStep: 0, method: 'constructed', people: null, region: null, unlocked: {},   // Construído is the default method
     rolls: {}, rerolls: {},
     bg: { id: null, assign: {}, principle: null },
     ps: { id: null, assign: {}, extra: {} },
@@ -83,6 +86,7 @@
   function upgradeState(s) {
     const b = blank();
     const out = Object.assign(b, s);
+    if (!s.cid) out.cid = newId();   // saves from before the roster
     out.info = Object.assign(blank().info, s.info || {});
     if (s.info && s.info.look && !out.info.costume) out.info.costume = s.info.look;
     if (s.info && s.info.pronouns && !out.info.gender) out.info.gender = s.info.pronouns;
@@ -117,7 +121,20 @@
     out.method = 'constructed';   // the Guided method (rolling for options) is no longer offered
     return out;
   }
-  function save() { try { localStorage.setItem(STORE, JSON.stringify(st)); } catch (e) { /* ignore */ } }
+  const rosterIds = () => { try { const r = JSON.parse(localStorage.getItem(ROSTER)); return Array.isArray(r) ? r : []; } catch (e) { return []; } };
+  let saveWarned = false;
+  function save() {
+    st.updated = Date.now();
+    try {
+      const json = JSON.stringify(st);
+      localStorage.setItem(STORE, json);
+      localStorage.setItem(SLOT(st.cid), json);
+      const ids = rosterIds();
+      if (!ids.includes(st.cid)) { ids.push(st.cid); localStorage.setItem(ROSTER, JSON.stringify(ids)); }
+    } catch (e) {   // storage full (usually portraits) or blocked
+      if (!saveWarned && typeof rosterHooks !== 'undefined') { saveWarned = true; rosterHooks.warn(); }
+    }
+  }
 
   function setPath(obj, path, val) {
     const parts = path.split('.');
@@ -2378,7 +2395,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       if (stepIndex('finish') > st.maxStep) { showTipFor(el, tr('<h5>Not yet</h5>Finish creating your champion first — the sheet is printed from the last step.')); setTimeout(hideTip, 2200); return; }
       st.step = 'finish'; render(); setTimeout(() => window.print(), 150); return;
     }
-    if (act === 'reset') { if (confirm(tr('Start over? This clears your current champion.'))) { st = blank(); render(); } return; }
+    if (act === 'reset') { if (confirm(tr('Start over? This clears your current champion.'))) { const id = st.cid, tour = st.tour; st = blank(); st.cid = id; st.tour = tour; render(); } return; }
   });
 
   function bindValue(el) {
@@ -2510,7 +2527,10 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       try {
         const s = JSON.parse(r.result);
         if (!s || s.v !== 1) throw new Error(tr('Not a Champion Forge file'));
-        st = upgradeState(s); render();
+        save();   // the champion open now stays in the roster; the file comes in as a new one
+        s.cid = newId();
+        st = upgradeState(s); rosterHooks.opened(); render();
+        rosterHooks.say(tr('Imported as a new champion. The others are in Champions.'));
       } catch (e) { alert(tr('Could not import:') + ' ' + e.message); }
     };
     r.readAsText(file);
@@ -2678,7 +2698,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   // Take a snapshot before each click or change, and look after every handler has run.
   let snapPending = false;
   const snapChange = ev => {
-    if (SHEET_PAGE || snapPending || (ev.target.closest && ev.target.closest('#change-note, [data-act="undo"]'))) return;
+    if (SHEET_PAGE || snapPending || (ev.target.closest && ev.target.closest('#change-note, [data-act="undo"], #roster, [data-act="roster"]'))) return;
     snapPending = true;
     const json = JSON.stringify(st), key = creationKey(st);
     setTimeout(() => { snapPending = false; if (creationKey(st) !== key) afterChange(json); }, 0);
@@ -2701,6 +2721,107 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   });
   syncUndo();
 
+  // ------------------------------------------------------------------ my champions (several, kept in this browser)
+  var rosterHooks = {
+    warn: () => showNote(tr('This browser is out of space: the latest change may not be saved. Export your champions (Arquivo) and remove portraits or old champions.'), null),
+    say: msg => showNote(esc(msg), null),
+    opened: () => { UNDO.length = 0; syncUndo(); Object.assign(ui, { at: {}, passed: {}, expand: {}, lastPick: {}, redOpen: {}, socket: null }); save(); syncRosterCount(); }
+  };
+  const readSlot = id => { try { return JSON.parse(localStorage.getItem(SLOT(id))); } catch (e) { return null; } };
+  function allChampions() {
+    const ids = rosterIds();
+    if (!ids.includes(st.cid)) ids.push(st.cid);
+    return ids.map(id => (id === st.cid ? st : readSlot(id))).filter(Boolean);
+  }
+  function syncRosterCount() { const c = document.getElementById('roster-count'); if (c) c.textContent = String(allChampions().length); }
+  const champName = c => (c.info && c.info.name && c.info.name.trim()) || tr('Unnamed champion');
+  function champLine(c) {
+    const f = (list, id) => (id && (list || []).find(x => x.id === id)) || null;
+    const ar = f(window.ARCHETYPES, c.arch && c.arch.id), base = f(window.ARCHETYPES, c.arch && c.arch.base), bg = f(window.BACKGROUNDS, c.bg && c.bg.id), ps = f(window.POWER_SOURCES, c.ps && c.ps.id), rg = f(window.REGIONS, c.region);
+    return [ar && (ar.rt + (base ? ' · ' + base.rt : '')), bg && bg.rt, ps && ps.rt, rg && rg.rt].filter(Boolean).join(' · ') || tr('Just started');
+  }
+  function champStatus(c) {
+    const fin = stepIndex('finish');
+    if ((c.maxStep || 0) >= fin) return `<span class="ro-pill done">${tr('Ready for the table')}</span>`;
+    const at = Math.max(0, stepIndex(c.step || 'intro'));
+    return `<span class="ro-pill">${tr('Chapter {n} of IX', { n: ROMAN[Math.max(1, at)] })}</span>`;
+  }
+  function rosterHtml() {
+    const list = allChampions().sort((a, b) => (b.cid === st.cid) - (a.cid === st.cid) || (b.updated || 0) - (a.updated || 0));
+    const when = t => (t ? new Date(t).toLocaleDateString(PT ? 'pt-BR' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
+    return `<div class="ro-back" data-act="rosterClose"></div><section class="ro-panel" role="dialog" aria-modal="true" aria-labelledby="ro-title">
+      <header class="ro-head"><div><h2 id="ro-title">${tr('My champions')}</h2><p class="muted">${tr('Kept in this browser. Export them (Arquivo) to keep a copy or move them to another device.')}</p></div>
+        <button type="button" class="btn primary" data-act="rosterNew">${ico('mark')} ${tr('New champion')}</button>
+        <button type="button" class="ro-x" data-act="rosterClose" aria-label="${tr('Close')}">✕</button></header>
+      <ul class="ro-list">${list.map(c => {
+        const on = c.cid === st.cid, pic = c.info && c.info.portrait, rg = c.region && (window.REGIONS || []).find(r => r.id === c.region);
+        return `<li class="ro-item${on ? ' on' : ''}">
+          <div class="ro-pic">${pic ? `<img src="${pic}" alt="">` : sigil(rg ? rg.sigil || rg.id : 'compass')}</div>
+          <div class="ro-main"><div class="ro-name">${esc(champName(c))}${c.info && c.info.alias ? ` <small>${esc(c.info.alias)}</small>` : ''}</div>
+            <div class="ro-line">${esc(champLine(c))}</div>
+            <div class="ro-meta">${champStatus(c)}<span>${tr('Edited {d}', { d: when(c.updated) })}</span></div></div>
+          <div class="ro-acts">${on ? `<span class="ro-open">${tr('Open now')}</span>` : `<button type="button" class="btn small" data-act="rosterOpen" data-id="${c.cid}">${tr('Open')}</button>`}
+            <button type="button" class="linkbtn" data-act="rosterDup" data-id="${c.cid}">${tr('Duplicate')}</button>
+            <button type="button" class="linkbtn danger" data-act="rosterDel" data-id="${c.cid}">${tr('Delete')}</button></div></li>`;
+      }).join('')}</ul></section>`;
+  }
+  function showRoster() {
+    let r = document.getElementById('roster');
+    if (!r) { r = document.createElement('div'); r.id = 'roster'; r.className = 'roster'; document.body.appendChild(r); }
+    r.innerHTML = rosterHtml(); r.hidden = false;
+    document.body.classList.add('ro-lock');
+    const b = r.querySelector('[data-act="rosterNew"]'); if (b) b.focus();
+  }
+  function hideRoster() { const r = document.getElementById('roster'); if (r) r.hidden = true; document.body.classList.remove('ro-lock'); }
+  function openChampion(id) {
+    if (id === st.cid) { hideRoster(); return; }
+    const c = readSlot(id);
+    if (!c) return;
+    save();
+    st = upgradeState(c);
+    rosterHooks.opened(); hideRoster(); render(); scrollTo(0, 0);
+    rosterHooks.say(tr('Now editing {name}.', { name: champName(st) }));
+  }
+  function newChampion() {
+    save();
+    const tour = st.tour;   // the guide stays as it was: no need to see the same tips again
+    st = blank(); st.tour = tour;
+    rosterHooks.opened(); hideRoster(); render(); scrollTo(0, 0);
+  }
+  function duplicateChampion(id) {
+    save();
+    const c = id === st.cid ? JSON.parse(JSON.stringify(st)) : readSlot(id);
+    if (!c) return;
+    c.cid = newId(); c.updated = Date.now();
+    c.info = Object.assign({}, c.info, { name: (c.info && c.info.name ? c.info.name : tr('Unnamed champion')) + ' ' + tr('(copy)') });
+    try { localStorage.setItem(SLOT(c.cid), JSON.stringify(c)); const ids = rosterIds(); ids.push(c.cid); localStorage.setItem(ROSTER, JSON.stringify(ids)); } catch (e) { rosterHooks.warn(); }
+    syncRosterCount(); showRoster();
+  }
+  function deleteChampion(id) {
+    const c = id === st.cid ? st : readSlot(id);
+    if (!c || !confirm(tr('Delete {name}? This cannot be undone. Export it first if you want to keep a copy.', { name: champName(c) }))) return;
+    try { localStorage.removeItem(SLOT(id)); localStorage.setItem(ROSTER, JSON.stringify(rosterIds().filter(x => x !== id))); } catch (e) { /* ignore */ }
+    if (id === st.cid) {   // the open one: go to the most recent other, or start a new one
+      const rest = allChampions().filter(x => x.cid !== id).sort((a, b) => (b.updated || 0) - (a.updated || 0));
+      st = rest.length ? upgradeState(rest[0]) : Object.assign(blank(), { tour: st.tour });
+      rosterHooks.opened(); render();
+    }
+    syncRosterCount(); showRoster();
+  }
+  document.addEventListener('click', ev => {
+    const el = ev.target.closest('[data-act^="roster"]');
+    if (!el) return;
+    const a = el.dataset.act, id = el.dataset.id;
+    if (a === 'roster') showRoster();
+    if (a === 'rosterClose') hideRoster();
+    if (a === 'rosterOpen') openChampion(id);
+    if (a === 'rosterNew') newChampion();
+    if (a === 'rosterDup') duplicateChampion(id);
+    if (a === 'rosterDel') deleteChampion(id);
+  });
+  document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && document.getElementById('roster') && !document.getElementById('roster').hidden) hideRoster(); });
+  save(); syncRosterCount();   // a champion from before the roster joins it
+
   // Read-only view of the computed champion, used by the test suite and the creation simulator.
   window.ForgeDebug = {
     state: () => JSON.parse(JSON.stringify(st)),
@@ -2711,6 +2832,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     health: () => { const h = healthCalc(compute()); return h && { max: h.max, red: h.red, traitMax: h.traitMax, roll: h.roll, trait: h.chosen && h.chosen.key, green: h.green, yellow: h.yellow, redR: h.redR }; },
     abilities: () => allAbilities(compute()).map(a => ({ name: a.name, color: a.color, src: a.src, trait: a.entry && a.entry.trait, trait2: a.entry && a.entry.trait2 })),
     principles: () => principlesFinal().map(x => x.id || (x.p && x.p.id)),
+    champions: () => allChampions().map(c => ({ id: c.cid, name: champName(c), open: c.cid === st.cid })),
     // Validate any saved state without showing it: the issues of every chapter and the computed values.
     check: s => {
       const keep = st;
