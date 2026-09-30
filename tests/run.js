@@ -472,6 +472,35 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$$eval('#flow-finish-abilities .rename-card .rn-d', l => l.length > 3 && l.every(e => e.textContent.trim().length > 5)), 'Legend shows each ability\'s rules next to its name field');
     await p.context().close();
   }
+  // Several champions kept in this browser: new, open, duplicate, delete; importing adds one instead of replacing.
+  {
+    const p = await newPage();
+    p.on('dialog', d => d.accept());
+    await p.goto(`${BASE}/index.html`);
+    const S = JSON.parse(FIXTURE);
+    Object.assign(S, { step: 'finish', maxStep: 9, tour: { on: false, seen: {} }, noRetcon: true });
+    S.info.name = 'Primeiro';
+    await p.evaluate(s => { localStorage.clear(); localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); }, S);
+    await p.reload(); await p.waitForTimeout(400);
+    const list = () => p.evaluate(() => window.ForgeDebug.champions());
+    ok((await list()).length === 1 && await p.textContent('#roster-count') === '1', 'an existing champion joins the roster');
+    await p.click('[data-act=roster]'); await p.waitForTimeout(200);
+    await p.click('[data-act=rosterNew]'); await p.waitForTimeout(300);
+    const two = await list();
+    ok(two.length === 2 && two.find(c => c.open).name !== 'Primeiro' && await p.evaluate(() => window.ForgeDebug.state().step) === 'intro', 'New champion starts a fresh one and keeps the first');
+    const first = two.find(c => !c.open).id;
+    await p.click('[data-act=roster]'); await p.waitForTimeout(200);
+    await p.click(`[data-act=rosterDup][data-id="${first}"]`); await p.waitForTimeout(200);
+    ok((await list()).some(c => /cópia|copy/.test(c.name)), 'a champion can be duplicated');
+    await p.click(`[data-act=rosterOpen][data-id="${first}"]`); await p.waitForTimeout(300);
+    ok(await p.evaluate(() => window.ForgeDebug.state().info.name) === 'Primeiro', 'opening a champion from the list switches to it');
+    await p.click('[data-act=roster]'); await p.waitForTimeout(200);
+    const copy = (await list()).find(c => /cópia|copy/.test(c.name)).id;
+    await p.click(`[data-act=rosterDel][data-id="${copy}"]`); await p.waitForTimeout(200);
+    await p.reload(); await p.waitForTimeout(300);
+    ok((await list()).length === 2 && await p.evaluate(() => window.ForgeDebug.state().info.name) === 'Primeiro', 'deleting removes it, and the roster survives a reload');
+    await p.context().close();
+  }
   // Legend keeps the sheet actions at hand; phones get a short header and a two-column People grid.
   {
     const p = await newPage();

@@ -1584,3 +1584,41 @@ html, body { overflow-x: clip; }
 .hs-orig { display: block; font-size: .72em; line-height: 1.2; color: var(--text-3); font-style: italic; font-family: var(--font-ui); letter-spacing: 0; }
 @media (max-width: 600px) { .rename-grid { grid-template-columns: minmax(0, 1fr); } }
 .hs-ab-t .nm small.hs-orig { font-family: var(--font-ui); font-size: .74rem; font-style: italic; letter-spacing: 0; margin-top: 1px; }
+
+/* My champions: several champions kept in this browser */
+.hcount { min-width: 18px; padding: 0 5px; border: 1px solid var(--gold-lo); font-size: .66rem; letter-spacing: 0; text-align: center; color: var(--gold-hi); }
+.hcount:empty { display: none; }
+.roster { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 16px; }
+.roster[hidden] { display: none; }
+body.ro-lock { overflow: hidden; }
+.ro-back { position: absolute; inset: 0; background: rgba(6, 7, 9, .78); }
+.ro-panel { position: relative; width: min(760px, 100%); max-height: calc(100vh - 32px); overflow: auto; background: var(--ink-1); border: 1px solid var(--gold-lo); box-shadow: var(--shadow); padding: 20px 22px 12px; animation: hint-in .2s ease-out; }
+.ro-head { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.ro-head > div { flex: 1 1 280px; }
+.ro-head h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.6rem; color: var(--gold-hi); }
+.ro-head p { margin: 4px 0 0; font-size: .88rem; }
+.ro-x { position: absolute; top: 10px; right: 10px; background: none; border: 0; color: var(--text-2); font-size: 1.1rem; padding: 4px 6px; cursor: pointer; }
+.ro-head { padding-right: 34px; }
+.ro-list { list-style: none; margin: 0; padding: 0; }
+.ro-item { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 4px; border-bottom: 1px solid var(--line); }
+.ro-item.on { background: linear-gradient(90deg, rgba(200, 164, 94, .08), transparent 60%); box-shadow: inset 2px 0 0 var(--gold); padding-left: 10px; }
+.ro-pic { width: 56px; height: 56px; display: grid; place-items: center; border: 1px solid var(--line-2); background: var(--ink-0); color: var(--gold); overflow: hidden; }
+.ro-pic img { width: 100%; height: 100%; object-fit: cover; }
+.ro-pic .sigil { width: 32px; height: 32px; }
+.ro-name { font-family: var(--font-display); font-size: 1.15rem; color: var(--text); }
+.ro-name small { font-family: var(--font-ui); font-size: .8rem; color: var(--text-3); }
+.ro-line { font-size: .86rem; color: var(--text-2); margin-top: 2px; }
+.ro-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 6px; font-size: .76rem; color: var(--text-3); }
+.ro-pill { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; padding: 2px 7px; border: 1px solid var(--line-2); color: var(--text-2); }
+.ro-pill.done { border-color: var(--zone-g); color: var(--zone-g); }
+.ro-acts { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.ro-open { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+.ro-acts .linkbtn.danger:hover { color: var(--danger); }
+@media (max-width: 600px) {
+  .roster { padding: 0; place-items: stretch; }
+  .ro-panel { max-height: 100vh; height: 100%; padding: 16px 14px; }
+  .ro-item { grid-template-columns: 44px minmax(0, 1fr); }
+  .ro-pic { width: 44px; height: 44px; }
+  .ro-acts { grid-column: 1 / -1; flex-direction: row; justify-content: flex-end; align-items: center; gap: 16px; }
+  .hbtn[data-act="roster"] > span:nth-child(2) { display: none; }
+}
