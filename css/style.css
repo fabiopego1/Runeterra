@@ -149,6 +149,21 @@ kbd { font-family: var(--font-mono); font-size: .7em; border: 1px solid var(--li
 .touch-hint button { background: none; border: 0; color: var(--text-2); font-size: 1rem; padding: 6px; cursor: pointer; }
 .touch-hint.out { opacity: 0; transform: translateY(10px); }
 @keyframes hint-in { from { opacity: 0; transform: translateY(10px); } }
+/* Notice after a change that cleared choices or left a finished chapter incomplete; also carries Undo */
+.change-note {
+  position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 70; max-width: 620px; margin: 0 auto;
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px; flex-wrap: wrap;
+  background: var(--ink-2); border: 1px solid var(--warn); box-shadow: var(--shadow);
+  animation: hint-in .25s ease-out; transition: opacity .3s, transform .3s;
+}
+.change-note.out { opacity: 0; transform: translateY(10px); pointer-events: none; }
+.change-note p { margin: 0; flex: 1 1 260px; font-size: .92rem; line-height: 1.4; color: var(--text); }
+.change-note .cn-ico { color: var(--warn); line-height: 0; }
+.change-note .cn-acts { display: flex; align-items: center; gap: 14px; margin-left: auto; }
+.change-note .linkbtn { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.change-note .cn-x { background: none; border: 0; color: var(--text-2); font-size: 1rem; padding: 4px 6px; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .change-note { animation: none; transition: none; } }
+.file-pop [disabled] { opacity: .45; cursor: default; }
 @media (prefers-reduced-motion: reduce) { .touch-hint { animation: none; transition: none; } }
 
 /* ==========================================================================
