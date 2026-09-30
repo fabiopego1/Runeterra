@@ -990,7 +990,6 @@
     return '';
   }
   const psMech = x => mech([
-    mechRow(tr('Powers'), mechOpts(x.opts.concat(x.required && !expand(x.opts).includes(x.required.key) ? [x.required.key] : []))),
     mechRow(tr('Gains'), [tr('{n} Yellow', { n: x.yellow.count }), psExtraShort(x)].filter(Boolean).join('<span class="msep">·</span>'), { inline: true }),
     mechRow(tr('Path dice'), '', { dice: x.archDice })
   ]);
