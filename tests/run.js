@@ -68,8 +68,8 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.click('[data-kind=region][data-id=zaun]'); await next();
     ok(await p.$eval('#tour h4', e => e.textContent.includes('dados')), 'the Origin guide opens by explaining what the dice do');
     await p.click('#tour [data-act=tourNext]');
-    ok(await p.$eval('#tour .tour-dots i.on', e => !!e) && await p.$eval('#tour h4', e => e.textContent.includes('Qualidades')), 'the guide moves to its next step');
-    ok(await p.$$eval('#tour .tour-dots i', e => e.length) === 3, 'the dice-binding steps are not shown before an Origin is chosen');
+    ok(await p.$eval('#tour .tour-dots i.on', e => !!e) && await p.$eval('#tour h4', e => e.textContent.includes('Ações básicas')), 'the guide moves to its next step, the basic actions');
+    ok(await p.$$eval('#tour .tour-dots i', e => e.length) === 4, 'the dice-binding steps are not shown before an Origin is chosen');
     await p.click('#tour [data-act=tourOk]');
     ok(!(await p.$('#tour')), '"Pular" closes the guide');
     await p.click('[data-kind=bg][data-id=anachronistic]'); await p.waitForTimeout(150);
@@ -80,7 +80,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('#tour h4', e => e.textContent.includes('Princípio')), 'the principle guide waits for the principle section');
     await p.click('#tour [data-act=tourOk]');
     const origHover = await p.$eval('[data-act=principle][data-id=magic]', e => e.dataset.tip);
-    ok(!/Reviravolta|Habilidade verde|Green ability/i.test(origHover) && /Em Runeterra/.test(origHover), 'principle hover keeps only the roleplaying part and the Runeterra example');
+    ok(!/Reviravolta|Habilidade verde|Green ability|Em Runeterra/i.test(origHover) && /Durante a interpretação/.test(origHover), 'principle hover shows only the roleplaying part');
     await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.tour.on = false; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
     await p.reload(); await p.waitForTimeout(300);
     guideCheck = false;
@@ -111,7 +111,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('#tour h4', e => e.textContent.includes('Dados de status')), 'the Guide button reopens the chapter guide, whose steps explain the status dice');
     ok(await p.$eval('#tour', e => !e.classList.contains('no-target')) && await p.$eval('#tour .tour-spot', e => e.getBoundingClientRect().width > 0), 'the guide step highlights the part of the page it talks about');
     await p.click('#tour [data-act=tourPrev]');
-    ok(await p.$eval('#tour h4', e => e.textContent.includes('Temperamento')), 'the guide can go back a step');
+    ok(await p.$eval('#tour h4', e => e.textContent.includes('Personalidade')), 'the guide can go back a step');
     await p.click('[data-act=tourOk]');
     await p.click('[data-kind=pers][data-id=decisive]');
     await p.fill('input[data-bind="pers.qname"]', 'Dom dos Imaginais'); await p.waitForTimeout(100);
@@ -425,7 +425,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(/Modo sem Poderes|Powerless Mode/.test(await p.evaluate(() => window.ForgeDebug.issues('archetype').join(' | '))), 'Modular: a Powerless Mode needs two different powers');
     await p.context().close();
   }
-  // Older saves stored element choices with the English name, e.g. "Energia Hextec Bruta (Nuclear)".
+  // Older saves stored element choices with the English name, e.g. "Energia Hextec Bruta (Nuclear)", or under an earlier name.
   {
     const p = await newPage();
     await p.goto(`${BASE}/index.html`);
@@ -435,7 +435,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.evaluate(s => localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)), S);
     await p.reload(); await p.waitForTimeout(300);
     const st = await p.evaluate(() => window.ForgeDebug.state());
-    ok(st.sel.red[0].ch['element/energy'] === 'Energia Hextec Bruta' && st.pch.bg === 'Energia Hextec Bruta', 'old saves lose the English element name in parentheses');
+    ok(st.sel.red[0].ch['element/energy'] === 'Rúnica' && st.pch.bg === 'Rúnica', 'old saves get the current element name');
     await p.context().close();
   }
   ok(errors.length === 0, 'no JavaScript errors or missing files');

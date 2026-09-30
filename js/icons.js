@@ -20,7 +20,8 @@
     upload: '<path d="M8 10.5V2M4.5 5.5 8 2l3.5 3.5M2.5 13.5h11"/>',
     reset: '<path d="M3 8a5 5 0 1 0 1.6-3.7M3 2.5v3h3"/>',
     file: '<path d="M3.5 1.5h6l3 3v10h-9z"/><path d="M9.5 1.5v3h3M5.5 8.5h5M5.5 11h5"/>',
-    chevron: '<path d="M4 6l4 4 4-4"/>'
+    chevron: '<path d="M4 6l4 4 4-4"/>',
+    warn: '<path d="M8 1.8l6.5 12H1.5z"/><path d="M8 6.2v3.8"/><path d="M8 11.6v.4"/>'
   };
   window.ICO = (name, extra = '') => svg(16, I[name] || '', 'ico ' + extra);
 
