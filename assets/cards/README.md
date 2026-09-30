@@ -8,7 +8,7 @@ No picture is used twice on the site (the tests check it), so none of these repe
 - ar-divided: Nidalee (07SH013)
 - ar-elemental: Taliyah (04SH073)
 - ar-flyer: Quinn (02DE006)
-- ar-form-changer: Gnar (05BC161)
+- ar-form-changer: Zac (League of Legends default splash, `Zac_0`: Zac has no Legends of Runeterra card)
 - ar-gadgeteer: Ziggs (05BC163)
 - ar-marksman: Miss Fortune (02BW022)
 - ar-minion-maker: Elise (01SI053)
