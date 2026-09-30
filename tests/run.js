@@ -456,6 +456,24 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(/Nocaute|Out/.test(pe) && /\+12/.test(pe) && /tamanho|size/.test(im), 'Personality cards show the Out ability, the Health from the Red die and special bonuses');
     await p.context().close();
   }
+  // Going back and changing an earlier choice: a notice says what it cleared or left incomplete, and it can be undone.
+  {
+    const p = await newPage();
+    await p.goto(`${BASE}/index.html`);
+    const S = JSON.parse(FIXTURE);
+    Object.assign(S, { step: 'background', maxStep: 9, tour: { on: false, seen: {} }, noRetcon: true });
+    await p.evaluate(s => localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)), S);
+    await p.reload(); await p.waitForTimeout(400);
+    ok(await p.$eval('#undo-btn', e => e.disabled), 'nothing to undo on a fresh page');
+    await p.click('#flow-background-pick', { force: true }); await p.waitForTimeout(300);
+    await p.click('.card[data-id="struggling"]', { force: true }); await p.waitForTimeout(500);
+    const note = await p.$eval('#change-note', e => e.textContent).catch(() => '');
+    ok(/dados de qualidade|quality dice/.test(note) && /princípio|principle/.test(note), 'changing the Origin says it cleared the quality dice and the principle');
+    await p.click('[data-note="undo"]'); await p.waitForTimeout(400);
+    const back = await p.evaluate(() => { const s = window.ForgeDebug.state(); return s.bg.id + ' ' + Object.keys(s.bg.assign).length + ' ' + s.bg.principle; });
+    ok(back === 'anachronistic 2 magic', 'Undo brings the Origin, its dice and its principle back');
+    await p.context().close();
+  }
   // Rule fixes found by the rules test (tests/rules.js).
   {
     const p = await newPage();

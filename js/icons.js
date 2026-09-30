@@ -19,6 +19,7 @@
     print: '<path d="M4 6V2.5h8V6M4 11.5H2.5V6h11v5.5H12M4 9.5h8v4H4z"/>',
     upload: '<path d="M8 10.5V2M4.5 5.5 8 2l3.5 3.5M2.5 13.5h11"/>',
     reset: '<path d="M3 8a5 5 0 1 0 1.6-3.7M3 2.5v3h3"/>',
+    undo: '<path d="M4.5 6.5h6a3 3 0 0 1 0 6H7M4.5 6.5 7 4M4.5 6.5 7 9"/>',
     file: '<path d="M3.5 1.5h6l3 3v10h-9z"/><path d="M9.5 1.5v3h3M5.5 8.5h5M5.5 11h5"/>',
     chevron: '<path d="M4 6l4 4 4-4"/>',
     warn: '<path d="M8 1.8l6.5 12H1.5z"/><path d="M8 6.2v3.8"/><path d="M8 11.6v.4"/>'

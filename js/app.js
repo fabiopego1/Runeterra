@@ -2653,6 +2653,89 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
   } catch (e) { /* storage blocked: skip the hint */ }
 
+  // ------------------------------------------------------------------ undo & change notices
+  // Every choice that changes the champion can be undone (the notice, Arquivo › Desfazer, or Ctrl+Z). When a choice
+  // clears choices already made, or leaves a chapter you had finished incomplete, a notice says so, with a link to it.
+  // The Health roll is never undone (the book makes it final), nor are names and notes (they are not tracked).
+  const UNDO = [];
+  const CH_STEPS = ['background', 'powersource', 'archetype', 'personality', 'red', 'health'];
+  const creationKey = s => JSON.stringify([s.people, s.region, s.bg, s.ps, s.arch, s.pers, s.health && s.health.trait, s.pch, s.sel]);
+  function issueCounts(s) {
+    const keep = st;
+    try { st = upgradeState(JSON.parse(JSON.stringify(s))); const R = compute(); return Object.fromEntries(CH_STEPS.map(id => [id, stepIssues(id, R).length])); } finally { st = keep; }
+  }
+  // Choices the change wiped out (a new Origin clears its dice, a new Path its abilities…)
+  function clearedBy(a, b) {
+    const had = x => x && (typeof x !== 'object' || Object.keys(x).length > 0), gone = (x, y) => had(x) && !had(y);
+    const selGone = pre => Object.keys(a.sel || {}).some(k => k.startsWith(pre) && (a.sel[k] || []).length && !((b.sel || {})[k] || []).length);
+    return [
+      gone(a.bg.assign, b.bg.assign) && tr('your quality dice'), gone(a.bg.principle, b.bg.principle) && tr('your first principle'),
+      gone(a.ps.assign, b.ps.assign) && tr('your power dice'), gone(a.ps.extra, b.ps.extra) && tr('your Source bonus'), selGone('ps-') && tr('your Source abilities'),
+      gone(a.arch.assign, b.arch.assign) && tr('your Path dice'), (selGone('arch-') || gone(a.arch.minionForms, b.arch.minionForms)) && tr('your Path abilities'),
+      gone(a.arch.principle, b.arch.principle) && tr('your second principle'),
+      gone(a.pers.outTrait, b.pers.outTrait) && tr('your Out ability trait'), gone(a.pers.upgrade, b.pers.upgrade) && tr('your Reckless upgrade')
+    ].filter(Boolean);
+  }
+  let noteTimer = null;
+  function showNote(html, go) {
+    let n = document.getElementById('change-note');
+    if (!n) { n = document.createElement('div'); n.id = 'change-note'; n.className = 'change-note'; n.setAttribute('role', 'status'); document.body.appendChild(n); }
+    n.innerHTML = `<span class="cn-ico">${ico('warn')}</span><p>${html}</p><div class="cn-acts">${go ? `<button type="button" class="linkbtn" data-note="go" data-step="${go}">${tr('Open {ch}', { ch: esc(STEPS[stepIndex(go)].name) })}</button>` : ''}${UNDO.length ? `<button type="button" class="linkbtn" data-note="undo">${ico('undo')} ${tr('Undo')}</button>` : ''}<button type="button" class="cn-x" data-note="close" aria-label="${tr('Close')}">✕</button></div>`;
+    n.classList.remove('out');
+    clearTimeout(noteTimer); noteTimer = setTimeout(hideNote, 12000);
+  }
+  function hideNote() { const n = document.getElementById('change-note'); if (n) n.classList.add('out'); }
+  function syncUndo() { const b = document.getElementById('undo-btn'); if (b) b.disabled = !UNDO.length; }
+  function afterChange(prevJson) {
+    UNDO.push(prevJson); if (UNDO.length > 40) UNDO.shift();
+    syncUndo();
+    const prev = upgradeState(JSON.parse(prevJson));
+    const before = issueCounts(prev), after = issueCounts(st), here = st.step;
+    const hit = CH_STEPS.filter(id => id !== here && stepIndex(id) <= st.maxStep && before[id] === 0 && after[id] > 0);
+    const lost = clearedBy(prev, st);
+    if (!hit.length && !lost.length) return;
+    const parts = [], and = l => (l.length > 1 ? l.slice(0, -1).join(', ') + tr(' and ') + l[l.length - 1] : l[0]);
+    if (lost.length) parts.push(tr('This change cleared {list}.', { list: and(lost) }));
+    if (hit.length) parts.push(tr('Now incomplete: {list}.', { list: and(hit.map(id => `<b>${esc(STEPS[stepIndex(id)].name)}</b>`)) }));
+    showNote(parts.join(' '), hit[0] || null);
+  }
+  function undo() {
+    const prev = UNDO.pop();
+    if (!prev) return;
+    const keep = { health: st.health, info: st.info, play: st.play, evo: st.evo, tour: st.tour, renames: st.renames, traitNames: st.traitNames };
+    st = upgradeState(JSON.parse(prev));
+    // the Health roll stays as rolled; names, notes and table state are not part of the undo
+    st.health = Object.assign({}, st.health, { mode: keep.health.mode, roll: keep.health.roll, rerolled: keep.health.rerolled });
+    Object.assign(st, { info: keep.info, play: keep.play, evo: keep.evo, tour: keep.tour, renames: keep.renames, traitNames: keep.traitNames });
+    syncUndo(); render();
+    showNote(tr('Undone.'), null);
+  }
+  // Take a snapshot before each click or change, and look after every handler has run.
+  let snapPending = false;
+  const snapChange = ev => {
+    if (SHEET_PAGE || snapPending || (ev.target.closest && ev.target.closest('#change-note, [data-act="undo"]'))) return;
+    snapPending = true;
+    const json = JSON.stringify(st), key = creationKey(st);
+    setTimeout(() => { snapPending = false; if (creationKey(st) !== key) afterChange(json); }, 0);
+  };
+  document.addEventListener('click', snapChange, true);
+  document.addEventListener('change', snapChange, true);
+  document.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-note]');
+    if (b) {
+      const a = b.dataset.note;
+      if (a === 'close') hideNote();
+      if (a === 'undo') undo();
+      if (a === 'go') { hideNote(); goToStep(b.dataset.step); }
+      return;
+    }
+    if (ev.target.closest('[data-act="undo"]')) undo();
+  });
+  document.addEventListener('keydown', ev => {
+    if ((ev.ctrlKey || ev.metaKey) && !ev.shiftKey && ev.key.toLowerCase() === 'z' && !ev.target.closest('input, textarea, select, [contenteditable]')) { ev.preventDefault(); undo(); }
+  });
+  syncUndo();
+
   // Read-only view of the computed champion, used by the test suite and the creation simulator.
   window.ForgeDebug = {
     state: () => JSON.parse(JSON.stringify(st)),
