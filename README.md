@@ -50,6 +50,8 @@ python3 -m http.server 8765 &
 node tests/run.js
 ```
 
+`node tests/rules.js` confere as regras de criação: para cada par Fonte de Poder × Caminho (também como base de Dividido e de Modular) monta campeões válidos segundo um juiz independente do livro (`tests/rules/referee.js`), confirma que a Forja os aceita com os mesmos dados, status e Vida, e depois muda uma escolha por vez para ver se a Forja e o livro concordam sobre o que ficou errado. `RULES_FULL=1` roda todos os pares com mais campeões (cerca de 80 mil variações).
+
 O teste do Escudo do Mestre só roda se a variável `GM_PASSWORD` estiver definida (no GitHub, como secret do repositório).
 
 *Projeto de fã não oficial. Runeterra e League of Legends são © Riot Games. Uso pessoal e não comercial.*
