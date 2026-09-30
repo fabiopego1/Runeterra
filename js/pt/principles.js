@@ -178,7 +178,7 @@
     'Remove a bonus or penalty of your choice.': 'Remova um bônus ou penalidade à sua escolha.'
   });
 
-  // Formas de lacaio (Invocador): nome + texto
+  // Formas de lacaio (Criador de Lacaios): nome + texto
   const MF = {
     Autonomous: ['Autônomo', 'O lacaio pode fazer qualquer ação básica, não só uma.'],
     Burrowing: ['Escavador', 'O lacaio consegue cavar túneis pela terra.'],

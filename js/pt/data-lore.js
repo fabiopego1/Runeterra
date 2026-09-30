@@ -5,7 +5,7 @@
   const W = window;
 
   W.DICE_INFO = {
-    d4: { power: 'Quase nada', quality: 'Sem treino', status: 'não se aplica', note: 'O menor dado. Normalmente só aparece por penalidades, modos do Mestre das Posturas ou quando você não tem poder/qualidade para usar (ex.: a Vida usa d4 se você não tiver poder Atlético nem qualidade Mental).' },
+    d4: { power: 'Quase nada', quality: 'Sem treino', status: 'não se aplica', note: 'O menor dado. Normalmente só aparece por penalidades, modos do Caminho Modular ou quando você não tem poder/qualidade para usar (ex.: a Vida usa d4 se você não tiver poder Atlético nem qualidade Mental).' },
     d6: { power: 'Acima da média', quality: 'Competência sólida', status: 'Vacilante' },
     d8: { power: 'Impressionante', quality: 'Habilidoso', status: 'Firme' },
     d10: { power: 'Excepcional', quality: 'Especialista', status: 'Determinado' },
@@ -294,7 +294,7 @@
   // Boas-vindas, Povo e Terra Natal não têm guia.
   W.TOUR = {
     background: [
-      ['Para que servem os dados', 'Quando seu herói tenta algo arriscado, você rola <b>três dados</b>: um <b>poder</b>, uma <b>qualidade</b> e o seu <b>dado de status</b>. Não se soma nada: a habilidade diz se vale o <b>maior</b> dado (Máx), o do <b>meio</b> (Médio) ou o <b>menor</b> (Mín).<span class="tour-ex">Força d10, Combate d8 e status d6 tiram 7, 5 e 2. Um Ataque com o dado Máx causa 7 de dano.</span>', ''],
+      ['Para que servem os dados', 'Quando seu herói tenta algo arriscado, você rola <b>três dados</b>: um <b>poder</b>, uma <b>qualidade</b> e o seu <b>dado de status</b>. Não se soma nada: a habilidade diz se vale o <b>maior</b> dado (Máx), o do <b>meio</b> (Médio) ou o <b>menor</b> (Mín). Já as <b>ações básicas</b> (Atacar, Defender, Fortalecer, Atrapalhar e Superar), feitas sem nenhuma habilidade, geralmente usam o dado do <b>meio</b>.<span class="tour-ex">Força d10, Combate d8 e status d6 tiram 7, 5 e 2. Um Ataque básico, sem habilidade, causa 5 de dano (o dado do meio). Uma habilidade que manda usar o dado Máx causa 7.</span>', ''],
       ['Qualidades e poderes', '<b>Qualidades</b> são o que você sabe fazer: lutar, convencer, investigar. <b>Poderes</b> são o que te torna extraordinário: voar, magia, força sobre-humana. Cada um tem o seu dado.', ''],
       ['Tamanho do dado', 'Dado maior tira número maior. <b>d6</b> é bom, <b>d8</b> ótimo, <b>d10</b> excelente, <b>d12</b> lendário.<span class="tour-ex">Combate d10 acerta mais forte que Combate d6.</span>', ''],
       ['Ligue os dados', 'Sua Origem te deu estes dados. Clique num <b>dado</b> e escolha a <b>qualidade</b> que ele vira.<span class="tour-ex">d10 em Medicina e d8 em Ciência: seu herói é um curandeiro excelente e um cientista ótimo.</span>', '#flow-background-assign', '#flow-background-assign.current'],
@@ -311,7 +311,7 @@
     ],
     archetype: [
       ['Caminho', 'Seu <b>estilo de luta</b>, como as funções de League of Legends: tanque, atirador, mago. Dá mais <b>poderes e qualidades</b>.', '.chapter'],
-      ['Regras do Caminho', 'Cada Caminho tem regras para os dados. Leia a lista acima deles antes de ligar.<span class="tour-ex">Duelista: um dado precisa ir para Combate Corpo a Corpo.</span>', '#flow-archetype-assign .rules-list || #flow-archetype-assign', '#flow-archetype-assign.current'],
+      ['Regras do Caminho', 'Cada Caminho tem regras para os dados. Leia a lista acima deles antes de ligar.<span class="tour-ex">Combatente Corpo a Corpo: um dado precisa ir para a qualidade Combate Corpo a Corpo.</span>', '#flow-archetype-assign .rules-list || #flow-archetype-assign', '#flow-archetype-assign.current'],
       ['Poder ou qualidade', 'Aqui um dado pode virar <b>poder</b> ou <b>qualidade</b>. Algo que você já tem não pode ser escolhido de novo.', '#flow-archetype-assign .socket', '#flow-archetype-assign.current'],
       ['Habilidades Verdes', 'Sempre disponíveis. Marque as habilidades e clique no <b>poder ou qualidade</b> que cada uma usa.', '[id^="flow-archetype-g-"].current', '[id^="flow-archetype-g-"].current'],
       ['Segundo princípio', 'Outra coisa em que seu herói acredita. Precisa ser <b>diferente</b> do primeiro.', '#flow-archetype-principle', '#flow-archetype-principle.current']
