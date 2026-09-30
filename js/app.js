@@ -44,7 +44,7 @@
   // ------------------------------------------------------------------ state
   const STORE = 'runeterra-forge-v1';
   const blank = () => ({
-    v: 1, noRetcon: true, step: 'intro', maxStep: 0, method: 'constructed', people: null, region: null,   // Construído is the default method
+    v: 1, noRetcon: true, step: 'intro', maxStep: 0, method: 'constructed', people: null, region: null, unlocked: {},   // Construído is the default method
     rolls: {}, rerolls: {},
     bg: { id: null, assign: {}, principle: null },
     ps: { id: null, assign: {}, extra: {} },
@@ -92,7 +92,7 @@
     out.noRetcon = true; delete out.retcon;
     // Older saves stored element choices as "Energia Hextec Bruta (Nuclear)", or under an earlier name: use the current name.
     const EL = window.TRAIT_CATEGORIES['P:elemental'].items;
-    const OLD_EL = { 'Gelo & Gelo Verdadeiro': 'cold', 'Poder Celestial': 'cosmic', 'Relâmpago': 'electricity', 'Chama': 'fire', 'Sombra & Névoa Negra': 'infernal', 'Energia Hextec Bruta': 'nuclear', 'Luz': 'radiant', 'Tempestade & Vento': 'weather' };
+    const OLD_EL = { 'Gelo & Gelo Verdadeiro': 'cold', 'Poder Celestial': 'cosmic', 'Relâmpago': 'electricity', 'Chama': 'fire', 'Sombra & Névoa Negra': 'infernal', 'Energia Hextec Bruta': 'nuclear', 'Luz': 'radiant', 'Radiante': 'radiant', 'Tempestade & Vento': 'weather' };
     const clean = v => {
       if (typeof v !== 'string') return v;
       const base = v.replace(/ \([^)]*\)$/, '');
@@ -519,7 +519,7 @@
       add('pick', tr('Choose your people'), st.people ? [] : [tr('Choose a people.')], tr('Click the people your champion belongs to. Hover a card to preview it.'));
     }
     if (id === 'region') {
-      add('pick', tr('Choose your homeland'), st.region ? [] : [tr('Choose a homeland.')], tr('Click the land your champion comes from. Hover a card to preview it.'));
+      add('pick', tr('Choose your homeland'), !st.region ? [tr('Choose a homeland.')] : regionLocked(st.region) ? [tr('This homeland is locked: pick it again and enter the password.')] : [], tr('Click the land your champion comes from. Hover a card to preview it.'));
     }
     if (id === 'background') {
       rollSec('bg', tr('Roll for your Origin'), !!bg);
@@ -827,11 +827,11 @@
     const r = regionDef();
     const items = list.map(p => {
       const lore = window.PRINCIPLE_LORE[p.id] || [p.name, ''];
-      const t = `<h5>${esc(lore[0])}</h5><b>${tr('During roleplaying:')}</b> ${esc(p.rp)}`;
+      const t = `<h5>${esc(lore[0])}</h5>` + (lore[1] ? `<b>${tr('In Runeterra:')}</b> ${esc(lore[1])}` : esc(p.rp));
       const pp = peopleDef();
       const fits = (pp && pp.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${tr('Suggestion')}: ${esc(pp.name)}</span>` : '') + (r && r.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${tr('Suggestion')}: ${esc(r.name)}</span>` : '');
       return `<button class="principle${p.id === cur ? ' selected' : ''}${p.id === other ? ' taken' : ''}" data-act="principle" data-slot="${slot}" data-id="${p.id}"${tip(t)}${p.id === other ? ' disabled' : ''}>` +
-        `<div class="pn">${esc(lore[0])}${fits}</div><div class="po">${esc(tr(p.cat))}</div><div class="ph">${esc(lore[1])}</div></button>`;
+        `<div class="pn">${esc(lore[0])}${fits}</div><div class="po">${esc(tr(p.cat))}</div><div class="ph">${esc(p.rp)}</div></button>`;
     }).join('');
     let detail = '';
     const p = PRINCIPLES.find(x => x.id === cur);
@@ -1034,12 +1034,53 @@
     return stepPanel('Step 0 · Runeterra', tr('People'), 'people', flowHtml('people', sectionsFor('people', R0), H, true), false);
   }
 
+  // Locked homelands: picking one asks for a password from the GM. Only the SHA-256 of each password is kept here.
+  const LOCKED_REGIONS = {
+    'shadow-isles': '45f649fc7af0b40898b16dc844273b1f6517ce87dca5efda0eaec2e5e80b5d13',
+    void: '1b9c5f53121dba131856767c7b290fb4f2558d3bf807b6db88ba01e90dfde854'
+  };
+  const regionLocked = id => !!LOCKED_REGIONS[id] && !(st.unlocked || {})[id];
+  function sha256(text) {
+    const K = [], H = [];
+    const isPrime = n => { for (let f = 2; f * f <= n; f++) if (n % f === 0) return false; return true; };
+    for (let n = 2, i = 0; i < 64; n++) if (isPrime(n)) { if (i < 8) H[i] = (Math.pow(n, 1 / 2) * 4294967296) | 0; K[i++] = (Math.pow(n, 1 / 3) * 4294967296) | 0; }
+    const bytes = Array.from(new TextEncoder().encode(text)), bits = bytes.length * 8;
+    bytes.push(0x80);
+    while (bytes.length % 64 !== 56) bytes.push(0);
+    for (let i = 7; i >= 0; i--) bytes.push(i > 3 ? 0 : (bits >>> (i * 8)) & 255);
+    const r = (x, n) => (x >>> n) | (x << (32 - n));
+    for (let o = 0; o < bytes.length; o += 64) {
+      const w = [];
+      for (let i = 0; i < 64; i++) {
+        if (i < 16) w[i] = (bytes[o + 4 * i] << 24) | (bytes[o + 4 * i + 1] << 16) | (bytes[o + 4 * i + 2] << 8) | bytes[o + 4 * i + 3];
+        else w[i] = (w[i - 16] + (r(w[i - 15], 7) ^ r(w[i - 15], 18) ^ (w[i - 15] >>> 3)) + w[i - 7] + (r(w[i - 2], 17) ^ r(w[i - 2], 19) ^ (w[i - 2] >>> 10))) | 0;
+      }
+      let [a, b, c, d, e, f, g, h] = H;
+      for (let i = 0; i < 64; i++) {
+        const t1 = (h + (r(e, 6) ^ r(e, 11) ^ r(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + w[i]) | 0;
+        const t2 = ((r(a, 2) ^ r(a, 13) ^ r(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+        h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+      }
+      [a, b, c, d, e, f, g, h].forEach((v, i) => { H[i] = (H[i] + v) | 0; });
+    }
+    return H.map(v => (v >>> 0).toString(16).padStart(8, '0')).join('');
+  }
+  function lockFormHtml() {
+    const x = ui.lockAsk && byId(window.REGIONS, ui.lockAsk);
+    if (!x) return '';
+    return `<form class="lock-form" data-lock="${x.id}"><div class="lock-h">${ico('lock')} ${tr('{name} is locked', { name: esc(x.name) })}</div>
+      <p class="muted">${tr('Ask your GM for the password to choose this homeland.')}</p>
+      <div class="lock-row"><input type="password" name="pw" autocomplete="off" aria-label="${tr('Password')}" placeholder="${tr('Password')}">
+      <button type="submit" class="btn small">${tr('Unlock')}</button><button type="button" class="btn small ghost" data-act="lockCancel">${tr('Cancel')}</button></div>
+      ${ui.lockErr ? `<p class="lock-err">${tr('Wrong password.')}</p>` : ''}</form>`;
+  }
+
   function renderRegion() {
     const r = regionDef();
     const names = (list, arr) => arr.map(id => { const x = byId(list, id); return x ? x.rt : id; }).join(', ');
     const H = {
       pick: () => pickSection('region', '',   // the cards stay on screen; the chosen one is highlighted
-        `<div class="cards regions">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`${tipImg('r-' + x.id)}<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.id)}${fitMark('regions', x.id)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>`)
+        `<div class="cards regions">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`${tipImg('r-' + x.id)}<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.id)}${regionLocked(x.id) ? `<span class="lock-mark" aria-label="${tr('Locked')}">${ico('lock')}</span>` : ''}${fitMark('regions', x.id)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>` + lockFormHtml())
     };
     return stepPanel('Step 1 · Runeterra', tr('Homeland'), 'region', flowHtml('region', sectionsFor('region', R0), H, true), false);
   }
@@ -2083,6 +2124,21 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
   }
 
+  // Password for a locked homeland (see LOCKED_REGIONS)
+  document.addEventListener('submit', ev => {
+    const f = ev.target.closest && ev.target.closest('form[data-lock]');
+    if (!f) return;
+    ev.preventDefault();
+    const id = f.dataset.lock, pw = (f.elements.pw.value || '').trim().toLowerCase();
+    if (LOCKED_REGIONS[id] && sha256(pw) === LOCKED_REGIONS[id]) {
+      st.unlocked = Object.assign({}, st.unlocked, { [id]: true });
+      ui.lockAsk = null; ui.lockErr = false;
+      st.region = id; ui.advance = true; ui.lastPick[st.step] = 'region'; render();
+    } else {
+      ui.lockErr = true; render();
+      const inp = document.querySelector('.lock-form input'); if (inp) inp.focus();
+    }
+  });
   document.addEventListener('click', ev => {
     const el = ev.target.closest('[data-act]');
     if (!el) return;
@@ -2130,8 +2186,15 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       st.rolls[key] = roll(el.dataset.sizes.split(','));
       render(); return;
     }
+    if (act === 'lockCancel') { ui.lockAsk = null; ui.lockErr = false; render(); return; }
     if (act === 'pick') {
       if (el.dataset.locked && st.method === 'guided') { flash(el); return; }
+      if (el.dataset.kind === 'region' && regionLocked(el.dataset.id) && st.region !== el.dataset.id) {
+        ui.lockAsk = el.dataset.id; ui.lockErr = false; render();
+        const inp = document.querySelector('.lock-form input'); if (inp) inp.focus();
+        return;
+      }
+      if (el.dataset.kind === 'region') { ui.lockAsk = null; ui.lockErr = false; }
       pick(el.dataset.kind, el.dataset.id); ui.advance = true; ui.lastPick[st.step] = el.dataset.kind; render(); return;
     }
     if (act === 'toggleAb') { toggleAb(el.dataset.g, el.dataset.name, el.dataset.cat); render(); return; }

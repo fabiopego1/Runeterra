@@ -370,6 +370,15 @@ button.flow-head:hover h3, button.flow-head:focus-visible h3 { color: var(--gold
 .region-card > :not(.sigil) { grid-column: 2; }
 .region-card .d { margin-top: 2px; }
 .region-card:hover .sigil { opacity: 1; }
+.region-card .lock-mark { position: absolute; top: 12px; right: 14px; color: var(--warn); line-height: 0; }
+.region-card .lock-mark .ico { width: 14px; height: 14px; }
+.lock-form { margin-top: 14px; padding: 12px 14px; border-left: 2px solid var(--warn); background: var(--ink-1, rgba(255,255,255,.03)); }
+.lock-form .lock-h { display: flex; align-items: center; gap: 6px; color: var(--text); font-weight: 600; }
+.lock-form .lock-h .ico { width: 14px; height: 14px; color: var(--warn); }
+.lock-form p { margin: 6px 0; }
+.lock-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.lock-row input { flex: 1 1 180px; min-width: 0; padding: 7px 10px; font: inherit; color: var(--text); background: var(--ink-0); border: 1px solid var(--line-2); border-radius: 0; }
+.lock-form .lock-err { color: var(--danger); }
 .region-card.selected { box-shadow: inset 3px 0 0 var(--rc), inset 0 0 0 1px var(--gold-lo); }
 
 /* chosen summary (collapsed selection) */

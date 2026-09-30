@@ -65,6 +65,16 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     const regionStep = await step();
     await next();
     ok(await step() === regionStep, 'cannot advance without picking a region');
+    ok(await p.$$eval('.region-card .lock-mark', e => e.length) === 2, 'the Shadow Isles and the Void carry a lock');
+    await p.click('[data-kind=region][data-id=shadow-isles]'); await p.waitForTimeout(150);
+    ok(!!(await p.$('.lock-form')) && (await p.evaluate(() => window.ForgeDebug.state().region)) === null, 'a locked homeland asks for a password before it can be chosen');
+    await p.fill('.lock-form input', 'errada'); await p.click('.lock-form [type=submit]'); await p.waitForTimeout(150);
+    ok(!!(await p.$('.lock-err')) && (await p.evaluate(() => window.ForgeDebug.state().region)) === null, 'a wrong password keeps the homeland locked');
+    await p.fill('.lock-form input', 'viegopelado'); await p.click('.lock-form [type=submit]'); await p.waitForTimeout(150);
+    ok((await p.evaluate(() => window.ForgeDebug.state().region)) === 'shadow-isles' && !(await p.$('.lock-form')), 'the right password unlocks and chooses the homeland');
+    await p.click('[data-kind=region][data-id=void]'); await p.waitForTimeout(150);
+    await p.fill('.lock-form input', 'suordakaisa'); await p.click('.lock-form [type=submit]'); await p.waitForTimeout(150);
+    ok((await p.evaluate(() => window.ForgeDebug.state().region)) === 'void', 'the Void has its own password');
     await p.click('[data-kind=region][data-id=zaun]'); await next();
     ok(await p.$eval('#tour h4', e => e.textContent.includes('dados')), 'the Origin guide opens by explaining what the dice do');
     await p.click('#tour [data-act=tourNext]');
@@ -80,7 +90,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('#tour h4', e => e.textContent.includes('Princípio')), 'the principle guide waits for the principle section');
     await p.click('#tour [data-act=tourOk]');
     const origHover = await p.$eval('[data-act=principle][data-id=magic]', e => e.dataset.tip);
-    ok(!/Reviravolta|Habilidade verde|Green ability|Em Runeterra/i.test(origHover) && /Durante a interpretação/.test(origHover), 'principle hover shows only the roleplaying part');
+    ok(!/Reviravolta|Habilidade verde|Green ability|Durante a interpretação/i.test(origHover) && /Em Runeterra/.test(origHover), 'principle hover shows only the Runeterra text');
     await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.tour.on = false; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
     await p.reload(); await p.waitForTimeout(300);
     guideCheck = false;
