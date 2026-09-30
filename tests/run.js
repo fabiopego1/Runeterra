@@ -456,6 +456,29 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(/Nocaute|Out/.test(pe) && /\+12/.test(pe) && /tamanho|size/.test(im), 'Personality cards show the Out ability, the Health from the Red die and special bonuses');
     await p.context().close();
   }
+  // Legend keeps the sheet actions at hand; phones get a short header and a two-column People grid.
+  {
+    const p = await newPage();
+    await p.goto(`${BASE}/index.html`);
+    const S = JSON.parse(FIXTURE);
+    Object.assign(S, { step: 'finish', maxStep: 9, tour: { on: false, seen: {} }, noRetcon: true });
+    await p.evaluate(s => localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)), S);
+    await p.reload(); await p.waitForTimeout(400);
+    await p.evaluate(() => scrollTo(0, 600)); await p.waitForTimeout(200);
+    const bar = await p.$eval('.finish-bar', e => { const r = e.getBoundingClientRect(); return r.bottom <= innerHeight + 1 && r.top < innerHeight && !!e.querySelector('[data-act=pdf]'); });
+    ok(bar, 'Legend: the PDF export stays on screen while filling in the details');
+    await p.click('[data-act=toSheet]'); await p.waitForTimeout(900);
+    ok(Math.abs(await p.$eval('#sheet-preview', e => e.getBoundingClientRect().top)) < 80, 'Legend: "Ver a ficha" jumps to the sheet');
+    await p.context().close();
+    const m = await newPage({ width: 390, height: 844 });
+    await m.goto(`${BASE}/index.html`);
+    S.step = 'people';
+    await m.evaluate(s => localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)), S);
+    await m.reload(); await m.waitForTimeout(400);
+    ok(await m.$eval('.site-header', e => e.offsetHeight) < 100, 'phone: the header takes one short band');
+    ok(await m.$$eval('.cards.regions .card', l => new Set(l.slice(0, 4).map(e => Math.round(e.getBoundingClientRect().top))).size) === 2, 'phone: People cards sit two per row');
+    await m.context().close();
+  }
   // Going back and changing an earlier choice: a notice says what it cleared or left incomplete, and it can be undone.
   {
     const p = await newPage();
