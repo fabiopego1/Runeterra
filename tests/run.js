@@ -459,6 +459,19 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(u.n === u.powers && u.n > 30 && u.locked.length > 0 && u.open.length > 0, 'Source dice list every power (no qualities), locking the ones the Source does not offer');
     await p.context().close();
   }
+  // Renamed powers, qualities and abilities keep their original name under the new one on the sheet; Legend shows what each one is.
+  {
+    const p = await newPage();
+    await p.goto(`${BASE}/index.html`);
+    const S = JSON.parse(FIXTURE);
+    Object.assign(S, { step: 'finish', maxStep: 9, tour: { on: false, seen: {} }, noRetcon: true, traitNames: { cosmic: 'Luz das Estrelas' }, renames: { 'arch-green:Subdue': 'Mão de Ferro Estelar' } });
+    await p.evaluate(s => localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)), S);
+    await p.reload(); await p.waitForTimeout(400);
+    const orig = await p.$$eval('#sheet-preview .hs-orig', l => l.map(e => e.textContent));
+    ok(orig.includes('Cósmico') && orig.includes('Subjugar') && orig.length === 2, 'the sheet shows the original name under a renamed power and ability');
+    ok(await p.$$eval('#flow-finish-abilities .rename-card .rn-d', l => l.length > 3 && l.every(e => e.textContent.trim().length > 5)), 'Legend shows each ability\'s rules next to its name field');
+    await p.context().close();
+  }
   // Legend keeps the sheet actions at hand; phones get a short header and a two-column People grid.
   {
     const p = await newPage();

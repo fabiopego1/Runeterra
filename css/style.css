@@ -1571,3 +1571,16 @@ html, body { overflow-x: clip; }
   .finish-bar .btn.primary { flex-basis: 100%; }
   .finish-bar .btn { flex: 1 1 auto; justify-content: center; padding-left: 10px; padding-right: 10px; }
 }
+
+/* Legend: renaming abilities and gear, each field next to what it names */
+.rename-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+.rename-card { display: grid; gap: 8px; align-content: start; padding: 12px 14px; background: var(--ink-1); border: 1px solid var(--line); border-left: 2px solid var(--line-2); }
+.rename-card.green { border-left-color: var(--zone-g); } .rename-card.yellow { border-left-color: var(--zone-y); } .rename-card.red { border-left-color: var(--zone-r); }
+.rename-card .rn-h { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; }
+.rename-card .rn-h b { font-family: var(--font-display); font-weight: 400; font-size: 1.02rem; color: var(--text); }
+.rename-card .rn-type { margin-left: auto; white-space: nowrap; text-transform: uppercase; font-family: var(--font-mono); font-size: .62rem; letter-spacing: .08em; color: var(--text-3); }
+.rename-card .rn-d { font-size: .86rem; line-height: 1.45; color: var(--text-2); }
+/* Sheet: a renamed trait or ability keeps its original name in small type under it */
+.hs-orig { display: block; font-size: .72em; line-height: 1.2; color: var(--text-3); font-style: italic; font-family: var(--font-ui); letter-spacing: 0; }
+@media (max-width: 600px) { .rename-grid { grid-template-columns: minmax(0, 1fr); } }
+.hs-ab-t .nm small.hs-orig { font-family: var(--font-ui); font-size: .74rem; font-style: italic; letter-spacing: 0; margin-top: 1px; }

@@ -153,6 +153,10 @@
   const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const tip = html => ` data-tip="${esc(html)}"`;
   const traitName = k => (st.traitNames[k] || (TRAIT[k] ? TRAIT[k].rt : k));
+  const baseTraitName = k => (TRAIT[k] ? TRAIT[k].rt : k);
+  // a renamed power/quality/ability shows its original name under the player's one
+  const renamedTrait = k => !!(st.traitNames[k] && st.traitNames[k].trim() && st.traitNames[k].trim() !== baseTraitName(k));
+  const origTag = name => `<small class="hs-orig">${esc(name)}</small>`;
 
   function dieTip(d) {
     const i = window.DICE_INFO[d] || {};
@@ -168,7 +172,7 @@
     const t = TRAIT[k];
     if (!t) return esc(k);
     const c = CATS[t.cat];
-    return `<h5>${esc(traitName(k))}</h5><div class="sc-line">${kindWord(t.kind)} · ${esc(catName(t.cat))}</div>` +
+    return `<h5>${esc(traitName(k))}</h5><div class="sc-line">${renamedTrait(k) ? esc(baseTraitName(k)) + ' · ' : ''}${kindWord(t.kind)} · ${esc(catName(t.cat))}</div>` +
       `${esc(t.desc)}<hr><em>${tr('In Runeterra:')}</em> ${esc(t.lore)}` +
       (c && c.note ? `<hr><small>${esc(c.note)}</small>` : '') +
       (t.kind === 'power' ? `<hr><small>${tr('Powers are what makes you exceptional — the first die in your pool.')}</small>` : `<hr><small>${tr('Qualities are how you use your powers — the second die in your pool.')}</small>`);
@@ -1708,7 +1712,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const row = x => {
       const ab = A[x.name];
       const text = x.text || (ab && ab.text) || '';
-      return { x, name: st.renames[x.iid] || (x.name === 'Out' ? tr('Out') : abName(x.name)), orig: displayName(x.name), type: x.type || (ab && ab.type) || '', text, entry: x.entry };
+      const base = x.name === 'Out' ? tr('Out') : abName(x.name), own = (st.renames[x.iid] || '').trim();
+      return { x, name: own || base, base, renamed: !!own && own !== base, orig: displayName(x.name), type: x.type || (ab && ab.type) || '', text, entry: x.entry };
     };
     return {
       green: abs.filter(x => x.color === 'green' && x.src !== 'Principle').map(row),
@@ -1737,11 +1742,11 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const traitRows = (list, n) => {
       const sp = splitOn() ? (st.arch.split || {}) : {};
       const formTag = k => sp[k] && sp[k] !== 'both' ? ` <small class="hs-form-tag"${tip(tr(sp[k] === 'civ' ? 'Only in your civilian form' : 'Only in your heroic form'))}>${tr(sp[k] === 'civ' ? 'civil' : 'heroic')}</small>` : '';
-      const out = list.map(t => `<tr><td>${t.key === 'rp-quality' && st.pers.qname ? `<span class="term"${tip(traitTip('rp-quality'))}>${esc(st.pers.qname)}</span>` : traitSpan(t.key)}${formTag(t.key)}</td><td class="dt">${die(t.die, 'sm')}</td></tr>`);
+      const out = list.map(t => `<tr><td>${t.key === 'rp-quality' && st.pers.qname ? `<span class="term"${tip(traitTip('rp-quality'))}>${esc(st.pers.qname)}</span>` : traitSpan(t.key)}${renamedTrait(t.key) ? origTag(baseTraitName(t.key)) : ''}${formTag(t.key)}</td><td class="dt">${die(t.die, 'sm')}</td></tr>`);
       while (out.length < n) out.push('<tr><td>&nbsp;</td><td class="dt"></td></tr>');
       return out.join('');
     };
-    const abRow = (r, zone) => `<tr><td class="ic">${iconHtml(r.text)}</td><td class="nm">${esc(r.name)}</td><td class="ty"${tip(window.ABILITY_TYPES[r.type] || '')}>${esc(r.type)}</td><td class="gt">${rulesText(r.text, r.entry)}</td></tr>`;
+    const abRow = (r, zone) => `<tr><td class="ic">${iconHtml(r.text)}</td><td class="nm">${esc(r.name)}${r.renamed ? origTag(r.base) : ''}</td><td class="ty"${tip(window.ABILITY_TYPES[r.type] || '')}>${esc(r.type)}</td><td class="gt">${rulesText(r.text, r.entry)}</td></tr>`;
     const emptyRows = (n, have) => Array.from({ length: Math.max(0, n - have) }, () => '<tr><td class="ic"></td><td class="nm">&nbsp;</td><td class="ty"></td><td class="gt"></td></tr>').join('');
     const prRow = (x, r) => `<tr class="pr-row"><td class="ic">${iconHtml(x.p.ability)}</td><td class="nm"><small class="po-lbl">${tr('Principle of')}</small> ${esc(principleShort(x))}</td><td class="ty">${esc(x.p.type)}</td><td class="gt">${rulesText(x.p.ability, { ch: { 'energy/element': st.pch[x.slot] } })}</td></tr>`;
     const check = (path, val, label) => `<input type="checkbox" class="hs-chk" data-bind="${path}" data-live="1"${val ? ' checked' : ''} aria-label="${esc(label)}">`;
@@ -1878,8 +1883,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
           <div class="gc-k">${esc(c.kicker)}</div><h4>${esc(c.title)}</h4>${c.text ? `<p>${c.text}</p>` : ''}
           <div class="gc-qs">${c.qs.filter(Boolean).map(q => `<button type="button" class="bio-q" data-act="bioQ" data-q="${esc(q)}">${ico('next')}<span>${esc(q)}</span></button>`).join('')}</div>
           ${c.link ? `<a class="gc-link" href="${c.link}">${tr('Read in the Lore')} ${ico('next')}</a>` : ''}</section>`).join('')}</div></div>`,
-      abilities: () => `        <div class="grid2">${abs.map(x => `<label class="field"><span>${esc(abName(x.name))} <span class="pill ${x.color}">${tr(x.color)}</span></span><input type="text" data-rename="${esc(x.iid)}" data-bind="renames" data-live="1" value="${esc(st.renames[x.iid] || '')}" placeholder="${esc(abName(x.name))}"></label>`).join('') || `<small class="muted">${tr('No abilities yet.')}</small>`}</div>`,
-      gear: () => `        <div class="grid3">${renameTraits.map(k => `<label class="field"><span>${esc(TRAIT[k].rt)} ${die(R.T[k].die, 'sm')}</span><input type="text" data-bind="traitNames.${k}" data-live="1" value="${esc(st.traitNames[k] || '')}" placeholder="${esc(TRAIT[k].rt)}"></label>`).join('')}</div>`
+      abilities: () => `        <div class="rename-grid">${abs.map(x => { const ab = A[x.name] || {}; return `<label class="rename-card ${x.color}"><span class="rn-h"><b>${esc(abName(x.name))}</b> <span class="pill ${x.color}">${tr(x.color)}</span>${ab.type ? `<span class="rn-type">${esc(ab.type)}</span>` : ''}</span><input type="text" data-rename="${esc(x.iid)}" data-bind="renames" data-live="1" value="${esc(st.renames[x.iid] || '')}" placeholder="${tr('Your name for it (optional)')}"><span class="rn-d">${rulesText(ab.text || '', x.entry)}</span></label>`; }).join('') || `<small class="muted">${tr('No abilities yet.')}</small>`}</div>`,
+      gear: () => `        <div class="rename-grid">${renameTraits.map(k => `<label class="rename-card"><span class="rn-h"><b>${esc(baseTraitName(k))}</b> ${die(R.T[k].die, 'sm')}<span class="rn-type">${tr(TRAIT[k].kind)} · ${esc(catName(TRAIT[k].cat))}</span></span><input type="text" data-bind="traitNames.${k}" data-live="1" value="${esc(st.traitNames[k] || '')}" placeholder="${tr('Your name for it (optional)')}"><span class="rn-d">${esc(TRAIT[k].desc || '')}</span></label>`).join('')}</div>`
     };
     const done = !stepIssues('finish', R).length;
     return `<div class="panel no-print">${chapterHead(tr('Legend'))}
