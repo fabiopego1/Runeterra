@@ -74,6 +74,8 @@ Object.assign(window.I18N.ui, {
  "“{ab}” uses {trait}, which you no longer have.": "“{ab}” usa {trait}, que você não tem mais.",
  "“{ab}” cannot use {trait}: choose another.": "“{ab}” não pode usar {trait}: escolha outra.",
  "You picked the same ability twice.": "Você escolheu a mesma habilidade duas vezes.",
+ "Your Origin does not offer this.": "Sua Origem não oferece isto.", "Not available": "Indisponível", "You already have this trait here, so this die would be wasted. Choose a different trait, or unbind it where it is first.": "Você já tem esta característica aqui, então este dado seria desperdiçado. Escolha outra, ou solte o dado onde ela está antes.", "Your Source of Power does not offer this.": "Sua Fonte de Poder não oferece isto.",
+ "Your Path does not offer this.": "Seu Caminho não oferece isto.", "Training gives one of your Path's qualities.": "O Treinamento dá uma das qualidades do seu Caminho.",
  "Your champion": "Seu campeão", "Ready for the table. Everything above is optional.": "Pronto para a mesa. Tudo acima é opcional.", "See the sheet": "Ver a ficha",
  "your quality dice": "os dados de qualidade", "your first principle": "o primeiro princípio", "your power dice": "os dados de poder",
  "your Source bonus": "o bônus da Fonte", "your Source abilities": "as habilidades da Fonte", "your Path dice": "os dados do Caminho",
