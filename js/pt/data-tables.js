@@ -72,8 +72,8 @@
     'form-changer': ['Metamorfo', 'Metamorfo', 'Seu corpo muda como você quiser: estica, encolhe, endurece ou imita outras pessoas e criaturas.', 'um poder de Autocontrole'],
     gadgeteer: ['Engenhoqueiro', 'Inventor', 'Bolsos cheios de protótipos: bombas saltitantes, torretas, máquinas do tempo e bugigangas espertas.', 'um poder Intelectual'],
     'reality-shaper': ['Moldador da Realidade', 'Dobrador do Destino', 'Você dobra o tempo e a probabilidade, voltando segundos, roubando momentos e reescrevendo o que "acabou de acontecer".'],
-    divided: ['Dividido', 'Natureza Dupla (avançado)', 'Você tem duas formas bem diferentes e um jeito de trocar entre elas: uma caçadora e uma fera, um pequenino e um monstro enorme, uma pessoa comum e um campeão.'],
-    modular: ['Modular', 'Multimodo (avançado)', 'Você troca de modo no meio da luta: de uma arma para outra, de uma postura para outra, cada modo com suas vantagens e desvantagens.']
+    divided: ['Dividido', 'Natureza Dupla', 'Você tem duas formas bem diferentes e um jeito de trocar entre elas: uma caçadora e uma fera, um pequenino e um monstro enorme, uma pessoa comum e um campeão.'],
+    modular: ['Modular', 'Multimodo', 'Você troca de modo no meio da luta: de uma arma para outra, de uma postura para outra, cada modo com suas vantagens e desvantagens.']
   }, (x, v) => {
     x.rt = v[0]; x.role = v[1]; x.lore = v[2];
     if (v[3] && x.req) x.req.label = v[3];
