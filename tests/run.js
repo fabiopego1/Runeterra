@@ -406,6 +406,38 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(/pelo menos 2 poderes diferentes|at least 2 different powers/.test(issues), 'Armored Green abilities must use two different powers even with Deflect picked');
     await p.context().close();
   }
+  // Special cases from the book: Divided's second Temperament and Split Form (p.95), Modular's Powerless Mode (p.96).
+  {
+    const p = await newPage();
+    await p.goto(`${BASE}/index.html`);
+    const put = async f => { await p.evaluate(src => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); new Function('S', src)(s); localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); }, f); await p.reload(); await p.waitForTimeout(300); };
+    const S = JSON.parse(FIXTURE);
+    Object.assign(S, { step: 'personality', maxStep: 9, tour: { on: false, seen: {} }, noRetcon: true });
+    await p.evaluate(s => localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)), S);
+    await put("S.arch.id='divided'; S.arch.base='cqc'; S.arch.divMethod='controllable'; S.sel['arch-divafter']=[{name:'Split Form',ch:{}}]; S.pers.id2='arrogant';");
+    const st2 = await p.evaluate(() => window.ForgeDebug.status2());
+    ok(JSON.stringify(st2) === '["d10","d8","d6"]', 'Divided: a second Temperament gives the other form its own status dice');
+    ok(!!(await p.$('#flow-personality-pers2')), 'Divided: the Temperament chapter offers the optional second Temperament');
+    const iss = await p.evaluate(() => window.ForgeDebug.issues('archetype').join(' | '));
+    ok(/duas formas|both forms/.test(iss), 'Split Form: powers and qualities must be divided between the forms');
+    await put("S.arch.id='modular'; S.arch.base='cqc'; S.pers.id2='arrogant'; S.arch.powerless={on:true,a:S.ps.assign.p0};");
+    ok(await p.evaluate(() => window.ForgeDebug.status2()) === null, 'the second Temperament only applies to Divided heroes');
+    ok(/Modo sem Poderes|Powerless Mode/.test(await p.evaluate(() => window.ForgeDebug.issues('archetype').join(' | '))), 'Modular: a Powerless Mode needs two different powers');
+    await p.context().close();
+  }
+  // Older saves stored element choices with the English name, e.g. "Energia Hextec Bruta (Nuclear)".
+  {
+    const p = await newPage();
+    await p.goto(`${BASE}/index.html`);
+    const S = JSON.parse(FIXTURE);
+    S.sel.red = [{ name: 'Improved Immunity', cat: 'P:elemental', ch: { 'element/energy': 'Energia Hextec Bruta (Nuclear)' } }];
+    S.pch = { bg: 'Energia Hextec Bruta (Nuclear)' };
+    await p.evaluate(s => localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)), S);
+    await p.reload(); await p.waitForTimeout(300);
+    const st = await p.evaluate(() => window.ForgeDebug.state());
+    ok(st.sel.red[0].ch['element/energy'] === 'Energia Hextec Bruta' && st.pch.bg === 'Energia Hextec Bruta', 'old saves lose the English element name in parentheses');
+    await p.context().close();
+  }
   ok(errors.length === 0, 'no JavaScript errors or missing files');
   await browser.close();
   console.log(failures ? `\n${failures} failing` : '\nall passing');

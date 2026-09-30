@@ -259,6 +259,13 @@ main.stage.entering { opacity: 0; transform: translateY(14px); transition: none;
 .redcat-n b { color: var(--zone-r); font-weight: 600; }
 .redcat-arrow .ico { width: 12px; height: 12px; }
 .redcat .ab-list { padding: 0 12px 12px; }
+.hs-sd2 { margin-left: 4px; opacity: .85; }
+.hs-sd-note { font-size: .62rem; color: var(--text-3); margin-top: 2px; }
+.split-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
+.split-n { flex: 0 0 290px; display: inline-flex; align-items: center; gap: 6px; }
+@media (max-width: 700px) { .split-n { flex-basis: 100%; } }
+.split-n small { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); }
+.hs-form-tag { font-family: var(--font-mono); font-size: .55rem; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
 .hchoice { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 10px; }
 .hc { display: grid; gap: 4px; text-align: left; padding: 10px 12px; border: 1px solid var(--line-2); background: var(--ink-1); color: var(--text-1); font: inherit; cursor: pointer; }
 .hc:hover:not([disabled]) { border-color: var(--gold); }
