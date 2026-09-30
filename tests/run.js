@@ -435,6 +435,27 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(/Modo sem Poderes|Powerless Mode/.test(await p.evaluate(() => window.ForgeDebug.issues('archetype').join(' | '))), 'Modular: a Powerless Mode needs two different powers');
     await p.context().close();
   }
+  // Choice cards say what they give before you pick them: dice, options, principle, requirement, Out and Health.
+  {
+    const p = await newPage();
+    await p.goto(`${BASE}/index.html`);
+    const S = JSON.parse(FIXTURE);
+    Object.assign(S, { step: 'background', maxStep: 9, tour: { on: false, seen: {} }, noRetcon: true });
+    S.bg = { id: null, assign: {}, principle: null };
+    await p.evaluate(s => localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)), S);
+    await p.reload(); await p.waitForTimeout(400);
+    const bg = await p.$eval('.card[data-id="struggling"] .mech', e => ({ dice: e.querySelectorAll('.mr:first-child .die').length, text: e.textContent }));
+    ok(bg.dice === 3 && /Responsabilidade|Responsibility/.test(bg.text) && /Gracejos|Banter/.test(bg.text), 'Origin cards show their quality dice, options and principle');
+    await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.bg = { id: 'anachronistic', assign: { b0: 'magical-lore', b1: 'history' }, principle: 'magic' }; s.step = 'archetype'; s.arch = { id: null, base: null, assign: {}, principle: null, extra: {}, notes: '' }; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
+    await p.reload(); await p.waitForTimeout(400);
+    const bl = await p.$eval('.card[data-id="blaster"] .mech', e => e.textContent), sp = await p.$eval('.card[data-id="speedster"] .mech', e => e.textContent);
+    ok(/já tem|you have it/.test(bl) && /vai para ele|goes to it/.test(sp), 'Path cards show their requirement and whether you already have it');
+    await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.step = 'personality'; s.arch = { id: 'sorcerer', base: null, assign: { a0: 'conviction', a1: 'illusions', a2: 'remote-viewing' }, principle: 'destiny', extra: {}, notes: '' }; s.pers = { id: null, qname: '', outTrait: null, upgrade: null }; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
+    await p.reload(); await p.waitForTimeout(400);
+    const pe = await p.$eval('.card[data-id="nurturing"] .mech', e => e.textContent), im = await p.$eval('.card[data-id="impulsive"] .mech', e => e.textContent);
+    ok(/Nocaute|Out/.test(pe) && /\+12/.test(pe) && /tamanho|size/.test(im), 'Personality cards show the Out ability, the Health from the Red die and special bonuses');
+    await p.context().close();
+  }
   // Rule fixes found by the rules test (tests/rules.js).
   {
     const p = await newPage();

@@ -365,6 +365,25 @@ button.flow-head:hover h3, button.flow-head:focus-visible h3 { color: var(--gold
 .card.selected::after { content: ''; position: absolute; top: 0; right: 0; border-style: solid; border-width: 0 16px 16px 0; border-color: transparent var(--gold) transparent transparent; }
 .card.selected .t { color: var(--gold-hi); }
 .dice-row { margin-top: 8px; }
+/* What a card gives (dice, options, bonuses): a small ledger under its description */
+.mech { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); display: grid; gap: 5px; }
+.mr { font-size: .82rem; line-height: 1.4; color: var(--text-2); }
+.mh { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; min-height: 22px; }
+.ml { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); }
+.mi { color: var(--text); }
+.mv { margin-top: 2px; }
+.mr.clamp .mv { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.mdice { display: inline-flex; gap: 3px; }
+.mdice .die.sm { transform: scale(.9); }
+.mcat { display: inline-block; padding: 0 5px; border: 1px solid var(--line-2); color: var(--text); font-size: .76rem; line-height: 1.35; white-space: nowrap; }
+.msep { margin: 0 5px; color: var(--text-3); }
+.mo { display: inline-block; white-space: nowrap; }
+.mo:not(:last-child)::after { content: '·'; margin: 0 6px; color: var(--text-3); }
+.mnote { color: var(--text-3); font-size: .74rem; }
+.mok, .mwant { display: inline-block; margin-left: 6px; font-family: var(--font-mono); font-size: .56rem; letter-spacing: .08em; text-transform: uppercase; }
+.mok { color: var(--zone-g); }
+.mwant { color: var(--warn); }
+.card.selected .mech { border-top-color: var(--gold-lo); }
 
 /* Signature 4 — the homeland map legend with regional sigils */
 .cards.regions { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
