@@ -5,7 +5,7 @@ No picture is used twice on the site (the tests check it), so none of these repe
 - ar-armored: Braum (01FR009)
 - ar-blaster: Xerath (05SH014)
 - ar-cqc: Fiora (01DE045)
-- ar-divided: Swain (02NX007)
+- ar-divided: Nidalee (07SH013)
 - ar-elemental: Taliyah (04SH073)
 - ar-flyer: Quinn (02DE006)
 - ar-form-changer: Gnar (05BC161)
