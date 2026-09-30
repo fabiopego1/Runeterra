@@ -30,9 +30,9 @@ window.LORE_IMAGES = {
   'resurgence': { src: 'assets/lore/mapa-regioes.webp', credit: 'Riot Games' },
   'demacia-noxus-war': { src: 'assets/lore/guerra-demacia-noxus.webp', credit: 'Riot Games', pos: '50% 35%' },
 
-  // artes das cartas de Legends of Runeterra (Riot Games); Nazumah, que não existe no LoR, usa arte do Mapa de Runeterra
-  'planet': { src: 'assets/lore/planet.webp', credit: "Heisho, Concha do Mundo · Legends of Runeterra · Riot Games" },
-  'runes': { src: 'assets/lore/runes.webp', credit: "Tecelã de Runas · Legends of Runeterra · Riot Games" },
+  // artes das cartas de Legends of Runeterra (Riot Games), do Universo de League of Legends e de artes conceituais da Riot
+  'planet': { src: 'assets/lore/planet.webp', credit: "Uma Vez na Vida · Targon · Universo de League of Legends · Riot Games" },
+  'runes': { src: 'assets/lore/runes.webp', credit: "Fragmento de Reverência · Legends of Runeterra · Riot Games" },
   'realms': { src: 'assets/lore/realms.webp', credit: "Bardo · Legends of Runeterra · Riot Games" },
   'present': { src: 'assets/lore/present.webp', credit: "Jayce · Legends of Runeterra · Riot Games" },
   'r-bilgewater': { src: 'assets/lore/r-bilgewater.webp', credit: "Angra do Ladrão · Legends of Runeterra · Riot Games" },
@@ -41,11 +41,11 @@ window.LORE_IMAGES = {
   'r-shadow-isles': { src: 'assets/lore/r-shadow-isles.webp', credit: "Criptas de Helia · Legends of Runeterra · Riot Games" },
   'r-ionia': { src: 'assets/lore/r-ionia.webp', credit: "Monastério de Hirana · Legends of Runeterra · Riot Games" },
   'r-ixtal': { src: 'assets/lore/r-ixtal.webp', credit: "Nidalee · Legends of Runeterra · Riot Games" },
-  'r-nazumah': { src: 'assets/lore/r-nazumah.webp', credit: "Cascata Zoantha · Mapa de Runeterra · Riot Games" },
+  'r-nazumah': { src: 'assets/lore/r-nazumah.webp', credit: "Teaser de K'Sante · Riot Games" },
   'r-freljord': { src: 'assets/lore/r-freljord.webp', credit: "Templo ao Gelo Verdadeiro · Legends of Runeterra · Riot Games" },
   'r-noxus': { src: 'assets/lore/r-noxus.webp', credit: "Arena de Noxkraya · Legends of Runeterra · Riot Games" },
   'r-piltover': { src: 'assets/lore/r-piltover.webp', credit: "A Universidade de Piltover · Legends of Runeterra · Riot Games" },
-  'r-zaun': { src: 'assets/lore/r-zaun.webp', credit: "Monumento do Sumidouro · Legends of Runeterra · Riot Games" },
+  'r-zaun': { src: 'assets/lore/r-zaun.webp', credit: "Beco de Zaun · Jayison Devadas · Riot Games" },
   'r-shurima': { src: 'assets/lore/r-shurima.webp', credit: "Palanque do Imperador · Legends of Runeterra · Riot Games" },
   'r-targon': { src: 'assets/lore/r-targon.webp', credit: "Topo do Targon · Legends of Runeterra · Riot Games" },
   'r-void': { src: 'assets/lore/r-void.webp', credit: "Portal do Vazio · Legends of Runeterra · Riot Games" },
