@@ -1685,6 +1685,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       qs: [tr('What does your people think of you, and what do you think of them?'), tr('Which custom of your people do you still keep, even far from home?')] });
     if (r) C.push({ kicker: tr('Homeland'), title: r.name, text: esc(r.tag), color: r.color,
       link: window.LORE_FOR_REGION && window.LORE_FOR_REGION[r.id] ? 'lore.html#' + window.LORE_FOR_REGION[r.id].replace(/^lore-/, '') : '',
+      gallery: window.LORE_FOR_REGION && window.LORE_FOR_REGION[r.id] ? 'lore.html?galeria#' + window.LORE_FOR_REGION[r.id].replace(/^lore-/, '') : '',
+      note: r.id === 'nazumah' ? tr('This gallery is short: Nazumah has only one champion so far (K\'Sante) and its lore is still small.') : '',
       qs: [...((window.BIO_REGION || {})[r.id] || []), r.champs ? tr('Which of these champions does your hero know, admire or fear? {c}.', { c: r.champs }) : ''] });
     if (b) C.push({ kicker: tr('Origin'), title: b.rt, text: esc(b.lore),
       qs: [tr('What from that life do you still carry, and who did you leave behind?'), tr('Who from those days would recognise you today?')] });
@@ -1933,7 +1935,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         <div class="bio-guide"><div class="bio-guide-h">${ico('map')} ${tr('Lore guide')}</div>${loreGuide().map(c => `<section class="guide-card"${c.color ? ` style="--rc:${c.color}"` : ''}>
           <div class="gc-k">${esc(c.kicker)}</div><h4>${esc(c.title)}</h4>${c.text ? `<p>${c.text}</p>` : ''}
           <div class="gc-qs">${c.qs.filter(Boolean).map(q => `<button type="button" class="bio-q" data-act="bioQ" data-q="${esc(q)}">${ico('next')}<span>${esc(q)}</span></button>`).join('')}</div>
-          ${c.link ? `<a class="gc-link" href="${c.link}">${tr('Read in the Lore')} ${ico('next')}</a>` : ''}</section>`).join('')}</div></div>`,
+          ${c.note ? `<p class="gc-note">${esc(c.note)}</p>` : ''}
+          ${c.link || c.gallery ? `<div class="gc-links">${c.link ? `<a class="gc-link" href="${c.link}">${tr('Read in the Lore')} ${ico('next')}</a>` : ''}${c.gallery ? `<a class="gc-link" href="${c.gallery}">${tr('Groups, places and creatures')} ${ico('next')}</a>` : ''}</div>` : ''}</section>`).join('')}</div></div>`,
       abilities: () => `        <div class="rename-grid">${abs.map(x => { const ab = A[x.name] || {}; return `<label class="rename-card ${x.color}"><span class="rn-h"><b>${esc(abName(x.name))}</b> <span class="pill ${x.color}">${tr(x.color)}</span>${ab.type ? `<span class="rn-type">${esc(ab.type)}</span>` : ''}</span><input type="text" data-rename="${esc(x.iid)}" data-bind="renames" data-live="1" value="${esc(st.renames[x.iid] || '')}" placeholder="${tr('Your name for it (optional)')}"><span class="rn-d">${rulesText(ab.text || '', x.entry)}</span></label>`; }).join('') || `<small class="muted">${tr('No abilities yet.')}</small>`}</div>`,
       gear: () => `        <div class="rename-grid">${renameTraits.map(k => `<label class="rename-card"><span class="rn-h"><b>${esc(baseTraitName(k))}</b> ${die(R.T[k].die, 'sm')}<span class="rn-type">${tr(TRAIT[k].kind)} · ${esc(catName(TRAIT[k].cat))}</span></span><input type="text" data-bind="traitNames.${k}" data-live="1" value="${esc(st.traitNames[k] || '')}" placeholder="${tr('Your name for it (optional)')}"><span class="rn-d">${esc(TRAIT[k].desc || '')}</span></label>`).join('')}</div>`
     };
@@ -2876,6 +2879,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     health: () => { const h = healthCalc(compute()); return h && { max: h.max, red: h.red, traitMax: h.traitMax, roll: h.roll, trait: h.chosen && h.chosen.key, green: h.green, yellow: h.yellow, redR: h.redR }; },
     abilities: () => allAbilities(compute()).map(a => ({ name: a.name, color: a.color, src: a.src, trait: a.entry && a.entry.trait, trait2: a.entry && a.entry.trait2 })),
     principles: () => principlesFinal().map(x => x.id || (x.p && x.p.id)),
+    // The Homeland card of the Lore guide for any region (without changing the saved choice).
+    guideFor: id => { const keep = st.region; st.region = id; try { const c = loreGuide().find(x => x.gallery !== undefined); return c && { link: c.link, gallery: c.gallery, note: c.note }; } finally { st.region = keep; } },
     champions: () => allChampions().map(c => ({ id: c.cid, name: champName(c), open: c.cid === st.cid })),
     // Validate any saved state without showing it: the issues of every chapter and the computed values.
     check: s => {

@@ -190,8 +190,13 @@
   SECTIONS.forEach(s => { const el = document.getElementById(s.id); if (el) io.observe(el); });
 
   // Opening lore.html#section (e.g. from the Forge's Homeland step) lands on it after rendering.
+  // lore.html?galeria#r-demacia (from the Forge's Lore guide) also opens that region's gallery.
   if (location.hash) {
-    const t = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    let t = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (t && new URLSearchParams(location.search).has('galeria')) {
+      const d = t.querySelector('details.rg');
+      if (d) { d.open = true; t = d; }
+    }
     if (t) { requestAnimationFrame(() => t.scrollIntoView()); if (document.fonts) document.fonts.ready.then(() => t.scrollIntoView()); }   // again once web fonts settle the layout
   }
 })();

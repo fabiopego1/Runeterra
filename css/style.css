@@ -1004,8 +1004,9 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .bio-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 26px; align-items: start; }
 .bio-write { position: sticky; top: 76px; }
 .bio-write textarea { min-height: 24rem; resize: vertical; line-height: 1.6; }
-.bio-guide { display: grid; gap: 12px; }
-.bio-guide-h { display: flex; align-items: center; gap: 8px; font: .66rem var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--gold); }
+/* The guide stays in place while the page scrolls and scrolls on its own, so it never takes the whole screen. */
+.bio-guide { display: grid; gap: 12px; align-content: start; position: sticky; top: 76px; max-height: calc(100vh - 96px); overflow-y: auto; overscroll-behavior: contain; padding-right: 8px; scrollbar-width: thin; scrollbar-color: var(--gold-lo) transparent; }
+.bio-guide-h { position: sticky; top: 0; z-index: 1; background: var(--ink-0); padding: 2px 0 6px; display: flex; align-items: center; gap: 8px; font: .66rem var(--font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--gold); }
 .guide-card { --rc: var(--gold-lo); border-left: 2px solid var(--rc); background: var(--ink-1); padding: 12px 14px 10px; }
 .gc-k { font: .58rem var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--text-3); }
 .guide-card h4 { font-size: 1.12rem; color: var(--gold-hi); margin: 2px 0 4px; }
@@ -1016,9 +1017,11 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .bio-q:hover { color: var(--gold-hi); }
 .bio-q.used { color: var(--text-3); }
 .bio-q.used .ico { color: var(--text-3); }
+.gc-links { display: flex; flex-wrap: wrap; gap: 0 18px; }
+.gc-note { font-size: .82rem; color: var(--text-3); font-style: italic; margin: 0 0 4px; }
 .gc-link { display: inline-flex; align-items: center; gap: 4px; font: .62rem var(--font-mono); letter-spacing: .12em; text-transform: uppercase; margin-top: 8px; text-decoration: none; }
 .gc-link .ico { width: 11px; height: 11px; }
-@media (max-width: 1100px) { .bio-grid { grid-template-columns: minmax(0, 1fr); } .bio-write { position: static; } .bio-write textarea { min-height: 14rem; } }
+@media (max-width: 1100px) { .bio-grid { grid-template-columns: minmax(0, 1fr); } .bio-write { position: static; } .bio-write textarea { min-height: 14rem; } .bio-guide { position: static; max-height: 26rem; } }
 
 /* ==========================================================================
    Site pages: Lore (lore.html) and Regras (regras.html)

@@ -805,6 +805,8 @@ Object.assign(window.I18N.ui, {
  "Note line {n}": "Linha de anotação {n}",
  "Lore guide": "Guia de lore",
  "Read in the Lore": "Ler na Lore",
+ "Groups, places and creatures": "Grupos, ambientes e criaturas",
+ "This gallery is short: Nazumah has only one champion so far (K'Sante) and its lore is still small.": "Esta galeria é pequena: Nazumah tem só um campeão até agora (K'Sante) e o lore da região ainda é curto.",
  "Which of these champions does your hero know, admire or fear? {c}.": "Qual destes campeões seu herói conhece, admira ou teme? {c}.",
  "What from that life do you still carry, and who did you leave behind?": "O que dessa vida você ainda carrega, e quem ficou para trás?",
  "Who from those days would recognise you today?": "Quem daquela época ainda te reconheceria hoje?",

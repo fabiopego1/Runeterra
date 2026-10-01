@@ -39,14 +39,14 @@ GROUPS = [
          champs=['Lux', 'Lux: Illuminated', 'Vayne', 'Sona'], match=r'Crownguard'),
     # ---------------------------------------------------------------- Noxus
     dict(region='noxus', id='trifarian', name='Trifarix e a Legião Trifariana',
-         desc='Trifarix, a capital de Noxus, e a Legião Trifariana, a força mais respeitada do exército noxiano. Darius é seu rosto mais temido e Swain, o Grande General, conduz o império. Disciplina, força e conquista.',
+         desc='O núcleo militar e político do império. O Trifarix representa os três princípios de Noxus: Força (Darius), Visão (Swain) e Astúcia (o Sem-Rosto, de identidade desconhecida). A Legião Trifariana é a elite do exército, liderada por Darius, formada por soldados extremamente disciplinados e fanáticos pela expansão noxiana.',
          champs=['Darius', 'Kled', 'Swain'], match=r'Trifarian|Legion(?! Deserter)|Iron Ballista|Battering Ram|Citybreaker|Imperial Demolitionist|Captain (Farron|Kalrix)',
          uni=['Os Bandos Guerreiros de Noxus', 'Força na Variedade', 'A Legião Trifariana', 'Armamento Noxiano', 'Armadura Noxiana', 'Machado de Darius', 'Artífices de Guerra']),
     dict(region='noxus', id='blackrose', name='A Rosa Negra',
          desc='Uma sociedade secreta de magos que manipula Noxus nas sombras há séculos, liderada por LeBlanc.',
          champs=['LeBlanc', 'Briar'], match=r'Black Rose|Rose|Runeweaver|Rune Squire|Arachnoid|String-Puller|Tactician|Incisive'),
     dict(region='noxus', id='floricorvus', name='Conservatório Floricorvus',
-         desc='A academia noxiana onde jovens magos aprendem a usar o poder sem deixar que ele os consuma. Annie e seu urso Tibbers passaram por lá, ao lado de alunos e mestres como a diretora Telsi.',
+         desc='A academia noxiana onde jovens magos aprendem a usar o poder sem deixar que ele os consuma, fundada em segredo pela Rosa Negra. Recentemente, uma das crianças ateou a escola em chamas e depois fugiu: é Annie, que carrega o urso Tibbers. Alguns alunos permanecem leais à Trifarix e outros desejam trabalhar com a Rosa Negra.',
          champs=['Annie'], match=r'Tibbers|Floricorvus|Manasoul|Prefect|Headmistress|Spell Slinger'),
     dict(region='noxus', id='ironlegion', name='Legião de Ferro de Mordekaiser',
          desc='O exército de Mordekaiser, o antigo tirano que voltou dos mortos: legionários de ferro, revenantes e as almas acorrentadas que lutam por ele.',
@@ -57,9 +57,6 @@ GROUPS = [
     dict(region='noxus', id='arena', name='Arenas e gladiadores',
          desc='Nas arenas de Noxus, glória vale tanto quanto ouro. Draven é o astro; muitos lutam para sair da obscuridade.',
          champs=['Draven', 'Samira', 'Alistar'], match=r'Arena|Crowd|Draven|Reckoner|Gloryseeker|Dashing Dandy|Daring Demolisher|Shiraza|Kato'),
-    dict(region='noxus', id='bastion', name='O Bastião Imortal',
-         desc='A fortaleza no coração de Noxus, erguida sobre séculos de história, e os revenantes que a guardam.',
-         match=r'Revenant', uni=['Camadas da História']),
     dict(region='noxus', id='renegades', name='Desertores e mercenários',
          desc='Quem largou a Legião ou nunca entrou nela: mercenários, rebeldes e exilados como Riven e Rell, a fugitiva dos laboratórios da Rosa Negra.',
          champs=['Riven', 'Rell'], match=r'Deserter|Defector|Rebel|Mercenary'),
@@ -269,7 +266,7 @@ GROUPS = [
          champs=['Malzahar'], match=r'Hive Herald|Belvethi Elder'),
     dict(region='void', id='touched', name='Tocados pelo Vazio',
          desc='Mortais que carregam o Vazio na própria carne, por escolha ou azar, e quem decidiu enfrentá-lo. Kai\'Sa, a Filha do Vazio, divide o corpo com uma segunda pele viva; Kassadin, o Caminhante do Vazio, caça rupturas pelo mundo; os belvethianos conhecem o enxame de perto.',
-         champs=["Kai'Sa", 'Kassadin'], match=r'Belvethi|Hive Herald', uni=['O toque do Vazio', 'Sal na terra']),
+         champs=["Kai'Sa", 'Kassadin'], match=r'Belvethi|Void Blaster', uni=['O toque do Vazio', 'Sal na terra']),
     dict(region='void', id='icathia', name='Os últimos de Icathia',
          desc='O reino que o Vazio devorou. Jax, o último guerreiro de Icathia, procura pelo mundo quem tenha a força de enfrentar o que destruiu sua casa.',
          champs=['Jax'], uni=['A Queda de Icathia']),
@@ -300,12 +297,9 @@ GROUPS = [
     dict(region='runeterra', id='kathkan', name='Kathkan e a Sétima Camada',
          desc='Nação vizinha e antiga rival de Camavor, que prospera desde a queda dela. Sob a capital, uma ordem secreta de heróis, a Sétima Camada, vigia o demônio Ashlesh. Nilah, hoje sua portadora, foi a primeira kathkani a pisar em Valoran em mais de setecentos anos.',
          champs=['Nilah']),
-    dict(region='runeterra', id='rt-wanderers', name='Andarilhos e lendas',
-         desc='Figuras que não pertencem a uma só terra: viajantes, guardiões cósmicos e lendas que aparecem por toda Runeterra.',
-         champs=['Bard', 'Ryze', 'Evelynn', 'Fiddlesticks', 'Shaco', 'Brand', 'The Poro King', 'Elder Dragon']),
     dict(region='runeterra', id='legends', name='Lendas',
-         desc='Entidades e histórias que atravessam Runeterra e não pertencem a uma só região: deuses da vida e da morte, demônios, feras míticas e pesadelos, de Kindred a Nocturne.',
-         champs=['Kindred', 'Nocturne']),
+         desc='Figuras que não pertencem a uma só terra: viajantes, guardiões cósmicos, demônios, feras míticas e pesadelos que aparecem por toda Runeterra, do Bardo e de Ryze a Kindred e Nocturne.',
+         champs=['Kindred', 'Nocturne', 'Bard', 'Ryze', 'Evelynn', 'Fiddlesticks', 'Shaco', 'Brand', 'The Poro King', 'Elder Dragon']),
     dict(region='runeterra', id='rt-darkin', name='Os Darkin',
          desc='Antigos Ascendidos de Shurima presos em armas após a guerra contra Icathia. Possuem quem os empunha e espalham ruína por onde passam.',
          champs=['Aatrox', 'Kayn', 'Rhaast', 'The Shadow Assassin', 'Varus', 'Zaahen']),
@@ -996,7 +990,7 @@ RELOCATE = {
     '05BW002': ('targon', 'marai'),  # Aventureiro Saltareias
     '08BW036': ('targon', 'places'),  # Pináculo Coralino Marai
     '06SH008': ('void', 'touched'),  # Anciã Belvethiana
-    '06SH016': ('void', 'touched'),  # Arauto do Enxame
+    '06SH016': ('void', 'prophets'),  # Arauto do Enxame
     'u9af8e4424e': ('bilgewater', 'places'),  # Templo Buhru
     '06NX012T7': ('noxus', 'floricorvus'),  # Annie
     '06NX012T1': ('noxus', 'floricorvus'),  # Tibbers
@@ -1025,4 +1019,11 @@ RELOCATE = {
     '04NX008': ('noxus', 'blackrose'),  # Estrategista Indomável
     '02NX007': ('noxus', 'trifarian'),  # Swain
     '02NX007T2': ('noxus', 'trifarian'),  # Swain
+    '06SH010': ('void', 'touched'),  # Detonadora do Vazio
+    '05NX007': ('noxus', 'crimson'),  # Revenã das Lâminas Gêmeas
+    'u70b2411b1d': ('noxus', 'ironlegion'),  # Camadas da História
+    '04DE020': ('shadow-isles', 'specters'),  # Dracoguarda Destruído
+    '04DE016': ('shadow-isles', 'specters'),  # Kadregrin, o Destruído
+    '04NX022': ('shadow-isles', 'specters'),  # Desafiadora Destruída
+    '04BW016': ('shadow-isles', 'specters'),  # Rex Destruído
 }
