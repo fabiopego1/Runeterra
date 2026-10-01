@@ -46,12 +46,39 @@
       <article class="tl-card">${IMAGES[s.id] ? figure(s.id, { ratio: '21 / 9', cls: 'tl-banner', alt: name }) : figure(s.id, { ratio: '1 / 1', cls: 'thumb', alt: name })}<h3>${esc(name)}</h3>${s.body}</article></li>`;
   };
 
+  // Inspiration gallery of a region (js/pt/lore-gallery.js): groups, places and creatures in official Riot art.
+  // Its pictures are drawn only when the reader opens it.
+  const GALLERY = window.LORE_GALLERY || {};
+  const CATS = [
+    ['groups', 'Grupos', 'Facções, ordens, famílias e bandos. Seu campeão pode pertencer a um deles, ter fugido de outro ou ter um rival em cada um.'],
+    ['places', 'Ambientes', 'Cidades, templos, ruínas e paisagens para situar cenas, lares e lembranças.'],
+    ['creatures', 'Criaturas', 'Feras, espíritos e monstros que vivem (ou assombram) a região.']
+  ];
+  const galleryCount = g => g.groups.reduce((n, x) => n + x.items.length, 0) + g.places.length + g.creatures.length;
+  const galleryBlock = (key, title) => {
+    const g = GALLERY[key];
+    if (!g || !galleryCount(g)) return '';
+    return `<details class="rg" data-gal="${esc(key)}" data-title="${esc(title)}"><summary><span class="rg-sum-t">Grupos, ambientes e criaturas</span><span class="rg-sum-n">${galleryCount(g)} imagens</span></summary><div class="rg-body"></div></details>`;
+  };
+  const thumb = (it, ref) => `<button type="button" class="rg-th" data-ref="${ref}" title="${esc(it.n)}"><img src="assets/lore-gallery/${esc(it.s)}.webp" alt="" loading="lazy" decoding="async"><span>${esc(it.n)}</span></button>`;
+  const galleryHtml = (key, title) => {
+    const g = GALLERY[key];
+    const panel = (cat, desc, body) => `<div class="rg-panel" data-cat="${cat}"${cat === 'groups' ? '' : ' hidden'}><p class="rg-desc">${desc}</p>${body}</div>`;
+    const grid = (list, path) => `<div class="rg-grid">${list.map((it, i) => thumb(it, `${path}.${i}`)).join('')}</div>`;
+    const cats = CATS.filter(([c]) => c === 'groups' ? g.groups.length : g[c].length);
+    return `<p class="rg-intro"><b>Inspiração para a história do seu campeão.</b> Artes oficiais da Riot (de Legends of Runeterra e do Universo de League of Legends), organizadas por grupo, ambiente e criatura. Use à vontade para imaginar de onde ele vem, quem conhece e o que já enfrentou. Nada aqui muda as regras.</p>
+      <div class="rg-tabs" role="tablist">${cats.map(([c, name], i) => `<button type="button" role="tab" class="rg-tab${i ? '' : ' on'}" aria-selected="${!i}" data-cat="${c}">${name} <small>${c === 'groups' ? g.groups.reduce((n, x) => n + x.items.length, 0) : g[c].length}</small></button>`).join('')}</div>` +
+      cats.map(([c, , desc]) => c === 'groups'
+        ? panel(c, desc, g.groups.map((x, gi) => `<section class="rg-group"><h5>${esc(x.name || 'Outros de ' + title)}</h5><p>${esc(x.desc || 'Gente, cenas e objetos da região que não pertencem a um grupo conhecido.')}</p>${grid(x.items, `${key}.groups.${gi}.items`)}</section>`).join(''))
+        : panel(c, desc, grid(g[c], `${key}.${c}`))).join('');
+  };
+
   const region = s => {
     const r = REGIONS[s.region] || {};
     return `<article class="lore-region" id="${s.id}" data-group="${esc(s.group)}" style="--rc:${r.color || 'var(--gold)'}">
       <div class="region-banner">${figure(s.id, { ratio: '21 / 8', sigilId: s.region, color: r.color, alt: s.title })}
         <div class="region-title"><span class="region-sigil">${sigil(s.region)}</span><div><h3>${esc(s.title)}</h3>${r.tag ? `<p>${esc(r.tag)}</p>` : ''}</div></div></div>
-      <div class="region-body">${s.body}</div></article>`;
+      <div class="region-body">${s.body}${galleryBlock(s.gallery || s.region, s.title)}</div></article>`;
   };
 
   // Peoples: the section body holds one .race block per people; each gets a portrait slot.
@@ -119,6 +146,34 @@
       g.hidden = n === 0; any = any || n > 0;
     });
     document.querySelector('.page-empty').hidden = any;
+  });
+
+  // Galleries: drawn on first open; tabs switch the category; a picture opens larger with its text.
+  document.addEventListener('toggle', ev => {
+    const d = ev.target;
+    if (!d.matches || !d.matches('details.rg') || !d.open) return;
+    const body = d.querySelector('.rg-body');
+    if (!body.childElementCount) body.innerHTML = galleryHtml(d.dataset.gal, d.dataset.title);
+  }, true);
+  const box = document.createElement('dialog');
+  box.className = 'rg-box';
+  document.body.appendChild(box);
+  const showPicture = btn => {
+    const it = btn.dataset.ref.split('.').reduce((o, k) => o[k], GALLERY);
+    box.innerHTML = `<figure><img src="assets/lore-gallery/${esc(it.s)}.webp" alt="${esc(it.n)}"><figcaption><b>${esc(it.n)}</b>${it.f ? `<p>${esc(it.f)}</p>` : ''}<small>${it.u ? 'Universo de League of Legends' : 'Legends of Runeterra'} · Riot Games</small></figcaption></figure><button type="button" class="rg-close" aria-label="Fechar">✕</button>`;
+    box.showModal();
+  };
+  document.addEventListener('click', ev => {
+    const tab = ev.target.closest('.rg-tab');
+    if (tab) {
+      const root = tab.closest('.rg-body');
+      root.querySelectorAll('.rg-tab').forEach(t => { const on = t === tab; t.classList.toggle('on', on); t.setAttribute('aria-selected', String(on)); });
+      root.querySelectorAll('.rg-panel').forEach(p => { p.hidden = p.dataset.cat !== tab.dataset.cat; });
+      return;
+    }
+    const th = ev.target.closest('.rg-th');
+    if (th) { showPicture(th); return; }
+    if (ev.target === box || ev.target.closest('.rg-close')) box.close();
   });
 
   // Highlight the section being read in the table of contents.

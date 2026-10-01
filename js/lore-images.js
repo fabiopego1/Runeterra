@@ -49,6 +49,7 @@ window.LORE_IMAGES = {
   'r-shurima': { src: 'assets/lore/r-shurima.webp', credit: "Palanque do Imperador · Legends of Runeterra · Riot Games" },
   'r-targon': { src: 'assets/lore/r-targon.webp', credit: "Topo do Targon · Legends of Runeterra · Riot Games" },
   'r-void': { src: 'assets/lore/r-void.webp', credit: "Portal do Vazio · Legends of Runeterra · Riot Games" },
+  'andarilhos': { src: 'assets/lore/andarilhos.webp', credit: "Fragmento de Esperança · Legends of Runeterra · Riot Games" },
   'race-humano': { src: 'assets/lore/race-humano.webp', credit: "Garen · Legends of Runeterra · Riot Games", pos: '72% 40%' },
   'race-plantifero': { src: 'assets/lore/race-plantifero.webp', credit: "Maokai · Legends of Runeterra · Riot Games" },
   'race-construto': { src: 'assets/lore/race-construto.webp', credit: "Galio · Legends of Runeterra · Riot Games", pos: '62% 30%' },

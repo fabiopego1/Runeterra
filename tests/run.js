@@ -319,6 +319,18 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.emulateMedia({ media: 'screen' });
     await p.goto(`${BASE}/lore.html`);
     ok(await p.$$eval('img', e => e.length) > 5, 'Lore shows its images');
+    // Region galleries: Grupos, Ambientes e Criaturas (only for the regions that have one), drawn when opened
+    ok(!!(await p.$('#r-demacia details.rg')) && !(await p.$('#r-void details.rg')) && !(await p.$('#r-ixtal details.rg')) && !(await p.$('#r-nazumah details.rg')), 'regions have an inspiration gallery, except the Void, Ixtal and Nazumah');
+    await p.click('#r-noxus details.rg summary'); await p.waitForTimeout(200);
+    ok(await p.$$eval('#r-noxus .rg-tab', e => e.map(x => x.dataset.cat).join()) === 'groups,places,creatures' && await p.$$eval('#r-noxus .rg-group h5', e => e.some(x => x.textContent === 'Legião Trifariana')), 'a region gallery has Grupos, Ambientes and Criaturas, with its factions');
+    await p.click('#r-noxus .rg-tab[data-cat=creatures]');
+    ok(await p.$eval('#r-noxus .rg-panel[data-cat=creatures]', e => !e.hidden) && await p.$eval('#r-noxus .rg-panel[data-cat=groups]', e => e.hidden), 'the tabs switch the category');
+    await p.click('#r-noxus .rg-panel[data-cat=creatures] .rg-th');
+    ok(await p.$eval('dialog.rg-box', d => d.open && !!d.querySelector('img') && !!d.querySelector('figcaption b').textContent), 'a picture opens larger with its name');
+    await p.keyboard.press('Escape');
+    ok(!!(await p.$('#andarilhos details.rg')), 'Runeterra has its own section for what belongs to no region');
+    const galMissing = await p.evaluate(() => { const out = []; const walk = o => { if (Array.isArray(o)) o.forEach(walk); else if (o && typeof o === 'object') { if (o.s) out.push(o.s); Object.values(o).forEach(walk); } }; walk(window.LORE_GALLERY); return out; });
+    ok(galMissing.length > 1000 && galMissing.every(k => fs.existsSync(path.join(__dirname, '..', 'assets', 'lore-gallery', k + '.webp'))), `every gallery picture exists (${galMissing.length})`);
     await p.context().close();
   }
 
@@ -382,13 +394,13 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     const loreSrc = Object.values(W.LORE_IMAGES).map(im => im.src);
     const dupSrc = loreSrc.filter((x, i) => loreSrc.indexOf(x) !== i);
     const crypto = require('crypto'), seen = {}, dupFile = [];
-    for (const dir of ['lore', 'cards', 'tip']) for (const f of fs.readdirSync(path.join(__dirname, '..', 'assets', dir)).filter(f => f.endsWith('.webp'))) {
+    for (const dir of ['lore', 'cards', 'tip', 'lore-gallery']) for (const f of fs.readdirSync(path.join(__dirname, '..', 'assets', dir)).filter(f => f.endsWith('.webp'))) {
       const h = crypto.createHash('sha1').update(fs.readFileSync(path.join(__dirname, '..', 'assets', dir, f))).digest('hex');
       if (seen[h]) dupFile.push(`${seen[h]} = ${dir}/${f}`); else seen[h] = `${dir}/${f}`;
     }
     // Size budget: hover art must stay small so it shows at once; Lore pictures are sized to how big they are drawn.
     const big = [];
-    for (const [dir, max] of [['cards', 30], ['tip', 30], ['lore', 90]]) for (const f of fs.readdirSync(path.join(__dirname, '..', 'assets', dir)).filter(f => f.endsWith('.webp'))) {
+    for (const [dir, max] of [['cards', 30], ['tip', 30], ['lore', 90], ['lore-gallery', 50]]) for (const f of fs.readdirSync(path.join(__dirname, '..', 'assets', dir)).filter(f => f.endsWith('.webp'))) {
       const kb = fs.statSync(path.join(__dirname, '..', 'assets', dir, f)).size / 1024;
       if (kb > max) big.push(`${dir}/${f} ${Math.round(kb)} KB`);
     }

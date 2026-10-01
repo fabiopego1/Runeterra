@@ -23,6 +23,7 @@ Não há etapa de build: basta abrir `index.html` no navegador ou servir a pasta
 * `js/data-tables.js`, `js/data-rules.js`, `js/data-lore.js`: tabelas, regras das habilidades e nomes de Runeterra.
 * `js/i18n.js` e `js/pt/*`: todos os textos em português.
 * `js/lore-page.js`, `js/pt/lore.js`, `js/lore-images.js`: a página de Lore. Para colocar uma imagem, salve o arquivo em `assets/lore/` e registre em `js/lore-images.js` (veja `assets/lore/README.md`).
+* `js/pt/lore-gallery.js` e `assets/lore-gallery/`: as galerias de inspiração de cada região na Lore (Grupos, Ambientes, Criaturas), geradas por `tools/lore-gallery/build.py` a partir das artes oficiais de Legends of Runeterra e do Universo de League of Legends.
 * `js/rules-page.js`, `js/pt/cheatsheet.js`: a página de Regras.
 * `assets/fonts/`: as fontes do site (WOFF2 recortado), servidas pelo próprio site.
 * `tests/`: testes automáticos (Playwright) que rodam no GitHub Actions a cada push.
