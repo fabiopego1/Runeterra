@@ -327,8 +327,6 @@ GROUPS = [
          champs=["K'Sante"]),
     dict(region='nazumah', id='tope', name='Tope e a caça ao baccai',
          desc="Tope, de Marrowmark, caçador de longo alcance e parceiro de K'Sante. Seu diário revelou o que a dupla não via sobre o monstro cobra-leão."),
-    dict(region='nazumah', id='skins', name="K'Sante em outros universos",
-         desc="Versões alternativas de K'Sante (Empyrean, HEARTSTEEL e Prestige). Não fazem parte da história de Nazumah, só do jogo."),
 ]
 
 # Champions that go to the Criaturas tab of a region (beasts that act on instinct, not sapient beings).
@@ -626,8 +624,4 @@ WIKI_PICKS = [
     ("K'Sante_Defeat_Your_Monster.jpg", 'nazumah', 'ksante', "K'Sante, de volta para vencer seu monstro"),
     ("K'Sante_Everything_We_Should_Have_Said.jpg", 'nazumah', 'ksante', "K'Sante e Tope: tudo o que devíamos ter dito"),
     ("K'Sante_OriginalSkin.jpg", 'nazumah', 'ksante', "K'Sante, o Orgulho de Nazumah"),
-    ("K'Sante_EmpyreanSkin.jpg", 'nazumah', 'skins', "K'Sante Empíreo"),
-    ("K'Sante_PrestigeEmpyreanSkin.jpg", 'nazumah', 'skins', "K'Sante Empíreo Prestígio"),
-    ("K'Sante_HEARTSTEELSkin.jpg", 'nazumah', 'skins', "K'Sante HEARTSTEEL"),
-    ("K'Sante_HEARTSTEELLiveMyLifeSkin.jpg", 'nazumah', 'skins', "K'Sante HEARTSTEEL: Live My Life"),
 ]
