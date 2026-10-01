@@ -153,6 +153,12 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.fill('input[data-bind="info.name"]', 'Bruxaria'); await p.press('input[data-bind="info.name"]', 'Enter'); await p.waitForTimeout(100);
     ok(await p.$$eval('.grid3 .field span', l => l.slice(0, 2).map(e => e.textContent).join('|')) === 'Nome|Título', 'the Legend asks for the Name first, then the Title');
     ok(await p.$eval('.portrait-hint', e => /3:4/.test(e.textContent)), 'the Legend tells players the portrait shape (3:4) to avoid cropping');
+    const gstyle = await p.$eval('.bio-guide', e => { const c = getComputedStyle(e); return { pos: c.position, oy: c.overflowY, mh: parseFloat(c.maxHeight) }; });
+    ok(gstyle.pos === 'sticky' && gstyle.oy === 'auto' && gstyle.mh > 0, 'the Lore guide stays in place and scrolls on its own');
+    ok(await p.$$eval('.bio-guide .gc-link', e => e.map(x => x.getAttribute('href')).join()).then(h => /lore\.html#r-zaun/.test(h) && /lore\.html\?galeria#r-zaun/.test(h)), 'the Homeland card of the Lore guide links to the nation and to its Grupos, ambientes e criaturas');
+    const regionIds = await p.evaluate(() => Object.keys(window.LORE_FOR_REGION));
+    const guides = await p.evaluate(ids => ids.map(id => [id, window.ForgeDebug.guideFor(id)]), regionIds);
+    ok(regionIds.length >= 14 && guides.every(([id, g]) => g && g.gallery === 'lore.html?galeria#r-' + id) && guides.filter(([id, g]) => g.note).map(x => x[0]).join() === 'nazumah', 'every nation links to its gallery and only Nazumah warns that it is small');
     ok(await p.evaluate(() => fetch('js/pt/data-lore.js').then(r => r.text()).then(t => /Natação[^\]]*em d10\+ você respira debaixo/.test(t))), 'Natação: breathe underwater from d10');
     await p.fill('input[data-bind="info.alias"]', 'Kaelis Du Morne');
     await p.fill('textarea[data-bind="info.costume"]', 'Manto negro.\n\nLâmina rúnica'); await p.waitForTimeout(200);
@@ -321,6 +327,9 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.emulateMedia({ media: 'screen' });
     await p.goto(`${BASE}/lore.html`);
     ok(await p.$$eval('img', e => e.length) > 5, 'Lore shows its images');
+    await p.goto(`${BASE}/lore.html?galeria#r-demacia`); await p.waitForTimeout(500);
+    ok(await p.$eval('#r-demacia details.rg', d => d.open) && (await p.$$eval('#r-demacia .rg-th', e => e.length)) > 20, 'lore.html?galeria#section opens that region\'s gallery');
+    await p.goto(`${BASE}/lore.html`);
     // Region galleries: Grupos, Ambientes e Criaturas (only for the regions that have one), drawn when opened
     ok(!!(await p.$('#r-demacia details.rg')) && !!(await p.$('#r-void details.rg')) && !!(await p.$('#r-ixtal details.rg')) && !!(await p.$('#r-nazumah details.rg')), 'every region has an inspiration gallery, Nazumah included');
     await p.click('#r-noxus details.rg summary'); await p.waitForTimeout(200);
