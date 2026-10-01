@@ -162,10 +162,6 @@ GROUPS = [
          champs=['Twisted Fate', 'Graves'], match=r'Gambler|Croupier|Pool Shark|Slotbot|Black Market|Swindler|Pocket Picker|Magician|Perfidious|Grifter'),
 
     # ---------------------------------------------------------------- Shadow Isles
-    dict(region='shadow-isles', id='camavor', name='A corte de Viego (Camavor)',
-         desc='O rei arruinado e os cavaleiros de sua antiga nação, Camavor, condenados com ele pela Ruína.',
-         champs=['Viego', 'Kalista', 'Hecarim', 'Smolder'], match=r'Camavor|Ledros|Deathless Knight|Duskrider|Spectral Rider|Iron Conquest',
-         uni=['Hecarim']),
     dict(region='shadow-isles', id='sentinels', name='Sentinelas da Luz',
          desc='Uma antiga ordem que combate a Névoa Negra e os mortos. Senna, Lucian e Akshan levam sua luz pelo mundo.',
          champs=['Senna', 'Senna, Sentinel of Light', 'Lucian', 'Akshan'], match=r'Sentinel|Rekindler|Redeemed'),
@@ -313,6 +309,13 @@ GROUPS = [
          uni=['O povo de Ixaocan']),
 
     # ---------------------------------------------------------------- Runeterra, sem região fixa
+    dict(region='runeterra', id='camavor', name='Camavor, o reino do Trono de Prata',
+         desc='Reino extinto a leste, fundado pelos gêmeos Camor e Avora e aliado aos dragões da Vovó Víbora. Ruiu quando o rei Viego deixou de governar para trazer Isolde de volta, e a Ruína levou seu povo junto: Viego, Kalista, Hecarim, o comandante Ledros e o jovem dragão Smolder, herdeiro do antigo juramento.',
+         champs=['Viego', 'Kalista', 'Hecarim', 'Smolder'], match=r'Camavor|Ledros|Deathless Knight|Duskrider|Spectral Rider|Iron Conquest',
+         uni=['Hecarim']),
+    dict(region='runeterra', id='kathkan', name='Kathkan e a Sétima Camada',
+         desc='Nação vizinha e antiga rival de Camavor, que prospera desde a queda dela. Sob a capital, uma ordem secreta de heróis, a Sétima Camada, vigia o demônio Ashlesh. Nilah, hoje sua portadora, foi a primeira kathkani a pisar em Valoran em mais de setecentos anos.',
+         champs=['Nilah']),
     dict(region='runeterra', id='rt-wanderers', name='Andarilhos e lendas',
          desc='Figuras que não pertencem a uma só terra: viajantes, guardiões cósmicos e lendas que aparecem por toda Runeterra.',
          champs=['Bard', 'Ryze', 'Evelynn', 'Fiddlesticks', 'Shaco', 'Brand', 'The Poro King', 'Elder Dragon']),
@@ -337,6 +340,8 @@ FORCE_REGION = {
              'Void Abomination', 'Hive Herald', "Kai'Sa", 'Belvethi Elder', 'Voidling', 'Void Blaster', 'Void Gate', 'Camouflaged Horror',
              'Xenotype Researchers', 'Stasis Statue'],
     'nazumah': ['Grumpy Rockbear'],
+    'runeterra': ['Spectral Rider', 'Commander Ledros', 'Duskrider', 'Camavoran Soldier', 'Camavoran Dragon', 'Deathless Knight',
+                  'Erastin, the Disgraced', 'The Iron Conquest'],
     'ixtal': ['Nidalee', 'Packmother Nidalee', 'Pakaa Cub', 'Pakaa Protector', 'Avenging Vastaya', 'Shadow in the Brush', 'Bushwhack Trap', 'Neeko', 'Malphite'],
 }
 # Cards that are creatures even though their name does not say so
@@ -373,10 +378,13 @@ UNI_PEOPLE = {
 # every card with that name moves ("todos os itens Nilah"). Targets: a group id, 'creatures' or 'places'.
 # Names listed in PULL are also taken from other regions (Fizz is filed under Bandle City by the game).
 MOVES = {
+    'runeterra': {
+        'camavor': ['Hecarim', 'Erastin, o Desonrado', 'A Conquista de Ferro'],
+    },
     'bilgewater': {
         'marai': ['Avatar das Marés', 'Guarda Abissal'],
         'hunters': ['Devoto do Desafio', 'Mestre Vigia', 'Timoneiro Experiente', 'O Dançarino das Marés', 'Dançarina dos Chakrans',
-                    'Vikrash, o Exuberante', 'Nilah', 'Devoto Dedicado'],
+                    'Vikrash, o Exuberante', 'Devoto Dedicado'],
         'buhru': ['Navegadora Nativa'],
         'pirates': ['Estátua de Macaco', 'Rex Correnteza'],
         'marine': ['Almirante Shelly', 'Artilharia Cascuda', 'Fizz', 'Nautilus', 'Zap Nadajato', 'Mergulhador Evasivo',
@@ -387,7 +395,7 @@ MOVES = {
         'creatures': ['Rato do Cais', 'Criaturas Coralinas', 'Dentão'],
     },
 }
-PULL = {'bilgewater': ['Fizz']}
+PULL = {'bilgewater': ['Fizz'], 'runeterra': ['Hecarim']}
 
 # Concept art from the League of Legends wiki, picked by hand: (file name on the wiki, region, bucket, caption).
 # bucket is "places", "creatures" or a group id of the region. Captions are numbered per region and bucket.
@@ -624,6 +632,27 @@ WIKI_PICKS = [
     ("K'Sante_Defeat_Your_Monster.jpg", 'nazumah', 'ksante', "K'Sante, de volta para vencer seu monstro"),
     ("K'Sante_Everything_We_Should_Have_Said.jpg", 'nazumah', 'ksante', "K'Sante e Tope: tudo o que devíamos ter dito"),
     ("K'Sante_OriginalSkin.jpg", 'nazumah', 'ksante', "K'Sante, o Orgulho de Nazumah"),
+    ('RotS_Background_Camavor_Meadow.jpg', 'runeterra', 'places', 'O campo de Camavor'),
+    ('Ruination_Novel_Camavor_Map.png', 'runeterra', 'places', 'Mapa de Camavor'),
+    ('Ruination_Novel_Camavoran_Continent_Map.png', 'runeterra', 'places', 'Mapa do continente camavorano'),
+    ('AS_Background_WR_Camavor_01.png', 'runeterra', 'places', 'Salão do trono de Camavor (arte conceitual)'),
+    ('Ledros_RKO_Concept_01.jpg', 'runeterra', 'camavor', 'Comandante Ledros (arte conceitual 1)'),
+    ('Ledros_RKO_Concept_02.jpg', 'runeterra', 'camavor', 'Comandante Ledros (arte conceitual 2)'),
+    ('Ledros_RKO_Concept_03.jpg', 'runeterra', 'camavor', 'Comandante Ledros (arte conceitual 3)'),
+    ('Necrit_RKO_Concept_01.jpg', 'runeterra', 'camavor', 'Necrit, o último conselheiro real (arte conceitual)'),
+    ('Necrit_RuinedKing_Concept_01.jpg', 'runeterra', 'camavor', 'Necromantes de Camavor (arte conceitual)'),
+    ('Vennix_Concept_01.jpg', 'runeterra', 'camavor', 'Vennix, capitã camavorana (arte conceitual)'),
+    ('Kalista_Infantry_RKO_Concept_01.jpg', 'runeterra', 'camavor', 'Infantaria camavorana (arte conceitual 1)'),
+    ('Kalista_Infantry_RKO_Concept_02.jpg', 'runeterra', 'camavor', 'Infantaria camavorana (arte conceitual 2)'),
+    ('Kalista_Infantry_RKO_Concept_03.jpg', 'runeterra', 'camavor', 'Infantaria camavorana (arte conceitual 3)'),
+    ('Viego_King_Concept_01.jpg', 'runeterra', 'camavor', 'Viego, o rei (arte conceitual 1)'),
+    ('Viego_King_Concept_02.jpg', 'runeterra', 'camavor', 'Viego, o rei (arte conceitual 2)'),
+    ('Viego_Concept_02.jpg', 'runeterra', 'camavor', 'Viego (arte conceitual)'),
+    ('Viego_LoR_Concept_01.jpg', 'runeterra', 'camavor', 'Viego, o Rei Arruinado (arte conceitual)'),
+    ('Nilah_Concept_02.jpg', 'runeterra', 'kathkan', 'Nilah (arte conceitual 1)'),
+    ('Nilah_Concept_04.jpg', 'runeterra', 'kathkan', 'Nilah (arte conceitual 2)'),
+    ('Nilah_Concept_06.jpg', 'runeterra', 'kathkan', 'Nilah (arte conceitual 3)'),
+    ('Nilah_Concept_07.jpg', 'runeterra', 'kathkan', 'Nilah: retrato (arte conceitual)'),
 ]
 
 # Champions whose ddragon splash is outdated: use the current art from the Universe champion page.
