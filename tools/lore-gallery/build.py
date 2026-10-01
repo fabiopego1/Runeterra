@@ -77,6 +77,14 @@ def dhash(im):
     return sum(1 << i for i in range(64) if px[(i // 8) * 9 + i % 8] > px[(i // 8) * 9 + i % 8 + 1])
 
 
+def oval(im):
+    """True for card art drawn inside a black oval (spells and the like): all four corners are black."""
+    w, h = im.size
+    s = max(8, w // 40)
+    corners = [im.crop(b).convert('L') for b in ((0, 0, s, s), (w - s, 0, w, s), (0, h - s, s, h), (w - s, h - s, w, h))]
+    return all(max(c.getextrema()) < 18 for c in corners)
+
+
 def near(h, pool, d=6):
     return any(bin(h ^ p).count('1') <= d for p in pool)
 
@@ -154,7 +162,7 @@ def main():
     jobs = []   # (key, url, kind, region, bucket, name, flavor, credit)
     for code, c in sorted(en.items()):
         champ = c.get('supertype') == 'Champion'
-        if c['type'] not in UNIT_TYPES and c['type'] != 'Spell':
+        if c['type'] not in UNIT_TYPES:              # spell art comes in a black oval frame: left out
             continue
         region = site_region(c)
         if not region:
@@ -169,8 +177,6 @@ def main():
             g = group_for(c['name'], c.get('flavorText', ''), region, champ) if c['type'] != 'Landmark' else None
             if g:
                 region, bucket = g['region'], ('group', g['id'])
-            elif c['type'] == 'Spell':
-                continue                                    # spells only when they clearly show a group
             elif c['type'] == 'Landmark':
                 bucket = ('places', None)
             elif is_creature(c) and not champ:
@@ -219,6 +225,8 @@ def main():
         im = Image.open(src).convert('RGB')
         h = dhash(im)
         if kind == 'lor':
+            if oval(im):
+                return j, None, None, out
             th = im.resize((W, H), Image.LANCZOS)
         else:
             w0, h0 = im.size
@@ -232,7 +240,7 @@ def main():
     with cf.ThreadPoolExecutor(16) as ex:
         results = list(ex.map(work, jobs))
     for j, h, th, out in results:
-        if near(h, seen):
+        if h is None or near(h, seen):
             continue                                       # same art as a picture already used (here or elsewhere)
         if j[2] == 'uni' and near(h, titles.get((j[3], j[5]), []), 12):
             continue                                       # the Universe sometimes posts the same picture twice, cropped differently
