@@ -263,6 +263,10 @@ main.stage.entering { opacity: 0; transform: translateY(14px); transition: none;
 .qname-have { margin: 8px 0 0; font-size: .82rem; color: var(--text-3); }
 .qname-have span { color: var(--text-2); }
 .qname-row { display: flex; gap: 10px; align-items: stretch; }
+.qname-row + .qname-row { margin-top: 8px; }
+.qdesc { position: relative; flex: 1; min-width: 0; display: flex; }
+.qdesc input { flex: 1; min-width: 0; padding-right: 64px; }
+.qdesc-n { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: .72rem; color: var(--text-3); pointer-events: none; }
 .qname-row input { flex: 1; min-width: 0; }
 .qname-row .btn[disabled] { opacity: .45; cursor: not-allowed; }
 .redcat { border: 1px solid var(--line-2); margin-bottom: 8px; background: var(--ink-1); }

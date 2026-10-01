@@ -360,7 +360,7 @@
     // ---------------------------------------------------------------- Step 4, Personality (pp.100-104)
     const pe = find(W.PERSONALITIES, st.pers && st.pers.id);
     if (!pe) { bad('personality', 'pick', 'no Temperament'); return out; }
-    if (!st.pers.qname || !String(st.pers.qname).trim() || st.pers.qok === false) bad('personality', 'qname', 'no Signature Quality');
+    if (!st.pers.qname || !String(st.pers.qname).trim() || !st.pers.qdesc || !String(st.pers.qdesc).trim() || st.pers.qok === false) bad('personality', 'qname', 'no Signature Quality');
     T['rp-quality'] = 'd8';
     if (pe.extra === 'impulsive') {   // p.101: upgrade one power or quality one size
       const u = st.pers.upgrade;

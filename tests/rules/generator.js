@@ -73,7 +73,7 @@
       bg: { id: c.bg, assign: {}, principle: null },
       ps: { id: c.ps, assign: {}, extra: {} },
       arch: { id: c.arch, base: c.base || null, assign: {}, principle: null, extra: {}, divMethod: null, minionQ: null, minionForms: [], notes: '' },
-      pers: { id: c.pers, qname: 'Campeão', qok: true, outTrait: null, upgrade: null, id2: null },
+      pers: { id: c.pers, qname: 'Campeão', qdesc: 'Um herói de verdade.', qok: true, outTrait: null, upgrade: null, id2: null },
       health: { trait: null, mode: 'fixed', roll: null, rerolled: false },
       pch: {}, sel: {}, info: {}, play: {}, renames: {}, traitNames: {}, evo: { traits: {}, principles: {}, abilities: {}, log: [] }, tour: { on: false, seen: {} }
     };
@@ -280,7 +280,7 @@
       ['out', () => { s.pers.outTrait = R() < 0.2 ? null : anyTrait(); }],
       ['reckless', () => { s.pers.upgrade = R() < 0.2 ? null : anyTrait(); }],
       ['pers2', () => { s.pers.id2 = R() < 0.3 ? s.pers.id : pick(W.PERSONALITIES).id; }],
-      ['qname', () => { if (R() < 0.5) s.pers.qname = '  '; else s.pers.qok = false; }],
+      ['qname', () => { const r = R(); if (r < 0.34) s.pers.qname = '  '; else if (r < 0.67) s.pers.qdesc = ''; else s.pers.qok = false; }],
       ['red pick', () => {
         const L = s.sel.red = s.sel.red || []; const r = R();
         const c = pick(W.RED_ABILITIES), a = pick(c.list);
