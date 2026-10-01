@@ -16,9 +16,6 @@ GROUPS = [
     dict(region='demacia', id='crown', name='A Coroa e a Casa Lightshield',
          desc='A família real de Demacia. O rei Jarvan III morreu, e a sucessão do jovem Jarvan IV ainda divide as casas nobres.',
          champs=['Jarvan IV'], match=r'Jarvan|Honored Lord|Dawnspeakers', uni=['Príncipe Jarvan IV']),
-    dict(region='demacia', id='crownguard', name='Casa Crownguard',
-         desc='Uma das famílias mais tradicionais de Demacia, guardiã do trono. Dela vêm Garen e Lux, que esconde sua magia.',
-         champs=['Lux', 'Lux: Illuminated'], match=r'Crownguard'),
     dict(region='demacia', id='laurent', name='Casa Laurent',
          desc='Família nobre de duelistas, famosa pela esgrima. Fiora governa a casa com a ponta da espada.',
          champs=['Fiora'], match=r'Laurent'),
@@ -37,43 +34,38 @@ GROUPS = [
     dict(region='demacia', id='illuminators', name='Iluminadores e devotos da Luz',
          desc='Clérigos e guerreiros que pregam a fé na luz e na ordem. Alguns caçam as trevas pelo mundo.',
          match=r'Radiant|Illumin|Kingfisher', uni=['O Templo dos Arautos da Luz']),
-    dict(region='demacia', id='houses', name='Outras casas nobres',
-         desc='As casas que juraram lealdade à coroa e servem de exemplo ao povo: Vayne, a caçadora de monstros, e Buvelle, de Sona, virtuose do etwahl, querida pela nobreza apesar da suspeita de que suas melodias sejam magia.',
-         champs=['Vayne', 'Sona']),
-
+    dict(region='demacia', id='houses', name='Casas Nobres',
+         desc='As casas que juraram lealdade à coroa e servem de exemplo ao povo. A Casa Crownguard, uma das famílias mais tradicionais de Demacia e guardiã do trono, da qual vêm Garen e Lux, que esconde sua magia. E as outras casas: Vayne, a caçadora de monstros, e Buvelle, de Sona, virtuose do etwahl, querida pela nobreza apesar da suspeita de que suas melodias sejam magia.',
+         champs=['Lux', 'Lux: Illuminated', 'Vayne', 'Sona'], match=r'Crownguard'),
     # ---------------------------------------------------------------- Noxus
-    dict(region='noxus', id='trifarian', name='Legião Trifariana',
-         desc='A força mais respeitada do exército noxiano, comandada por Darius. Disciplina, força e conquista.',
-         champs=['Darius', 'Kled'], match=r'Trifarian|Legion(?! Deserter)|Iron Ballista|Battering Ram|Citybreaker|Imperial Demolitionist|Captain (Farron|Kalrix)',
+    dict(region='noxus', id='trifarian', name='Trifarix e a Legião Trifariana',
+         desc='Trifarix, a capital de Noxus, e a Legião Trifariana, a força mais respeitada do exército noxiano. Darius é seu rosto mais temido e Swain, o Grande General, conduz o império. Disciplina, força e conquista.',
+         champs=['Darius', 'Kled', 'Swain'], match=r'Trifarian|Legion(?! Deserter)|Iron Ballista|Battering Ram|Citybreaker|Imperial Demolitionist|Captain (Farron|Kalrix)',
          uni=['Os Bandos Guerreiros de Noxus', 'Força na Variedade', 'A Legião Trifariana', 'Armamento Noxiano', 'Armadura Noxiana', 'Machado de Darius', 'Artífices de Guerra']),
-    dict(region='noxus', id='command', name='Alto Comando',
-         desc='Swain e o Conselho Trifariano, que tomaram o império num golpe. Estrategistas, espiões e generais.',
-         champs=['Swain'], match=r'Tactician|The Prefect|Incisive|Headmistress'),
     dict(region='noxus', id='blackrose', name='A Rosa Negra',
          desc='Uma sociedade secreta de magos que manipula Noxus nas sombras há séculos, liderada por LeBlanc.',
-         champs=['LeBlanc', 'Briar'], match=r'Black Rose|Rose|Runeweaver|Rune Squire|Arachnoid|Spell Slinger|String-Puller'),
-    dict(region='noxus', id='crimson', name='Círculo Carmesim',
-         desc='Os hemomantes que seguem Vladimir e sua magia de sangue, entre banquetes e aristocratas.',
-         champs=['Vladimir'], match=r'Crimson|Lady of Blood|Grave Physician'),
+         champs=['LeBlanc', 'Briar'], match=r'Black Rose|Rose|Runeweaver|Rune Squire|Arachnoid|String-Puller|Tactician|Incisive'),
+    dict(region='noxus', id='floricorvus', name='Conservatório Floricorvus',
+         desc='A academia noxiana onde jovens magos aprendem a usar o poder sem deixar que ele os consuma. Annie e seu urso Tibbers passaram por lá, ao lado de alunos e mestres como a diretora Telsi.',
+         champs=['Annie'], match=r'Tibbers|Floricorvus|Manasoul|Prefect|Headmistress|Spell Slinger'),
+    dict(region='noxus', id='ironlegion', name='Legião de Ferro de Mordekaiser',
+         desc='O exército de Mordekaiser, o antigo tirano que voltou dos mortos: legionários de ferro, revenantes e as almas acorrentadas que lutam por ele.',
+         champs=['Mordekaiser'], match=r'Iron Legionary|Bladepierced|Iron Conquest|Deathgrasp|Shackled|Severed|Amalgamation|Deathwinder'),
+    dict(region='noxus', id='crimson', name='Círculo Carmesim e a Legião Cinza',
+         desc='Os hemomantes que seguem Vladimir e sua magia de sangue, entre banquetes e aristocratas, e a Legião Cinza da Senhora do Sangue, Faris Noradi, de soldados e cavaleiros erguidos dos mortos, como Sion, o herói de guerra reerguido.',
+         champs=['Vladimir', 'Sion', 'Sion Returned'], match=r'Crimson|Lady of Blood|Grave Physician|Rider|Reckoner|Warmonger|Lost Soul|Reborn Grenadier'),
     dict(region='noxus', id='arena', name='Arenas e gladiadores',
          desc='Nas arenas de Noxus, glória vale tanto quanto ouro. Draven é o astro; muitos lutam para sair da obscuridade.',
          champs=['Draven', 'Samira', 'Alistar'], match=r'Arena|Crowd|Draven|Reckoner|Gloryseeker|Dashing Dandy|Daring Demolisher|Shiraza|Kato'),
-    dict(region='noxus', id='couteau', name='Família Du Couteau',
-         desc='Assassinos de elite a serviço do império. Katarina é a lâmina mais conhecida da família.',
-         champs=['Katarina', 'Cassiopeia', 'Talon'], match=r'Elegant Edge|Blade Squire'),
-    dict(region='noxus', id='bastion', name='O Bastião Imortal e os que voltaram dos mortos',
-         desc='A fortaleza de Mordekaiser, o antigo tirano que voltou dos mortos com seus cavaleiros e espectros, e Sion, o herói de guerra reerguido pela Rosa Negra para lutar mais uma vez.',
-         champs=['Mordekaiser', 'Sion', 'Sion Returned'], match=r'Revenant|Risen Rider|Fallen Rider|Wrathful Rider|Iron Harbinger', uni=['Camadas da História']),
-    dict(region='noxus', id='gray', name='A Ordem Cinzenta',
-         desc='Magos exilados que fugiram da Rosa Negra. Annie, filha de dois deles, carrega o urso Tibbers.',
-         champs=['Annie'], match=r'Tibbers|Gray Apothecary'),
+    dict(region='noxus', id='bastion', name='O Bastião Imortal',
+         desc='A fortaleza no coração de Noxus, erguida sobre séculos de história, e os revenantes que a guardam.',
+         match=r'Revenant', uni=['Camadas da História']),
     dict(region='noxus', id='renegades', name='Desertores e mercenários',
          desc='Quem largou a Legião ou nunca entrou nela: mercenários, rebeldes e exilados como Riven e Rell, a fugitiva dos laboratórios da Rosa Negra.',
          champs=['Riven', 'Rell'], match=r'Deserter|Defector|Rebel|Mercenary'),
-    dict(region='noxus', id='houses', name='Casas nobres e a ascensão dos Medarda',
-         desc='As famílias antigas que guardam o império (Darkwill, Swain, Du Couteau, Talis) e a casa Medarda, que não é das velhas, mas ganhou respeito e poder com Ambessa, a Mãe da Guerra.',
-         champs=['Ambessa'], match=r'^Lord (Mallat|Broadmane)|Noble'),
-
+    dict(region='noxus', id='houses', name='Casas Nobres',
+         desc='As famílias antigas que guardam o império (Darkwill, Swain, Talis), a Família Du Couteau, de assassinos de elite a serviço do império, com Katarina como a lâmina mais conhecida, além de Cassiopeia e Talon, e a casa Medarda, que não é das velhas, mas ganhou respeito e poder com Ambessa, a Mãe da Guerra.',
+         champs=['Ambessa', 'Katarina', 'Cassiopeia', 'Talon'], match=r'^Lord (Mallat|Broadmane)|Noble|Elegant Edge'),
     # ---------------------------------------------------------------- Freljord
     dict(region='freljord', id='avarosan', name='Avarosanos',
          desc='A tribo de Ashe, que sonha unir o Freljord em paz. Arqueiros, guardas e caçadores das terras geladas.',
@@ -111,14 +103,14 @@ GROUPS = [
          champs=['Zed'], match=r'^Shadow(?!tech)|Shadowblade|Shadowseer|Living Shadow|Ren Shadowblade|Shadow Assassin|The Shadow Assassin'),
     dict(region='ionia', id='navori', name='Irmandade Navori',
          desc='Rebeldes e foras-da-lei da província de Navori. Lutaram contra Noxus; hoje nem sempre se sabe de que lado estão.',
-         champs=['Irelia', 'Syndra'], match=r'Navori|Coastal Defender|Sacred Protector', uni=['O Placídio de Navori', 'A Grande Resistência']),
+         match=r'Navori|Coastal Defender', uni=['O Placídio de Navori', 'A Grande Resistência']),
+    dict(region='ionia', id='dancers', name='Dançarinos do Placídio',
+         desc='Os bailarinos e músicos do Placídio, o coração sagrado de Navori: Irelia, que luta como quem dança com suas lâminas, e quem faz da música e da dança uma forma de resistir.',
+         champs=['Irelia'], match=r'Ribbon Dancer|Field Musicians|Zinneia'),
     dict(region='ionia', id='monks', name='Mestres e monastérios',
-         desc='Monges, mestres de artes marciais e sábios espirituais, como Lee Sin, Master Yi e Karma.',
-         champs=['Lee Sin', 'Master Yi', 'Karma', 'Wukong'], match=r'Wuju|Monk|Disciple|Student|Mentor|Bingwen|Hirana|Doran|Jun, the Prodigy|Keeper of Masks|Old Timer',
+         desc='Monges, mestres de artes marciais e sábios espirituais, como Lee Sin, Master Yi e Karma, e os Seguidores do Dragão, guerreiros que tomam nomes das partes de um dragão (olho, garras, escamas, cauda) e evocam sua força.',
+         champs=['Lee Sin', 'Master Yi', 'Karma', 'Wukong'], match=r'Wuju|Monk|Disciple|Student|Mentor|Bingwen|Hirana|Doran|Jun, the Prodigy|Keeper of Masks|of the Dragon|Dragoncaller',
          uni=['Os Grandes Monastérios']),
-    dict(region='ionia', id='dragon', name='Os Seguidores do Dragão',
-         desc='Guerreiros que tomam nomes das partes de um dragão (olho, garras, escamas, cauda) e evocam sua força.',
-         match=r'of the Dragon|Dragoncaller'),
     dict(region='ionia', id='wanderers', name='Espadachins errantes',
          desc='Lâminas sem mestre que vagam com o vento, como os irmãos Yasuo e Yone.',
          champs=['Yasuo', 'Yone'], match=r'Yone|Windchaser|Windsinger|Windfarer|Blossoming Blade|Blade$|Zephyr'),
@@ -151,9 +143,6 @@ GROUPS = [
          desc='Os que caçam monstros marinhos e retalham as presas nas Docas da Matança. Pyke era um deles. Também aqui está o grupo de Nilah, que veio de Kathkan, uma terra desconhecida, para desafiar criaturas lendárias.',
          champs=['Pyke'], match=r'Jaull Hunters|Hunting Fleet|Razorscale Hunter|Butcher|Taskmaster|Harpoon|Dreg',
          uni=['Arpoeiros', 'Mestra do Arpão', 'Invocadores de Serpentes', 'Galpões de Matança', 'Baías de Entalhadura', 'Ossos do ofício']),
-    dict(region='bilgewater', id='marai', name='Os Marai',
-         desc='O povo-peixe vastaya dos recifes. Nami deixou as águas para buscar a Pedra da Lua.',
-         champs=['Nami'], match=r'Marai|Tidedancer|Syren'),
     dict(region='bilgewater', id='marine', name='Vida Marinha',
          desc='Quem vive do mar e dentro dele: marinheiros, aventureiros das ondas e criaturas simpáticas (ou nem tanto), como Fizz, o trapaceiro das marés, e Nautilus, o Titã das Profundezas.',
          champs=[]),
@@ -169,13 +158,9 @@ GROUPS = [
          desc='Elise e seus devotos, que oferecem vidas a Vilemaw, a aranha gigante das Ilhas.',
          champs=['Elise', 'Spider Queen Elise'], match=r'Vilemaw|Cultist|Keeper of the Box'),
     dict(region='shadow-isles', id='helia', name='Os Heliatas',
-         desc='Os sábios, escrivães e guardiões de Hélia, a cidade das Ilhas Abençoadas antes da Ruína, e os que sobreviveram a ela: Karthus, o cantor da morte, Yorick, o pastor de almas, Gwen, a costureira, e Maokai, o treant.',
-         champs=['Karthus', 'Yorick', 'Gwen', 'Maokai'], match=r'Scribe|Chronicler|Archivist|Prodigy|Keeper|Islander|Catalogue|Hapless',
+         desc='Os sábios, escrivães e guardiões de Hélia, a cidade das Ilhas Abençoadas antes da Ruína, e os que sobreviveram a ela: Karthus, o cantor da morte, Yorick, o pastor de almas, Gwen, a costureira, Maokai, o treant, e Thresh, o carcereiro que coleciona almas numa lanterna, junto de quem ele guia ou caça.',
+         champs=['Karthus', 'Yorick', 'Gwen', 'Maokai', 'Thresh'], match=r'Scribe|Chronicler|Archivist|Prodigy|Keeper|Islander|Catalogue|Soul Shepherd|Warden',
          uni=['Escrivão Eterno', 'Cidadãos das Ilhas das Bênçãos']),
-    dict(region='shadow-isles', id='wardens', name='Thresh e as almas',
-         desc='O carcereiro que coleciona almas numa lanterna, e os espíritos que guiam ou caçam os perdidos.',
-         champs=['Thresh', 'Kindred'], match=r'Soul Shepherd|Soulspinner|Warden', uni=['Thresh', 'Pastor de Almas']),
-
     # ---------------------------------------------------------------- Targon
     dict(region='targon', id='solari', name='Os Solari',
          desc='A fé do Sol, guardada por sacerdotes e guerreiros Ra\'Horak. Leona é o Aspecto do Sol.',
@@ -193,6 +178,9 @@ GROUPS = [
          match=r'Mountain|Sojourner|Pilgrim|Climber|Scholar|Stargazer|Scryer|Rumul|Mystic|Saga Seeker|Lawkeeper|Divine Clerk',
          uni=['CASA DOS RAKKOR', 'EM TORNO DA MONTANHA', 'OS RAKKOR', 'A VIDA ENTRE AS TRIBOS', 'OS GUERREIROS', 'TALHADO NA MONTANHA', 'VIDA DE PEREGRINO', 'EQUIPAMENTO DE ESCALADA', 'ITENS RELIGIOSOS', 'ARRANJO DO ZÊNITE', 'A DESPEDIDA', 'UMA JORNADA AO PICO DA MONTANHA', 'PADRÕES DOS MORTOS']),
 
+    dict(region='targon', id='marai', name='Os Marai',
+         desc='Vastaya de Ionia que, séculos atrás, seguiram até a costa do Monte Targon e construíram uma vila escondida sob um recife de coral. Dependem das pedras da lua para afastar os predadores das profundezas. Nami vem desse povo.',
+         champs=['Nami'], match=r'Marai|Abyssal Guard|Sandhopper|Avatar of the Tides'),
     # ---------------------------------------------------------------- Shurima
     dict(region='shurima', id='empire', name='O Império e os Ascendidos',
          desc='Azir voltou e quer reconstruir o império. Ao seu lado e contra ele, os Ascendidos: Nasus, Renekton, Xerath.',
@@ -210,10 +198,9 @@ GROUPS = [
     dict(region='shurima', id='time', name='Os guardiões do tempo',
          desc='Zilean e os que estudam a magia do tempo, entre relógios, profecias e ruínas de Urtistan.',
          champs=['Zilean'], match=r'Clock|Chronomancer|Preservationist|Preservarium|Conservator'),
-    dict(region='shurima', id='taliyah', name='Taliyah e os pedreiros',
+    dict(region='shurima', id='taliyah', name='Taliyah e as tecelãs de pedra',
          desc='A tecelã de pedras que deixou Noxus para proteger seu povo, e quem molda a terra do deserto.',
          champs=['Taliyah'], match=r'Stone|Sandstone|Rock'),
-
     # ---------------------------------------------------------------- Piltover
     dict(region='piltover', id='academy', name='Academia e inventores',
          desc='A Academia de Piltover reúne gênios, professores e aprendizes. Heimerdinger é o mais antigo deles.',
@@ -280,12 +267,9 @@ GROUPS = [
     dict(region='void', id='prophets', name='O culto e o profeta do Vazio',
          desc='Mortais que ouviram o chamado do Vazio e o seguem como profecia. Malzahar, o Profeta do Vazio, guia seus fiéis; o Arauto da Colmeia fala com quem escuta.',
          champs=['Malzahar'], match=r'Hive Herald|Belvethi Elder'),
-    dict(region='void', id='riftwalkers', name='Caminhantes das Fendas e pesquisadores',
-         desc='Quem decidiu enfrentar o Vazio em vez de fugir dele. Kassadin, o Caminhante do Vazio, caça rupturas pelo mundo, e pesquisadores estudam, com muito risco, o que cresce na escuridão.',
-         champs=['Kassadin'], match=r'Xenotype|Stasis Statue', uni=['Sal na terra']),
     dict(region='void', id='touched', name='Tocados pelo Vazio',
-         desc='Mortais que carregam o Vazio na própria carne, por escolha ou azar. Kai\'Sa, a Filha do Vazio, divide o corpo com uma segunda pele viva.',
-         champs=['Kai\'Sa'], uni=['O toque do Vazio']),
+         desc='Mortais que carregam o Vazio na própria carne, por escolha ou azar, e quem decidiu enfrentá-lo. Kai\'Sa, a Filha do Vazio, divide o corpo com uma segunda pele viva; Kassadin, o Caminhante do Vazio, caça rupturas pelo mundo; os belvethianos conhecem o enxame de perto.',
+         champs=["Kai'Sa", 'Kassadin'], match=r'Belvethi|Hive Herald', uni=['O toque do Vazio', 'Sal na terra']),
     dict(region='void', id='icathia', name='Os últimos de Icathia',
          desc='O reino que o Vazio devorou. Jax, o último guerreiro de Icathia, procura pelo mundo quem tenha a força de enfrentar o que destruiu sua casa.',
          champs=['Jax'], uni=['A Queda de Icathia']),
@@ -311,7 +295,7 @@ GROUPS = [
     # ---------------------------------------------------------------- Runeterra, sem região fixa
     dict(region='runeterra', id='camavor', name='Camavor, o reino do Trono de Prata',
          desc='Reino extinto a leste, fundado pelos gêmeos Camor e Avora e aliado aos dragões da Vovó Víbora. Ruiu quando o rei Viego deixou de governar para trazer Isolde de volta, e a Ruína levou seu povo junto: Viego, Kalista, Hecarim, o comandante Ledros e o jovem dragão Smolder, herdeiro do antigo juramento.',
-         champs=['Viego', 'Kalista', 'Hecarim', 'Smolder'], match=r'Camavor|Ledros|Deathless Knight|Duskrider|Spectral Rider|Iron Conquest',
+         champs=['Viego', 'Kalista', 'Hecarim', 'Smolder'], match=r'Camavor|Ledros|Deathless Knight|Duskrider|Spectral Rider',
          uni=['Hecarim']),
     dict(region='runeterra', id='kathkan', name='Kathkan e a Sétima Camada',
          desc='Nação vizinha e antiga rival de Camavor, que prospera desde a queda dela. Sob a capital, uma ordem secreta de heróis, a Sétima Camada, vigia o demônio Ashlesh. Nilah, hoje sua portadora, foi a primeira kathkani a pisar em Valoran em mais de setecentos anos.',
@@ -319,6 +303,9 @@ GROUPS = [
     dict(region='runeterra', id='rt-wanderers', name='Andarilhos e lendas',
          desc='Figuras que não pertencem a uma só terra: viajantes, guardiões cósmicos e lendas que aparecem por toda Runeterra.',
          champs=['Bard', 'Ryze', 'Evelynn', 'Fiddlesticks', 'Shaco', 'Brand', 'The Poro King', 'Elder Dragon']),
+    dict(region='runeterra', id='legends', name='Lendas',
+         desc='Entidades e histórias que atravessam Runeterra e não pertencem a uma só região: deuses da vida e da morte, demônios, feras míticas e pesadelos, de Kindred a Nocturne.',
+         champs=['Kindred', 'Nocturne']),
     dict(region='runeterra', id='rt-darkin', name='Os Darkin',
          desc='Antigos Ascendidos de Shurima presos em armas após a guerra contra Icathia. Possuem quem os empunha e espalham ruína por onde passam.',
          champs=['Aatrox', 'Kayn', 'Rhaast', 'The Shadow Assassin', 'Varus', 'Zaahen']),
@@ -331,14 +318,10 @@ GROUPS = [
     dict(region='nazumah', id='tope', name='Tope e a caça ao baccai',
          desc="Tope, de Marrowmark, caçador de longo alcance e parceiro de K'Sante. Seu diário revelou o que a dupla não via sobre o monstro cobra-leão."),
     # ---------------------------------------------------------------- groups added in the Universe review
-    dict(region='demacia', id='army', name='Exército de Demacia',
-         desc='Soldados, ferreiros, cozinheiros e heróis populares que sustentam o exército demaciano para além da Vanguarda Destemida, como a yordle Poppy, que empunha o martelo de um herói, e a cavaleira Cithria.'),
     dict(region='shadow-isles', id='revelry', name='Festa da Meia-Noite',
          desc='Espíritos que ainda dançam, tocam e brindam nos salões assombrados das Ilhas das Sombras, repetindo as festas de uma vida que já acabou, e o poeta sombrio Grimm.'),
     dict(region='shadow-isles', id='specters', name='Espectros e almas penadas',
-         desc='Os mortos das Ilhas das Sombras: almas presas à Névoa que perderam o corpo, mas guardam fragmentos de memória, personalidade e desejos, dos espectros mais fracos aos que ainda lembram quem foram.'),
-    dict(region='shadow-isles', id='mist', name='A Névoa Negra',
-         desc='A Névoa que a Ruína de Hélia espalhou: ela molda o que toca, mostra a cada vivo algo único e prende as almas nas Ilhas das Sombras.'),
+         desc='Os mortos das Ilhas das Sombras: almas presas à Névoa que perderam o corpo, mas guardam fragmentos de memória, personalidade e desejos, dos espectros mais fracos aos que ainda lembram quem foram, e a Névoa Negra que os prende.'),
     dict(region='bandle', id='citizens', name='Cidadãos de Bandópolis',
          desc='Prefeitos, empresários da arena, tios e vizinhos: o povo comum de Bandópolis, entre festas e confusões.'),
     dict(region='piltover', id='seraphine', name='Seraphine e o palco de Piltover',
@@ -401,7 +384,6 @@ MOVES = {
         'camavor': ['Hecarim', 'Erastin, o Desonrado', 'A Conquista de Ferro'],
     },
     'bilgewater': {
-        'marai': ['Avatar das Marés', 'Guarda Abissal'],
         'hunters': ['Devoto do Desafio', 'Mestre Vigia', 'Timoneiro Experiente', 'O Dançarino das Marés', 'Dançarina dos Chakrans',
                     'Vikrash, o Exuberante', 'Devoto Dedicado'],
         'buhru': ['Navegadora Nativa'],
@@ -676,6 +658,10 @@ WIKI_PICKS = [
 
 # Champions whose ddragon splash is outdated: use the current art from the Universe champion page.
 UNIVERSE_SPLASH = {'fiddlesticks'}
+# Champions whose splash art is wanted even though their Legends of Runeterra card art is already used elsewhere on the site.
+FORCE_SPLASH = {'Nocturne'}
+# Names that differ from the card (one card art for two forms of the same card).
+RENAME = {'03MT059': 'A Irmã Dourada e A Irmã Prateada'}
 
 # Relocations decided one by one against the Universe and the wiki (key of the picture -> region, group id | places | creatures).
 # The card regions of Legends of Runeterra were chosen for gameplay and are not always the lore.
@@ -684,18 +670,18 @@ RELOCATE = {
     '09DE036': ('ionia', 'creatures'),  # Espíritos Arbóreos
     '09DE029': ('ionia', 'creatures'),  # Luminispírito
     '01DE049': ('freljord', 'creatures'),  # Poro Valente
-    '03DE004': ('demacia', 'army'),  # Capitã Arrika
-    '04DE009': ('demacia', 'army'),  # Cavaleiro Galante
-    '01DE043': ('demacia', 'army'),  # Chefs de Guerra
-    '06DE006': ('demacia', 'army'),  # Cozinheiro de Combate
-    '01DE034': ('demacia', 'army'),  # Ferreiro de Batalha
-    '01DE052': ('demacia', 'army'),  # Formação Aciária
-    '01DE009': ('demacia', 'army'),  # Protetora Aciária
-    '06DE025': ('demacia', 'army'),  # Recruta Benevolente
-    '06DE019': ('demacia', 'army'),  # Caçadora Viúva
-    '01DE039': ('demacia', 'army'),  # Cithria de Campinuvem
-    '04DE005': ('demacia', 'army'),  # Cithria, Dama das Nuvens
-    '01DE051': ('demacia', 'army'),  # Cithria, a Audaciosa
+    '03DE004': ('demacia', 'vanguard'),  # Capitã Arrika
+    '04DE009': ('demacia', 'vanguard'),  # Cavaleiro Galante
+    '01DE043': ('demacia', 'outros'),  # Chefs de Guerra
+    '06DE006': ('demacia', 'outros'),  # Cozinheiro de Combate
+    '01DE034': ('demacia', 'outros'),  # Ferreiro de Batalha
+    '01DE052': ('demacia', 'vanguard'),  # Formação Aciária
+    '01DE009': ('demacia', 'vanguard'),  # Protetora Aciária
+    '06DE025': ('demacia', 'vanguard'),  # Recruta Benevolente
+    '06DE019': ('demacia', 'outros'),  # Caçadora Viúva
+    '01DE039': ('demacia', 'vanguard'),  # Cithria de Campinuvem
+    '04DE005': ('demacia', 'vanguard'),  # Cithria, Dama das Nuvens
+    '01DE051': ('demacia', 'vanguard'),  # Cithria, a Audaciosa
     '02DE010': ('demacia', 'rangers'),  # Genevieve Cordielmo
     '02DE004': ('demacia', 'rangers'),  # Guardião da Presa Verde
     '02DE008': ('demacia', 'rangers'),  # Companheiro Chifrídeo
@@ -705,17 +691,17 @@ RELOCATE = {
     '06SI022': ('shadow-isles', 'revelry'),  # Amante Espectral
     '06SI009': ('shadow-isles', 'revelry'),  # Banda Assombrosa
     '06SI028': ('shadow-isles', 'revelry'),  # Mordomo Espectral
-    '01SI038': ('shadow-isles', 'revelry'),  # Fantasma Travessa
+    '01SI038': ('shadow-isles', 'specters'),  # Fantasma Travessa
     '06SI016': ('shadow-isles', 'revelry'),  # Anfitrião Animado
     '06SI013': ('shadow-isles', 'revelry'),  # Eternas Dançarinas
     '06SI026': ('shadow-isles', 'revelry'),  # Regente das Névoas
-    '09SI014': ('shadow-isles', 'revelry'),  # Tristálio
+    '09SI014': ('bandle', 'artists'),  # Tristálio
     '01SI007T1': ('shadow-isles', 'specters'),  # Espírito Libertado
     '01SI009': ('shadow-isles', 'specters'),  # Espíritos Agitados
     '01SI016': ('shadow-isles', 'specters'),  # Evocadora de Espectros
     '01SI044': ('shadow-isles', 'specters'),  # Matrona Espectral
     '06SI034': ('shadow-isles', 'specters'),  # Espectro dos Ecos
-    '08SI003': ('shadow-isles', 'specters'),  # Espectros Agrilhoados
+    '08SI003': ('noxus', 'ironlegion'),  # Espectros Agrilhoados
     '08SI018': ('shadow-isles', 'specters'),  # Espectrógrafo
     '07SI013': ('shadow-isles', 'specters'),  # Espectreva Proliferante
     '03SI015': ('shadow-isles', 'specters'),  # Observador Inoportuno
@@ -727,7 +713,7 @@ RELOCATE = {
     'u335e87cf52': ('shadow-isles', 'specters'),  # Obstinados
     'uf31b723fcc': ('shadow-isles', 'specters'),  # Viúva dos Cantos Esquecidos
     '01SI011': ('shadow-isles', 'specters'),  # Açougueiro Voraz
-    '08SI007': ('shadow-isles', 'specters'),  # Legião dos Desgarrados
+    '08SI007': ('noxus', 'ironlegion'),  # Legião dos Desgarrados
     '01SI031': ('shadow-isles', 'specters'),  # Precursor de Ferro
     '01SI035': ('shadow-isles', 'specters'),  # Rhasa, o Ruptor
     '06SI019': ('shadow-isles', 'specters'),  # Sultur
@@ -736,14 +722,14 @@ RELOCATE = {
     '06SI041': ('shadow-isles', 'specters'),  # Vigilante do Vale Enluarado
     '01SI058': ('shadow-isles', 'specters'),  # Mensageiro Etéreo
     '09SI017': ('shadow-isles', 'specters'),  # Kharox
-    '04SI045': ('shadow-isles', 'mist'),  # Névoa Invasora
-    '01SI014': ('shadow-isles', 'mist'),  # Espectro da Névoa
-    '05SI013': ('shadow-isles', 'mist'),  # Guardiões da Névoa
+    '04SI045': ('shadow-isles', 'specters'),  # Névoa Invasora
+    '01SI014': ('shadow-isles', 'specters'),  # Espectro da Névoa
+    '05SI013': ('shadow-isles', 'specters'),  # Guardiões da Névoa
     '02SI004': ('shadow-isles', 'helia'),  # Defensora Arruinada
-    '04SI013': ('shadow-isles', 'wardens'),  # Mãe Mascarada
-    '04SI014': ('shadow-isles', 'wardens'),  # Presa
-    '04SI004': ('ionia', 'kinkou'),  # As Asas e a Onda
-    '08SI015': ('shadow-isles', 'creatures'),  # Amálgama de Ritos Vis
+    '04SI013': ('runeterra', 'legends'),  # Mãe Mascarada
+    '04SI014': ('runeterra', 'legends'),  # Presa
+    '04SI004': ('runeterra', 'legends'),  # As Asas e a Onda
+    '08SI015': ('noxus', 'ironlegion'),  # Amálgama de Ritos Vis
     '03SI001': ('shadow-isles', 'creatures'),  # Espreitador Eternebroso
     '01SI004': ('shadow-isles', 'creatures'),  # Perdição das Águas Sombrias
     '02SI010': ('shadow-isles', 'creatures'),  # Florimorta Errante
@@ -777,9 +763,9 @@ RELOCATE = {
     '04IO015': ('ionia', 'creatures'),  # Gotinha Dançante
     '06IO004': ('ionia', 'artists'),  # A Criadora
     '06IO015': ('ionia', 'artists'),  # A Testemunha
-    '04IO002': ('ionia', 'artists'),  # Zinneia, Crescendo de Aço
-    '04IO009': ('ionia', 'artists'),  # Dançarina das Fitas
-    '04IO001': ('ionia', 'artists'),  # Músicos de Batalha
+    '04IO002': ('ionia', 'dancers'),  # Zinneia, Crescendo de Aço
+    '04IO009': ('ionia', 'dancers'),  # Dançarina das Fitas
+    '04IO001': ('ionia', 'dancers'),  # Músicos de Batalha
     '06IO044': ('ionia', 'artists'),  # Melodia Celeste
     '06IO003': ('ionia', 'artists'),  # A Contrarregra
     '01IO014': ('ionia', 'spirits'),  # Ancião da Clareira Verdejante
@@ -798,31 +784,31 @@ RELOCATE = {
     '05IO003': ('ionia', 'spirits'),  # Ancestral Sem Rumo
     '01NX034': ('freljord', 'creatures'),  # Poro Carinhoso
     '06NX031': ('freljord', 'creatures'),  # Yeti Acorrentado
-    '05NX005': ('noxus', 'bastion'),  # Belicista Ancestral
-    '05NX016': ('noxus', 'bastion'),  # A Senhora do Sangue
-    '05NX006': ('noxus', 'bastion'),  # Granadeiro Renascido
-    '05NX009': ('noxus', 'bastion'),  # Alma Perdida
+    '05NX005': ('noxus', 'crimson'),  # Belicista Ancestral
+    '05NX016': ('noxus', 'crimson'),  # A Senhora do Sangue
+    '05NX006': ('noxus', 'crimson'),  # Granadeiro Renascido
+    '05NX009': ('noxus', 'crimson'),  # Alma Perdida
     '07NX015': ('noxus', 'renegades'),  # A Dama Saqueadora
     '07NX005': ('noxus', 'renegades'),  # Capitã Indari
     '08NX012': ('noxus', 'renegades'),  # Obtentor Armado
     '07NX004': ('noxus', 'renegades'),  # Artífice Astuta
     '02NX010': ('noxus', 'trifarian'),  # Montapresa Encouraçado
-    '06NX015': ('noxus', 'blackrose'),  # Estudante Manalma
-    '06NX028T1': ('noxus', 'gray'),  # Tybaulk
+    '06NX015': ('noxus', 'floricorvus'),  # Estudante Manalma
+    '06NX028T1': ('noxus', 'floricorvus'),  # Tybaulk
     '07PZ021': ('piltover', 'explorers'),  # Anura e Froop
     '01PZ015': ('piltover', 'hextech'),  # T-Hex
     '01PZ059': ('piltover', 'hextech'),  # Esmagobô Dourado
     '03PZ019': ('piltover', 'hextech'),  # Porobot Recauchutado
     '08PZ025': ('piltover', 'hextech'),  # Protótipo de Porobot
     '01PZ020': ('freljord', 'creatures'),  # Poro Audacioso
-    '07PZ017': ('zaun', 'sump'),  # Comerciante de Bombas de Clarão
+    '07PZ017': ('piltover', 'hextech'),  # Comerciante de Bombas de Clarão
     '01PZ025': ('zaun', 'sump'),  # Comerciante de Cogumelos
     '01PZ017': ('zaun', 'sump'),  # Vendedor de Barris Usados
     '08PZ024': ('zaun', 'sump'),  # Peixeiro Picareta
-    '06PZ042': ('piltover', 'academy'),  # Imperfeccionista Maligna
+    '06PZ042': ('zaun', 'firelights'),  # Imperfeccionista Maligna
     '06PZ021T2': ('piltover', 'seraphine'),  # Seraphine
     '06PZ014': ('piltover', 'seraphine'),  # Presidente do Fã-clube
-    '08PZ006': ('runeterra', 'kathkan'),  # Iascylla, Acrostólio das Profundezas
+    '08PZ006': ('bilgewater', 'creatures'),  # Iascylla, Acrostólio das Profundezas
     'lmel': ('noxus', 'houses'),  # Mel
     '04PZ016': ('zaun', 'creatures'),  # Bumbuíno
     '08PZ008': ('zaun', 'firelights'),  # Maryam, a Protetora do Templo
@@ -910,10 +896,133 @@ RELOCATE = {
     '04SH076T1': ('shurima', 'places'),  # Estátua de Estase
     '07RU015': ('freljord', 'creatures'),  # O Rei Poro
     '07RU015T4': ('freljord', 'creatures'),  # O Rei Poro
-    '05BC041T1': ('demacia', 'army'),  # Poppy
+    '05BC041T1': ('demacia', 'outros'),  # Poppy
     '05BC163T1': ('zaun', 'chempunks'),  # Ziggs
     '05BC006': ('zaun', 'chempunks'),  # O Arsenal
     '06MT008': ('demacia', 'illuminators'),  # Kayle
     '06MT008T2': ('demacia', 'illuminators'),  # Kayle
-    '06MT018': ('demacia', 'illuminators'),  # Guardião da Lei
+    '06MT018': ('targon', 'aspects'),  # Guardião da Lei
+    '01NX055': ('shadow-isles', 'spider'),  # Aranha Doméstica
+    '01NX023': ('shadow-isles', 'spider'),  # Anfitriã Aracnídea
+    '01NX046': ('shadow-isles', 'spider'),  # Vigia Aracnídea
+    '04NX016': ('shadow-isles', 'spider'),  # Fiandeira Estridente
+    '01SI056': ('shadow-isles', 'spider'),  # Predadora Desenfreada
+    '07SI010': ('shadow-isles', 'spider'),  # Aracnídeo Necrótico
+    '06NX044': ('shadow-isles', 'spider'),  # Urdidora Sorrateira
+    '01SI002': ('shadow-isles', 'spider'),  # Cria Aracnídea
+    '01SI053T2': ('shadow-isles', 'spider'),  # Elise, a Aranha Rainha
+    '01SI039': ('shadow-isles', 'spider'),  # Terror Aracnídeo
+    '01NX015': ('shadow-isles', 'spider'),  # Cria Preciosa
+    '07SI012': ('shadow-isles', 'spider'),  # Caranguejeira Fiandeira
+    '01SI027T1': ('shadow-isles', 'spider'),  # Maldíbula
+    '08SI026': ('noxus', 'ironlegion'),  # Cultista do Aperto Mortal
+    '06SI006': ('ionia', 'shadow'),  # Guardiã da Caixa
+    '01SI043': ('shadow-isles', 'outros'),  # Aristocrata Azarado
+    '01SI012': ('shadow-isles', 'outros'),  # Pescador Distraído
+    '04SI005T1': ('runeterra', 'legends'),  # Kindred
+    '04SI007': ('runeterra', 'legends'),  # O Demônio Etéreo
+    '04SI012': ('runeterra', 'legends'),  # Raposa Astral
+    '04SI009': ('runeterra', 'legends'),  # Fiandeiro de Almas
+    '04SI003': ('runeterra', 'legends'),  # Ícone Decadente
+    '01SI052': ('shadow-isles', 'helia'),  # Thresh
+    '01SI052T1': ('shadow-isles', 'helia'),  # Thresh
+    'ua1295d0f5d': ('shadow-isles', 'helia'),  # Thresh
+    '01SI023': ('shadow-isles', 'helia'),  # Pastora de Almas
+    'u9b0c6033a8': ('shadow-isles', 'helia'),  # Pastor de Almas
+    '01SI026': ('shadow-isles', 'helia'),  # Presa do Guardião
+    '08SI037T1': ('noxus', 'ironlegion'),  # Ocasoquilador das Mil Garras
+    '09SI013': ('noxus', 'ironlegion'),  # A Conquista de Ferro
+    '05SI010': ('shadow-isles', 'sentinels'),  # Dess e Ada
+    '06SI003': ('void', 'icathia'),  # Fireth, a Ceifadora das Areias
+    '01SI020': ('shadow-isles', 'specters'),  # O Reacendedor
+    '06SI038': ('shadow-isles', 'revelry'),  # Prodígio Redimido
+    '09DE031': ('demacia', 'outros'),  # Jarro Plumaluz
+    '01DE015': ('demacia', 'vanguard'),  # Guardiã Radiante
+    '09DE039': ('drop', 'drop'),  # A Luz de Demacia
+    'uc8d4b4194d': ('demacia', 'places'),  # O Templo dos Arautos da Luz
+    '08DE022': ('demacia', 'outros'),  # O Martim-Pescador
+    '05DE012': ('demacia', 'durand'),  # Asalonga de Petricita
+    '05DE013': ('demacia', 'durand'),  # Cervo de Petricita
+    '05DE018': ('demacia', 'durand'),  # Cão de Petricita
+    '06DE044': ('demacia', 'durand'),  # Touro de Petricita
+    '01DE004': ('demacia', 'rangers'),  # Vanguarda de Rapinas Prateadas
+    '06DE010': ('ionia', 'shadow'),  # Desertora dos Cavaleiros-Patrulheiros
+    '04IO010': ('drop', 'drop'),  # Lâmina
+    '01IO021': ('ionia', 'creatures'),  # Cria do Vento
+    '05IO020': ('ionia', 'vastaya'),  # Cantaventos
+    '07IO023': ('ionia', 'pit'),  # Veterano
+    '07IO014': ('ionia', 'pit'),  # Mestre Bingwen, o Analista
+    'lsyndra': ('ionia', 'outros'),  # Syndra
+    '04IO005': ('ionia', 'dancers'),  # Irelia
+    '04IO005T2': ('ionia', 'dancers'),  # Irelia
+    '04IO013': ('ionia', 'creatures'),  # Protetor Sagrado
+    '06NX023': ('ionia', 'outros'),  # Pescadora Ioniana
+    '06NX019': ('ionia', 'shadow'),  # Desertor Noxiano
+    '02FR001': ('freljord', 'winters-claw'),  # Guerreira Incandescente
+    '08FR033': ('freljord', 'old-gods'),  # Berserker Vinculâmina
+    '05FR014': ('freljord', 'old-gods'),  # Ira de Freljord
+    '08FR002': ('freljord', 'ursine'),  # Profetisa de Valhir
+    '08FR011': ('freljord', 'ursine'),  # Caprina Chamabrasas
+    '04PZ012': ('zaun', 'firelights'),  # Perfeccionista Prática
+    '06PZ020': ('piltover', 'seraphine'),  # Bolota, o Hextécnico
+    '06PZ010': ('piltover', 'seraphine'),  # Acusticista
+    '01PZ021': ('zaun', 'barons'),  # Capangas de Midenstokke
+    '06PZ025': ('zaun', 'sump'),  # Solidão
+    'u1bace67821': ('piltover', 'places'),  # Oficina do Instituto Horológico
+    'u865c7bec6d': ('piltover', 'places'),  # Oficinas
+    '07PZ015T1': ('piltover', 'hextech'),  # Bugiganga Fujona
+    '01PZ045': ('zaun', 'sump'),  # Pedinte Zaunita
+    '04SH003T14': ('shurima', 'empire'),  # Combatente de Arenito
+    '04SH046': ('shurima', 'empire'),  # Quimera de Arenito
+    '04SH072': ('shurima', 'empire'),  # Profetisa
+    '07SH039': ('piltover', 'outros'),  # Soldado Adaptável
+    '07SH005': ('piltover', 'outros'),  # Magnata Magnânimo
+    '04SH041': ('shurima', 'taliyah'),  # Vigilante do Sai
+    '04SH089': ('shurima', 'taliyah'),  # Naturalista do Deserto
+    '06SH051': ('shurima', 'taliyah'),  # Pastora de Pedregursos
+    '05SH015': ('shurima', 'xerath'),  # Vidente das Areias
+    '04SH042': ('shurima', 'creatures'),  # Pedregurso Hibernado
+    'u65e3c56b81': ('shurima', 'creatures'),  # No Topo dos Dormuns
+    '04SH011': ('shurima', 'time'),  # Pesquisadoras de Xenótipo
+    '05BW004': ('targon', 'marai'),  # Avatar das Marés
+    '05BW010': ('targon', 'marai'),  # Grande Mãe Marai
+    '05BW008': ('targon', 'marai'),  # Guarda Abissal
+    '06BW047': ('targon', 'marai'),  # Marai Arteira
+    '05BW005T1': ('targon', 'marai'),  # Nami
+    '05BW001': ('targon', 'marai'),  # Vigia Marai
+    'wfb0daf437a': ('targon', 'marai'),  # Marai (arte conceitual 1)
+    'w46dfca26a8': ('targon', 'marai'),  # Marai (arte conceitual 2)
+    'w670fc6a88f': ('targon', 'marai'),  # Marai (arte conceitual 3)
+    '05BW002': ('targon', 'marai'),  # Aventureiro Saltareias
+    '08BW036': ('targon', 'places'),  # Pináculo Coralino Marai
+    '06SH008': ('void', 'touched'),  # Anciã Belvethiana
+    '06SH016': ('void', 'touched'),  # Arauto do Enxame
+    'u9af8e4424e': ('bilgewater', 'places'),  # Templo Buhru
+    '06NX012T7': ('noxus', 'floricorvus'),  # Annie
+    '06NX012T1': ('noxus', 'floricorvus'),  # Tibbers
+    '06NX013': ('noxus', 'floricorvus'),  # Lançador de Feitiços
+    '06NX008': ('noxus', 'floricorvus'),  # A Monitora
+    '08NX014': ('noxus', 'floricorvus'),  # Diretora Telsi
+    '05NX001T3': ('noxus', 'crimson'),  # Sion
+    '05NX001T1': ('noxus', 'crimson'),  # Sion Reanimado
+    '03NX009': ('noxus', 'crimson'),  # Cavaleira Colérica
+    '05NX013': ('noxus', 'crimson'),  # Cavaleiro Caído
+    '05NX018': ('noxus', 'crimson'),  # Cavaleiro Reerguido
+    '05NX015': ('noxus', 'crimson'),  # Desafiador Caído
+    '05NX002': ('noxus', 'crimson'),  # Nobre Rebelde
+    '08SI042': ('noxus', 'ironlegion'),  # Mordekaiser
+    '08SI042T1': ('noxus', 'ironlegion'),  # Mordekaiser
+    '08NX024': ('noxus', 'ironlegion'),  # Legionário de Ferro
+    '08NX025': ('noxus', 'ironlegion'),  # Revenã Terebrado
+    '03NX003': ('noxus', 'trifarian'),  # Escudeiro da Lâmina
+    '07NX007': ('noxus', 'renegades'),  # Samira
+    '07NX007T1': ('noxus', 'renegades'),  # Samira
+    '03NX002': ('noxus', 'trifarian'),  # Arrel, a Rastreadora
+    '01NX008': ('noxus', 'trifarian'),  # Basilisqueiro
+    '09NX032': ('noxus', 'trifarian'),  # Domador de Yetis
+    '03NX005': ('noxus', 'trifarian'),  # Caçadora Brutal
+    '04NX007': ('noxus', 'blackrose'),  # Atakhan, Emissário da Devastação
+    '04NX008': ('noxus', 'blackrose'),  # Estrategista Indomável
+    '02NX007': ('noxus', 'trifarian'),  # Swain
+    '02NX007T2': ('noxus', 'trifarian'),  # Swain
 }
