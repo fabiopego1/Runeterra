@@ -927,6 +927,15 @@
         const block = {};
         if (g.diff) s.forEach((e, j) => { if (j !== i && e.trait && usesTrait(e.name)) block[e.trait] = tr('used by {ab}', { ab: abName(e.name) }); });
         if (g.rules && g.rules.notGreen) (st.sel['arch-green'] || []).forEach(e => { if (e.trait && usesTrait(e.name)) block[e.trait] = tr('used by {ab}', { ab: abName(e.name) }); });
+        // "At least N different powers": once the other picks can no longer reach N on their own, this one must bring a new power.
+        const md = g.rules && g.rules.minDistinct;
+        if (md) {
+          const kindOk = k => !g.rules.distinctKind || TRAIT[k].kind === g.rules.distinctKind;
+          const others = s.filter((e, j) => j !== i && usesTrait(e.name));
+          const have = new Set(others.map(e => e.trait).filter(k => k && kindOk(k)));
+          const open = (g.count - s.length - (i < 0 ? 1 : 0)) + others.filter(e => !e.trait).length;
+          if (have.size + open < md) others.forEach(e => { if (e.trait && kindOk(e.trait)) block[e.trait] = tr('used by {ab}: these abilities need at least {n} different powers', { ab: abName(e.name), n: md }); });
+        }
         return abilityCard(g, n, s[i], i >= 0, R, { idx: i, powersOnly: g.powersOnly, use: groupUse(g, R), pool: groupPool(g, R), block });
       }).join('') + '</div></div>';
   }
