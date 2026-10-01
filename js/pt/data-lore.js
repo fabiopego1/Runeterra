@@ -158,7 +158,7 @@
     'Min die': 'Dado Mín', 'Mid die': 'Dado Médio', 'Max die': 'Dado Máx', 'Max+Mid+Min': 'Máx+Médio+Mín', 'Max+Mid': 'Máx+Médio', 'Max+Min': 'Máx+Mín', 'Mid+Min': 'Médio+Mín',
     'persistent': 'persistente', 'exclusive': 'exclusivo', 'irreducible': 'irredutível', 'bonus': 'bônus', 'penalty': 'penalidade', 'minion': 'lacaio', 'lieutenant': 'tenente',
     'Green zone': 'Zona Verde', 'Yellow zone': 'Zona Amarela', 'Red zone': 'Zona Vermelha', 'status die': 'dado de status', 'minor twist': 'reviravolta menor', 'major twist': 'reviravolta maior',
-    'twist': 'reviravolta', 'hero point': 'ponto de herói', 'Reaction': 'Reação', 'doubles': 'dados iguais', 'nearby': 'próximo', 'close': 'colado', 'scene': 'cena',
+    'twist': 'reviravolta', 'hero point': 'ponto de inspiração', 'Reaction': 'Reação', 'doubles': 'dados iguais', 'nearby': 'próximo', 'close': 'colado', 'scene': 'cena',
     'collection': 'coleção', 'Health': 'Vida', 'environment': 'ambiente'
   };
 
@@ -302,7 +302,7 @@
       ['Ligue os dados', 'Sua Origem te deu estes dados. Clique num <b>dado</b> e escolha a <b>qualidade</b> que ele vira.<span class="tour-ex">d10 em Medicina e d8 em Ciência: seu herói é um curandeiro excelente e um cientista ótimo.</span>', '#flow-background-assign', '#flow-background-assign.current'],
       ['O dado maior', 'Coloque o <b>dado maior</b> naquilo em que seu herói é melhor. Ele vai entrar nas rolagens dessa qualidade o jogo todo.', '#flow-background-assign .socket', '#flow-background-assign.current'],
       ['Princípio', 'Aquilo em que seu herói acredita. Não é um dado: é um guia para interpretar.', '#flow-background-principle', '#flow-background-principle.current'],
-      ['Pontos de herói', 'Quando você age de acordo com o princípio mesmo quando custa caro, o Mestre te dá <b>pontos de herói</b>, que melhoram rolagens.<span class="tour-ex">Princípio da Honra: você cumpre sua palavra mesmo quando custa caro.</span>', '#flow-background-principle .principles', '#flow-background-principle.current']
+      ['Pontos de inspiração', 'Quando você age de acordo com o princípio mesmo quando custa caro, o Mestre te dá <b>pontos de inspiração</b>, que melhoram rolagens.<span class="tour-ex">Princípio da Honra: você cumpre sua palavra mesmo quando custa caro.</span>', '#flow-background-principle .principles', '#flow-background-principle.current']
     ],
     powersource: [
       ['Dados vindos da Origem', 'Os dados deste capítulo vêm da <b>Origem</b> que você escolheu. Cada Origem dá tamanhos diferentes.', ''],

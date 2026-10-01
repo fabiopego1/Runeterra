@@ -32,7 +32,7 @@
     ['Minor Twist / Major Twist', 'Reviravolta Menor / Maior', ''],
     ['Risky Action', 'Ação Arriscada', ''],
     ['Hit The Deck!', 'Todo Mundo no Chão!', ''],
-    ['Hero Point', 'Ponto de Herói', ''],
+    ['Hero Point', 'Ponto de Inspiração', ''],
     ['Minion / Lieutenant / Villain', 'Lacaio / Tenente / Vilão', ''],
     ['Out ability', 'Habilidade de Nocaute', ''],
     ['Signature Weaponry', 'Arma Emblemática', ''],

@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const I = window.I18N;
-  const HP = 'Você e cada um dos seus aliados ganham um ponto de herói.';
+  const HP = 'Você e cada um dos seus aliados ganham um ponto de inspiração.';
   // [interpretação, reviravolta menor, reviravolta maior, habilidade]
   const PR = {
     destiny: ['Sinais e presságios te guiam rumo a um lugar inevitável na sua vida. Você sempre consegue algum senso de direção quando precisa.', 'Que presságio de má sorte você acabou de testemunhar?', 'Que profecia terrível acabou de se cumprir?', 'Supere uma situação diretamente ligada ao seu destino e use seu dado Máx. ' + HP],
@@ -43,7 +43,7 @@
 (() => {
   'use strict';
   const I = window.I18N;
-  const HP = 'Você e cada um dos seus aliados ganham um ponto de herói.';
+  const HP = 'Você e cada um dos seus aliados ganham um ponto de inspiração.';
   Object.assign(window.__PR_PT, {
     'great-power': ['Seus poderes são tão fortes que às vezes assustam até você, mas você se esforça para controlá-los. Pode usá-los para intimidar os outros.', 'Como você se segura para não liberar todo o seu poder?', 'Que grande estrago você causa no processo de salvar o dia?', 'Supere uma situação usando um dos seus poderes de maior graduação e use seu dado Máx. ' + HP],
     hero: ['Por causa das suas habilidades, você tem a vocação de proteger os outros.', 'Sua necessidade imediata de ajudar alguém te faz deixar a bola cair na vida pessoal. O que foi?', 'Você recebe um ultimato entre sua vida de herói e algo que você valoriza. Do que você abre mão?', 'Supere numa situação em que inocentes estejam em perigo imediato e use seu dado Máx. ' + HP],
