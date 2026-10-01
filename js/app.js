@@ -65,7 +65,7 @@
     bg: { id: null, assign: {}, principle: null },
     ps: { id: null, assign: {}, extra: {} },
     arch: { id: null, base: null, assign: {}, principle: null, extra: {}, divMethod: null, minionQ: null, minionForms: [], notes: '' },
-    pers: { id: null, qname: '', outTrait: null, upgrade: null, id2: null },
+    pers: { id: null, qname: '', qdesc: '', outTrait: null, upgrade: null, id2: null },
     health: { trait: null, mode: 'fixed', roll: null, rerolled: false },
     pch: {},
     sel: {},
@@ -173,6 +173,10 @@
   const tip = html => ` data-tip="${esc(html)}"`;
   // the Signature Quality takes the name the player confirmed, everywhere it shows up
   const qualName = () => (st.pers.qok && st.pers.qname && st.pers.qname.trim()) || '';
+  // ...and the short description the player wrote for it (shown wherever the quality's tooltip appears)
+  const QDESC_MAX = 100;
+  const qReady = () => !!((st.pers.qname || '').trim() && (st.pers.qdesc || '').trim());
+  const qualDesc = () => (st.pers.qok && st.pers.qdesc && st.pers.qdesc.trim()) || '';
   const traitName = k => (k === 'rp-quality' && qualName()) || st.traitNames[k] || (TRAIT[k] ? TRAIT[k].rt : k);
   const baseTraitName = k => (TRAIT[k] ? TRAIT[k].rt : k);
   // a renamed power/quality/ability shows its original name under the player's one
@@ -193,8 +197,9 @@
     const t = TRAIT[k];
     if (!t) return esc(k);
     const c = CATS[t.cat];
-    return `<h5>${esc(traitName(k))}</h5><div class="sc-line">${renamedTrait(k) ? esc(baseTraitName(k)) + ' · ' : ''}${kindWord(t.kind)} · ${esc(catName(t.cat))}</div>` +
-      `${esc(t.desc)}<hr><em>${tr('In Runeterra:')}</em> ${esc(t.lore)}` +
+    const own = k === 'rp-quality' && qualDesc();
+    return `<h5>${esc(traitName(k))}</h5><div class="sc-line">${renamedTrait(k) || (k === 'rp-quality' && qualName()) ? esc(baseTraitName(k)) + ' · ' : ''}${kindWord(t.kind)} · ${esc(catName(t.cat))}</div>` +
+      (own ? `${esc(own)}<hr><small>${esc(t.desc)}</small>` : `${esc(t.desc)}<hr><em>${tr('In Runeterra:')}</em> ${esc(t.lore)}`) +
       (c && c.note ? `<hr><small>${esc(c.note)}</small>` : '') +
       (t.kind === 'power' ? `<hr><small>${tr('Powers are what makes you exceptional — the first die in your pool.')}</small>` : `<hr><small>${tr('Qualities are how you use your powers — the second die in your pool.')}</small>`);
   }
@@ -695,7 +700,7 @@
     if (id === 'personality') {
       rollSec('pers', tr('Roll for your Temperament'), !!pers);
       add('pick', tr('Choose your Temperament'), pers ? [] : [tr('Choose a Temperament.')], tr('Click how your champion behaves under pressure. The three dice are your Green / Yellow / Red status.'));
-      add('qname', tr('Name your Signature Quality'), pers && !st.pers.qname.trim() ? [tr('Type a name for your Signature Quality.')] : pers && !st.pers.qok ? [tr('Press Confirm to keep this name.')] : [], tr('Type a short phrase that sums up your champion, like <em>Last Kinkou of the Eastern Isles</em>.'));
+      add('qname', tr('Name your Signature Quality'), pers && !st.pers.qname.trim() ? [tr('Type a name for your Signature Quality.')] : pers && !(st.pers.qdesc || '').trim() ? [tr('Describe in a few words what your Signature Quality is about.')] : pers && !st.pers.qok ? [tr('Press Confirm to keep this name.')] : [], tr('Type a short phrase that sums up your champion, like <em>Last Kinkou of the Eastern Isles</em>.'));
       if (pers) {
         const rq = reqFromText(pers.out);
         const outOk = st.pers.outTrait && owned(R, rq.kind).some(t => t.key === st.pers.outTrait);
@@ -1121,7 +1126,7 @@
       case 'principle': return pn(stepId === 'background' ? st.bg.principle : st.arch.principle);
       case 'divm': { const m = window.DIVIDED.methods.find(x => x.id === st.arch.divMethod); return m ? esc(m.rt) : ''; }
       case 'minions': return (st.arch.minionForms || []).map(n => esc(abName(n))).join(', ');
-      case 'qname': return esc(st.pers.qname);
+      case 'qname': return esc(st.pers.qname) + (st.pers.qdesc ? ` <small>${esc(st.pers.qdesc)}</small>` : '');
       case 'out': return st.pers.outTrait ? esc(traitName(st.pers.outTrait)) : '';
       case 'pers2': { const p2 = st.pers.id2 && byId(window.PERSONALITIES, st.pers.id2); return p2 ? esc(p2.rt) + ' ' + p2.status.map(d => die(d, 'sm')).join('') : tr('Same in both forms'); }
       case 'powerless': { const pl = st.arch.powerless || {}; return pl.on && pl.a && pl.b ? `${esc(traitName(pl.a))} ${die('d6', 'sm')} ${esc(traitName(pl.b))} ${die('d10', 'sm')}` : tr('None'); }
@@ -1357,8 +1362,9 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         (pe.healthAny ? `<p class="sc">${tr('When determining Health you may use <b>any</b> power or quality.')}</p>` : '')),
         cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div><span class="info" aria-label="${tr('Details')}"${tip(`${cardArt('pe', x.id)}<h5>${esc(x.rt)}</h5>${x.lore ? esc(x.lore) + '<hr>' : ''}<small>${tr('Champions:')} ${esc(x.champs)}</small>`)}></span>`)),
       qname: () => `
-        <div class="qname-row"><input type="text" data-bind="pers.qname" data-live="1" data-commit="1" value="${esc(st.pers.qname)}" placeholder="${tr('Type your Signature Quality')}">
-        <button type="button" class="btn primary" data-act="qok"${st.pers.qname.trim() ? '' : ' disabled'}>${ico('check')} ${tr('Confirm')}</button></div>${(() => {
+        <div class="qname-row"><input type="text" data-bind="pers.qname" data-live="1" data-commit="1" value="${esc(st.pers.qname)}" placeholder="${tr('Type your Signature Quality')}"></div>
+        <div class="qname-row"><label class="qdesc"><input type="text" data-bind="pers.qdesc" data-live="1" data-commit="1" maxlength="${QDESC_MAX}" value="${esc(st.pers.qdesc || '')}" placeholder="${tr('What is it about? A short description (up to {n} characters)', { n: QDESC_MAX })}"><span class="qdesc-n">${(st.pers.qdesc || '').length}/${QDESC_MAX}</span></label>
+        <button type="button" class="btn primary" data-act="qok"${qReady() ? '' : ' disabled'}>${ico('check')} ${tr('Confirm')}</button></div>${(() => {
           // a short reminder of the qualities already taken, so the new one says something different
           const qs = sortTraits(owned(R, 'quality').filter(t => t.key !== 'rp-quality'));
           return qs.length ? `<p class="qname-have">${tr('Qualities you already have:')} ${qs.map(t => `<span>${esc(traitName(t.key))}</span>`).join(', ')}</p>` : '';
@@ -1771,7 +1777,13 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const ZRANK = { green: 0, yellow: 1, red: 2, out: 3 };
     const ZNAME = { green: tr('Green zone'), yellow: tr('Yellow zone'), red: tr('Red zone'), out: tr('Out of the fight') };
     const zLocked = z => zNow && ZRANK[z] > ZRANK[zNow] || zNow === 'out';
-    const charLine = (label, d, extra = '') => `<div class="hs-f"><span class="hs-l">${label}</span>${d ? `<span${tip(`${esc(d.lore || '')}`)} class="term">${esc(d.rt + extra)}</span>` : BLANK}</div>`;
+    const charLine = (label, d, extra = '', more = '') => `<div class="hs-f"><span class="hs-l">${label}</span>${d ? `<span${tip(`${esc(d.lore || '')}${more}`)} class="term">${esc(d.rt + extra)}</span>` : BLANK}</div>`;
+    const zoneDice = list => `<div class="status-row"><span class="z g">${tr('Green')} ${die(list[0])}</span><span class="z y">${tr('Yellow')} ${die(list[1])}</span><span class="z r">${tr('Red')} ${die(list[2])}</span></div>`;
+    const peDice = () => {
+      if (!pe || !pe.status) return '';
+      const p2 = st.pers.id2 && byId(window.PERSONALITIES, st.pers.id2);
+      return `<hr><div class="sc-line">${tr('Status dice')}</div>${zoneDice(pe.status)}` + (p2 ? `<div class="sc-line">${tr('Other form')}: ${esc(p2.rt)}</div>${zoneDice(p2.status)}` : '');
+    };
     const attr = (label, v) => `<div class="hs-f"><span class="hs-l">${label}</span>${esc(v || '')}</div>`;
     // keeps the paragraphs and line breaks typed in the Legend chapter
     const attrML = (label, v) => `<div class="hs-f"><span class="hs-l">${label}</span><span class="hs-ml">${esc((v || '').trim())}</span></div>`;
@@ -1807,7 +1819,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
               ${attr(tr('Build'), i.build)}${attrML(tr('Costume/Equipment'), i.costume)}<div class="hs-2">${attr(tr('People'), peopleDef() ? peopleDef().name : '')}${attr(tr('Homeland'), rg ? rg.name : '')}</div></div>
             <div class="hs-card"><div class="hs-h">${tr('Characteristics')}</div>
               <div class="hs-2">${charLine(tr('Background'), bg)}${charLine(tr('Power Source'), ps)}</div>
-              <div class="hs-2">${charLine(tr('Archetype'), ar, shape && shape !== ar ? ' ' + shape.rt : '')}${charLine(tr('Personality'), pe)}</div></div>
+              <div class="hs-2">${charLine(tr('Archetype'), ar, shape && shape !== ar ? ' ' + shape.rt : '')}${charLine(tr('Personality'), pe, '', peDice())}</div></div>
           </div>
         </div>
         <div class="hs-prs">${principleCol(pr[0])}${principleCol(pr[1])}</div>
@@ -2418,7 +2430,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     if (v === '') v = null;
     let path = el.dataset.bind;
     if (el.dataset.rename) { st.renames[el.dataset.rename] = el.value; return; }
-    if (path.startsWith('pers.qname') || path.startsWith('info.') || path.startsWith('traitNames.') || path === 'arch.notes' || (path.startsWith('play.') && el.type !== 'checkbox')) v = el.value;
+    if (path.startsWith('pers.qname') || path === 'pers.qdesc' || path.startsWith('info.') || path.startsWith('traitNames.') || path === 'arch.notes' || (path.startsWith('play.') && el.type !== 'checkbox')) v = el.value;
     setPath(st, path, v);
   }
   document.addEventListener('change', ev => {
@@ -2434,12 +2446,20 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
     if (!el.dataset.bind) return;
     bindValue(el);
+    // The Signature Quality's name and description are kept by Confirm: leaving one for the other must not redraw (and drop the focus)
+    if (el.dataset.bind === 'pers.qname' || el.dataset.bind === 'pers.qdesc') { renderSideOnly(false); return; }
     if (el.dataset.commit && pointerDown) { pendingRender = true; renderSideOnly(false); return; }
     if (el.dataset.live && !el.dataset.commit) { renderSideOnly(!!el.closest('#sheet-preview')); if (!SHEET_PAGE) document.getElementById('nav').innerHTML = renderNav(); return; }
     render();
   });
   document.addEventListener('keydown', ev => {
-    if (ev.key === 'Enter' && ev.target.dataset && ev.target.dataset.bind === 'pers.qname') { ev.preventDefault(); confirmQname(); return; }
+    if (ev.key === 'Enter' && ev.target.dataset && (ev.target.dataset.bind === 'pers.qname' || ev.target.dataset.bind === 'pers.qdesc')) {
+      ev.preventDefault();
+      // Enter on the name moves to the description while that is still empty
+      const d = document.querySelector('input[data-bind="pers.qdesc"]');
+      if (ev.target.dataset.bind === 'pers.qname' && d && !d.value.trim()) { d.focus(); return; }
+      confirmQname(); return;
+    }
     if (ev.key === 'Enter' && ev.target.dataset && ev.target.dataset.commit) { ev.preventDefault(); ev.target.blur(); }
   });
   document.addEventListener('input', ev => {
@@ -2460,9 +2480,12 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
     if (!el.dataset.bind || !el.dataset.live) return;
     bindValue(el);
-    if (el.dataset.bind === 'pers.qname') {   // a new name needs confirming again
+    if (el.dataset.bind === 'pers.qname' || el.dataset.bind === 'pers.qdesc') {   // a new name or description needs confirming again
       st.pers.qok = false;
-      const b = document.querySelector('[data-act="qok"]'); if (b) b.disabled = !el.value.trim();
+      const b = document.querySelector('[data-act="qok"]'); if (b) b.disabled = !qReady();
+      const n = document.querySelector('.qdesc-n'); if (n) n.textContent = `${(st.pers.qdesc || '').length}/${QDESC_MAX}`;
+      const sec = sectionsFor('personality', compute()).find(x => x.id === 'qname'), ul = document.querySelector('#flow-personality-qname .flow-todo ul');
+      if (sec && ul && sec.issues.length) ul.innerHTML = sec.issues.map(x => `<li>${esc(x)}</li>`).join('');   // "still to do" follows the typing
     }
     if (el.dataset.bind === 'play.current' && el.closest('#sheet-preview')) {   // redraw zones as Health is typed, keeping the caret
       const pos = el.selectionStart;
@@ -2494,11 +2517,12 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   document.addEventListener('pointerdown', () => { pointerDown = true; }, true);
   document.addEventListener('pointerup', () => { pointerDown = false; if (pendingRender) setTimeout(() => { if (pendingRender) render(); }, 0); }, true);
 
-  // Signature Quality: the Confirm button (or Enter) keeps the typed name and moves on.
+  // Signature Quality: the Confirm button (or Enter) keeps the typed name and description and moves on.
   function confirmQname() {
-    const inp = document.querySelector('input[data-bind="pers.qname"]');
-    if (inp) { bindValue(inp); if (document.activeElement === inp) inp.blur(); }   // blur first: its own redraw must not land inside ours
-    if (!st.pers.qname.trim()) return;
+    for (const inp of document.querySelectorAll('input[data-bind="pers.qname"], input[data-bind="pers.qdesc"]')) {
+      bindValue(inp); if (document.activeElement === inp) inp.blur();   // blur first: its own redraw must not land inside ours
+    }
+    if (!qReady()) return;
     st.pers.qok = true; pendingRender = false; render();
   }
 

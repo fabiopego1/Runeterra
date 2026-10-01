@@ -125,6 +125,9 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.click('[data-act=tourOk]');
     await p.click('[data-kind=pers][data-id=decisive]');
     await p.fill('input[data-bind="pers.qname"]', 'Dom dos Imaginais'); await p.waitForTimeout(100);
+    ok(await p.$eval('[data-act=qok]', b => b.disabled), 'the Signature Quality also needs a short description');
+    ok(await p.$eval('input[data-bind="pers.qdesc"]', i => i.maxLength === 100), 'the description is limited to 100 characters');
+    await p.fill('input[data-bind="pers.qdesc"]', 'Sonhos que ganham forma quando ela acredita neles.'); await p.waitForTimeout(100);
     ok(!!(await p.$('#flow-personality-qname.current')) && await p.$eval('[data-act=qok]', b => !b.disabled), 'the Signature Quality waits for the Confirm button');
     ok(await p.$eval('.qname-have', e => /Convicção/.test(e.textContent) && !/Marcante/.test(e.textContent)), 'naming the Signature Quality shows a reminder of the qualities already taken');
     await p.click('[data-act=qok]'); await p.waitForTimeout(150);
@@ -155,6 +158,8 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     const zoneNow = () => p.$eval('#sheet-preview .hs-znow', e => e.className.replace(/.*z-/, ''));
     ok(await p.$eval('#sheet-preview #hs-p1 .hs-ml', e => e.innerText.includes('\n')), 'the sheet keeps the line breaks typed for Costume/Equipment');
     ok(await p.$$eval('#sheet-preview #hs-p1 .hs-name', l => l.map(e => e.textContent).join('|')) === 'Kaelis Du Morne|Bruxaria', 'the sheet shows the Name, then the Title');
+    ok(await p.$eval('#sheet-preview', e => [...e.querySelectorAll('[data-tip]')].some(x => x.textContent === 'Dom dos Imaginais' && x.dataset.tip.includes('Sonhos que ganham forma'))), 'the Signature Quality hover on the sheet shows the description the player wrote');
+    ok(await p.$eval('#sheet-preview #hs-p1', e => [...e.querySelectorAll('.term[data-tip]')].some(x => /Decidido/.test(x.textContent) && /Dados de status/.test(x.dataset.tip) && /die /.test(x.dataset.tip))), 'the Personality hover on the sheet shows its status dice');
     ok(await zoneNow() === 'green', 'sheet starts in the green zone');
     ok(await p.$$eval('#sheet-preview .hs-zone.locked', e => e.length) === 2, 'yellow and red abilities are locked at full Health');
     await p.fill('#sheet-preview [data-bind="play.current"]', '5'); await p.waitForTimeout(100);
