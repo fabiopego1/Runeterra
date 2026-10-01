@@ -26,7 +26,7 @@ import urllib.request
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(__file__))
-from groups import CREATURE_CARDS, CREATURE_CHAMPS, FORCE_REGION, GROUPS, MOVES, PULL, UNI_CREATURES, UNI_MODULE_TITLES, UNI_PEOPLE, UNI_TITLES, UNIVERSE_SPLASH, WIKI_PICKS  # noqa: E402
+from groups import CREATURE_CARDS, CREATURE_CHAMPS, FORCE_REGION, GROUPS, MOVES, PULL, UNI_CREATURES, UNI_MODULE_TITLES, UNI_PEOPLE, UNI_TITLES, RELOCATE, UNIVERSE_SPLASH, WIKI_PICKS  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT_IMG = os.path.join(ROOT, 'assets', 'lore-gallery')
@@ -397,6 +397,15 @@ def main():
 
     # ------------------------------------------------------------ hand-made moves (groups.py: MOVES)
     chosen = apply_moves(chosen)
+    keys = {j['key'] for j in chosen}
+    for k in RELOCATE:
+        if k not in keys:
+            print(f'  warning: RELOCATE key {k} matches no picture')
+    for j in chosen:
+        if j['key'] in RELOCATE:
+            region, bucket = RELOCATE[j['key']]
+            j['region'] = region
+            j['bucket'] = (bucket, None) if bucket in ('places', 'creatures') else ('group', bucket)
 
     # ------------------------------------------------------------ write the data file
     data = {}
