@@ -26,7 +26,7 @@ import urllib.request
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(__file__))
-from groups import CREATURE_CARDS, CREATURE_CHAMPS, FORCE_REGION, GROUPS, MOVES, PULL, UNI_CREATURES, UNI_MODULE_TITLES, UNI_PEOPLE, UNI_TITLES, WIKI_PICKS  # noqa: E402
+from groups import CREATURE_CARDS, CREATURE_CHAMPS, FORCE_REGION, GROUPS, MOVES, PULL, UNI_CREATURES, UNI_MODULE_TITLES, UNI_PEOPLE, UNI_TITLES, UNIVERSE_SPLASH, WIKI_PICKS  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT_IMG = os.path.join(ROOT, 'assets', 'lore-gallery')
@@ -239,7 +239,7 @@ def load_champions():
         full = json.load(open(get(f'{base}pt_br/champions/{slug}/index.json', os.path.join(CACHE, 'champ-pt', slug + '.json')), encoding='utf-8'))['champion']
         short = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', (full.get('biography') or {}).get('short') or '')).strip()
         did = dd_id.get(plain(re.sub(r'[^A-Za-z0-9]', '', c['name'])))
-        url = f'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{did}_0.jpg' if did else (c.get('image') or {}).get('uri', '').split('?')[0]
+        url = f'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{did}_0.jpg' if did and slug not in UNIVERSE_SPLASH else (c.get('image') or {}).get('uri', '').split('?')[0]
         title = (dd_pt.get(did) or {}).get('title') or ''
         out.append(dict(slug=slug, en=c['name'], pt=pt['name'], title=title, short=short, faction=c.get('associated-faction-slug') or 'unaffiliated', url=url))
     return out
