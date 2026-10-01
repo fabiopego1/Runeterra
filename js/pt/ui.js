@@ -744,6 +744,7 @@ Object.assign(window.I18N.ui, {
  "Got it": "Entendi",
  "Turn the guide off": "Não mostrar mais o guia",
  "used by {ab}": "já usado em {ab}",
+ "used by {ab}: these abilities need at least {n} different powers": "já usado em {ab}: estas habilidades precisam de pelo menos {n} poderes diferentes",
  "you already have {die}": "você já tem {die}",
  "<h5>Not available</h5>You already have this trait here, so this die would be wasted. Choose a different trait, or unbind it where it is first.": "<h5>Indisponível</h5>Você já tem esta característica aqui, então este dado seria desperdiçado. Escolha outra, ou solte o dado onde ela está antes.",
  "Grows under pressure": "Cresce sob pressão",

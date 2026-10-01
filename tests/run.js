@@ -420,6 +420,12 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.reload(); await p.waitForTimeout(300);
     const issues = await p.evaluate(() => window.ForgeDebug.issues('archetype').join(' | '));
     ok(/pelo menos 2 poderes diferentes|at least 2 different powers/.test(issues), 'Armored Green abilities must use two different powers even with Deflect picked');
+    // shown up front: once one power is taken and only one other ability can still bring a second, that power is locked there
+    await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); Object.assign(s.arch, { assign: { a0: 'sig-weapon', a1: 'swimming', a2: 'intuition' }, principle: 'powerless' }); s.sel['arch-green'] = [{ name: 'Deflect', ch: {} }, { name: 'Repair', ch: {}, trait: 'sig-weapon' }, { name: 'Living Bulwark', ch: {}, trait: 'swimming' }]; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
+    await p.reload(); await p.waitForTimeout(300);
+    await p.click('#flow-archetype-g-arch-green .flow-head'); await p.waitForTimeout(200);
+    const chip = (n, k) => p.$eval(`.tchip[data-bind="sel.arch-green.${n}.trait"][data-val="${k}"]`, b => b.disabled);
+    ok(await chip(2, 'sig-weapon') && await chip(1, 'swimming') && !(await chip(2, 'swimming')) && !(await chip(2, 'intuition')), 'with Deflect picked, the other two Armored abilities cannot repeat a power');
     await p.context().close();
   }
   // Special cases from the book: Divided's second Temperament and Split Form (p.95), Modular's Powerless Mode (p.96).
