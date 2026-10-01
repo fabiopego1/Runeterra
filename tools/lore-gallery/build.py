@@ -170,6 +170,15 @@ def is_creature(c):
     return bool(CREATURE_SUB & set(c.get('subtypes', []))) or bool(CREATURE_NAME.search(c['name']))
 
 
+def ptbr(text):
+    """The Portuguese pages never say "Void": Vazio (and Vastinata for a Voidborn)."""
+    text = re.sub(r'\bVoidborns\b', 'Vastinatas', text)
+    text = re.sub(r'\bVoidborn\b', 'Vastinata', text)
+    text = re.sub(r'\bVoidlings\b', 'Crias do Vazio', text)
+    text = re.sub(r'\bVoidling\b', 'Cria do Vazio', text)
+    return re.sub(r'\bVoid\b', 'Vazio', text)
+
+
 def clean_text(text, limit=420):
     """Card flavour text and Universe captions come with <br>, other tags and odd spacing: keep real line breaks only."""
     t = re.sub(r'<\s*br\s*/?\s*>', '\n', text, flags=re.I)
@@ -394,9 +403,9 @@ def main():
     for j in chosen:
         cat, gid = j['bucket']
         r = data.setdefault(j['region'], {'groups': {}, 'places': [], 'creatures': []})
-        item = {'s': j['key'], 'n': j['name']}
+        item = {'s': j['key'], 'n': ptbr(j['name'])}
         if j['flavor']:
-            item['f'] = clean_text(j['flavor'])
+            item['f'] = ptbr(clean_text(j['flavor']))
         if j['kind'] == 'wiki':
             item['w'] = 1
         elif j['kind'] == 'uni':
