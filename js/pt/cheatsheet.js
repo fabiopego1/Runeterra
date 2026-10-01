@@ -13,7 +13,7 @@
   window.CHEAT_GROUPS_PT = [
     { name: BASICO, lede: 'Como o jogo se organiza, como os dados funcionam e o que acontece quando você se machuca.' },
     { name: ACAO, lede: 'Turnos, ações, mods e reviravoltas: tudo o que você usa durante uma luta, perseguição ou resgate.' },
-    { name: ENTRE, lede: 'Recuperação, conversas, pontos de herói e coleções: o que acontece entre uma cena de ação e outra.' },
+    { name: ENTRE, lede: 'Recuperação, conversas, pontos de inspiração e coleções: o que acontece entre uma cena de ação e outra.' },
     { name: MESTRE, lede: 'Como montar e conduzir uma cena de ação: marcador, ambiente, desafios, lacaios, tenentes e vilões. Termina com um exemplo de jogo completo.' }
   ];
 
@@ -138,7 +138,7 @@
       <ul class="cs-list">
         <li>Normalmente, o mod some depois de um uso. Aceitando uma reviravolta menor ao criá-lo, ele dura dois usos.</li>
         <li><b>Persistente:</b> dura até algo removê-lo ou, no máximo, até o fim da cena.</li>
-        <li><b>Exclusivo:</b> só um bônus exclusivo e uma penalidade exclusiva por rolagem. Os bônus de ${see('hero-points', 'pontos de herói')} são exclusivos.</li></ul>
+        <li><b>Exclusivo:</b> só um bônus exclusivo e uma penalidade exclusiva por rolagem. Os bônus de ${see('hero-points', 'pontos de inspiração')} são exclusivos.</li></ul>
       <h4>Removendo um mod</h4>
       <ul class="cs-list">
         <li>Com uma ação de <b>Superar</b>. Alguns mods, como "Civis presos −3", exigem mais de uma.</li>
@@ -190,8 +190,8 @@
     { id: 'social', group: ENTRE, title: 'Cena social', nav: 'Cena social', body: `
       <p>Cenas sociais são conversas, negociações, confissões e discussões, sem turnos nem marcador de cena. Normalmente não há rolagem, mas o Mestre pode pedir um Superar, principalmente quando envolve um princípio.</p>
       <p>Diga quem está na cena, o que acontece e onde. Fale como o seu personagem. Nunca force um confronto com outro herói se o jogador dele não quiser: quem briga são os personagens, não as pessoas.</p>
-      <h4>Pontos de herói na cena social</h4>
-      <p>Se a cena for marcante, o Mestre dá <b>1 ponto de herói a todos os heróis</b>, até aos que não estavam nela. Conta como marcante quando um herói:</p>
+      <h4>Pontos de inspiração na cena social</h4>
+      <p>Se a cena for marcante, o Mestre dá <b>1 ponto de inspiração a todos os heróis</b>, até aos que não estavam nela. Conta como marcante quando um herói:</p>
       <ul class="cs-list">
         <li>revela um segredo que o deixa vulnerável;</li>
         <li>cede para resolver um desentendimento com outro herói;</li>
@@ -202,11 +202,11 @@
         <li><b>No máximo 1 ponto por cena.</b></li>
         <li><b>Varie os heróis:</b> uma segunda cena conduzida pelos mesmos heróis, na mesma edição, não rende ponto.</li></ul>` },
 
-    { id: 'hero-points', group: ENTRE, title: 'Pontos de herói', body: `
+    { id: 'hero-points', group: ENTRE, title: 'Pontos de inspiração', body: `
       <ul class="cs-list">
         <li><b>Como ganhar:</b> sempre que um herói usa um dos seus <b>princípios</b> numa ação de Superar (dando certo ou não), <b>cada herói do grupo</b> ganha 1 ponto. ${see('social', 'Cenas sociais')} marcantes também dão 1 ponto.</li>
-        <li><b>Limite:</b> no máximo 5 pontos por herói em cada edição. Marque em <b>Pontos de Herói</b> na ficha.</li>
-        <li><b>Trocar:</b> no fim da edição, cada ponto vira 1 ponto de bônus, dividido como você quiser. Com 5 pontos: +3 e +2, ou +4 e +1, ou cinco +1. Marque em <b>Recompensas de Pontos de Herói</b>.</li>
+        <li><b>Limite:</b> no máximo 5 pontos por herói em cada edição. Marque em <b>Pontos de Inspiração</b> na ficha.</li>
+        <li><b>Trocar:</b> no fim da edição, cada ponto vira 1 ponto de bônus, dividido como você quiser. Com 5 pontos: +3 e +2, ou +4 e +1, ou cinco +1. Marque em <b>Recompensas de Pontos de Inspiração</b>.</li>
         <li><b>Usar:</b> os bônus são <b>exclusivos</b>. Dê um nome ao usar, lembrando algo da edição anterior (ex.: "Favor da Xerife +3").</li>
         <li><b>Validade:</b> pontos não passam de uma edição para a outra, e os bônus que sobrarem somem no fim da edição em que podiam ser usados.</li></ul>` },
 
@@ -315,7 +315,7 @@
         <tr><td><b>Visual</b></td><td>Novo traje, alcunha, cabelo. Livre, sem pedir permissão, mas vale pensar no motivo.</td></tr>
         <tr><td><b>Detalhes</b></td><td>Trocar um poder ou qualidade por outro do <b>mesmo dado</b> (as habilidades passam a usar o novo), trocar um princípio, ou trocar uma habilidade por outra da <b>mesma cor</b>, das mesmas listas da criação, usando o mesmo poder ou qualidade.</td></tr>
         <tr><td><b>Reescrita</b></td><td>Quando muita coisa mudou: refaça a criação, mantendo a história e as coleções.</td></tr></tbody></table>
-      <p>No site, tudo isso fica na aba <a href="ficha.html#evoluir">Evoluir campeão</a> da página Ficha, com histórico das mudanças. Mudanças também podem acontecer no meio de uma coleção, se a história pedir.</p>` },
+      <p>Mudanças também podem acontecer no meio de uma coleção, se a história pedir.</p>` },
 
     { id: 'example', group: MESTRE, title: 'Exemplo de jogo: fumaça nas docas do Entresol', nav: 'Exemplo de jogo', body: `
       <p>Três heróis seguem a pista de um carregamento de química ilegal até as docas do Entresol, em Zaun:</p>
@@ -332,7 +332,7 @@
           O capanga rola o próprio d8 para resistir e tira 4. Menos que 5: <b>derrotado</b>. Aldric passa a vez para Sen.</li>
         <li><b>Sen tenta fechar a válvula</b> do vazamento (Superar), agindo pelo seu princípio de proteger inocentes:
           ${roll([['d8', 2], ['d10', 9], ['d6', 6]], 'Médio 6: sucesso com reviravolta menor.')}
-          O vazamento está resolvido. Como ela usou um princípio num Superar, <b>cada herói ganha 1 ponto de herói</b>. Para a reviravolta, o Mestre propõe e Sen aceita: o assobio da válvula chama atenção, e <b>o marcador avança um espaço</b>. Sen passa a vez para os capangas.</li>
+          O vazamento está resolvido. Como ela usou um princípio num Superar, <b>cada herói ganha 1 ponto de inspiração</b>. Para a reviravolta, o Mestre propõe e Sen aceita: o assobio da válvula chama atenção, e <b>o marcador avança um espaço</b>. Sen passa a vez para os capangas.</li>
         <li><b>Os dois capangas agem juntos</b>, cada um rolando seu d8: um Ataca Aldric e tira 6; o outro Ataca Rix e tira 3. Aldric cai para 22 de Vida (ainda Verde). Os capangas passam a vez para Rix.</li>
         <li><b>Rix Fortalece Aldric</b> arremessando uma cápsula de fumaça:
           ${roll([['d10', 8], ['d8', 8], ['d6', 4]], 'Dois 8: Rix escolhe a ordem. Médio 8 = bônus de +3.')}

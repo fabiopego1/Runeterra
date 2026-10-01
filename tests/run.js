@@ -194,6 +194,9 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
 
     // Evolve tab: swap a power, an ability and a principle; undo; history on page 3
     const stored = () => p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-forge-v1')));
+    ok(!(await p.$('[data-act=sheetTab][data-tab=evolve]')) && !(await p.$('.sheet-cta a[href*=evoluir]')), 'Evolve your champion stays hidden from players (work in progress)');
+    ok(await p.$eval('#hs-p1 .hs-left', e => !!e.querySelector('.hs-portrait') && !!e.querySelector('[data-bind="play.hp.0"]')) && !(await p.$('[data-bind="play.issues.0"]')) && !(await p.$('[data-bind="play.coll.0"]')), 'Inspiration points sit under the portrait; back issues and collections are off the sheet');
+    await p.goto(`${BASE}/ficha.html?wip`); await p.waitForSelector('#sp-rail');
     await p.click('[data-act=sheetTab][data-tab=evolve]');
     ok(!!(await p.$('#flow-evolve')), 'Evolve tab opens the evolve tools');
     await p.selectOption('[data-evo=from]', 'flight');
@@ -239,7 +242,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('#file-pop', e => e.hidden), 'menu closes after an action');
 
     // Major rewrite: back to the chapters with Construído, history kept
-    await p.goto(`${BASE}/ficha.html#evoluir`);
+    await p.goto(`${BASE}/ficha.html?wip#evoluir`);
     p.once('dialog', d => d.accept());
     await Promise.all([p.waitForURL(/index\.html/), p.click('[data-act=evoRewrite]')]);
     const rw = await stored();

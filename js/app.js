@@ -53,6 +53,8 @@
   }
 
   // ------------------------------------------------------------------ state
+  // Work in progress, hidden from players: the "Evolve your champion" tools (open the Ficha with ?wip to see them).
+  const WIP = /[?&]wip\b/.test(location.search);
   const STORE = 'runeterra-forge-v1';   // the champion open now (the Forge and the Ficha page both read it)
   // Every champion also has its own slot, and the roster lists them in the order they were made.
   const ROSTER = 'runeterra-forge-roster-v1', SLOT = id => 'runeterra-forge-c-' + id;
@@ -1792,7 +1794,10 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     return `<div class="hero-sheet">
       <div class="hs-page" id="hs-p1">
         <div class="hs-top">
-          <div class="hs-portrait">${i.portrait ? `<img src="${i.portrait}" alt="${tr('Portrait of {name}', { name: esc(i.name || tr('your champion')) })}">` : `<span class="muted">${tr('Portrait')}</span>`}</div>
+          <div class="hs-left"><div class="hs-portrait">${i.portrait ? `<img src="${i.portrait}" alt="${tr('Portrait of {name}', { name: esc(i.name || tr('your champion')) })}">` : `<span class="muted">${tr('Portrait')}</span>`}</div>
+            <div class="hs-card hs-hpcard"><div class="hs-h"${tip(window.GLOSSARY['hero point'])}>${tr('Hero Points')} <small>${tr('this issue')}</small></div><div class="hs-hp">${[0, 1, 2, 3, 4].map(n => check(`play.hp.${n}`, pl.hp[n], tr('Hero point {n}', { n: n + 1 }))).join('')}</div>
+            <div class="hs-h" style="margin-top:8px"${tip(tr('Rewards you can claim by spending hero points — tick them off as you use them.'))}>${tr('Hero Point Rewards')}</div>
+            ${[1, 2, 3, 4].map(r => `<div class="hs-hp"><b>+${r}</b>${[0, 1, 2, 3].map(c => check(`play.rw.${(r - 1) * 4 + c}`, pl.rw[(r - 1) * 4 + c], tr('+{r} reward {c}', { r, c: c + 1 }))).join('')}</div>`).join('')}</div></div>
           <div class="hs-idblock">
             <div class="hs-card"><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}&nbsp;</div>
             <div class="hs-card hs-2"><div><div class="hs-h">${tr('Alias')}</div><div class="hs-name">${esc(i.alias || (i.name ? '' : tr('Unnamed Champion')))}</div></div><div><div class="hs-h">${tr('Hero Name')}</div><div class="hs-name hs-title">${esc(i.name || '')}</div></div></div>
@@ -1806,13 +1811,6 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
           </div>
         </div>
         <div class="hs-prs">${principleCol(pr[0])}${principleCol(pr[1])}</div>
-        <div class="hs-bottom">
-          <div class="hs-card"><div class="hs-h"${tip(window.GLOSSARY['hero point'])}>${tr('Hero Points')} <small>${tr('this issue')}</small></div><div class="hs-hp">${[0, 1, 2, 3, 4].map(n => check(`play.hp.${n}`, pl.hp[n], tr('Hero point {n}', { n: n + 1 }))).join('')}</div>
-            <div class="hs-h" style="margin-top:8px"${tip(tr('Rewards you can claim by spending hero points — tick them off as you use them.'))}>${tr('Hero Point Rewards')}</div>
-            ${[1, 2, 3, 4].map(r => `<div class="hs-hp"><b>+${r}</b>${[0, 1, 2, 3].map(c => check(`play.rw.${(r - 1) * 4 + c}`, pl.rw[(r - 1) * 4 + c], tr('+{r} reward {c}', { r, c: c + 1 }))).join('')}</div>`).join('')}</div>
-          <div class="hs-card"><div class="hs-h"${tip(tr('Past sessions ("issues") your champion took part in.'))}>${tr('Back Issues')}</div>${[0, 1, 2, 3, 4, 5].map(n => `<input class="hs-line" type="text" data-bind="play.issues.${n}" data-live="1" value="${esc(pl.issues[n] || '')}" aria-label="${tr('Back issue {n}', { n: n + 1 })}">`).join('')}</div>
-          <div class="hs-card"><div class="hs-h"${tip(window.GLOSSARY.collection + ' ' + tr('Tick a collection when it is complete — that is when your champion advances.'))}>${tr('Collections')}</div>${[0, 1, 2, 3, 4, 5, 6, 7].map(n => `<div class="hs-coll">${check(`play.cdone.${n}`, pl.cdone[n], tr('Collection {n} complete', { n: n + 1 }))}<input class="hs-line" type="text" data-bind="play.coll.${n}" data-live="1" value="${esc(pl.coll[n] || '')}" aria-label="${tr('Collection {n}', { n: n + 1 })}"></div>`).join('')}</div>
-        </div>
       </div>
       <div class="hs-page" id="hs-p2">
         <div class="hs-card hs-3"><div><div class="hs-h">${tr('Alias')}</div>${esc(i.alias || '')}</div><div><div class="hs-h">${tr('Hero Name')}</div>${esc(i.name || '')}</div><div><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}</div></div>
@@ -1927,8 +1925,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       <section class="flow-sec ${done ? 'current' : 'locked'}" id="flow-finish-export"><div class="flow-head"><span class="flow-num">${done ? ico('mark') : ico('lock')}</span><h3>${tr('Your hero sheet')}</h3>${done ? '' : `<span class="flow-lock">${tr('Sealed — name your champion first')}</span>`}</div>
       ${done ? `<div class="flow-body"><input id="template-file" type="file" accept="application/pdf,.pdf" hidden>
         <div class="export-row"><button class="btn" data-act="print">${tr('Print')}</button><button class="btn" data-act="export">${tr('Export JSON')}</button></div></div>` : ''}</section>
-      ${done ? `<div class="sheet-cta"><div><b>${tr('Your sheet has its own page')}</b><p class="muted">${tr('Full screen, with the Health tracker always at hand for play and the Evolve your champion tools.')}</p></div>
-        <div class="export-row"><a class="btn primary" href="ficha.html">${ico('file')} ${tr('Open the sheet')}</a><a class="btn" href="ficha.html#evoluir">${ico('reset')} ${tr('Evolve your champion')}</a></div></div>` : ''}
+      ${done ? `<div class="sheet-cta"><div><b>${tr('Your sheet has its own page')}</b><p class="muted">${tr(WIP ? 'Full screen, with the Health tracker always at hand for play and the Evolve your champion tools.' : 'Full screen, with the Health tracker always at hand for play.')}</p></div>
+        <div class="export-row"><a class="btn primary" href="ficha.html">${ico('file')} ${tr('Open the sheet')}</a>${WIP ? `<a class="btn" href="ficha.html?wip#evoluir">${ico('reset')} ${tr('Evolve your champion')}</a>` : ''}</div></div>` : ''}
       ${done ? `<div class="finish-bar"><div class="fb-t">${esc(i.name || tr('Your champion'))}<small>${tr('Ready for the table. Everything above is optional.')}</small></div>
         <button class="btn primary" data-act="pdf">${ico('download')} ${tr('Export PDF hero sheet')}</button><button class="btn" data-act="toSheet">${ico('file')} ${tr('See the sheet')}</button><a class="btn" href="ficha.html">${tr('Open the sheet')}</a><div id="pdf-status"></div></div>` : ''}
       <div class="step-footer"><button class="btn ghost" data-act="back">${ico('prev')} ${tr('Back')}</button><span></span></div></div>
@@ -2002,15 +2000,15 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         <a class="btn primary" href="index.html">${ico('prev')} ${tr('Go to the Forge')}</a></div>`;
       return;
     }
-    if (!ui.sheetTab) ui.sheetTab = location.hash === '#evoluir' ? 'evolve' : 'sheet';
+    if (!ui.sheetTab) ui.sheetTab = WIP && location.hash === '#evoluir' ? 'evolve' : 'sheet';
     const n = st.evo.log.length;
     app.innerHTML = `<div class="sp">
       <aside class="sp-rail no-print" id="sp-rail" aria-label="${tr('Champion at the table')}">${sheetRailHtml()}</aside>
       <main class="sp-main">
-        <div class="sp-tabs no-print" role="tablist">
+        ${WIP ? `<div class="sp-tabs no-print" role="tablist">
           <button type="button" role="tab" class="sp-tab${ui.sheetTab === 'sheet' ? ' on' : ''}" aria-selected="${ui.sheetTab === 'sheet'}" data-act="sheetTab" data-tab="sheet">${ico('file')} ${tr('Sheet')}</button>
           <button type="button" role="tab" class="sp-tab${ui.sheetTab === 'evolve' ? ' on' : ''}" aria-selected="${ui.sheetTab === 'evolve'}" data-act="sheetTab" data-tab="evolve">${ico('reset')} ${tr('Evolve your champion')}${n ? `<span class="sp-count">${n}</span>` : ''}</button>
-        </div>
+        </div>` : ''}
         ${ui.sheetTab === 'evolve' ? `<div class="sp-evolve">${evolveHtml()}</div>` : `<div class="sp-sheet" id="sheet-preview">${sheetHtml(R0)}</div>`}
       </main></div>`;
   }
