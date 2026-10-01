@@ -625,3 +625,6 @@ WIKI_PICKS = [
     ("K'Sante_Everything_We_Should_Have_Said.jpg", 'nazumah', 'ksante', "K'Sante e Tope: tudo o que devíamos ter dito"),
     ("K'Sante_OriginalSkin.jpg", 'nazumah', 'ksante', "K'Sante, o Orgulho de Nazumah"),
 ]
+
+# Champions whose ddragon splash is outdated: use the current art from the Universe champion page.
+UNIVERSE_SPLASH = {'fiddlesticks'}
