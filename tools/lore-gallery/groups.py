@@ -330,6 +330,25 @@ GROUPS = [
          champs=["K'Sante"]),
     dict(region='nazumah', id='tope', name='Tope e a caça ao baccai',
          desc="Tope, de Marrowmark, caçador de longo alcance e parceiro de K'Sante. Seu diário revelou o que a dupla não via sobre o monstro cobra-leão."),
+    # ---------------------------------------------------------------- groups added in the Universe review
+    dict(region='demacia', id='army', name='Exército de Demacia',
+         desc='Soldados, ferreiros, cozinheiros e heróis populares que sustentam o exército demaciano para além da Vanguarda Destemida, como a yordle Poppy, que empunha o martelo de um herói, e a cavaleira Cithria.'),
+    dict(region='shadow-isles', id='revelry', name='Festa da Meia-Noite',
+         desc='Espíritos que ainda dançam, tocam e brindam nos salões assombrados das Ilhas das Sombras, repetindo as festas de uma vida que já acabou, e o poeta sombrio Grimm.'),
+    dict(region='shadow-isles', id='specters', name='Espectros e almas penadas',
+         desc='Os mortos das Ilhas das Sombras: almas presas à Névoa que perderam o corpo, mas guardam fragmentos de memória, personalidade e desejos, dos espectros mais fracos aos que ainda lembram quem foram.'),
+    dict(region='shadow-isles', id='mist', name='A Névoa Negra',
+         desc='A Névoa que a Ruína de Hélia espalhou: ela molda o que toca, mostra a cada vivo algo único e prende as almas nas Ilhas das Sombras.'),
+    dict(region='bandle', id='citizens', name='Cidadãos de Bandópolis',
+         desc='Prefeitos, empresários da arena, tios e vizinhos: o povo comum de Bandópolis, entre festas e confusões.'),
+    dict(region='piltover', id='seraphine', name='Seraphine e o palco de Piltover',
+         desc='A jovem cantora que ouve o mundo como música e quem a acompanha do público.'),
+    dict(region='shurima', id='baccai', name='Os Baccai',
+         desc='Ascendentes falhos de Shurima: quando a ascensão fracassou, sobraram criaturas retorcidas pelo que poderiam ter sido. Alguns ainda guardam santuários e relíquias do império.'),
+    dict(region='shurima', id='xerath', name='Xerath e seus acólitos',
+         desc='O mago ascendido preso por Azir e os que se entregaram a ele em troca de poder, e agora erguem obeliscos pelo deserto.'),
+    dict(region='targon', id='ottrani', name='Os Ottrani e os dragões de Targon',
+         desc='Adoradores de dragões das encostas de Targon, os Ottrani, e os sonhadores que ouvem a canção dos dragões celestes.'),
 ]
 
 # Champions that go to the Criaturas tab of a region (beasts that act on instinct, not sapient beings).
@@ -657,3 +676,244 @@ WIKI_PICKS = [
 
 # Champions whose ddragon splash is outdated: use the current art from the Universe champion page.
 UNIVERSE_SPLASH = {'fiddlesticks'}
+
+# Relocations decided one by one against the Universe and the wiki (key of the picture -> region, group id | places | creatures).
+# The card regions of Legends of Runeterra were chosen for gameplay and are not always the lore.
+RELOCATE = {
+    '09DE033': ('ionia', 'creatures'),  # Espiritinhos
+    '09DE036': ('ionia', 'creatures'),  # Espíritos Arbóreos
+    '09DE029': ('ionia', 'creatures'),  # Luminispírito
+    '01DE049': ('freljord', 'creatures'),  # Poro Valente
+    '03DE004': ('demacia', 'army'),  # Capitã Arrika
+    '04DE009': ('demacia', 'army'),  # Cavaleiro Galante
+    '01DE043': ('demacia', 'army'),  # Chefs de Guerra
+    '06DE006': ('demacia', 'army'),  # Cozinheiro de Combate
+    '01DE034': ('demacia', 'army'),  # Ferreiro de Batalha
+    '01DE052': ('demacia', 'army'),  # Formação Aciária
+    '01DE009': ('demacia', 'army'),  # Protetora Aciária
+    '06DE025': ('demacia', 'army'),  # Recruta Benevolente
+    '06DE019': ('demacia', 'army'),  # Caçadora Viúva
+    '01DE039': ('demacia', 'army'),  # Cithria de Campinuvem
+    '04DE005': ('demacia', 'army'),  # Cithria, Dama das Nuvens
+    '01DE051': ('demacia', 'army'),  # Cithria, a Audaciosa
+    '02DE010': ('demacia', 'rangers'),  # Genevieve Cordielmo
+    '02DE004': ('demacia', 'rangers'),  # Guardião da Presa Verde
+    '02DE008': ('demacia', 'rangers'),  # Companheiro Chifrídeo
+    '03DE005': ('demacia', 'dragonguard'),  # Pesquisador Acadêmico
+    '08DE006': ('demacia', 'dragonguard'),  # Pioneiro Erudito
+    '07DE016': ('demacia', 'durand'),  # Balen, o Benevolente
+    '06SI022': ('shadow-isles', 'revelry'),  # Amante Espectral
+    '06SI009': ('shadow-isles', 'revelry'),  # Banda Assombrosa
+    '06SI028': ('shadow-isles', 'revelry'),  # Mordomo Espectral
+    '01SI038': ('shadow-isles', 'revelry'),  # Fantasma Travessa
+    '06SI016': ('shadow-isles', 'revelry'),  # Anfitrião Animado
+    '06SI013': ('shadow-isles', 'revelry'),  # Eternas Dançarinas
+    '06SI026': ('shadow-isles', 'revelry'),  # Regente das Névoas
+    '09SI014': ('shadow-isles', 'revelry'),  # Tristálio
+    '01SI007T1': ('shadow-isles', 'specters'),  # Espírito Libertado
+    '01SI009': ('shadow-isles', 'specters'),  # Espíritos Agitados
+    '01SI016': ('shadow-isles', 'specters'),  # Evocadora de Espectros
+    '01SI044': ('shadow-isles', 'specters'),  # Matrona Espectral
+    '06SI034': ('shadow-isles', 'specters'),  # Espectro dos Ecos
+    '08SI003': ('shadow-isles', 'specters'),  # Espectros Agrilhoados
+    '08SI018': ('shadow-isles', 'specters'),  # Espectrógrafo
+    '07SI013': ('shadow-isles', 'specters'),  # Espectreva Proliferante
+    '03SI015': ('shadow-isles', 'specters'),  # Observador Inoportuno
+    '01SI041': ('shadow-isles', 'specters'),  # O Imortal
+    '01SI048T1': ('shadow-isles', 'specters'),  # Aberração Liberta
+    'u7e433b8800': ('shadow-isles', 'specters'),  # Além das Ilhas
+    'u66e1d9c42d': ('shadow-isles', 'specters'),  # Igual Atrai Igual
+    'u49f535288e': ('shadow-isles', 'specters'),  # Morte Eterna
+    'u335e87cf52': ('shadow-isles', 'specters'),  # Obstinados
+    'uf31b723fcc': ('shadow-isles', 'specters'),  # Viúva dos Cantos Esquecidos
+    '01SI011': ('shadow-isles', 'specters'),  # Açougueiro Voraz
+    '08SI007': ('shadow-isles', 'specters'),  # Legião dos Desgarrados
+    '01SI031': ('shadow-isles', 'specters'),  # Precursor de Ferro
+    '01SI035': ('shadow-isles', 'specters'),  # Rhasa, o Ruptor
+    '06SI019': ('shadow-isles', 'specters'),  # Sultur
+    '06SI046': ('shadow-isles', 'specters'),  # Vigilante Determinado
+    '05SI004': ('shadow-isles', 'specters'),  # Vigilante das Ilhas
+    '06SI041': ('shadow-isles', 'specters'),  # Vigilante do Vale Enluarado
+    '01SI058': ('shadow-isles', 'specters'),  # Mensageiro Etéreo
+    '09SI017': ('shadow-isles', 'specters'),  # Kharox
+    '04SI045': ('shadow-isles', 'mist'),  # Névoa Invasora
+    '01SI014': ('shadow-isles', 'mist'),  # Espectro da Névoa
+    '05SI013': ('shadow-isles', 'mist'),  # Guardiões da Névoa
+    '02SI004': ('shadow-isles', 'helia'),  # Defensora Arruinada
+    '04SI013': ('shadow-isles', 'wardens'),  # Mãe Mascarada
+    '04SI014': ('shadow-isles', 'wardens'),  # Presa
+    '04SI004': ('ionia', 'kinkou'),  # As Asas e a Onda
+    '08SI015': ('shadow-isles', 'creatures'),  # Amálgama de Ritos Vis
+    '03SI001': ('shadow-isles', 'creatures'),  # Espreitador Eternebroso
+    '01SI004': ('shadow-isles', 'creatures'),  # Perdição das Águas Sombrias
+    '02SI010': ('shadow-isles', 'creatures'),  # Florimorta Errante
+    '01FR021': ('freljord', 'wanderers-fr'),  # Tarkaz, o Desgarrado
+    '01FR007': ('freljord', 'wanderers-fr'),  # Bjerg Balbuciador
+    '01FR050': ('freljord', 'avarosan'),  # Taverneiro Gentil
+    '01FR025': ('freljord', 'wanderers-fr'),  # Pastor de Poros
+    '07FR015': ('freljord', 'wanderers-fr'),  # Ingvar, a Jovem
+    '06FR028': ('freljord', 'avarosan'),  # Revna, a Guardiã Mitológica
+    '03FR011': ('freljord', 'trolls'),  # Uzgar, o Ancião
+    '05FR001T1': ('freljord', 'old-gods'),  # Combatente Trevoguari
+    '05FR004': ('freljord', 'old-gods'),  # Errante Vulpina
+    '01FR047': ('freljord', 'ursine'),  # Místico Selvagem
+    '06FR030': ('freljord', 'creatures'),  # Precursor dos Servos
+    '08FR015': ('freljord', 'old-gods'),  # Rhond, a Serpente de Magma
+    '01IO005': ('freljord', 'creatures'),  # Poro Parrudo
+    '03IO008T1': ('bandle', 'creatures'),  # Esquilo
+    '03IO011': ('bandle', 'creatures'),  # Esquilo Bombado
+    '03IO001': ('bandle', 'creatures'),  # Florzinha de Estimação
+    '03IO007T1': ('bandle', 'creatures'),  # Murmuduende
+    '03IO009': ('bandle', 'creatures'),  # Silfo Saboroso
+    '03IO017': ('bandle', 'fae'),  # Pix!
+    '03IO003': ('bandle', 'fae'),  # Guia Feérico
+    '03IO018': ('bandle', 'fae'),  # Cuidador Felpudo
+    '01IO008': ('bandle', 'fae'),  # Fada das Lâminas
+    '03IO010': ('bandle', 'fae'),  # Jovem Bruxa
+    '03IO007': ('bandle', 'fae'),  # Trevor Dorminhão
+    '01IO036': ('bandle', 'fae'),  # Vigia da Clareira Verdejante
+    '01IO031': ('ionia', 'creatures'),  # Sorvedor de Nuvens
+    '04IO020': ('ionia', 'creatures'),  # Cardume Disperso
+    '04IO015': ('ionia', 'creatures'),  # Gotinha Dançante
+    '06IO004': ('ionia', 'artists'),  # A Criadora
+    '06IO015': ('ionia', 'artists'),  # A Testemunha
+    '04IO002': ('ionia', 'artists'),  # Zinneia, Crescendo de Aço
+    '04IO009': ('ionia', 'artists'),  # Dançarina das Fitas
+    '04IO001': ('ionia', 'artists'),  # Músicos de Batalha
+    '06IO044': ('ionia', 'artists'),  # Melodia Celeste
+    '06IO003': ('ionia', 'artists'),  # A Contrarregra
+    '01IO014': ('ionia', 'spirits'),  # Ancião da Clareira Verdejante
+    '01IO019': ('ionia', 'spirits'),  # Defensora da Clareira Verdejante
+    '01IO006': ('ionia', 'spirits'),  # Dupla da Clareira Verdejante
+    '05IO001': ('ionia', 'spirits'),  # Guardiã do Arvoredo
+    '01IO023': ('ionia', 'spirits'),  # Protetora Adornada
+    '01IO043': ('ionia', 'spirits'),  # Moldador de Rios
+    '01IO053': ('ionia', 'spirits'),  # Evocador Esmeralda
+    '01IO045': ('ionia', 'spirits'),  # Arauto da Primavera
+    '05IO006T1': ('ionia', 'spirits'),  # Guardião Fronteiriço
+    '05IO026': ('ionia', 'spirits'),  # Os Lamentados
+    '09IO046': ('ionia', 'spirits'),  # Jardineira Ophelis
+    '09IO053': ('ionia', 'spirits'),  # Dona Raiz
+    '09IO055': ('ionia', 'spirits'),  # Fadinha Floral
+    '05IO003': ('ionia', 'spirits'),  # Ancestral Sem Rumo
+    '01NX034': ('freljord', 'creatures'),  # Poro Carinhoso
+    '06NX031': ('freljord', 'creatures'),  # Yeti Acorrentado
+    '05NX005': ('noxus', 'bastion'),  # Belicista Ancestral
+    '05NX016': ('noxus', 'bastion'),  # A Senhora do Sangue
+    '05NX006': ('noxus', 'bastion'),  # Granadeiro Renascido
+    '05NX009': ('noxus', 'bastion'),  # Alma Perdida
+    '07NX015': ('noxus', 'renegades'),  # A Dama Saqueadora
+    '07NX005': ('noxus', 'renegades'),  # Capitã Indari
+    '08NX012': ('noxus', 'renegades'),  # Obtentor Armado
+    '07NX004': ('noxus', 'renegades'),  # Artífice Astuta
+    '02NX010': ('noxus', 'trifarian'),  # Montapresa Encouraçado
+    '06NX015': ('noxus', 'blackrose'),  # Estudante Manalma
+    '06NX028T1': ('noxus', 'gray'),  # Tybaulk
+    '07PZ021': ('piltover', 'explorers'),  # Anura e Froop
+    '01PZ015': ('piltover', 'hextech'),  # T-Hex
+    '01PZ059': ('piltover', 'hextech'),  # Esmagobô Dourado
+    '03PZ019': ('piltover', 'hextech'),  # Porobot Recauchutado
+    '08PZ025': ('piltover', 'hextech'),  # Protótipo de Porobot
+    '01PZ020': ('freljord', 'creatures'),  # Poro Audacioso
+    '07PZ017': ('zaun', 'sump'),  # Comerciante de Bombas de Clarão
+    '01PZ025': ('zaun', 'sump'),  # Comerciante de Cogumelos
+    '01PZ017': ('zaun', 'sump'),  # Vendedor de Barris Usados
+    '08PZ024': ('zaun', 'sump'),  # Peixeiro Picareta
+    '06PZ042': ('piltover', 'academy'),  # Imperfeccionista Maligna
+    '06PZ021T2': ('piltover', 'seraphine'),  # Seraphine
+    '06PZ014': ('piltover', 'seraphine'),  # Presidente do Fã-clube
+    '08PZ006': ('runeterra', 'kathkan'),  # Iascylla, Acrostólio das Profundezas
+    'lmel': ('noxus', 'houses'),  # Mel
+    '04PZ016': ('zaun', 'creatures'),  # Bumbuíno
+    '08PZ008': ('zaun', 'firelights'),  # Maryam, a Protetora do Templo
+    '05PZ012': ('piltover', 'wardens'),  # Arquivista da Delegacia
+    '05PZ009': ('piltover', 'wardens'),  # Policial Infiltrado
+    '01PZ051': ('zaun', 'chempunks'),  # Malucânica
+    '01PZ007': ('zaun', 'chempunks'),  # Carro Alegórico
+    '05BC160': ('freljord', 'creatures'),  # Poro Primitivo
+    '05BC140': ('freljord', 'creatures'),  # Trenó de Poros
+    '06BC016': ('bandle', 'fae'),  # Biblioteca Viva
+    '05BC020': ('bandle', 'fae'),  # Bibliotecária Assistente
+    '07BC018': ('bandle', 'fae'),  # Estudioso do Portal
+    '07BC005': ('bandle', 'fae'),  # Fada das Lâminas Esculpida
+    '06BC024': ('bandle', 'fae'),  # Guia do Reino
+    '05BC183': ('bandle', 'fae'),  # Vovô Feérico
+    '05BC066': ('bandle', 'fae'),  # Pena Rápida
+    '05BC005': ('bandle', 'fae'),  # Donzelas das Algas
+    '06BC026': ('bandle', 'fae'),  # Byrdo, Tocante de Sinos
+    '06BC031': ('bandle', 'fae'),  # Maduli, Guarda do Portão
+    '07BC020': ('bandle', 'fae'),  # Senhor Catatreco
+    '05BC057': ('bandle', 'gloom'),  # Alfaiate Esnobe
+    '05BC096': ('bandle', 'gloom'),  # Tenor do Terror
+    '05BC119': ('bandle', 'gloom'),  # Tropa
+    '09BC003': ('bandle', 'gloom'),  # Presente Grotesco
+    '09BC004': ('bandle', 'gloom'),  # Sossega o Facho
+    '05BC098': ('bandle', 'gloom'),  # Catalisador Desequilibrado
+    '05BC070': ('bandle', 'squads'),  # Ava Dedicada
+    '05BC049': ('bandle', 'squads'),  # Conquiliologista
+    '05BC129': ('bandle', 'citizens'),  # Mandante da Arena
+    '05BC091': ('bandle', 'citizens'),  # Promoter da Arena
+    '09BC006': ('bandle', 'citizens'),  # Prefeito Bombadão
+    '05BC116': ('bandle', 'citizens'),  # Prefeito de Bandópolis
+    '09BC002': ('bandle', 'citizens'),  # Tio Milty
+    '05BC086': ('bandle', 'inventors'),  # Abalante
+    '05BC079': ('bandle', 'inventors'),  # Escavinho
+    '05BC080': ('bandle', 'inventors'),  # Ligeirinho e Bofetão
+    '05BC170': ('bandle', 'inventors'),  # Ranzinzim Destruidor
+    '05BC173': ('bandle', 'inventors'),  # Roleta Marítima
+    '05BC082': ('bandle', 'inventors'),  # Segurança e Parafuso
+    '05BC089': ('bandle', 'inventors'),  # Tectrompete
+    '05BC050': ('bandle', 'creatures'),  # Benêmona
+    '05BC084': ('bandle', 'creatures'),  # Chio
+    '05BC010T1': ('bandle', 'creatures'),  # Dentinho
+    '05BC106': ('bandle', 'creatures'),  # Resmunguesma
+    '02BW010': ('freljord', 'creatures'),  # Poro Saqueador
+    '08MT031': ('targon', 'ottrani'),  # Adorante de Dragões Ottrani
+    '09MT005': ('targon', 'ottrani'),  # Sonhadora da Canção Dracônica
+    '03MT014': ('targon', 'ottrani'),  # Arauta dos Dragões
+    '03MT220': ('targon', 'lunari'),  # A Encruzilhada
+    '06MT038': ('targon', 'lunari'),  # A Luz Sinuosa
+    '03MT221': ('targon', 'lunari'),  # As Presas
+    '03MT216': ('targon', 'lunari'),  # Sombras Celestes
+    '03MT092': ('targon', 'creatures'),  # Cabra da Montanha
+    '03MT001': ('targon', 'creatures'),  # Furins Furtivos
+    '06MT004': ('targon', 'rakkor'),  # Pastor Errante
+    '03MT080': ('targon', 'rakkor'),  # Guardião da Nascente
+    '03MT079': ('targon', 'aspects'),  # Pestinha Estelar
+    '06MT053': ('targon', 'aspects'),  # Artesã Generosa
+    '03MT048': ('targon', 'aspects'),  # Doadora de Dádivas
+    '08MT045': ('demacia', 'mageseekers'),  # Conjurador Acorrentado
+    '08MT024': ('demacia', 'mageseekers'),  # Conjurador do Olho-Rubi
+    '04SH049': ('freljord', 'creatures'),  # Poro Destinado
+    '04SH049T1': ('freljord', 'creatures'),  # Poro Venerado
+    '04SH009': ('shurima', 'baccai'),  # Baccai Enfurecido
+    '06SH005': ('shurima', 'baccai'),  # Baccai Esquecido
+    '04SH002': ('shurima', 'baccai'),  # Ceifeiro Baccai
+    '06SH037': ('shurima', 'baccai'),  # Definharra Baccai
+    '04SH081': ('shurima', 'baccai'),  # Fiandeira Baccai
+    '04SH097': ('shurima', 'baccai'),  # Guardiã do Sacrário
+    '05SH014T1': ('shurima', 'xerath'),  # Xerath
+    '05SH014T2': ('shurima', 'xerath'),  # Xerath
+    '05SH016': ('shurima', 'xerath'),  # Acólito Ruinoso
+    '05SH002': ('shurima', 'xerath'),  # Errante das Ruínas
+    '05SH012T1': ('shurima', 'xerath'),  # Dami'yin, o Liberto
+    '05SH017': ('shurima', 'xerath'),  # Arauta do Mago
+    '05SH011': ('shurima', 'xerath'),  # Devoto Eterno
+    'lnaafiri': ('runeterra', 'rt-darkin'),  # Naafiri
+    '06SH004T1': ('runeterra', 'rt-darkin'),  # Servo Darkin
+    '04SH091': ('shurima', 'time'),  # Khahiri, o Aluno
+    '04SH021': ('shurima', 'time'),  # Khahiri, o Regressado
+    '07SH023': ('shurima', 'empire'),  # General das Areias Caídas
+    '04SH003T8': ('shurima', 'empire'),  # Gladiador Eterno
+    '04SH077': ('shurima', 'empire'),  # Voz dos Reerguidos
+    '06SI031T1': ('void', 'icathia'),  # Miragem Icathiana
+    '04SH076T1': ('shurima', 'places'),  # Estátua de Estase
+    '07RU015': ('freljord', 'creatures'),  # O Rei Poro
+    '07RU015T4': ('freljord', 'creatures'),  # O Rei Poro
+    '05BC041T1': ('demacia', 'army'),  # Poppy
+    '05BC163T1': ('zaun', 'chempunks'),  # Ziggs
+    '05BC006': ('zaun', 'chempunks'),  # O Arsenal
+    '06MT008': ('demacia', 'illuminators'),  # Kayle
+    '06MT008T2': ('demacia', 'illuminators'),  # Kayle
+    '06MT018': ('demacia', 'illuminators'),  # Guardião da Lei
+}
