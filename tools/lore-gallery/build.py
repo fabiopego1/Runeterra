@@ -44,8 +44,6 @@ UNI_REGION = {'demacia': 'demacia', 'freljord': 'freljord', 'ionia': 'ionia', 'n
               'void': 'void', 'ixtal': 'ixtal'}
 # the League of Legends faction of a champion -> region of the Lore page
 FACTION_REGION = dict(UNI_REGION, unaffiliated='runeterra')
-# Nazumah has no gallery yet
-SKIP = re.compile(r"nazumah|k'sante", re.I)
 ZAUN = re.compile(r"zaun|chem|sump|undercity|back alley|whump|urchin|shimmer|singed|warwick|twitch|zeri|mundo|ekko|jinx|viktor|augment|scrap|bouncer|diva|corina|renata|gang|punk|clockling|swapbot|mimic|boom", re.I)
 CREATURE_SUB = {'BIRD', 'CAT', 'DOG', 'SPIDER', 'REPTILE', 'PORO', 'YETI', 'ELNUK', 'SEA MONSTER', 'DRAGON', 'LURKER', 'FAE', 'TECH', 'ELEMENTAL', 'CELESTIAL'}
 CREATURE_NAME = re.compile(
@@ -132,8 +130,6 @@ def load_lor():
 
 def site_region(c):
     text = ' '.join([c['name'], c.get('flavorText', ''), c.get('descriptionRaw', '')])
-    if SKIP.search(text):
-        return None
     if 'DARKIN' in c.get('subtypes', []):
         return 'runeterra'
     r = c['regionRefs'][0]
@@ -361,7 +357,7 @@ def main():
     lol = []
     for c in champs:
         t = tokens(c['en'])
-        if any(t <= h for h in have) or nm(c['en']) == 'ksante':
+        if any(t <= h for h in have):
             continue
         g = group_for(c['en'], '', FACTION_REGION.get(c['faction'], 'runeterra'), True)
         if nm(c['en']) in creature_champs:
@@ -436,7 +432,7 @@ def main():
 
 REGION_NAME = {'demacia': 'Demacia', 'freljord': 'Freljord', 'ionia': 'Ionia', 'noxus': 'Noxus', 'piltover': 'Piltover', 'zaun': 'Zaun',
                'shadow-isles': 'Ilhas das Sombras', 'bilgewater': 'Águas de Sentina', 'shurima': 'Shurima', 'targon': 'Targon', 'bandle': 'Bandópolis',
-               'void': 'o Vazio', 'ixtal': 'Ixtal'}
+               'void': 'o Vazio', 'ixtal': 'Ixtal', 'nazumah': 'Nazumah'}
 PROPER = ['Rakkor', 'Solari', 'Lunari', 'Targon', 'Ra’Horak', 'Garra do Inverno', 'Draklorn', 'Mortis']
 
 

@@ -322,7 +322,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.goto(`${BASE}/lore.html`);
     ok(await p.$$eval('img', e => e.length) > 5, 'Lore shows its images');
     // Region galleries: Grupos, Ambientes e Criaturas (only for the regions that have one), drawn when opened
-    ok(!!(await p.$('#r-demacia details.rg')) && !!(await p.$('#r-void details.rg')) && !!(await p.$('#r-ixtal details.rg')) && !(await p.$('#r-nazumah details.rg')), 'regions have an inspiration gallery, except Nazumah');
+    ok(!!(await p.$('#r-demacia details.rg')) && !!(await p.$('#r-void details.rg')) && !!(await p.$('#r-ixtal details.rg')) && !!(await p.$('#r-nazumah details.rg')), 'every region has an inspiration gallery, Nazumah included');
     await p.click('#r-noxus details.rg summary'); await p.waitForTimeout(200);
     ok(await p.$$eval('#r-noxus .rg-tab', e => e.map(x => x.dataset.cat).join()) === 'groups,places,creatures' && await p.$$eval('#r-noxus .rg-group h5', e => e.some(x => x.textContent === 'Legião Trifariana')), 'a region gallery has Grupos, Ambientes and Criaturas, with its factions');
     await p.click('#r-noxus .rg-tab[data-cat=creatures]');
