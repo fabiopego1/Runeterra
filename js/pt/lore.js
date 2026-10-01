@@ -167,6 +167,9 @@
       <p>O Vazio é o "Reino do Nada" que se encontra além do Reino Material.</p>
       <p>É também uma manifestação desse nada incognoscível: uma força de fome insaciável, à espera através dos éons até que seus mestres, os misteriosos <b>Observadores</b>, marquem o momento final da destruição.</p>
       <p>Ser um mortal tocado pelo poder do Vazio é sofrer um vislumbre agonizante da irrealidade eterna, suficiente para destruir até a mente mais forte. Os habitantes do próprio reino do Vazio são criaturas-construções, muitas vezes de consciência limitada, mas incumbidas de um propósito singular: levar o esquecimento total a Runeterra.</p>` },
+    { id: 'andarilhos', gallery: 'runeterra', group: REG, title: 'Runeterra, sem região fixa', body: `
+      <p>Nem tudo pertence a uma terra só. Há quem vague pelo mundo inteiro, como o Bardo, Ryze ou o Jax; há armas que já passaram por muitas mãos, como os Darkin; e há poderes que nenhuma nação controla, como as Runas Globais.</p>
+      <p>Use estas figuras como encontros raros, lendas contadas ao pé da fogueira ou o motivo que tirou seu campeão de casa.</p>` },
     { id: 'races', group: POVOS, title: 'Raças', body: `
       <p>Os povos jogáveis de Runeterra. Cada verbete diz onde eles vivem, exemplos conhecidos e quais escolhas do criador combinam com eles. As raças não têm regras próprias neste sistema: sua raça se expressa pela Origem, pela Fonte de Poder, pelos poderes e pelos princípios.</p>
       ${[

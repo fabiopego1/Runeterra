@@ -26,7 +26,7 @@
     interstellar: ['Celestial', 'Visitante celestial, ser forjado nas estrelas ou mortal que tocou os céus.', 'Você vem de além do céu. Pode ser um ser celestial, uma estrela caída ou um mortal que voltou mudado depois de tocar as estrelas. Os costumes deste mundo te parecem estranhos.'],
     dynasty: ['Dinastia', 'Sua família produz campeões há gerações.', 'Seja descendente de imperadores, herdeiro de uma linhagem de heróis ou filho de uma família de magos, todos esperam heroísmo de você.'],
     otherworldly: ['Extraordinário', 'Tocado pelo sobrenatural. Humano, só em parte, se tanto.', 'Você carrega o sobrenatural no sangue: filho de um espírito, descendente de um semideus ou nascido de um povo mágico. Você nunca se encaixou por completo entre os mortais.'],
-    created: ['Criado', 'Construído numa oficina, forjado num laboratório ou reerguido por magia antiga.', 'Você foi feito, não nasceu, ou foi refeito. Pode ser um golem a vapor, uma boneca de relojoaria, um colosso de pedra encantada, uma arma viva criada em laboratório e mantida presa para não se voltar contra os criadores, ou um guerreiro morto trazido de volta por feitiçaria para lutar outra vez. Ainda assim, algo em você responde ao chamado.']
+    created: ['Criado', 'Construído numa oficina, forjado num laboratório ou reerguido por magia antiga.', 'Você foi feito, ou refeito: um golem a vapor, uma boneca de relojoaria, um colosso de pedra encantada, uma arma viva criada em laboratório e mantida presa, ou um guerreiro morto reerguido por feitiçaria. Ainda assim, algo em você responde ao chamado.']
   }, (x, v) => { x.rt = v[0]; x.sub = v[1]; x.lore = v[2]; });
 
   // [nome, subtítulo, lore, texto do bônus especial]
@@ -66,7 +66,7 @@
     robot: ['Robô/Ciborgue', 'Constructo / Aprimorado', 'Metal e engrenagens te definem, seja você construído do zero ou reconstruído peça por peça.', null, null, 'Uma das habilidades de Robô/Ciborgue acima, na Amarela.', 'Atribua um d10 a um poder Tecnológico que você ainda não tenha.'],
     sorcerer: ['Feiticeiro', 'Mago', 'Você empunha magia bruta em todas as formas, da magia rúnica à feitiçaria sombria e aos encantamentos aprendidos em tomos proibidos.'],
     psychic: ['Psíquico', 'Encantador / Mago de Controle', 'Sua mente é a arma, seja pelo encanto de uma vastaya, por esferas telecinéticas de soberania sombria ou por visões do que está por vir.', 'pelo menos dois poderes Psíquicos', null, 'Só habilidades cujo poder ou qualidade associado você tenha.'],
-    transporter: ['Transportador', 'Andarilho / Tecelão de Portais', 'Você leva a si e aos outros aonde precisam estar, seja pelas Jornadas Mágicas do Bard, por fendas do Vazio ou por uma carta do Destino.', 'uma Montaria Emblemática ou um poder de Mobilidade', null, 'Uma das habilidades de Transportador acima, na Amarela.'],
+    transporter: ['Transportador', 'Andarilho / Tecelão de Portais', 'Você leva a si e aos outros aonde precisam estar, seja pelas Jornadas Mágicas do Bardo, por fendas do Vazio ou por uma carta do Destino.', 'uma Montaria Emblemática ou um poder de Mobilidade', null, 'Uma das habilidades de Transportador acima, na Amarela.'],
     'minion-maker': ['Criador de Lacaios', 'Invocador / Conjurador', 'Você nunca luta sozinho: torretas, Donzelas da Névoa, plantas mordedoras ou um urso bem grande pegando fogo.', null, 'Você ganha as duas, cada uma usando um poder diferente.'],
     'wild-card': ['Curinga', 'Trapaceiro', 'Ninguém sabe o que vem a seguir, muito menos você. Caixas-surpresa, mimetismo que muda de forma, caos alegre.'],
     'form-changer': ['Metamorfo', 'Metamorfo', 'Seu corpo muda como você quiser: estica, encolhe, endurece ou imita outras pessoas e criaturas.', 'um poder de Autocontrole'],
@@ -126,7 +126,7 @@
     'Brand (touched a World Rune), Zeri': 'Brand (tocou uma Runa Global), Zeri',
     "Rumble, Jayce's Mercury gear, Viktor's early rigs": 'Rumble, o equipamento de Mercúrio do Jayce, os primeiros protótipos do Viktor',
     "Kayn (Rhaast), Varus, Aatrox's hosts": 'Kayn (Rhaast), Varus, os hospedeiros do Aatrox',
-    'Nocturne, Fiddlesticks, Bard (probably)': 'Nocturne, Fiddlesticks, Bardo (provavelmente)',
+    'Nocturne, Fiddlesticks, Bardo (probably)': 'Nocturne, Fiddlesticks, Bardo (provavelmente)',
     'Zilean, Ryze, Ekko (rewound)': 'Zilean, Ryze, Ekko (rebobinado)',
     'Gragas, Braum, Ornn (on a good day)': 'Gragas, Braum, Ornn (num dia bom)'
   };
