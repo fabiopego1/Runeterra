@@ -293,7 +293,7 @@ GROUPS = [
     dict(region='void', id='icathia', name='Os últimos de Icathia',
          desc='O reino que o Vazio devorou. Jax, o último guerreiro de Icathia, procura pelo mundo quem tenha a força de enfrentar o que destruiu sua casa.',
          champs=['Jax'], uni=['A Queda de Icathia']),
-    dict(region='void', id='voidborn', name='Os Voidborn',
+    dict(region='void', id='voidborn', name='Os Vastinatas',
          desc='Seres construídos pelos Observadores para aprender, consumir e preparar a volta de seus mestres. Vel\'Koz, o Olho do Vazio, Kha\'Zix, o caçador que evolui, e Bel\'Veth, a Imperatriz que devora mundos.',
          champs=['Vel\'Koz', 'Kha\'Zix', 'Bel\'Veth']),
 
@@ -398,7 +398,7 @@ WIKI_PICKS = [
     ('Void_Icathia.png', 'void', 'places', 'Vazio (arte conceitual 2)'),
     ('Void_concept_01.jpg', 'void', 'places', 'Vazio (arte conceitual 3)'),
     ('Voidlings-portal.jpg', 'void', 'places', 'Vazio (arte conceitual 4)'),
-    ('Voidborn_Concept_01.jpg', 'void', 'voidborn', 'Voidborn encapuzados (arte conceitual)'),
+    ('Voidborn_Concept_01.jpg', 'void', 'voidborn', 'Vastinatas encapuzados (arte conceitual)'),
     ('Shurima_LoR_Concept_79.jpg', 'void', 'creatures', 'Criatura do Vazio (arte conceitual 1)'),
     ('Shurima_LoR_Concept_80.jpg', 'void', 'creatures', 'Criatura do Vazio (arte conceitual 2)'),
     ('Shurima_LoR_Concept_83.jpg', 'void', 'creatures', 'Criatura do Vazio (arte conceitual 3)'),
