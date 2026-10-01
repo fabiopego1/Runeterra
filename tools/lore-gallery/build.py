@@ -441,7 +441,7 @@ def main():
 
 REGION_NAME = {'demacia': 'Demacia', 'freljord': 'Freljord', 'ionia': 'Ionia', 'noxus': 'Noxus', 'piltover': 'Piltover', 'zaun': 'Zaun',
                'shadow-isles': 'Ilhas das Sombras', 'bilgewater': 'Águas de Sentina', 'shurima': 'Shurima', 'targon': 'Targon', 'bandle': 'Bandópolis',
-               'void': 'o Vazio', 'ixtal': 'Ixtal', 'nazumah': 'Nazumah'}
+               'void': 'o Vazio', 'ixtal': 'Ixtal', 'nazumah': 'Nazumah', 'runeterra': 'Outras'}
 PROPER = ['Rakkor', 'Solari', 'Lunari', 'Targon', 'Ra’Horak', 'Garra do Inverno', 'Draklorn', 'Mortis']
 
 
