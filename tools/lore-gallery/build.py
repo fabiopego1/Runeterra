@@ -18,12 +18,13 @@ import os
 import re
 import sys
 import time
+import unicodedata
 import urllib.request
 
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(__file__))
-from groups import GROUPS, UNI_CREATURES, UNI_PEOPLE, UNI_TITLES  # noqa: E402
+from groups import GROUPS, MOVES, PULL, UNI_CREATURES, UNI_PEOPLE, UNI_TITLES  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT_IMG = os.path.join(ROOT, 'assets', 'lore-gallery')
@@ -153,6 +154,47 @@ def is_creature(c):
     return bool(CREATURE_SUB & set(c.get('subtypes', []))) or bool(CREATURE_NAME.search(c['name']))
 
 
+def clean_text(text, limit=420):
+    """Card flavour text and Universe captions come with <br>, other tags and odd spacing: keep real line breaks only."""
+    t = re.sub(r'<\s*br\s*/?\s*>', '\n', text, flags=re.I)
+    t = re.sub(r'<[^>]+>', '', t)
+    t = t.replace('&nbsp;', ' ').replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
+    t = re.sub(r'[ \t\u00a0]+', ' ', t)
+    t = re.sub(r' *\n *', '\n', t)
+    t = re.sub(r'\n{3,}', '\n\n', t).strip()
+    if len(t) > limit:
+        cut = t[:limit]
+        end = max(cut.rfind('. '), cut.rfind('! '), cut.rfind('? '), cut.rfind('.\n'))
+        t = cut[:end + 1] if end > limit * 0.5 else cut.rsplit(' ', 1)[0].rstrip(',;: ') + '…'
+    return t
+
+
+def plain(text):
+    return ''.join(c for c in unicodedata.normalize('NFD', text.lower().strip()) if unicodedata.category(c) != 'Mn')
+
+
+def apply_moves(chosen):
+    out, used = [], set()
+    for j in chosen:
+        key, url, kind, region, bucket, name, flavor, credit = j
+        for target_region, rules in MOVES.items():
+            pulled = {plain(n) for n in PULL.get(target_region, [])}
+            if region != target_region and plain(name) not in pulled:
+                continue
+            for target, names in rules.items():
+                if plain(name) in {plain(n) for n in names}:
+                    bucket = ('creatures', None) if target == 'creatures' else ('places', None) if target == 'places' else ('group', target)
+                    region = target_region
+                    used.add((target_region, plain(name)))
+        out.append((key, url, kind, region, bucket, name, flavor, credit))
+    for target_region, rules in MOVES.items():
+        for names in rules.values():
+            for n in names:
+                if (target_region, plain(n)) not in used:
+                    print(f'  warning: no picture named "{n}" in {target_region}')
+    return out
+
+
 def main():
     os.makedirs(OUT_IMG, exist_ok=True)
     taken = site_hashes()
@@ -253,13 +295,16 @@ def main():
         if f.endswith('.webp') and f not in keep:
             os.remove(os.path.join(OUT_IMG, f))
 
+    # ------------------------------------------------------------ hand-made moves (groups.py: MOVES)
+    chosen = apply_moves(chosen)
+
     # ------------------------------------------------------------ write the data file
     data = {}
     for key, url, kind, region, (cat, gid), name, flavor, credit in chosen:
         r = data.setdefault(region, {'groups': {}, 'places': [], 'creatures': []})
         item = {'s': key, 'n': name}
         if flavor:
-            item['f'] = flavor[:280]
+            item['f'] = clean_text(flavor)
         if kind == 'uni':
             item['u'] = 1
         if cat == 'group':

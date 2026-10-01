@@ -646,6 +646,7 @@ Object.assign(window.I18N.ui, {
  "No portrait": "Sem retrato",
  "Change portrait": "Trocar retrato",
  "Add portrait": "Adicionar retrato",
+ "Best shape: a portrait image, 3:4 (for example 900 × 1200 px). Other shapes are cropped to fit the frame on the sheet.": "Melhor formato: imagem em pé na proporção 3:4 (por exemplo, 900 × 1200 px). Outras proporções são cortadas para caber na moldura da ficha.",
  "Remove": "Remover",
  "Goes in the picture box of the hero sheet (and the PDF).": "Vai no quadro de imagem da ficha de herói (e no PDF).",
  "Backstory notes (auxiliary sheet)": "Notas de história (ficha auxiliar)",

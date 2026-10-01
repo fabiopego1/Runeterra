@@ -124,7 +124,7 @@ GROUPS = [
          desc='O povo das Ilhas das Serpentes, devoto da Mãe Serpente. Illaoi é sua sacerdotisa mais forte.',
          champs=['Illaoi'], match=r'Buhru|Nagakabouros|Tentacle|Dedicant|Idol|Avatar of the Tides|Sea\'s Voice',
          uni=['Templo Buhru', 'As Ilhas das Serpentes', 'Nagacáburos']),
-    dict(region='bilgewater', id='pirates', name='Piratas e tripulações',
+    dict(region='bilgewater', id='pirates', name='Piratas e Tripulações',
          desc='As tripulações que fizeram a fama de Águas de Sentina. Gangplank foi o rei de todas elas.',
          champs=['Gangplank'], match=r'Buccaneer|Corsair|Deckhand|Powder|Plunder|Dreadway|Cutthroat|Petty Officer|Shelly|Helmsman|Lookout|Crusty|Babs|Navigator',
          uni=['Capitães e Tripulação', 'Canhões']),
@@ -132,14 +132,17 @@ GROUPS = [
          desc='Gente que vive de cartazes de "procurado". Miss Fortune é a mais temida.',
          champs=['Miss Fortune'], match=r'Hired Gun|Sheriff|Bounty|Shellshocker|Five-Punch', uni=['Quadro de Recompensas', 'Bacamarte da Miss Fortune', 'Armas']),
     dict(region='bilgewater', id='hunters', name='Caçadores de monstros e açougueiros',
-         desc='Os que caçam monstros marinhos e retalham as presas nas Docas da Matança. Pyke era um deles.',
+         desc='Os que caçam monstros marinhos e retalham as presas nas Docas da Matança. Pyke era um deles. Também aqui está o grupo de Nilah, que veio de Kathkan, uma terra desconhecida, para desafiar criaturas lendárias.',
          champs=['Pyke'], match=r'Jaull Hunters|Hunting Fleet|Razorscale Hunter|Butcher|Taskmaster|Harpoon|Dreg',
          uni=['Arpoeiros', 'Mestra do Arpão', 'Invocadores de Serpentes', 'Galpões de Matança', 'Baías de Entalhadura', 'Ossos do ofício']),
     dict(region='bilgewater', id='marai', name='Os Marai',
          desc='O povo-peixe vastaya dos recifes. Nami deixou as águas para buscar a Pedra da Lua.',
          champs=['Nami'], match=r'Marai|Tidedancer|Syren'),
-    dict(region='bilgewater', id='gamblers', name='Jogadores e trapaceiros',
-         desc='Cartas marcadas, dados viciados e mercado clandestino. Twisted Fate faz fortuna e inimigos em cada mesa.',
+    dict(region='bilgewater', id='marine', name='Vida Marinha',
+         desc='Quem vive do mar e dentro dele: marinheiros, aventureiros das ondas e criaturas simpáticas (ou nem tanto), como Fizz, o trapaceiro das marés, e Nautilus, o Titã das Profundezas.',
+         champs=[]),
+    dict(region='bilgewater', id='underworld', name='O Submundo Sentinense',
+         desc='Apostas, contrabando e lutas clandestinas. Jack, o Rei do Crime, comanda o submundo de Águas de Sentina e as arenas onde se aposta em campeões do fosso. Twisted Fate faz fortuna e inimigos em cada mesa, e Tahm Kench cobra o preço de tudo.',
          champs=['Twisted Fate'], match=r'Gambler|Croupier|Pool Shark|Slotbot|Black Market|Swindler|Pocket Picker|Magician|Perfidious|Grifter'),
 
     # ---------------------------------------------------------------- Shadow Isles
@@ -278,3 +281,24 @@ UNI_PEOPLE = {
     'Nebulizador de gás do Sumidouro', 'Acordos hextec clandestinos', 'A filha de Setaka, ascendeu como Hierofante de Zuretta',
     'Iluminando a Cidade do Progresso', 'A Vida é uma Batalha', 'Interior da casa', 'Criando uma casa',
 }
+
+
+# Hand-made moves, applied after the automatic sorting. Names are matched without accents or capitals and
+# every card with that name moves ("todos os itens Nilah"). Targets: a group id, 'creatures' or 'places'.
+# Names listed in PULL are also taken from other regions (Fizz is filed under Bandle City by the game).
+MOVES = {
+    'bilgewater': {
+        'marai': ['Avatar das Marés', 'Guarda Abissal'],
+        'hunters': ['Devoto do Desafio', 'Mestre Vigia', 'Timoneiro Experiente', 'O Dançarino das Marés', 'Dançarina dos Chakrans',
+                    'Vikrash, o Exuberante', 'Nilah', 'Devoto Dedicado'],
+        'buhru': ['Navegadora Nativa'],
+        'pirates': ['Estátua de Macaco', 'Rex Correnteza'],
+        'marine': ['Almirante Shelly', 'Artilharia Cascuda', 'Fizz', 'Nautilus', 'Zap Nadajato', 'Mergulhador Evasivo',
+                   'Aventureiro Saltareias', 'Polvaventureiro'],
+        'underworld': ['Babs Delirante', 'Rãdivinha', 'Senhor Resmunguejo', 'Pablo Cinco-Socos', 'A Corte do Rei', 'Anjinho', 'Bull',
+                       'Nukkle', 'Polvo Boxeador', 'Mako', 'Sabichão', 'Tahm Kench', 'Jack', 'Jack, o Vencedor'],
+        'bounty': ['A Sereia'],
+        'creatures': ['Rato do Cais', 'Criaturas Coralinas', 'Dentão'],
+    },
+}
+PULL = {'bilgewater': ['Fizz']}
