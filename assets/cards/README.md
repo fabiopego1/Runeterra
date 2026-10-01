@@ -15,7 +15,7 @@ No picture is used twice on the site (the tests check it), so none of these repe
 - ar-modular: Aphelios (03MT217)
 - ar-powerhouse: Darius (01NX038)
 - ar-psychic: Karma (01IO041)
-- ar-reality-shaper: Ekko (04PZ001)
+- ar-reality-shaper: Ekko, nível 2 (04PZ001T3)
 - ar-robot: Mechapresentador da Arena (05BC190)
 - ar-shadow: Zed (01IO009)
 - ar-sorcerer: Veigar (05BC093)

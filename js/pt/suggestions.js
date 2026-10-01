@@ -10,7 +10,7 @@
   };
 
   const REG = {
-    bilgewater: { ar: ['marksman', 'cqc', 'wild-card', 'shadow'], tr: ['ranged-combat', 'close-combat', 'banter', 'underworld', 'swimming', 'sig-weapon', 'sig-vehicle', 'imposing', 'finesse'], pr: ['business', 'loner', 'team'] },
+    bilgewater: { ar: ['marksman', 'cqc', 'wild-card', 'shadow'], tr: ['ranged-combat', 'close-combat', 'banter', 'underworld', 'swimming', 'water', 'sig-weapon', 'sig-vehicle', 'imposing', 'finesse'], pr: ['business', 'loner', 'team'] },
     bandle: { ar: ['wild-card', 'gadgeteer', 'transporter', 'speedster', 'marksman'], tr: ['teleportation', 'illusions', 'size-changing', 'inventions', 'gadgets', 'banter', 'creativity', 'acrobatics', 'stealth'], pr: ['discovery', 'mentor', 'family'] },
     demacia: { ar: ['armored', 'cqc', 'powerhouse', 'marksman'], tr: ['close-combat', 'leadership', 'conviction', 'sig-weapon', 'sig-vehicle', 'fitness', 'strength', 'history', 'radiant'], pr: ['defender', 'powerless', 'veteran', 'family', 'tactician'] },
     'shadow-isles': { ar: ['sorcerer', 'minion-maker', 'shadow', 'form-changer'], tr: ['infernal', 'intangibility', 'otherworldly-mythos', 'magical-lore', 'stealth', 'imposing', 'postcognition'], pr: ['immortality', 'history', 'mask', 'self-preservation'] },

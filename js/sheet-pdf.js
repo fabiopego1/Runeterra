@@ -105,7 +105,7 @@
       say('Embedding fonts…');
       const doc = await PDFDocument.create();
       const T = window.T || (x => x);
-      const heroName = fdoc.querySelector('.hs-name') ? fdoc.querySelector('.hs-name').textContent.trim() : '';
+      const heroName = [...fdoc.querySelectorAll('.hs-name')].map(e => e.textContent.trim()).filter(Boolean).join(', ');
       doc.setTitle(heroName ? `Ficha de Herói de ${heroName}` : T('Hero Sheet'));
       doc.setCreator('Forja de Campeões · Runeterra');
       let fonts = {}, fieldFont, fallback;

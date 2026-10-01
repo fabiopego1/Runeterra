@@ -169,7 +169,9 @@
   // ------------------------------------------------------------------ html helpers
   const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const tip = html => ` data-tip="${esc(html)}"`;
-  const traitName = k => (st.traitNames[k] || (TRAIT[k] ? TRAIT[k].rt : k));
+  // the Signature Quality takes the name the player confirmed, everywhere it shows up
+  const qualName = () => (st.pers.qok && st.pers.qname && st.pers.qname.trim()) || '';
+  const traitName = k => (k === 'rp-quality' && qualName()) || st.traitNames[k] || (TRAIT[k] ? TRAIT[k].rt : k);
   const baseTraitName = k => (TRAIT[k] ? TRAIT[k].rt : k);
   // a renamed power/quality/ability shows its original name under the player's one
   const renamedTrait = k => !!(st.traitNames[k] && st.traitNames[k].trim() && st.traitNames[k].trim() !== baseTraitName(k));
@@ -1345,7 +1347,11 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         cardsHtml(window.PERSONALITIES, 'pers', st.pers.id, 'pers', x => `<span class="n">${pad2(x.n)}</span><div class="t">${esc(x.rt)}</div><div class="dice-row status-row">${statusCell(x)}</div><span class="info" aria-label="${tr('Details')}"${tip(`${cardArt('pe', x.id)}<h5>${esc(x.rt)}</h5>${x.lore ? esc(x.lore) + '<hr>' : ''}<small>${tr('Champions:')} ${esc(x.champs)}</small>`)}></span>`)),
       qname: () => `
         <div class="qname-row"><input type="text" data-bind="pers.qname" data-live="1" data-commit="1" value="${esc(st.pers.qname)}" placeholder="${tr('Type your Signature Quality')}">
-        <button type="button" class="btn primary" data-act="qok"${st.pers.qname.trim() ? '' : ' disabled'}>${ico('check')} ${tr('Confirm')}</button></div>`,
+        <button type="button" class="btn primary" data-act="qok"${st.pers.qname.trim() ? '' : ' disabled'}>${ico('check')} ${tr('Confirm')}</button></div>${(() => {
+          // a short reminder of the qualities already taken, so the new one says something different
+          const qs = sortTraits(owned(R, 'quality').filter(t => t.key !== 'rp-quality'));
+          return qs.length ? `<p class="qname-have">${tr('Qualities you already have:')} ${qs.map(t => `<span>${esc(traitName(t.key))}</span>`).join(', ')}</p>` : '';
+        })()}`,
       out: () => {
         const rq = reqFromText(pe.out);
         const outKeys = sortTraits(owned(R, rq.kind)).map(t => t.key);
@@ -1756,6 +1762,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const zLocked = z => zNow && ZRANK[z] > ZRANK[zNow] || zNow === 'out';
     const charLine = (label, d, extra = '') => `<div class="hs-f"><span class="hs-l">${label}</span>${d ? `<span${tip(`${esc(d.lore || '')}`)} class="term">${esc(d.rt + extra)}</span>` : BLANK}</div>`;
     const attr = (label, v) => `<div class="hs-f"><span class="hs-l">${label}</span>${esc(v || '')}</div>`;
+    // keeps the paragraphs and line breaks typed in the Legend chapter
+    const attrML = (label, v) => `<div class="hs-f"><span class="hs-l">${label}</span><span class="hs-ml">${esc((v || '').trim())}</span></div>`;
     const traitRows = (list, n) => {
       const sp = splitOn() ? (st.arch.split || {}) : {};
       const formTag = k => sp[k] && sp[k] !== 'both' ? ` <small class="hs-form-tag"${tip(tr(sp[k] === 'civ' ? 'Only in your civilian form' : 'Only in your heroic form'))}>${tr(sp[k] === 'civ' ? 'civil' : 'heroic')}</small>` : '';
@@ -1778,11 +1786,11 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
           <div class="hs-portrait">${i.portrait ? `<img src="${i.portrait}" alt="${tr('Portrait of {name}', { name: esc(i.name || tr('your champion')) })}">` : `<span class="muted">${tr('Portrait')}</span>`}</div>
           <div class="hs-idblock">
             <div class="hs-card"><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}&nbsp;</div>
-            <div class="hs-card hs-2"><div><div class="hs-h">${tr('Hero Name')}</div><div class="hs-name">${esc(i.name || tr('Unnamed Champion'))}</div></div><div><div class="hs-h">${tr('Alias')}</div>${esc(i.alias || '')}</div></div>
+            <div class="hs-card hs-2"><div><div class="hs-h">${tr('Alias')}</div><div class="hs-name">${esc(i.alias || (i.name ? '' : tr('Unnamed Champion')))}</div></div><div><div class="hs-h">${tr('Hero Name')}</div><div class="hs-name hs-title">${esc(i.name || '')}</div></div></div>
             <div class="hs-card"><div class="hs-h">${tr('Physical Attributes')}</div>
               <div class="hs-3">${attr(tr('Gender'), i.gender)}${attr(tr('Age'), i.age)}${attr(tr('Height'), i.height)}</div>
               <div class="hs-3">${attr(tr('Eyes'), i.eyes)}${attr(tr('Hair'), i.hair)}${attr(tr('Skin'), i.skin)}</div>
-              ${attr(tr('Build'), i.build)}${attr(tr('Costume/Equipment'), i.costume)}<div class="hs-2">${attr(tr('People'), peopleDef() ? peopleDef().name : '')}${attr(tr('Homeland'), rg ? rg.name : '')}</div></div>
+              ${attr(tr('Build'), i.build)}${attrML(tr('Costume/Equipment'), i.costume)}<div class="hs-2">${attr(tr('People'), peopleDef() ? peopleDef().name : '')}${attr(tr('Homeland'), rg ? rg.name : '')}</div></div>
             <div class="hs-card"><div class="hs-h">${tr('Characteristics')}</div>
               <div class="hs-2">${charLine(tr('Background'), bg)}${charLine(tr('Power Source'), ps)}</div>
               <div class="hs-2">${charLine(tr('Archetype'), ar, shape && shape !== ar ? ' ' + shape.rt : '')}${charLine(tr('Personality'), pe)}</div></div>
@@ -1798,7 +1806,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         </div>
       </div>
       <div class="hs-page" id="hs-p2">
-        <div class="hs-card hs-3"><div><div class="hs-h">${tr('Hero Name')}</div>${esc(i.name || '')}</div><div><div class="hs-h">${tr('Alias')}</div>${esc(i.alias || '')}</div><div><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}</div></div>
+        <div class="hs-card hs-3"><div><div class="hs-h">${tr('Alias')}</div>${esc(i.alias || '')}</div><div><div class="hs-h">${tr('Hero Name')}</div>${esc(i.name || '')}</div><div><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}</div></div>
         <div class="hs-stats">
           <table class="hs-traits"><thead><tr><th>${tr('Powers')}</th><th>${tr('Die')}</th></tr></thead><tbody>${traitRows(powers, 6)}</tbody></table>
           <table class="hs-traits"><thead><tr><th>${tr('Qualities')}</th><th>${tr('Die')}</th></tr></thead><tbody>${traitRows(quals, 6)}</tbody></table>
@@ -1831,7 +1839,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
             ${st.arch.notes ? `<div class="hs-card"><div class="hs-h">${tr('Forms and modes')}</div><div class="hs-pre">${esc(st.arch.notes)}</div></div>` : ''}
             ${log.length ? `<div class="hs-card"><div class="hs-h"${tip(tr('Changes made between collections (Sheet page, “Evolve your champion” tab).'))}>${tr('Evolution')}</div>${log.map(e => `<div class="hs-evo">${e.coll ? `<small>${esc(e.coll)}</small>` : ''}${e.kind === 'rewrite' ? esc(tr('The champion was rewritten from scratch.')) : `${esc(e.from)} → ${esc(e.to)}`}</div>`).join('')}</div>` : ''}`.trim();
     return `<div class="hs-page hs-aux" id="hs-p3">
-        <div class="hs-card hs-3"><div><div class="hs-h">${tr('Hero Name')}</div>${esc(i.name || '')}</div><div><div class="hs-h">${tr('Alias')}</div>${esc(i.alias || '')}</div><div><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}</div></div>
+        <div class="hs-card hs-3"><div><div class="hs-h">${tr('Alias')}</div>${esc(i.alias || '')}</div><div><div class="hs-h">${tr('Hero Name')}</div>${esc(i.name || '')}</div><div><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}</div></div>
         <div class="hs-aux-grid${side ? '' : ' solo'}">
           <div class="hs-card hs-bio"><div class="hs-h">${tr('Biography')}</div>${paras.length ? paras.map(p => `<p>${esc(p)}</p>`).join('') : lines(12)}</div>
           ${side ? `<div class="hs-aux-side">${side}</div>` : ''}
@@ -1888,7 +1896,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const abs = allAbilities(R).filter(x => x.name !== 'Out' && x.src !== 'Principle');
     const renameTraits = Object.keys(R.T).filter(k => k !== 'rp-quality');
     const H = {
-      name: () => `<div class="grid3">${field('name', tr('Hero name'), tr('Type a name, then press Enter'), true)}${field('alias', tr('Alias / true name'), tr('e.g. Kaelis Du Morne'))}${field('player', tr('Player'))}</div>`,
+      name: () => `<div class="grid3">${field('alias', tr('Alias / true name'), tr('e.g. Kaelis Du Morne'))}${field('name', tr('Hero name'), tr('Type a name, then press Enter'), true)}${field('player', tr('Player'))}</div>`,
       describe: () => `<div class="grid3">${field('gender', tr('Gender'))}${field('age', tr('Age'), tr('e.g. mid-thirties, or 2,000 years'))}${field('height', tr('Height'))}${field('eyes', tr('Eyes'), tr('e.g. glowing Hextech blue'))}${field('hair', tr('Hair'))}${field('skin', tr('Skin'), tr('e.g. sun-bronzed, bioluminescent'))}</div>
         ${field('build', tr('Build'), tr('e.g. wiry, towering, clockwork'))}
         <label class="field"><span>${tr('Costume / equipment')}</span><textarea data-bind="info.costume" data-live="1" placeholder="${tr('What do they wear and carry into battle?')}">${esc(i.costume)}</textarea></label>
@@ -1965,7 +1973,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const h = healthCalc(R0), z = zoneOf(h), rg = regionDef(), i = st.info, pe = persDef();
     return `<div class="sp-id">
         <div class="sp-portrait">${i.portrait ? `<img src="${i.portrait}" alt="">` : sigil(rg ? rg.id : 'compass', 'dos-sigil')}</div>
-        <div><div class="sp-name">${esc(i.name || tr('Unnamed Champion'))}</div><div class="sp-sub">${esc([i.alias, peopleDef() && peopleDef().name, rg && rg.name].filter(Boolean).join(' · '))}</div></div></div>
+        <div><div class="sp-name">${esc(i.alias || i.name || tr('Unnamed Champion'))}</div><div class="sp-sub">${esc([i.alias && i.name, peopleDef() && peopleDef().name, rg && rg.name].filter(Boolean).join(' · '))}</div></div></div>
       ${h ? `<div class="sp-block sp-hp"><div class="sp-h">${tr('Health')}</div>
         <div class="sp-hp-n"><b>${curHealth(h)}</b><span>/ ${h.max}</span></div>
         <div class="hs-track" role="group" aria-label="${tr('Adjust Health')}"><button type="button" data-act="hpStep" data-d="-1" aria-label="${tr('Lose 1 Health')}">−</button><button type="button" data-act="hpStep" data-d="1" aria-label="${tr('Recover 1 Health')}">+</button><button type="button" data-act="hpStep" data-d="max" aria-label="${tr('Back to full Health')}"${tip(tr('Back to full Health'))}>${ico('reset')}</button></div>
@@ -2757,7 +2765,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         const on = c.cid === st.cid, pic = c.info && c.info.portrait, rg = c.region && (window.REGIONS || []).find(r => r.id === c.region);
         return `<li class="ro-item${on ? ' on' : ''}">
           <div class="ro-pic">${pic ? `<img src="${pic}" alt="">` : sigil(rg ? rg.sigil || rg.id : 'compass')}</div>
-          <div class="ro-main"><div class="ro-name">${esc(champName(c))}${c.info && c.info.alias ? ` <small>${esc(c.info.alias)}</small>` : ''}</div>
+          <div class="ro-main"><div class="ro-name">${esc((c.info && c.info.alias && c.info.alias.trim()) || champName(c))}${c.info && c.info.alias && c.info.alias.trim() && c.info.name ? ` <small>${esc(c.info.name)}</small>` : ''}</div>
             <div class="ro-line">${esc(champLine(c))}</div>
             <div class="ro-meta">${champStatus(c)}<span>${tr('Edited {d}', { d: when(c.updated) })}</span></div></div>
           <div class="ro-acts">${on ? `<span class="ro-open">${tr('Open now')}</span>` : `<button type="button" class="btn small" data-act="rosterOpen" data-id="${c.cid}">${tr('Open')}</button>`}

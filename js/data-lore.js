@@ -31,6 +31,7 @@ window.TRAIT_CATEGORIES = {
       ['nuclear', 'Nuclear', 'Raw Hextech Energy', 'You channel raw, volatile power and radiation.', 'Unstable Hextech crystals; Viktor\'s death ray; the glow of a cracked core.'],
       ['radiant', 'Radiant', 'Light', 'Holy light is at your fingertips, ready to purge evil.', 'Lux\'s prismatic light; Leona\'s solar flare; Senna\'s relic light against the Mist.'],
       ['sonic', 'Sonic', 'Song & Sound', 'Focused waves of sound, destructive or mimicking.', 'Sona\'s etwahl; Seraphine\'s voice; Kog\'Maw\'s... noises.'],
+      ['water', 'Water', 'Water & Tides', 'You command water, from a single drop to the force of the tides.', 'Nami\'s tidal waves; Illaoi\'s sea-god tentacles; Nautilus dragging his anchor through the depths.'],
       ['weather', 'Weather', 'Storm & Wind', 'You control weather, storms and winds.', 'Janna\'s tempests; Yasuo\'s wind technique; Volibear\'s thunder.']
     ] },
   'P:hallmark': { kind: 'power', sc: 'Hallmark', rt: 'Signature Gear',
@@ -213,7 +214,7 @@ window.PRINCIPLE_LORE = {
   'time-traveler': ['Principle of the Bygone Age', 'You are from another era — imperial Shurima, the Rune Wars, or a future not yet written.'],
   'undead': ['Principle of the Black Mist', 'Dead but not gone — a revenant of the Ruination.'],
   'clockwork': ['Principle of Clockwork', 'Piltovan precision: you see how every gear should turn.'],
-  'gearhead': ['Principle of the Hextech Tinkerer', 'You can tell what\'s wrong with any machine, from a music box to a Hexgate.'],
+  'gearhead': ['Principle of the Tinkerer', 'You can tell what\'s wrong with any machine, from a music box to a Hexgate.'],
   'history': ['Principle of Lore', 'Archives, ruins, forgotten tongues: you know the story of Runeterra.'],
   'indestructible': ['Principle of the Indestructible', 'Swords bounce off you like hail off Galio.'],
   'lab': ['Principle of the Workshop', 'A lab in Piltover, a chem-den in Zaun, a tower in the Freljord — your sanctum.'],

@@ -98,7 +98,7 @@
     undead: ['Como sua natureza de espectro assustou quem estava por perto?', 'Como a Névoa Negra está te puxando de volta, e o que você perde do mundo dos vivos?'],
     // Maestria
     clockwork: ['Que engrenagem, mola ou ferramenta de precisão acabou de quebrar?', 'Que mecanismo que você construiu ou consertou foi parar nas mãos erradas?'],
-    gearhead: ['Que aparelho hextec acabou de soltar faísca e entrar em curto?', 'Que máquina hextec saiu de controle e agora ameaça todo mundo por perto?'],
+    gearhead: ['Que aparelho acabou de soltar faísca e entrar em curto?', 'Que máquina saiu de controle e agora ameaça todo mundo por perto?'],
     history: ['Que detalhe histórico você lembrou errado, ou que costume antigo te fez tropeçar agora?', 'Que força ancestral, de uma ruína, relíquia ou era esquecida, despertou por causa do que você descobriu?'],
     indestructible: ['O que atravessou suas defesas, ou que ponto fraco elas acabaram de revelar?', 'Quem saiu ferido no seu lugar, porque o golpe desviou de você?'],
     lab: ['Que amostra, reagente ou peça rara você parou para coletar no pior momento?', 'O que deu terrivelmente errado na sua oficina enquanto você estava fora?'],
