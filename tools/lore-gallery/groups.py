@@ -321,6 +321,14 @@ GROUPS = [
          champs=['Aatrox', 'Kayn', 'Rhaast', 'The Shadow Assassin', 'Varus', 'Zaahen']),
     dict(region='runeterra', id='rt-shards', name='Runas Globais',
          desc='Fragmentos dos poderes que criaram o mundo. Quem os encontra raramente sai ileso.'),
+    # ---------------------------------------------------------------------------------------------------- Nazumah
+    dict(region='nazumah', id='ksante', name="K'Sante, o Orgulho de Nazumah",
+         desc="Guerreiro-caçador de Nazumah, criado entre histórias dos antepassados que fugiram dos Ascendidos. Seu orgulho quase o separa de Tope, até ele aprender que força sozinha não derruba o baccai.",
+         champs=["K'Sante"]),
+    dict(region='nazumah', id='tope', name='Tope e a caça ao baccai',
+         desc="Tope, de Marrowmark, caçador de longo alcance e parceiro de K'Sante. Seu diário revelou o que a dupla não via sobre o monstro cobra-leão."),
+    dict(region='nazumah', id='skins', name="K'Sante em outros universos",
+         desc="Versões alternativas de K'Sante (Empyrean, HEARTSTEEL e Prestige). Não fazem parte da história de Nazumah, só do jogo."),
 ]
 
 # Champions that go to the Criaturas tab of a region (beasts that act on instinct, not sapient beings).
@@ -330,10 +338,11 @@ FORCE_REGION = {
     'void': ["Rek'Sai", "Xer'sai Caller", "Xer'sai Dunebreaker", "Xer'sai Hatchling", "Xerxa'Reth, The Undertitan", 'Dune Swallower',
              'Void Abomination', 'Hive Herald', "Kai'Sa", 'Belvethi Elder', 'Voidling', 'Void Blaster', 'Void Gate', 'Camouflaged Horror',
              'Xenotype Researchers', 'Stasis Statue'],
+    'nazumah': ['Grumpy Rockbear'],
     'ixtal': ['Nidalee', 'Packmother Nidalee', 'Pakaa Cub', 'Pakaa Protector', 'Avenging Vastaya', 'Shadow in the Brush', 'Bushwhack Trap', 'Neeko', 'Malphite'],
 }
 # Cards that are creatures even though their name does not say so
-CREATURE_CARDS = {'Voidling', 'Void Blaster', 'Dune Swallower', "Xerxa'Reth, The Undertitan", 'Elder Dragon', 'The Poro King'}
+CREATURE_CARDS = {'Grumpy Rockbear', 'Voidling', 'Void Blaster', 'Dune Swallower', "Xerxa'Reth, The Undertitan", 'Elder Dragon', 'The Poro King'}
 # Universe galleries without a title on each picture: slug of the gallery -> title
 UNI_MODULE_TITLES = {'people-ixaocan': 'O povo de Ixaocan'}
 
@@ -606,4 +615,19 @@ WIKI_PICKS = [
     ('Targon_LoR_Concept_05.jpg', 'targon', 'solari', 'Solari (arte conceitual 3)'),
     ('Targon_LoR_Concept_34.jpg', 'targon', 'lunari', 'Lunari (arte conceitual 1)'),
     ('Targon_LoR_Concept_35.jpg', 'targon', 'lunari', 'Lunari (arte conceitual 2)'),
+    ('Nazumah_Concept_01.jpg', 'nazumah', 'places', 'Nazumah, a cidade-estado do oásis'),
+    ("K'Sante_Teaser_01.jpg", 'nazumah', 'places', 'Ruas e bandeiras de Nazumah'),
+    ('Baccai_Concept_01.jpg', 'nazumah', 'creatures', 'O baccai cobra-leão (arte conceitual)'),
+    ('Tope_Concept_01.jpg', 'nazumah', 'tope', 'Tope (arte conceitual)'),
+    ('Tope_Concept_02.jpg', 'nazumah', 'tope', 'O diário de Tope (arte conceitual)'),
+    ("K'Sante_Teaser_02.jpg", 'nazumah', 'tope', 'O diário aberto sobre o baccai'),
+    ("K'Sante_Concept_01.jpg", 'nazumah', 'ksante', "K'Sante (arte conceitual)"),
+    ("K'Sante_Concept_02.jpg", 'nazumah', 'ksante', "K'Sante: retrato (arte conceitual)"),
+    ("K'Sante_Defeat_Your_Monster.jpg", 'nazumah', 'ksante', "K'Sante, de volta para vencer seu monstro"),
+    ("K'Sante_Everything_We_Should_Have_Said.jpg", 'nazumah', 'ksante', "K'Sante e Tope: tudo o que devíamos ter dito"),
+    ("K'Sante_OriginalSkin.jpg", 'nazumah', 'ksante', "K'Sante, o Orgulho de Nazumah"),
+    ("K'Sante_EmpyreanSkin.jpg", 'nazumah', 'skins', "K'Sante Empíreo"),
+    ("K'Sante_PrestigeEmpyreanSkin.jpg", 'nazumah', 'skins', "K'Sante Empíreo Prestígio"),
+    ("K'Sante_HEARTSTEELSkin.jpg", 'nazumah', 'skins', "K'Sante HEARTSTEEL"),
+    ("K'Sante_HEARTSTEELLiveMyLifeSkin.jpg", 'nazumah', 'skins', "K'Sante HEARTSTEEL: Live My Life"),
 ]
