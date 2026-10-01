@@ -1989,16 +1989,10 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   const SHEET_PAGE = document.body.classList.contains('page-sheet');
   const zoneName = z => ({ green: tr('Green zone'), yellow: tr('Yellow zone'), red: tr('Red zone'), out: tr('Out of the fight') }[z] || '');
   function sheetRailHtml() {
-    const h = healthCalc(R0), z = zoneOf(h), rg = regionDef(), i = st.info, pe = persDef();
+    const rg = regionDef(), i = st.info;
     return `<div class="sp-id">
         <div class="sp-portrait">${i.portrait ? `<img src="${i.portrait}" alt="">` : sigil(rg ? rg.id : 'compass', 'dos-sigil')}</div>
         <div><div class="sp-name">${esc(i.alias || i.name || tr('Unnamed Champion'))}</div><div class="sp-sub">${esc([i.alias && i.name, peopleDef() && peopleDef().name, rg && rg.name].filter(Boolean).join(' · '))}</div></div></div>
-      ${h ? `<div class="sp-block sp-hp"><div class="sp-h">${tr('Health')}</div>
-        <div class="sp-hp-n"><b>${curHealth(h)}</b><span>/ ${h.max}</span></div>
-        <div class="hs-track" role="group" aria-label="${tr('Adjust Health')}"><button type="button" data-act="hpStep" data-d="-1" aria-label="${tr('Lose 1 Health')}">−</button><button type="button" data-act="hpStep" data-d="1" aria-label="${tr('Recover 1 Health')}">+</button><button type="button" data-act="hpStep" data-d="max" aria-label="${tr('Back to full Health')}"${tip(tr('Back to full Health'))}>${ico('reset')}</button></div>
-        <div class="hs-znow z-${z}">${zoneName(z)}</div>
-        ${R0.status ? `<div class="sp-status">${['green', 'yellow', 'red'].map((c, n) => `<span class="${c}${z === c ? ' current' : ''}"${tip(zoneName(c))}>${die(R0.status[n])}</span>`).join('')}</div>` : ''}
-        ${pe ? `<p class="sp-note">${z === 'out' ? tr('Only your Out action is available.') : tr('Abilities above your zone are dimmed on the sheet.')}</p>` : ''}</div>` : ''}
       ${ui.sheetTab === 'evolve' ? '' : `<nav class="sp-nav" aria-label="${tr('Sheet pages')}"><a href="#hs-p1"><span>1</span>${tr('Identity and principles')}</a><a href="#hs-p2"><span>2</span>${tr('Powers and abilities')}</a><a href="#hs-p3"><span>3</span>${tr('Auxiliary sheet')}</a></nav>`}
       <div class="sp-actions"><button class="btn primary" data-act="pdf">${ico('download')} ${tr('Export PDF hero sheet')}</button><button class="btn" data-act="print">${ico('print')} ${tr('Print')}</button><button class="btn" data-act="export">${ico('file')} ${tr('Export JSON')}</button><a class="btn ghost" href="index.html">${ico('prev')} ${tr('Edit in the Forge')}</a></div>
       <div id="pdf-status"></div>`;

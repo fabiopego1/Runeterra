@@ -191,11 +191,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.goto(`${BASE}/ficha.html`);
     await p.waitForSelector('#sp-rail');
     ok(await p.$$eval('#sheet-preview .hs-page', e => e.length) === 3, 'Ficha shows the three sheet pages');
-    const railHp = () => p.$eval('.sp-hp-n b', e => Number(e.textContent));
-    const hp0 = await railHp();
-    await p.click('#sp-rail [data-act=hpStep][data-d="-1"]');
-    ok(await railHp() === hp0 - 1 && await p.$eval('#sheet-preview [data-bind="play.current"]', e => Number(e.value)) === hp0 - 1, 'the rail − button updates Health on the rail and on the sheet');
-    await p.click('#sp-rail [data-act=hpStep][data-d=max]');
+    ok(!(await p.$('#sp-rail [data-act=hpStep]')) && !(await p.$('#sp-rail .sp-hp')), 'the rail has no Health block: Health is tracked on the sheet itself');
 
     // Evolve tab: swap a power, an ability and a principle; undo; history on page 3
     const stored = () => p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-forge-v1')));
