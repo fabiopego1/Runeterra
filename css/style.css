@@ -692,7 +692,7 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .hs-h { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .16em; color: var(--gold); text-transform: uppercase; margin-bottom: 4px; }
 .hs-h small { text-transform: none; letter-spacing: 0; color: var(--text-3); }
 .hs-l { display: block; font-family: var(--font-mono); font-size: .56rem; letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); }
-.hs-name.hs-title { font-size: 1.35rem; }
+.hs-name.hs-title { font-family: var(--font-ui); font-size: 1.15rem; color: var(--text-2); line-height: 1.3; padding-top: 4px; }
 .hs-ml { white-space: pre-line; }
 .hs-f { font-size: .95rem; padding: 3px 0; border-bottom: 1px dotted var(--line-2); min-height: 1.7em; }
 .hs-name { font-family: var(--font-display); font-size: 2rem; color: var(--gold-hi); line-height: 1.05; }
