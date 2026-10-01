@@ -26,7 +26,7 @@ import urllib.request
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(__file__))
-from groups import CREATURE_CARDS, CREATURE_CHAMPS, FORCE_REGION, GROUPS, MOVES, PULL, UNI_CREATURES, UNI_MODULE_TITLES, UNI_PEOPLE, UNI_TITLES, RELOCATE, UNIVERSE_SPLASH, WIKI_PICKS  # noqa: E402
+from groups import CREATURE_CARDS, CREATURE_CHAMPS, FORCE_REGION, FORCE_SPLASH, GROUPS, MOVES, PULL, UNI_CREATURES, UNI_MODULE_TITLES, UNI_PEOPLE, UNI_TITLES, RELOCATE, RENAME, UNIVERSE_SPLASH, WIKI_PICKS  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT_IMG = os.path.join(ROOT, 'assets', 'lore-gallery')
@@ -366,7 +366,7 @@ def main():
     lol = []
     for c in champs:
         t = tokens(c['en'])
-        if any(t <= h for h in have):
+        if any(t <= h for h in have) and c['en'] not in FORCE_SPLASH:
             continue
         g = group_for(c['en'], '', FACTION_REGION.get(c['faction'], 'runeterra'), True)
         if nm(c['en']) in creature_champs:
@@ -390,11 +390,6 @@ def main():
     with cf.ThreadPoolExecutor(8) as ex:
         accept(list(ex.map(work, wiki)))
 
-    keep = {j['key'] + '.webp' for j in chosen}
-    for f in os.listdir(OUT_IMG):
-        if f.endswith('.webp') and f not in keep:
-            os.remove(os.path.join(OUT_IMG, f))
-
     # ------------------------------------------------------------ hand-made moves (groups.py: MOVES)
     chosen = apply_moves(chosen)
     keys = {j['key'] for j in chosen}
@@ -405,14 +400,20 @@ def main():
         if j['key'] in RELOCATE:
             region, bucket = RELOCATE[j['key']]
             j['region'] = region
-            j['bucket'] = (bucket, None) if bucket in ('places', 'creatures') else ('group', bucket)
+            j['bucket'] = (bucket, None) if bucket in ('places', 'creatures', 'drop') else ('group', bucket)
+    chosen = [j for j in chosen if j['bucket'][0] != 'drop']      # pictures taken out of the galleries on purpose
+
+    keep = {j['key'] + '.webp' for j in chosen}
+    for f in os.listdir(OUT_IMG):
+        if f.endswith('.webp') and f not in keep:
+            os.remove(os.path.join(OUT_IMG, f))
 
     # ------------------------------------------------------------ write the data file
     data = {}
     for j in chosen:
         cat, gid = j['bucket']
         r = data.setdefault(j['region'], {'groups': {}, 'places': [], 'creatures': []})
-        item = {'s': j['key'], 'n': ptbr(j['name'])}
+        item = {'s': j['key'], 'n': RENAME.get(j['key']) or ptbr(j['name'])}
         if j['flavor']:
             item['f'] = ptbr(clean_text(j['flavor']))
         if j['kind'] == 'wiki':
