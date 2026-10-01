@@ -52,7 +52,7 @@
   const CATS = [
     ['groups', 'Grupos', 'Facções, ordens, famílias e bandos. Seu campeão pode pertencer a um deles, ter fugido de outro ou ter um rival em cada um.'],
     ['places', 'Ambientes', 'Cidades, templos, ruínas e paisagens para situar cenas, lares e lembranças.'],
-    ['creatures', 'Criaturas', 'Feras, espíritos e monstros que vivem (ou assombram) a região.']
+    ['creatures', 'Criaturas', 'Reservado para seres não sapientes: feras, monstros e outras criaturas que agem por instinto. Quem fala, pensa e escolhe (mesmo sendo monstruoso) fica em Grupos.']
   ];
   const galleryCount = g => g.groups.reduce((n, x) => n + x.items.length, 0) + g.places.length + g.creatures.length;
   const galleryBlock = (key, title) => {

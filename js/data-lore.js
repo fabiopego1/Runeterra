@@ -62,7 +62,7 @@ window.TRAIT_CATEGORIES = {
       ['flight', 'Flight', 'Flight', 'You can fly.', 'Kayle\'s wings; Aurelion Sol riding the heavens.'],
       ['leaping', 'Leaping', 'Leaping', 'You leap through the air with ease.', 'Tristana\'s rocket jump; Rengar\'s pounce.'],
       ['momentum', 'Momentum', 'Momentum', 'You build momentum as you move and channel it effectively.', 'Rammus\'s Powerball; Hecarim\'s onslaught.'],
-      ['swimming', 'Swimming', 'Swimming', 'At home in water (at d8+ you can breathe underwater).', 'Nami of the Marai; Fizz in the Bilgewater bay.'],
+      ['swimming', 'Swimming', 'Swimming', 'At home in water (at d10+ you can breathe underwater).', 'Nami of the Marai; Fizz in the Bilgewater bay.'],
       ['swinging', 'Swinging', 'Grapple & Swing', 'Via ropes or devices you swing across the city.', 'Camille\'s Hookshot; Jinx swinging through the Undercity.'],
       ['teleportation', 'Teleportation', 'Blink & Portal', 'Disappear and reappear elsewhere; bigger dice mean more range and control.', 'Ezreal\'s Arcane Shift; Kassadin\'s Riftwalk; Twisted Fate\'s Destiny.'],
       ['wall-crawling', 'Wall-Crawling', 'Climbing', 'You stick to walls and travel across them quickly.', 'Elise the spider; Kha\'Zix skittering over ruins.']

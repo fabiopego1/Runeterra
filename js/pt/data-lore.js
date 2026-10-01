@@ -59,7 +59,7 @@
     flight: ['Voo', 'Você consegue voar.', 'As asas da Kayle; o Aurelion Sol cruzando os céus.'],
     leaping: ['Salto', 'Você salta pelo ar com facilidade.', 'O salto-foguete da Tristana; o bote do Rengar.'],
     momentum: ['Impulso', 'Você ganha impulso ao se mover e o canaliza com eficiência.', 'A bola de força do Rammus; o avanço devastador do Hecarim.'],
-    swimming: ['Natação', 'À vontade na água (em d8+ você respira debaixo d\'água).', 'A Nami; o Fizz.'],
+    swimming: ['Natação', 'À vontade na água (em d10+ você respira debaixo d\'água).', 'A Nami; o Fizz.'],
     swinging: ['Balanço', 'Com cordas ou engenhocas, você se balança pela cidade.', 'O gancho da Camille; a Jinx se balançando entre os prédios.'],
     teleportation: ['Teleporte', 'Some e reaparece em outro lugar; dados maiores dão mais alcance e controle.', 'O salto arcano do Ezreal; a caminhada pela fenda do Kassadin; o Destino do Twisted Fate.'],
     'wall-crawling': ['Escalar Paredes', 'Você gruda nas paredes e anda por elas rapidamente.', 'A Elise aranha; o Kha\'Zix correndo pelas ruínas.'],

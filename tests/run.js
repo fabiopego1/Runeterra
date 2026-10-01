@@ -152,6 +152,8 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(!(await p.$('#stage .flow-todo')) && await p.$eval('.step-footer', f => !!f), 'nothing in the Legend chapter is required');
     await p.fill('input[data-bind="info.name"]', 'Bruxaria'); await p.press('input[data-bind="info.name"]', 'Enter'); await p.waitForTimeout(100);
     ok(await p.$$eval('.grid3 .field span', l => l.slice(0, 2).map(e => e.textContent).join('|')) === 'Nome|Título', 'the Legend asks for the Name first, then the Title');
+    ok(await p.$eval('.portrait-hint', e => /3:4/.test(e.textContent)), 'the Legend tells players the portrait shape (3:4) to avoid cropping');
+    ok(await p.evaluate(() => fetch('js/pt/data-lore.js').then(r => r.text()).then(t => /Natação[^\]]*em d10\+ você respira debaixo/.test(t))), 'Natação: breathe underwater from d10');
     await p.fill('input[data-bind="info.alias"]', 'Kaelis Du Morne');
     await p.fill('textarea[data-bind="info.costume"]', 'Manto negro.\n\nLâmina rúnica'); await p.waitForTimeout(200);
     ok(await p.$$eval('.rail-item.locked', e => e.length) === 0, 'every chapter unlocked at the end');
@@ -328,6 +330,15 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.click('#r-noxus .rg-panel[data-cat=creatures] .rg-th');
     ok(await p.$eval('dialog.rg-box', d => d.open && !!d.querySelector('img') && !!d.querySelector('figcaption b').textContent), 'a picture opens larger with its name');
     await p.keyboard.press('Escape');
+    ok(await p.$eval('#r-noxus .rg-panel[data-cat=creatures] .rg-desc', e => /não sapientes/.test(e.textContent)), 'the Criaturas tab says it is reserved for non-sapient beings');
+    // captions: no leftover markup, and their line breaks show (a card's poem keeps its verses on separate lines)
+    const txt = await p.evaluate(() => { const bad = []; let withBreaks = null; const walk = (o, path) => { if (Array.isArray(o)) o.forEach((x, i) => walk(x, path + '.' + i)); else if (o && typeof o === 'object') { if (o.s && typeof o.f === 'string') { if (/<|>|&\w+;/.test(o.f)) bad.push(o.n); if (!withBreaks && /\n/.test(o.f) && o.f.split('\n').length > 3) withBreaks = path; } else Object.entries(o).forEach(([k, v]) => walk(v, path + '.' + k)); } }; walk(window.LORE_GALLERY, 'x'); return { bad, withBreaks }; });
+    ok(!txt.bad.length, `no gallery caption has leftover markup${txt.bad.length ? ': ' + txt.bad.slice(0, 5).join(', ') : ''}`);
+    await p.click('#r-bilgewater details.rg summary'); await p.waitForTimeout(200);
+    await p.click('#r-bilgewater .rg-th[title="Navegadora Nativa"]'); await p.waitForTimeout(150);
+    ok(await p.$eval('dialog.rg-box figcaption p', e => getComputedStyle(e).whiteSpace === 'pre-line' && e.innerText.split('\n').length >= 4 && !/<br/i.test(e.innerHTML)), 'a caption with verses shows each line on its own line');
+    await p.keyboard.press('Escape');
+    ok(await p.$$eval('#r-bilgewater .rg-group h5', e => e.map(x => x.textContent)).then(l => l.includes('O Submundo Sentinense') && l.includes('Vida Marinha') && !l.includes('Jogadores e trapaceiros')), 'Águas de Sentina has O Submundo Sentinense and Vida Marinha');
     ok(!!(await p.$('#andarilhos details.rg')), 'Runeterra has its own section for what belongs to no region');
     const galMissing = await p.evaluate(() => { const out = []; const walk = o => { if (Array.isArray(o)) o.forEach(walk); else if (o && typeof o === 'object') { if (o.s) out.push(o.s); Object.values(o).forEach(walk); } }; walk(window.LORE_GALLERY); return out; });
     ok(galMissing.length > 1000 && galMissing.every(k => fs.existsSync(path.join(__dirname, '..', 'assets', 'lore-gallery', k + '.webp'))), `every gallery picture exists (${galMissing.length})`);

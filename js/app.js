@@ -1926,7 +1926,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         ${field('build', tr('Build'), tr('e.g. wiry, towering, clockwork'))}
         <label class="field"><span>${tr('Costume / equipment')}</span><textarea data-bind="info.costume" data-live="1" placeholder="${tr('What do they wear and carry into battle?')}">${esc(i.costume)}</textarea></label>
         <div class="portrait-row"><div class="hs-portrait small">${i.portrait ? `<img src="${i.portrait}" alt="${tr('Portrait')}">` : `<span class="muted">${tr('No portrait')}</span>`}</div>
-          <div><label class="btn small" for="portrait-file">${tr(i.portrait ? 'Change portrait' : 'Add portrait')}</label> ${i.portrait ? `<button class="btn small ghost" data-act="clearPortrait">${tr('Remove')}</button>` : ''}<input id="portrait-file" type="file" accept="image/*" hidden></div></div>`,
+          <div><label class="btn small" for="portrait-file">${tr(i.portrait ? 'Change portrait' : 'Add portrait')}</label> ${i.portrait ? `<button class="btn small ghost" data-act="clearPortrait">${tr('Remove')}</button>` : ''}<input id="portrait-file" type="file" accept="image/*" hidden>
+            <p class="portrait-hint">${tr('Best shape: a portrait image, 3:4 (for example 900 × 1200 px). Other shapes are cropped to fit the frame on the sheet.')}</p></div></div>`,
       bio: () => `<div class="bio-grid">
         <div class="bio-write"><label class="field"><span>${tr('Biography')}</span><textarea id="bio-text" data-bind="info.notes" data-live="1" placeholder="${tr('Where did they come from? Who do they fight for? What do they want?')}">${esc(i.notes)}</textarea></label></div>
         <div class="bio-guide"><div class="bio-guide-h">${ico('map')} ${tr('Lore guide')}</div>${loreGuide().map(c => `<section class="guide-card"${c.color ? ` style="--rc:${c.color}"` : ''}>
