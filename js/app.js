@@ -1795,9 +1795,9 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       <div class="hs-page" id="hs-p1">
         <div class="hs-top">
           <div class="hs-left"><div class="hs-portrait">${i.portrait ? `<img src="${i.portrait}" alt="${tr('Portrait of {name}', { name: esc(i.name || tr('your champion')) })}">` : `<span class="muted">${tr('Portrait')}</span>`}</div>
-            <div class="hs-card hs-hpcard"><div class="hs-h"${tip(window.GLOSSARY['hero point'])}>${tr('Hero Points')} <small>${tr('this issue')}</small></div><div class="hs-hp">${[0, 1, 2, 3, 4].map(n => check(`play.hp.${n}`, pl.hp[n], tr('Hero point {n}', { n: n + 1 }))).join('')}</div>
-            <div class="hs-h" style="margin-top:8px"${tip(tr('Rewards you can claim by spending hero points — tick them off as you use them.'))}>${tr('Hero Point Rewards')}</div>
-            ${[1, 2, 3, 4].map(r => `<div class="hs-hp"><b>+${r}</b>${[0, 1, 2, 3].map(c => check(`play.rw.${(r - 1) * 4 + c}`, pl.rw[(r - 1) * 4 + c], tr('+{r} reward {c}', { r, c: c + 1 }))).join('')}</div>`).join('')}</div></div>
+            <div class="hs-card hs-hpcard"><div class="hs-hpgrp"><div class="hs-h"${tip(window.GLOSSARY['hero point'])}>${tr('Hero Points')}</div><div class="hs-hp">${[0, 1, 2, 3, 4].map(n => check(`play.hp.${n}`, pl.hp[n], tr('Hero point {n}', { n: n + 1 }))).join('')}</div></div>
+            <div class="hs-hpgrp hs-rw"><div class="hs-h"${tip(tr('Rewards you can claim by spending hero points — tick them off as you use them.'))}>${tr('Hero Point Rewards')}</div>
+            ${[1, 2, 3, 4].map(r => `<div class="hs-hp"><b>+${r}</b>${[0, 1, 2, 3].map(c => check(`play.rw.${(r - 1) * 4 + c}`, pl.rw[(r - 1) * 4 + c], tr('+{r} reward {c}', { r, c: c + 1 }))).join('')}</div>`).join('')}</div></div></div>
           <div class="hs-idblock">
             <div class="hs-card"><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}&nbsp;</div>
             <div class="hs-card hs-2"><div><div class="hs-h">${tr('Alias')}</div><div class="hs-name">${esc(i.alias || (i.name ? '' : tr('Unnamed Champion')))}</div></div><div><div class="hs-h">${tr('Hero Name')}</div><div class="hs-name hs-title">${esc(i.name || '')}</div></div></div>
