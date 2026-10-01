@@ -237,7 +237,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('#file-pop', e => e.hidden), 'Escape closes the Arquivo menu');
     await p.click('#file-btn');
     const [json] = await Promise.all([p.waitForEvent('download'), p.click('#file-pop [data-act=export]')]);
-    ok(/\.json$/.test(json.suggestedFilename()), 'Exportar campeão downloads a .json');
+    ok(json.suggestedFilename() === 'Kaelis_Du_Morne.json', 'Exportar campeão downloads a .json named after the Name, not the Title');
     await p.waitForTimeout(50);
     ok(await p.$eval('#file-pop', e => e.hidden), 'menu closes after an action');
 

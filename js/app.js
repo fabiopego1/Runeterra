@@ -1860,7 +1860,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const blob = new Blob([bytes], { type: 'application/pdf' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = (st.info.name || 'runeterra-champion').replace(/[^\w-]+/g, '_') + suffix;
+    a.download = fileBase().replace(/[^\w-]+/g, '_') + suffix;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   };
@@ -2531,7 +2531,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const blob = new Blob([JSON.stringify(st, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = (st.info.name || 'runeterra-champion').replace(/[^\w-]+/g, '_') + '.json';
+    a.download = fileBase().replace(/[^\w-]+/g, '_') + '.json';
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
@@ -2749,6 +2749,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     return ids.map(id => (id === st.cid ? st : readSlot(id))).filter(Boolean);
   }
   function syncRosterCount() { const c = document.getElementById('roster-count'); if (c) c.textContent = String(allChampions().length); }
+  // exported files are named after the champion's Name (the Title only when there is no Name)
+  const fileBase = () => ((st.info.alias || '').trim() || (st.info.name || '').trim() || 'runeterra-champion');
   const champName = c => (c.info && c.info.name && c.info.name.trim()) || tr('Unnamed champion');
   function champLine(c) {
     const f = (list, id) => (id && (list || []).find(x => x.id === id)) || null;
