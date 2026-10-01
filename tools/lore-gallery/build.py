@@ -19,12 +19,14 @@ import re
 import sys
 import time
 import unicodedata
+import subprocess
+import urllib.parse
 import urllib.request
 
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(__file__))
-from groups import GROUPS, MOVES, PULL, UNI_CREATURES, UNI_PEOPLE, UNI_TITLES  # noqa: E402
+from groups import CREATURE_CARDS, CREATURE_CHAMPS, FORCE_REGION, GROUPS, MOVES, PULL, UNI_CREATURES, UNI_MODULE_TITLES, UNI_PEOPLE, UNI_TITLES, WIKI_PICKS  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT_IMG = os.path.join(ROOT, 'assets', 'lore-gallery')
@@ -38,9 +40,12 @@ QUALITY = 58
 LOR_REGION = {'Demacia': 'demacia', 'Freljord': 'freljord', 'Ionia': 'ionia', 'Noxus': 'noxus', 'ShadowIsles': 'shadow-isles',
               'Bilgewater': 'bilgewater', 'Shurima': 'shurima', 'Targon': 'targon', 'BandleCity': 'bandle', 'Runeterra': 'runeterra'}
 UNI_REGION = {'demacia': 'demacia', 'freljord': 'freljord', 'ionia': 'ionia', 'noxus': 'noxus', 'piltover': 'piltover', 'zaun': 'zaun',
-              'shadow-isles': 'shadow-isles', 'bilgewater': 'bilgewater', 'shurima': 'shurima', 'mount-targon': 'targon', 'bandle-city': 'bandle'}
-# Regions the galleries skip for now (their own pages come later)
-SKIP = re.compile(r"\bvoid|xer'sai|rek'sai|kai'sa|vel'koz|kassadin|malzahar|ixtal|nidalee|pakaa|nazumah|k'sante", re.I)
+              'shadow-isles': 'shadow-isles', 'bilgewater': 'bilgewater', 'shurima': 'shurima', 'mount-targon': 'targon', 'bandle-city': 'bandle',
+              'void': 'void', 'ixtal': 'ixtal'}
+# the League of Legends faction of a champion -> region of the Lore page
+FACTION_REGION = dict(UNI_REGION, unaffiliated='runeterra')
+# Nazumah has no gallery yet
+SKIP = re.compile(r"nazumah|k'sante", re.I)
 ZAUN = re.compile(r"zaun|chem|sump|undercity|back alley|whump|urchin|shimmer|singed|warwick|twitch|zeri|mundo|ekko|jinx|viktor|augment|scrap|bouncer|diva|corina|renata|gang|punk|clockling|swapbot|mimic|boom", re.I)
 CREATURE_SUB = {'BIRD', 'CAT', 'DOG', 'SPIDER', 'REPTILE', 'PORO', 'YETI', 'ELNUK', 'SEA MONSTER', 'DRAGON', 'LURKER', 'FAE', 'TECH', 'ELEMENTAL', 'CELESTIAL'}
 CREATURE_NAME = re.compile(
@@ -68,6 +73,16 @@ def get(url, path):
                 if attempt == 4:
                     raise
                 time.sleep(2 ** attempt)
+        os.replace(path + '.part', path)
+    return path
+
+
+def get_wiki(name, path):
+    """Wiki files are served only to clients that send a browser-like User-Agent: curl does it reliably."""
+    if not os.path.exists(path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        subprocess.run(['curl', '-sS', '-m', '90', '--retry', '3', '-A', 'Mozilla/5.0', '-o', path + '.part',
+                        'https://wiki.leagueoflegends.com/en-us/images/' + urllib.parse.quote(name)], check=True)
         os.replace(path + '.part', path)
     return path
 
@@ -127,13 +142,18 @@ def site_region(c):
     return LOR_REGION.get(r)
 
 
+def nm(text):
+    """Name key: no accents, capitals, spaces or apostrophes (the Universe writes Bel’Veth and Bel'Veth both ways)."""
+    return re.sub(r'[^a-z0-9]', '', plain(text))
+
+
 def group_for(name, flavor, region, champ):
     own = [g for g in GROUPS if g['region'] == region]
     for g in own:
-        if name in g.get('champs', []):
+        if nm(name) in {nm(n) for n in g.get('champs', [])}:
             return g
     for g in GROUPS:                               # a champion can belong to a group of another region (e.g. Lucian, Sentinels)
-        if name in g.get('champs', []):
+        if nm(name) in {nm(n) for n in g.get('champs', [])}:
             return g
     if champ:
         return None
@@ -174,24 +194,49 @@ def plain(text):
 
 
 def apply_moves(chosen):
-    out, used = [], set()
+    used = set()
     for j in chosen:
-        key, url, kind, region, bucket, name, flavor, credit = j
         for target_region, rules in MOVES.items():
             pulled = {plain(n) for n in PULL.get(target_region, [])}
-            if region != target_region and plain(name) not in pulled:
+            if j['region'] != target_region and plain(j['name']) not in pulled:
                 continue
             for target, names in rules.items():
-                if plain(name) in {plain(n) for n in names}:
-                    bucket = ('creatures', None) if target == 'creatures' else ('places', None) if target == 'places' else ('group', target)
-                    region = target_region
-                    used.add((target_region, plain(name)))
-        out.append((key, url, kind, region, bucket, name, flavor, credit))
+                if plain(j['name']) in {plain(n) for n in names}:
+                    j['bucket'] = ('creatures', None) if target == 'creatures' else ('places', None) if target == 'places' else ('group', target)
+                    j['region'] = target_region
+                    used.add((target_region, plain(j['name'])))
     for target_region, rules in MOVES.items():
         for names in rules.values():
             for n in names:
                 if (target_region, plain(n)) not in used:
                     print(f'  warning: no picture named "{n}" in {target_region}')
+    return chosen
+
+
+def tokens(text):
+    return set(re.findall(r'[a-z0-9]+', plain(text)))
+
+
+def load_champions():
+    """Every League of Legends champion: English and Portuguese names, title, short bio, faction and splash art."""
+    base = 'https://universe-meeps.leagueoflegends.com/v1/'
+    browse = {lang: json.load(open(get(f'{base}{lang}/champion-browse/index.json', os.path.join(CACHE, f'browse-{lang}.json')), encoding='utf-8'))['champions']
+              for lang in ('en_us', 'pt_br')}
+    pt_by_slug = {c['slug']: c for c in browse['pt_br']}
+    version = json.load(open(get('https://ddragon.leagueoflegends.com/api/versions.json', os.path.join(CACHE, 'ddversions.json'))))[0]
+    dd = json.load(open(get(f'https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/champion.json', os.path.join(CACHE, f'dd-{version}-en.json')), encoding='utf-8'))['data']
+    dd_pt = json.load(open(get(f'https://ddragon.leagueoflegends.com/cdn/{version}/data/pt_BR/champion.json', os.path.join(CACHE, f'dd-{version}-pt.json')), encoding='utf-8'))['data']
+    dd_id = {plain(re.sub(r'[^A-Za-z0-9]', '', v['name'])): k for k, v in dd.items()}
+    out = []
+    for c in browse['en_us']:
+        slug = c['slug']
+        pt = pt_by_slug.get(slug) or c
+        full = json.load(open(get(f'{base}pt_br/champions/{slug}/index.json', os.path.join(CACHE, 'champ-pt', slug + '.json')), encoding='utf-8'))['champion']
+        short = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', (full.get('biography') or {}).get('short') or '')).strip()
+        did = dd_id.get(plain(re.sub(r'[^A-Za-z0-9]', '', c['name'])))
+        url = f'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/{did}_0.jpg' if did else (c.get('image') or {}).get('uri', '').split('?')[0]
+        title = (dd_pt.get(did) or {}).get('title') or ''
+        out.append(dict(slug=slug, en=c['name'], pt=pt['name'], title=title, short=short, faction=c.get('associated-faction-slug') or 'unaffiliated', url=url))
     return out
 
 
@@ -199,34 +244,38 @@ def main():
     os.makedirs(OUT_IMG, exist_ok=True)
     taken = site_hashes()
     en, pt = load_lor()
+    force = {nm(n): r for r, names in FORCE_REGION.items() for n in names}
+    creature_champs = {nm(n): r for r, names in CREATURE_CHAMPS.items() for n in names}
+    creature_cards = {nm(n) for n in CREATURE_CARDS}
 
     # ------------------------------------------------------------ choose the cards
-    jobs = []   # (key, url, kind, region, bucket, name, flavor, credit)
+    jobs = []   # dicts: key, url, kind, region, bucket, name, flavor, en
     for code, c in sorted(en.items()):
         champ = c.get('supertype') == 'Champion'
         if c['type'] not in UNIT_TYPES:              # spell art comes in a black oval frame: left out
             continue
-        region = site_region(c)
+        region = force.get(nm(c['name'])) or site_region(c)
         if not region:
             continue
         p = pt.get(code, c)
         name_pt, flavor = p['name'], (p.get('flavorText') or '').strip()
-        if region == 'runeterra':
-            if c['type'] == 'Spell':
-                continue
+        g = group_for(c['name'], c.get('flavorText', ''), region, champ) if c['type'] != 'Landmark' else None
+        if nm(c['name']) in creature_champs:
+            region, bucket = creature_champs[nm(c['name'])], ('creatures', None)
+        elif g:
+            region, bucket = g['region'], ('group', g['id'])
+        elif region == 'runeterra':
             bucket = ('group', 'rt-shards' if 'WORLD RUNE' in c.get('subtypes', []) else 'rt-darkin' if 'DARKIN' in c.get('subtypes', []) else 'rt-wanderers')
-        else:
-            g = group_for(c['name'], c.get('flavorText', ''), region, champ) if c['type'] != 'Landmark' else None
-            if g:
-                region, bucket = g['region'], ('group', g['id'])
-            elif c['type'] == 'Landmark':
-                bucket = ('places', None)
-            elif is_creature(c) and not champ:
+            if nm(c['name']) in creature_cards:
                 bucket = ('creatures', None)
-            else:
-                bucket = ('group', 'outros')
-        jobs.append((code, c['assets'][0]['fullAbsolutePath'].replace('http://', 'https://').replace('/en_us/', '/pt_br/'),
-                     'lor', region, bucket, name_pt, flavor, 'Legends of Runeterra'))
+        elif c['type'] == 'Landmark':
+            bucket = ('places', None)
+        elif (is_creature(c) or nm(c['name']) in creature_cards) and not champ:
+            bucket = ('creatures', None)
+        else:
+            bucket = ('group', 'outros')
+        jobs.append(dict(key=code, url=c['assets'][0]['fullAbsolutePath'].replace('http://', 'https://').replace('/en_us/', '/pt_br/'),
+                         kind='lor', region=region, bucket=bucket, name=name_pt, flavor=flavor, en=c['name'] if champ else '', card=c['name']))
 
     uni_by_title = {}
     for g in GROUPS:
@@ -246,6 +295,12 @@ def main():
                 t = (a.get('title') or '').strip()
                 t = '' if t == 'None' else t
                 t = UNI_TITLES.get(t, t)
+                desc = re.sub(r'\s+', ' ', a.get('description') or '').strip()
+                shown = nice(t)
+                if not t and m.get('slug') in UNI_MODULE_TITLES:
+                    t = UNI_MODULE_TITLES[m['slug']]
+                    first = re.split(r'(?<=[.!?]) ', desc)[0] if desc else t
+                    shown = first if len(first) <= 70 else first[:67].rsplit(' ', 1)[0] + '…'
                 gid = uni_by_title.get((region, t))
                 if gid:
                     bucket = ('group', gid)
@@ -256,17 +311,18 @@ def main():
                 else:
                     bucket = ('places', None)
                 key = 'u' + hashlib.sha1(url.encode()).hexdigest()[:10]
-                desc = re.sub(r'\s+', ' ', a.get('description') or '').strip()
-                jobs.append((key, url, 'uni', region, bucket, nice(t) or 'Arte de ' + REGION_NAME[region], desc, 'Universo de League of Legends'))
+                jobs.append(dict(key=key, url=url, kind='uni', region=region, bucket=bucket, name=shown or 'Arte de ' + REGION_NAME[region], flavor=desc, en=''))
 
     # ------------------------------------------------------------ download and make thumbnails
     def work(j):
-        key, url, kind, *_ = j
-        out = os.path.join(OUT_IMG, key + '.webp')
-        src = get(url, os.path.join(CACHE, 'img', key + os.path.splitext(url)[1]))
+        out = os.path.join(OUT_IMG, j['key'] + '.webp')
+        if j['kind'] == 'wiki':
+            src = get_wiki(j['url'], os.path.join(CACHE, 'wiki', j['url']))
+        else:
+            src = get(j['url'], os.path.join(CACHE, 'img', j['key'] + os.path.splitext(j['url'])[1]))
         im = Image.open(src).convert('RGB')
         h = dhash(im)
-        if kind == 'lor':
+        if j['kind'] == 'lor':
             if oval(im):
                 return j, None, None, out
             th = im.resize((W, H), Image.LANCZOS)
@@ -279,18 +335,57 @@ def main():
         return j, h, th, out
 
     chosen, seen, titles = [], list(taken), {}
+
+    def accept(results):
+        for j, h, th, out in results:
+            if h is None or near(h, seen):
+                continue                                       # same art as a picture already used (here or elsewhere)
+            if j['kind'] == 'uni' and near(h, titles.get((j['region'], j['name']), []), 12):
+                continue                                       # the Universe sometimes posts the same picture twice, cropped differently
+            seen.append(h)
+            titles.setdefault((j['region'], j['name']), []).append(h)
+            th.save(out, 'WEBP', quality=QUALITY, method=6)
+            chosen.append(j)
+
     with cf.ThreadPoolExecutor(16) as ex:
-        results = list(ex.map(work, jobs))
-    for j, h, th, out in results:
-        if h is None or near(h, seen):
-            continue                                       # same art as a picture already used (here or elsewhere)
-        if j[2] == 'uni' and near(h, titles.get((j[3], j[5]), []), 12):
-            continue                                       # the Universe sometimes posts the same picture twice, cropped differently
-        seen.append(h)
-        titles.setdefault((j[3], j[5]), []).append(h)
-        th.save(out, 'WEBP', quality=QUALITY, method=6)
-        chosen.append(j)
-    keep = {j[0] + '.webp' for j in chosen}
+        accept(list(ex.map(work, jobs)))
+
+    # ------------------------------------------------------------ League of Legends champions without Legends of Runeterra art
+    have = [tokens(j['en']) for j in chosen if j['en']]
+    have += [tokens(j['en']) for j in jobs if j['en']]          # a LoR card whose art repeats one used elsewhere still counts
+    champs = load_champions()
+    known = {nm(n) for g in GROUPS for n in g.get('champs', [])}
+    unknown = known - {nm(c['en']) for c in champs} - {nm(j['en']) for j in jobs if j['en']} - {nm(j.get('card', '')) for j in jobs}
+    for n in sorted(unknown):
+        print(f'  warning: champion "{n}" in groups.py matches no champion')
+    lol = []
+    for c in champs:
+        t = tokens(c['en'])
+        if any(t <= h for h in have) or nm(c['en']) == 'ksante':
+            continue
+        g = group_for(c['en'], '', FACTION_REGION.get(c['faction'], 'runeterra'), True)
+        if nm(c['en']) in creature_champs:
+            region, bucket = creature_champs[nm(c['en'])], ('creatures', None)
+        elif g:
+            region, bucket = g['region'], ('group', g['id'])
+        else:
+            region = FACTION_REGION.get(c['faction'], 'runeterra')
+            bucket = ('group', 'rt-wanderers' if region == 'runeterra' else 'outros')
+        blurb = (c['title'][:1].upper() + c['title'][1:] + '.\n' if c['title'] else '') + c['short']
+        lol.append(dict(key='l' + c['slug'].replace('-', '')[:18], url=c['url'], kind='lol', region=region, bucket=bucket, name=c['pt'], flavor=blurb, en=c['en']))
+    with cf.ThreadPoolExecutor(16) as ex:
+        accept(list(ex.map(work, lol)))
+
+    # ------------------------------------------------------------ concept art picked by hand from the League of Legends wiki (groups.py: WIKI_PICKS)
+    wiki = []
+    for name, region, bucket, caption in WIKI_PICKS:
+        cat, gid = ('group', bucket) if bucket not in ('places', 'creatures') else (bucket, None)
+        wiki.append(dict(key='w' + hashlib.sha1(name.encode()).hexdigest()[:10], url=name, kind='wiki', region=region, bucket=(cat, gid),
+                         name=caption, flavor='', en=''))
+    with cf.ThreadPoolExecutor(8) as ex:
+        accept(list(ex.map(work, wiki)))
+
+    keep = {j['key'] + '.webp' for j in chosen}
     for f in os.listdir(OUT_IMG):
         if f.endswith('.webp') and f not in keep:
             os.remove(os.path.join(OUT_IMG, f))
@@ -300,13 +395,18 @@ def main():
 
     # ------------------------------------------------------------ write the data file
     data = {}
-    for key, url, kind, region, (cat, gid), name, flavor, credit in chosen:
-        r = data.setdefault(region, {'groups': {}, 'places': [], 'creatures': []})
-        item = {'s': key, 'n': name}
-        if flavor:
-            item['f'] = clean_text(flavor)
-        if kind == 'uni':
+    for j in chosen:
+        cat, gid = j['bucket']
+        r = data.setdefault(j['region'], {'groups': {}, 'places': [], 'creatures': []})
+        item = {'s': j['key'], 'n': j['name']}
+        if j['flavor']:
+            item['f'] = clean_text(j['flavor'])
+        if j['kind'] == 'wiki':
+            item['w'] = 1
+        elif j['kind'] == 'uni':
             item['u'] = 1
+        elif j['kind'] == 'lol':
+            item['l'] = 1
         if cat == 'group':
             r['groups'].setdefault(gid, []).append(item)
         else:
@@ -314,28 +414,29 @@ def main():
     meta = {g['region'] + '/' + g['id']: {'name': g['name'], 'desc': g['desc']} for g in GROUPS}
     out = {}
     for region, r in data.items():
-        order = list(dict.fromkeys([g['id'] for g in GROUPS if g['region'] == region] + ['rt-wanderers', 'rt-darkin', 'rt-shards', 'outros']))
+        order = list(dict.fromkeys([g['id'] for g in GROUPS if g['region'] == region] + ['outros']))
         groups = []
         for gid in order:
             items = r['groups'].get(gid)
             if not items:
                 continue
-            m = meta.get(region + '/' + gid) or RUNETERRA_GROUPS.get(gid) or {'name': None, 'desc': None}
+            m = meta.get(region + '/' + gid) or {'name': None, 'desc': None}
             groups.append({'id': gid, 'name': m['name'], 'desc': m['desc'], 'items': sorted(items, key=sort_key)})
         out[region] = {'groups': groups, 'places': sorted(r['places'], key=sort_key), 'creatures': sorted(r['creatures'], key=sort_key)}
     with open(OUT_JS, 'w', encoding='utf-8') as f:
-        f.write('// Generated by tools/lore-gallery/build.py from Legends of Runeterra card art and the League of Legends Universe\n'
-                '// galleries (Riot Games). Do not edit by hand: change tools/lore-gallery/groups.py and run the script again.\n')
+        f.write('// Generated by tools/lore-gallery/build.py from Legends of Runeterra card art, the League of Legends Universe\n'
+                '// galleries and champion splash arts (Riot Games). Do not edit by hand: change tools/lore-gallery/groups.py and run the script again.\n')
         f.write('window.LORE_GALLERY = ' + json.dumps(out, ensure_ascii=False, separators=(',', ':')) + ';\n')
     total = sum(len(g['items']) for r in out.values() for g in r['groups']) + sum(len(r['places']) + len(r['creatures']) for r in out.values())
     size = sum(os.path.getsize(os.path.join(OUT_IMG, f)) for f in os.listdir(OUT_IMG))
-    print(f'{total} pictures, {size / 1e6:.1f} MB')
+    print(f'{total} pictures, {size / 1e6:.1f} MB; {sum(1 for j in chosen if j["kind"] == "lol")} champion splash arts')
     for region, r in out.items():
         print(f"  {region}: {', '.join(g['id'] + ' ' + str(len(g['items'])) for g in r['groups'])} | places {len(r['places'])} | creatures {len(r['creatures'])}")
 
 
 REGION_NAME = {'demacia': 'Demacia', 'freljord': 'Freljord', 'ionia': 'Ionia', 'noxus': 'Noxus', 'piltover': 'Piltover', 'zaun': 'Zaun',
-               'shadow-isles': 'Ilhas das Sombras', 'bilgewater': 'Águas de Sentina', 'shurima': 'Shurima', 'targon': 'Targon', 'bandle': 'Bandópolis'}
+               'shadow-isles': 'Ilhas das Sombras', 'bilgewater': 'Águas de Sentina', 'shurima': 'Shurima', 'targon': 'Targon', 'bandle': 'Bandópolis',
+               'void': 'o Vazio', 'ixtal': 'Ixtal'}
 PROPER = ['Rakkor', 'Solari', 'Lunari', 'Targon', 'Ra’Horak', 'Garra do Inverno', 'Draklorn', 'Mortis']
 
 
@@ -349,16 +450,8 @@ def nice(t):
     return out
 
 
-RUNETERRA_GROUPS = {
-    'rt-wanderers': {'name': 'Andarilhos e lendas', 'desc': 'Figuras que não pertencem a uma só terra: viajantes, guardiões cósmicos e lendas que aparecem por toda Runeterra.'},
-    'rt-darkin': {'name': 'Os Darkin', 'desc': 'Antigos Ascendidos de Shurima presos em armas após a guerra contra Icathia. Possuem quem os empunha e espalham ruína por onde passam.'},
-    'rt-shards': {'name': 'Runas Globais', 'desc': 'Fragmentos dos poderes que criaram o mundo. Quem os encontra raramente sai ileso.'},
-    'outros': {'name': None, 'desc': None},
-}
-
-
 def sort_key(it):
-    return (it.get('u', 0), it['n'].lower())
+    return (it.get('u', 0) + 2 * it.get('l', 0) + 3 * it.get('w', 0), it['n'].lower())
 
 
 if __name__ == '__main__':
