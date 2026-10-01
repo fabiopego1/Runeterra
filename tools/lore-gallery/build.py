@@ -19,12 +19,14 @@ import re
 import sys
 import time
 import unicodedata
+import subprocess
+import urllib.parse
 import urllib.request
 
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(__file__))
-from groups import CREATURE_CARDS, CREATURE_CHAMPS, FORCE_REGION, GROUPS, MOVES, PULL, UNI_CREATURES, UNI_MODULE_TITLES, UNI_PEOPLE, UNI_TITLES  # noqa: E402
+from groups import CREATURE_CARDS, CREATURE_CHAMPS, FORCE_REGION, GROUPS, MOVES, PULL, UNI_CREATURES, UNI_MODULE_TITLES, UNI_PEOPLE, UNI_TITLES, WIKI_PICKS  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT_IMG = os.path.join(ROOT, 'assets', 'lore-gallery')
@@ -71,6 +73,16 @@ def get(url, path):
                 if attempt == 4:
                     raise
                 time.sleep(2 ** attempt)
+        os.replace(path + '.part', path)
+    return path
+
+
+def get_wiki(name, path):
+    """Wiki files are served only to clients that send a browser-like User-Agent: curl does it reliably."""
+    if not os.path.exists(path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        subprocess.run(['curl', '-sS', '-m', '90', '--retry', '3', '-A', 'Mozilla/5.0', '-o', path + '.part',
+                        'https://wiki.leagueoflegends.com/en-us/images/' + urllib.parse.quote(name)], check=True)
         os.replace(path + '.part', path)
     return path
 
@@ -304,7 +316,10 @@ def main():
     # ------------------------------------------------------------ download and make thumbnails
     def work(j):
         out = os.path.join(OUT_IMG, j['key'] + '.webp')
-        src = get(j['url'], os.path.join(CACHE, 'img', j['key'] + os.path.splitext(j['url'])[1]))
+        if j['kind'] == 'wiki':
+            src = get_wiki(j['url'], os.path.join(CACHE, 'wiki', j['url']))
+        else:
+            src = get(j['url'], os.path.join(CACHE, 'img', j['key'] + os.path.splitext(j['url'])[1]))
         im = Image.open(src).convert('RGB')
         h = dhash(im)
         if j['kind'] == 'lor':
@@ -361,6 +376,15 @@ def main():
     with cf.ThreadPoolExecutor(16) as ex:
         accept(list(ex.map(work, lol)))
 
+    # ------------------------------------------------------------ concept art picked by hand from the League of Legends wiki (groups.py: WIKI_PICKS)
+    wiki = []
+    for name, region, bucket, caption in WIKI_PICKS:
+        cat, gid = ('group', bucket) if bucket not in ('places', 'creatures') else (bucket, None)
+        wiki.append(dict(key='w' + hashlib.sha1(name.encode()).hexdigest()[:10], url=name, kind='wiki', region=region, bucket=(cat, gid),
+                         name=caption, flavor='', en=''))
+    with cf.ThreadPoolExecutor(8) as ex:
+        accept(list(ex.map(work, wiki)))
+
     keep = {j['key'] + '.webp' for j in chosen}
     for f in os.listdir(OUT_IMG):
         if f.endswith('.webp') and f not in keep:
@@ -377,7 +401,9 @@ def main():
         item = {'s': j['key'], 'n': j['name']}
         if j['flavor']:
             item['f'] = clean_text(j['flavor'])
-        if j['kind'] == 'uni':
+        if j['kind'] == 'wiki':
+            item['w'] = 1
+        elif j['kind'] == 'uni':
             item['u'] = 1
         elif j['kind'] == 'lol':
             item['l'] = 1
@@ -425,7 +451,7 @@ def nice(t):
 
 
 def sort_key(it):
-    return (it.get('u', 0) + 2 * it.get('l', 0), it['n'].lower())
+    return (it.get('u', 0) + 2 * it.get('l', 0) + 3 * it.get('w', 0), it['n'].lower())
 
 
 if __name__ == '__main__':

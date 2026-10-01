@@ -160,7 +160,7 @@
   document.body.appendChild(box);
   const showPicture = btn => {
     const it = btn.dataset.ref.split('.').reduce((o, k) => o[k], GALLERY);
-    box.innerHTML = `<figure><img src="assets/lore-gallery/${esc(it.s)}.webp" alt="${esc(it.n)}"><figcaption><b>${esc(it.n)}</b>${it.f ? `<p>${esc(it.f)}</p>` : ''}<small>${it.u ? 'Universo de League of Legends' : it.l ? 'League of Legends' : 'Legends of Runeterra'} · Riot Games</small></figcaption></figure><button type="button" class="rg-close" aria-label="Fechar">✕</button>`;
+    box.innerHTML = `<figure><img src="assets/lore-gallery/${esc(it.s)}.webp" alt="${esc(it.n)}"><figcaption><b>${esc(it.n)}</b>${it.f ? `<p>${esc(it.f)}</p>` : ''}<small>${it.w ? 'Arte conceitual · Wiki de League of Legends' : it.u ? 'Universo de League of Legends' : it.l ? 'League of Legends' : 'Legends of Runeterra'} · Riot Games</small></figcaption></figure><button type="button" class="rg-close" aria-label="Fechar">✕</button>`;
     box.showModal();
   };
   document.addEventListener('click', ev => {
