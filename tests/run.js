@@ -126,6 +126,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.click('[data-kind=pers][data-id=decisive]');
     await p.fill('input[data-bind="pers.qname"]', 'Dom dos Imaginais'); await p.waitForTimeout(100);
     ok(!!(await p.$('#flow-personality-qname.current')) && await p.$eval('[data-act=qok]', b => !b.disabled), 'the Signature Quality waits for the Confirm button');
+    ok(await p.$eval('.qname-have', e => /Convicção/.test(e.textContent) && !/Marcante/.test(e.textContent)), 'naming the Signature Quality shows a reminder of the qualities already taken');
     await p.click('[data-act=qok]'); await p.waitForTimeout(150);
     ok(!!(await p.$('#flow-personality-qname.folded')), 'Confirm keeps the name and moves on');
     await sel('pers.outTrait', 'cosmic');
@@ -140,6 +141,9 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await next(); await next();
     ok(!(await p.$('#stage .flow-todo')) && await p.$eval('.step-footer', f => !!f), 'nothing in the Legend chapter is required');
     await p.fill('input[data-bind="info.name"]', 'Bruxaria'); await p.press('input[data-bind="info.name"]', 'Enter'); await p.waitForTimeout(100);
+    ok(await p.$$eval('.grid3 .field span', l => l.slice(0, 2).map(e => e.textContent).join('|')) === 'Nome|Título', 'the Legend asks for the Name first, then the Title');
+    await p.fill('input[data-bind="info.alias"]', 'Kaelis Du Morne');
+    await p.fill('textarea[data-bind="info.costume"]', 'Manto negro.\n\nLâmina rúnica'); await p.waitForTimeout(200);
     ok(await p.$$eval('.rail-item.locked', e => e.length) === 0, 'every chapter unlocked at the end');
     ok(!!(await p.$('[data-act=pdf]')), 'PDF export available');
     const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 60000 }), p.click('[data-act=pdf]')]);
@@ -149,6 +153,8 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
 
     // Table mode: − lowers Health, the zone follows and higher zones unlock
     const zoneNow = () => p.$eval('#sheet-preview .hs-znow', e => e.className.replace(/.*z-/, ''));
+    ok(await p.$eval('#sheet-preview #hs-p1 .hs-ml', e => e.innerText.includes('\n')), 'the sheet keeps the line breaks typed for Costume/Equipment');
+    ok(await p.$$eval('#sheet-preview #hs-p1 .hs-name', l => l.map(e => e.textContent).join('|')) === 'Kaelis Du Morne|Bruxaria', 'the sheet shows the Name, then the Title');
     ok(await zoneNow() === 'green', 'sheet starts in the green zone');
     ok(await p.$$eval('#sheet-preview .hs-zone.locked', e => e.length) === 2, 'yellow and red abilities are locked at full Health');
     await p.fill('#sheet-preview [data-bind="play.current"]', '5'); await p.waitForTimeout(100);

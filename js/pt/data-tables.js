@@ -126,7 +126,7 @@
     'Brand (touched a World Rune), Zeri': 'Brand (tocou uma Runa Global), Zeri',
     "Rumble, Jayce's Mercury gear, Viktor's early rigs": 'Rumble, o equipamento de Mercúrio do Jayce, os primeiros protótipos do Viktor',
     "Kayn (Rhaast), Varus, Aatrox's hosts": 'Kayn (Rhaast), Varus, os hospedeiros do Aatrox',
-    'Nocturne, Fiddlesticks, Bard (probably)': 'Nocturne, Fiddlesticks, Bard (provavelmente)',
+    'Nocturne, Fiddlesticks, Bard (probably)': 'Nocturne, Fiddlesticks, Bardo (provavelmente)',
     'Zilean, Ryze, Ekko (rewound)': 'Zilean, Ryze, Ekko (rebobinado)',
     'Gragas, Braum, Ornn (on a good day)': 'Gragas, Braum, Ornn (num dia bom)'
   };
