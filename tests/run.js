@@ -58,6 +58,13 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     const peopleStep = await step();
     await next();
     ok(await step() === peopleStep, 'cannot advance without picking a people');
+    ok(await p.$$eval('[data-kind=people] .lock-mark', e => e.length) === 1 && !!(await p.$('[data-kind=people][data-id=dragonkin] .lock-mark')), 'Meio-dragão carries a lock');
+    await p.click('[data-kind=people][data-id=dragonkin]'); await p.waitForTimeout(150);
+    ok(!!(await p.$('.lock-form')) && (await p.evaluate(() => window.ForgeDebug.state().people)) === null, 'a locked people asks for a password before it can be chosen');
+    await p.fill('.lock-form input', 'errada'); await p.click('.lock-form [type=submit]'); await p.waitForTimeout(150);
+    ok(!!(await p.$('.lock-err')) && (await p.evaluate(() => window.ForgeDebug.state().people)) === null, 'a wrong password keeps the people locked');
+    await p.fill('.lock-form input', 'tanquinhodashyvana'); await p.click('.lock-form [type=submit]'); await p.waitForTimeout(150);
+    ok((await p.evaluate(() => window.ForgeDebug.state().people)) === 'dragonkin' && !(await p.$('.lock-form')), 'the right password unlocks and chooses Meio-dragão');
     await p.click('[data-kind=people][data-id=vastaya]');
     ok(await p.$eval('[data-kind=people].selected', e => e.dataset.id === 'vastaya') && await p.$$eval('[data-kind=people]', e => e.length) > 5, 'people chapter keeps every card on screen and highlights the chosen one');
     await next();
