@@ -205,15 +205,22 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(info.notes === 10 && info.note0 === 'Deve um favor a Silco', 'PDF keeps the table notes as fillable fields');
 
     // Ficha page: the Forge links to it; full-screen sheet with a play rail
-    ok(!!(await p.$('.sheet-cta a[href="ficha.html"]')), 'the Legend chapter links to the Ficha page');
+    ok(!!(await p.$('.finish-bar a[href="ficha.html"]')), 'the Legend chapter links to the Ficha page');
+    ok(await p.$$eval('#stage a[href="ficha.html"]', e => e.length) === 1 && !(await p.$('.sheet-cta')) && await p.$$eval('#stage .finish-bar [data-act=pdf], #stage .finish-bar [data-act=toSheet]', e => e.length) === 2, 'the Legend chapter has a single block with the sheet actions, without repeated buttons');
     await p.goto(`${BASE}/ficha.html`);
     await p.waitForSelector('#sp-rail');
     ok(await p.$$eval('#sheet-preview .hs-page', e => e.length) === 3, 'Ficha shows the three sheet pages');
+    ok(await p.$$eval('#file-pop [role=menuitem]', e => e.map(x => x.textContent).join('|')).then(x => /Exportar campeão/.test(x) && /Importar campeão/.test(x) && /Imprimir ficha/.test(x)) && !!(await p.$('#import-file')), 'the Ficha page keeps the Arquivo menu, with the file upload');
+    await p.click('#file-btn');
+    ok(!(await p.$eval('#file-pop', e => e.hidden)), 'the Arquivo menu opens on the Ficha page');
+    const champsBefore = await p.evaluate(() => window.ForgeDebug.champions().length);
+    await p.setInputFiles('#import-file', { name: 'campeao.json', mimeType: 'application/json', buffer: Buffer.from(await p.evaluate(() => localStorage.getItem('runeterra-forge-v1'))) }); await p.waitForTimeout(500);
+    ok(await p.evaluate(() => window.ForgeDebug.champions().length) === champsBefore + 1, 'uploading a champion .json from the Ficha page adds it to Campeões');
     ok(!(await p.$('#sp-rail [data-act=hpStep]')) && !(await p.$('#sp-rail .sp-hp')), 'the rail has no Health block: Health is tracked on the sheet itself');
 
     // Evolve tab: swap a power, an ability and a principle; undo; history on page 3
     const stored = () => p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-forge-v1')));
-    ok(!(await p.$('[data-act=sheetTab][data-tab=evolve]')) && !(await p.$('.sheet-cta a[href*=evoluir]')), 'Evolve your champion stays hidden from players (work in progress)');
+    ok(!(await p.$('[data-act=sheetTab][data-tab=evolve]')) && !(await p.$('.finish-bar a[href*=evoluir]')), 'Evolve your champion stays hidden from players (work in progress)');
     ok(await p.$eval('#hs-p1 .hs-left', e => !!e.querySelector('.hs-portrait') && !!e.querySelector('[data-bind="play.hp.0"]')) && !(await p.$('[data-bind="play.issues.0"]')) && !(await p.$('[data-bind="play.coll.0"]')), 'Inspiration points sit under the portrait; back issues and collections are off the sheet');
     await p.goto(`${BASE}/ficha.html?wip`); await p.waitForSelector('#sp-rail');
     await p.click('[data-act=sheetTab][data-tab=evolve]');

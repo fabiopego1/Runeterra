@@ -22,6 +22,16 @@
       <a class="hbtn key" href="ficha.html" aria-current="page"><span data-ico="file"></span><span>Ficha</span></a>
       <a class="hbtn key" href="lore.html"><span data-ico="map"></span><span>Lore</span></a>
       <a class="hbtn key" href="regras.html"><span data-ico="codex"></span><span>Regras</span></a>
+      <span class="hsep" aria-hidden="true"></span>
+      <div class="file-menu">
+        <button class="hbtn" id="file-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="file-pop"><span data-ico="file"></span><span>Arquivo</span><span class="chev" data-ico="chevron"></span></button>
+        <div class="file-pop" id="file-pop" role="menu" hidden>
+          <button role="menuitem" data-act="export"><span data-ico="download"></span><span>Exportar campeão<small>Salva um arquivo .json de backup</small></span></button>
+          <label role="menuitem" for="import-file" tabindex="0"><span data-ico="upload"></span><span>Importar campeão<small>Abre um arquivo .json salvo antes</small></span></label>
+          <button role="menuitem" data-act="print"><span data-ico="print"></span><span>Imprimir ficha</span></button>
+        </div>
+      </div>
+      <input id="import-file" type="file" accept="application/json,.json" hidden>
     </nav>
   </header>
 

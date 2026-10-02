@@ -1445,10 +1445,6 @@ a.brand, a.hbtn { text-decoration: none; }
 .sp-empty { max-width: 560px; margin: 10vh auto; padding: 0 16px; text-align: center; display: grid; gap: 14px; justify-items: center; }
 .sp-empty h1 { font-size: 2.2rem; margin: 0; }
 .sp-empty p { margin: 0; }
-.sheet-cta { display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap; margin: 18px 0; padding: 16px 18px; border: 1px solid var(--gold-lo); background: var(--ink-2); }
-.sheet-cta b { font-family: var(--font-display); font-weight: 400; font-size: 1.2rem; color: var(--gold-hi); }
-.sheet-cta p { margin: 2px 0 0; }
-.sheet-cta .export-row { margin: 0; }
 @media (max-width: 1100px) {
   .sp { grid-template-columns: minmax(0, 1fr); padding: 16px 16px 40px; gap: 16px; }
   .sp-rail { position: static; max-height: none; overflow: visible; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
@@ -1600,13 +1596,15 @@ html, body { overflow-x: clip; }
   display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;
   background: rgba(18, 20, 25, .97); border: 1px solid var(--gold-lo); box-shadow: 0 -10px 24px rgba(0, 0, 0, .45);
 }
-.finish-bar .fb-t { font-family: var(--font-display); color: var(--gold-hi); font-size: 1.05rem; margin-right: auto; }
+.finish-bar .fb-t { font-family: var(--font-display); color: var(--gold-hi); font-size: 1.05rem; margin-right: auto; flex: 1 1 210px; min-width: 0; }
 .finish-bar .fb-t small { display: block; font-family: var(--font-ui); font-size: .78rem; color: var(--text-3); }
 .finish-bar .btn { white-space: nowrap; text-decoration: none; }
+.finish-bar .fb-btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
 .finish-bar #pdf-status { flex-basis: 100%; }
 @media (max-width: 600px) {
   .finish-bar { margin: 18px -16px 0; border-left: 0; border-right: 0; gap: 8px; }
   .finish-bar .fb-t { display: none; }
+  .finish-bar .fb-btns { display: contents; }
   .finish-bar .btn.primary { flex-basis: 100%; }
   .finish-bar .btn { flex: 1 1 auto; justify-content: center; padding-left: 10px; padding-right: 10px; }
 }
