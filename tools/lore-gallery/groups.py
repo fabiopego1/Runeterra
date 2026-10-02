@@ -39,20 +39,20 @@ GROUPS = [
          champs=['Lux', 'Lux: Illuminated', 'Vayne', 'Sona'], match=r'Crownguard'),
     # ---------------------------------------------------------------- Noxus
     dict(region='noxus', id='trifarian', name='Trifarix e a Legião Trifariana',
-         desc='O núcleo militar e político do império. O Trifarix representa os três princípios de Noxus: Força (Darius), Visão (Swain) e Astúcia (o Sem-Rosto, de identidade desconhecida). A Legião Trifariana é a elite do exército, liderada por Darius, formada por soldados extremamente disciplinados e fanáticos pela expansão noxiana.',
+         desc='O núcleo político e militar de Noxus: o Trifarix reúne Força (Darius), Visão (Swain) e Astúcia (o Sem-Rosto), e a Legião é a elite disciplinada do exército.',
          champs=['Darius', 'Kled', 'Swain'], match=r'Trifarian|Legion(?! Deserter)|Iron Ballista|Battering Ram|Citybreaker|Imperial Demolitionist|Captain (Farron|Kalrix)',
          uni=['Os Bandos Guerreiros de Noxus', 'Força na Variedade', 'A Legião Trifariana', 'Armamento Noxiano', 'Armadura Noxiana', 'Machado de Darius', 'Artífices de Guerra']),
     dict(region='noxus', id='blackrose', name='A Rosa Negra',
          desc='Uma sociedade secreta de magos que manipula Noxus nas sombras há séculos, liderada por LeBlanc.',
          champs=['LeBlanc', 'Briar'], match=r'Black Rose|Rose|Runeweaver|Rune Squire|Arachnoid|String-Puller|Tactician|Incisive'),
     dict(region='noxus', id='floricorvus', name='Conservatório Floricorvus',
-         desc='A academia noxiana onde jovens magos aprendem a usar o poder sem deixar que ele os consuma, fundada em segredo pela Rosa Negra. Recentemente, uma das crianças ateou a escola em chamas e depois fugiu: é Annie, que carrega o urso Tibbers. Alguns alunos permanecem leais à Trifarix e outros desejam trabalhar com a Rosa Negra.',
+         desc='Academia fundada em segredo pela Rosa Negra. Annie ateou fogo à escola e fugiu; os alunos se dividem entre a Trifarix e a Rosa Negra.',
          champs=['Annie'], match=r'Tibbers|Floricorvus|Manasoul|Prefect|Headmistress|Spell Slinger'),
     dict(region='noxus', id='ironlegion', name='Legião de Ferro de Mordekaiser',
          desc='O exército de Mordekaiser, o antigo tirano que voltou dos mortos: legionários de ferro, revenantes e as almas acorrentadas que lutam por ele.',
          champs=['Mordekaiser'], match=r'Iron Legionary|Bladepierced|Iron Conquest|Deathgrasp|Shackled|Severed|Amalgamation|Deathwinder'),
     dict(region='noxus', id='crimson', name='Círculo Carmesim e a Legião Cinza',
-         desc='Os hemomantes que seguem Vladimir e sua magia de sangue, entre banquetes e aristocratas, e a Legião Cinza da Senhora do Sangue, Faris Noradi, de soldados e cavaleiros erguidos dos mortos, como Sion, o herói de guerra reerguido.',
+         desc='Os hemomantes de Vladimir e a Legião Cinza da Senhora do Sangue, de mortos reerguidos, como Sion.',
          champs=['Vladimir', 'Sion', 'Sion Returned'], match=r'Crimson|Lady of Blood|Grave Physician|Rider|Reckoner|Warmonger|Lost Soul|Reborn Grenadier'),
     dict(region='noxus', id='arena', name='Arenas e gladiadores',
          desc='Nas arenas de Noxus, glória vale tanto quanto ouro. Draven é o astro; muitos lutam para sair da obscuridade.',
@@ -61,7 +61,7 @@ GROUPS = [
          desc='Quem largou a Legião ou nunca entrou nela: mercenários, rebeldes e exilados como Riven e Rell, a fugitiva dos laboratórios da Rosa Negra.',
          champs=['Riven', 'Rell'], match=r'Deserter|Defector|Rebel|Mercenary'),
     dict(region='noxus', id='houses', name='Casas Nobres',
-         desc='As famílias antigas que guardam o império (Darkwill, Swain, Talis), a Família Du Couteau, de assassinos de elite a serviço do império, com Katarina como a lâmina mais conhecida, além de Cassiopeia e Talon, e a casa Medarda, que não é das velhas, mas ganhou respeito e poder com Ambessa, a Mãe da Guerra.',
+         desc='As famílias antigas de Noxus (Darkwill, Swain, Talis), os assassinos da Família Du Couteau, como Katarina, e os Medarda, que ascenderam com Ambessa.',
          champs=['Ambessa', 'Katarina', 'Cassiopeia', 'Talon'], match=r'^Lord (Mallat|Broadmane)|Noble|Elegant Edge'),
     # ---------------------------------------------------------------- Freljord
     dict(region='freljord', id='avarosan', name='Avarosanos',
@@ -214,7 +214,7 @@ GROUPS = [
          desc='Jayce e os inventores do hextec, a fusão de magia e tecnologia que mudou a Cidade do Progresso.',
          champs=['Jayce'], match=r'Hextech|Hexcore|Forge|Gearhead|Mk\d|Assembly Bot|Ballistic Bot',
          uni=['Hexarco de Ekalavya', 'Manoplas de Atlas', 'Artifício de Piltover', 'Bateria em Cubo Hextec', 'Hextec', 'Veículo Anelar', 'Armas Hextec', 'Conduíte de tubos pneumáticos']),
-    dict(region='piltover', id='explorers', name='Exploradores e aeronautas',
+    dict(region='piltover', id='explorers', name='Exploradores',
          desc='Aventureiros, navegadores e pilotos de balão. Ezreal é o explorador mais famoso (e mais imprudente).',
          champs=['Ezreal'], match=r'Aeronaut|Cartographer|Explorer|Adventurer|Skycruiser|Mariner|Dropboarder|Cloudwinder|Castaway|Travelers'),
 
@@ -932,7 +932,7 @@ RELOCATE = {
     '06SI038': ('shadow-isles', 'revelry'),  # Prodígio Redimido
     '09DE031': ('demacia', 'outros'),  # Jarro Plumaluz
     '01DE015': ('demacia', 'vanguard'),  # Guardiã Radiante
-    '09DE039': ('drop', 'drop'),  # A Luz de Demacia
+    '09DE039': ('drop', 'drop'),  # ?
     'uc8d4b4194d': ('demacia', 'places'),  # O Templo dos Arautos da Luz
     '08DE022': ('demacia', 'outros'),  # O Martim-Pescador
     '05DE012': ('demacia', 'durand'),  # Asalonga de Petricita
@@ -941,7 +941,7 @@ RELOCATE = {
     '06DE044': ('demacia', 'durand'),  # Touro de Petricita
     '01DE004': ('demacia', 'rangers'),  # Vanguarda de Rapinas Prateadas
     '06DE010': ('ionia', 'shadow'),  # Desertora dos Cavaleiros-Patrulheiros
-    '04IO010': ('drop', 'drop'),  # Lâmina
+    '04IO010': ('drop', 'drop'),  # ?
     '01IO021': ('ionia', 'creatures'),  # Cria do Vento
     '05IO020': ('ionia', 'vastaya'),  # Cantaventos
     '07IO023': ('ionia', 'pit'),  # Veterano
@@ -1026,4 +1026,12 @@ RELOCATE = {
     '04DE016': ('shadow-isles', 'specters'),  # Kadregrin, o Destruído
     '04NX022': ('shadow-isles', 'specters'),  # Desafiadora Destruída
     '04BW016': ('shadow-isles', 'specters'),  # Rex Destruído
+    '04PZ015': ('piltover', 'hextech'),  # Adaptatron 3000
+    'lorianna': ('piltover', 'hextech'),  # Orianna
+    '01PZ035': ('piltover', 'explorers'),  # Jae Medarda
+    '08PZ020': ('piltover', 'creatures'),  # Eolinuvem Glorioso
+    '01PZ009': ('piltover', 'academy'),  # Aeronauta Amador
+    '05PZ022T1': ('piltover', 'academy'),  # Jayce
+    '06RU005T8': ('ionia', 'shadow'),  # Kayn
+    '06RU005T1': ('ionia', 'shadow'),  # O Assassino das Sombras
 }
