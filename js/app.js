@@ -603,7 +603,7 @@
       add('pick', tr('Choose your people'), !st.people ? [tr('Choose a people.')] : peopleLocked(st.people) ? [tr('This people is locked: pick it again and enter the password.')] : [], tr('Click the people your champion belongs to. Hover a card to preview it.'));
     }
     if (id === 'region') {
-      add('pick', tr('Choose your homeland'), !st.region ? [tr('Choose a homeland.')] : regionLocked(st.region) ? [tr('This homeland is locked: pick it again and enter the password.')] : [], tr('Click the land your champion comes from. Hover a card to preview it.'));
+      add('pick', tr('Choose your homeland'), !st.region ? [tr('Choose a homeland.')] : regionLocked(st.region) ? [tr('This homeland is locked: pick it again and enter the password.')] : regionBlocked(st.region) ? [tr('Bandle City is only open to Yordles: change your people or pick another homeland.')] : [], tr('Click the land your champion comes from. Hover a card to preview it.'));
     }
     if (id === 'background') {
       rollSec('bg', tr('Roll for your Origin'), !!bg);
@@ -1175,6 +1175,8 @@
     void: '1b9c5f53121dba131856767c7b290fb4f2558d3bf807b6db88ba01e90dfde854'
   };
   const regionLocked = id => !!LOCKED_REGIONS[id] && !(st.unlocked || {})[id];
+  // Bandle City is closed to every people except the Yordles (no password: it is simply not an option for them).
+  const regionBlocked = id => id === 'bandle' && st.people !== 'yordle';
   // Locked peoples work the same way (their ids never clash with homeland ids in st.unlocked).
   const LOCKED_PEOPLES = {
     dragonkin: 'd5a3dee549a7eeb3913b0603a87ec0544a9907505a96537d020fe7ee678c88f3'
@@ -1221,7 +1223,7 @@
     const names = (list, arr) => arr.map(id => { const x = byId(list, id); return x ? x.rt : id; }).join(', ');
     const H = {
       pick: () => pickSection('region', '',   // the cards stay on screen; the chosen one is highlighted
-        `<div class="cards regions">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`${tipImg('r-' + x.id)}<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.id)}${regionLocked(x.id) ? `<span class="lock-mark" aria-label="${tr('Locked')}">${ico('lock')}</span>` : ''}${fitMark('regions', x.id)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>` + lockFormHtml('region'))
+        `<div class="cards regions">${window.REGIONS.map(x => `<button class="card region-card${x.id === st.region ? ' selected' : ''}${regionBlocked(x.id) ? ' blocked' : ''}" style="--rc:${x.color}" data-act="pick" data-kind="region" data-id="${x.id}"${tip(`${tipImg('r-' + x.id)}<h5>${esc(x.name)}</h5>${esc(x.lore)}<hr><small>${esc(x.champs)}</small>`)}>${sigil(x.id)}${regionLocked(x.id) ? `<span class="lock-mark" aria-label="${tr('Locked')}">${ico('lock')}</span>` : regionBlocked(x.id) ? `<span class="lock-mark" aria-label="${tr('Yordles only')}">${ico('lock')}</span>` : ''}${fitMark('regions', x.id)}<div class="t">${esc(x.name)}</div><div class="d">${esc(x.tag)}</div></button>`).join('')}</div>` + lockFormHtml('region') + (ui.blockAsk && regionBlocked(ui.blockAsk) ? `<p class="lock-err block-note" role="alert">${ico('lock')} ${tr('Bandle City only accepts Yordles. Go back to the People chapter and choose Yordle, or pick another homeland.')}</p>` : ''))
     };
     return stepPanel('Step 1 · Runeterra', tr('Homeland'), 'region', flowHtml('region', sectionsFor('region', R0), H, true), false);
   }
@@ -2352,6 +2354,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     if (act === 'pick') {
       if (el.dataset.locked && st.method === 'guided') { flash(el); return; }
       const k = el.dataset.kind, lockedPick = k === 'region' ? regionLocked : k === 'people' ? peopleLocked : null;
+      if (k === 'region' && regionBlocked(el.dataset.id)) { ui.blockAsk = el.dataset.id; ui.lockAsk = null; ui.lockKind = null; render(); return; }
+      ui.blockAsk = null;
       if (lockedPick && lockedPick(el.dataset.id) && st[k] !== el.dataset.id) {
         ui.lockAsk = el.dataset.id; ui.lockKind = k; ui.lockErr = false; render();
         const inp = document.querySelector('.lock-form input'); if (inp) inp.focus();
@@ -2880,6 +2884,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     abilities: () => allAbilities(compute()).map(a => ({ name: a.name, color: a.color, src: a.src, trait: a.entry && a.entry.trait, trait2: a.entry && a.entry.trait2 })),
     principles: () => principlesFinal().map(x => x.id || (x.p && x.p.id)),
     // The Homeland card of the Lore guide for any region (without changing the saved choice).
+    regionBlocked: (id, people) => { const keep = st.people; st.people = people; try { return regionBlocked(id); } finally { st.people = keep; } },
     guideFor: id => { const keep = st.region; st.region = id; try { const c = loreGuide().find(x => x.gallery !== undefined); return c && { link: c.link, gallery: c.gallery, note: c.note }; } finally { st.region = keep; } },
     champions: () => allChampions().map(c => ({ id: c.cid, name: champName(c), open: c.cid === st.cid })),
     // Validate any saved state without showing it: the issues of every chapter and the computed values.
