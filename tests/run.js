@@ -83,8 +83,8 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.fill('.lock-form input', 'suordakaisa'); await p.click('.lock-form [type=submit]'); await p.waitForTimeout(150);
     ok((await p.evaluate(() => window.ForgeDebug.state().region)) === 'void', 'the Void has its own password');
     await p.click('[data-kind=region][data-id=bandle]'); await p.waitForTimeout(150);
-    ok((await p.evaluate(() => window.ForgeDebug.state().region)) === 'void' && !!(await p.$('.block-note')) && await p.$eval('[data-kind=region][data-id=bandle]', e => e.classList.contains('blocked')), 'Bandle City cannot be chosen by a people other than the Yordles');
-    ok(await p.evaluate(() => ['human', 'vastaya', 'dragonkin', null].every(x => window.ForgeDebug.regionBlocked('bandle', x)) && !window.ForgeDebug.regionBlocked('bandle', 'yordle') && ['demacia', 'zaun', 'void'].every(r => !window.ForgeDebug.regionBlocked(r, 'human'))), 'only the Yordles may take Bandle City, and every other homeland stays open');
+    ok((await p.evaluate(() => window.ForgeDebug.state().region)) === 'void' && !!(await p.$('.block-note')) && await p.$eval('[data-kind=region][data-id=bandle]', e => e.classList.contains('blocked')), 'Bandle City cannot be chosen by a people other than the Yordles and the Spirits');
+    ok(await p.evaluate(() => ['human', 'vastaya', 'dragonkin', 'troll', null].every(x => window.ForgeDebug.regionBlocked('bandle', x)) && ['yordle', 'spirit'].every(x => !window.ForgeDebug.regionBlocked('bandle', x)) && ['demacia', 'zaun', 'void'].every(r => !window.ForgeDebug.regionBlocked(r, 'human'))), 'only Yordles and Spirits may take Bandle City, and every other homeland stays open');
     await p.click('[data-kind=region][data-id=zaun]'); await next();
     ok(await p.$eval('#tour h4', e => e.textContent.includes('dados')), 'the Origin guide opens by explaining what the dice do');
     await p.click('#tour [data-act=tourNext]');
