@@ -1661,3 +1661,9 @@ body.ro-lock { overflow: hidden; }
   .ro-acts { grid-column: 1 / -1; flex-direction: row; justify-content: flex-end; align-items: center; gap: 16px; }
   .hbtn[data-act="roster"] > span:nth-child(2) { display: none; }
 }
+
+/* Homelands closed to some peoples (Bandle City: Yordles only) */
+.region-card.blocked { opacity: .5; filter: grayscale(.45); }
+.region-card.blocked:hover { opacity: .75; }
+.block-note { display: flex; align-items: center; gap: 6px; }
+.block-note .ico { flex: none; width: 14px; height: 14px; }
