@@ -16,9 +16,6 @@ GROUPS = [
     dict(region='demacia', id='crown', name='A Coroa e a Casa Lightshield',
          desc='A família real de Demacia. O rei Jarvan III morreu, e a sucessão do jovem Jarvan IV ainda divide as casas nobres.',
          champs=['Jarvan IV'], match=r'Jarvan|Honored Lord|Dawnspeakers', uni=['Príncipe Jarvan IV']),
-    dict(region='demacia', id='laurent', name='Casa Laurent',
-         desc='Família nobre de duelistas, famosa pela esgrima. Fiora governa a casa com a ponta da espada.',
-         champs=['Fiora'], match=r'Laurent'),
     dict(region='demacia', id='durand', name='Escultores Durand',
          desc='Herdeiros do escultor que criou Galio. Moldam a petricita que protege Demacia da magia.',
          champs=['Galio'], match=r'Durand|Petricite (?!Hound|Stag|Charger|Broadwing)'),
@@ -31,12 +28,9 @@ GROUPS = [
     dict(region='demacia', id='dragonguard', name='Guarda dos Dragões',
          desc='Os que servem ao lado de Shyvana e protegem (ou caçam) os dragões que ainda voam sobre Demacia.',
          champs=['Shyvana', 'Dragon Shyvana'], match=r'Dragonguard|Dragon Allegiant|Dragon Chow'),
-    dict(region='demacia', id='illuminators', name='Iluminadores e devotos da Luz',
-         desc='Clérigos e guerreiros que pregam a fé na luz e na ordem. Alguns caçam as trevas pelo mundo.',
-         match=r'Radiant|Illumin|Kingfisher', uni=['O Templo dos Arautos da Luz']),
     dict(region='demacia', id='houses', name='Casas Nobres',
-         desc='As casas que juraram lealdade à coroa e servem de exemplo ao povo. A Casa Crownguard, uma das famílias mais tradicionais de Demacia e guardiã do trono, da qual vêm Garen e Lux, que esconde sua magia. E as outras casas: Vayne, a caçadora de monstros, e Buvelle, de Sona, virtuose do etwahl, querida pela nobreza apesar da suspeita de que suas melodias sejam magia.',
-         champs=['Lux', 'Lux: Illuminated', 'Vayne', 'Sona'], match=r'Crownguard'),
+         desc='As casas que juraram lealdade à coroa. Os Crownguard guardam o trono (Garen e Lux, que esconde sua magia); os Laurent são duelistas de esgrima, hoje sob Fiora; e há Vayne, a caçadora de monstros, e Sona, virtuose do etwahl.',
+         champs=['Lux', 'Lux: Illuminated', 'Vayne', 'Sona', 'Fiora'], match=r'Crownguard|Laurent'),
     # ---------------------------------------------------------------- Noxus
     dict(region='noxus', id='trifarian', name='Trifarix e a Legião Trifariana',
          desc='O núcleo político e militar de Noxus: o Trifarix reúne Força (Darius), Visão (Swain) e Astúcia (o Sem-Rosto), e a Legião é a elite disciplinada do exército.',
@@ -169,7 +163,7 @@ GROUPS = [
          uni=['OS LUNARI', 'ESPERANÇA NO FUTURO', 'ARMAS PROIBIDAS']),
     dict(region='targon', id='aspects', name='Aspectos e Celestiais',
          desc='Mortais que escalaram a montanha e receberam um ser celestial, como Pantheon e Taric, e os próprios Celestiais.',
-         champs=['Pantheon', 'Taric', 'Zoe', 'Soraka', 'Kayle', 'Aurelion Sol'], match=r'Aspect|Mihira|Celestial|Herald|Star Shepherd|Esmus|Iula|Arbiter'),
+         champs=['Pantheon', 'Taric', 'Zoe', 'Soraka', 'Aurelion Sol'], match=r'Aspect|Mihira|Celestial|Herald|Star Shepherd|Esmus|Iula|Arbiter'),
     dict(region='targon', id='rakkor', name='Os Rakkor e os peregrinos',
          desc='As tribos que vivem nas encostas do Monte Targon, e os alpinistas que tentam chegar ao topo.',
          match=r'Mountain|Sojourner|Pilgrim|Climber|Scholar|Stargazer|Scryer|Rumul|Mystic|Saga Seeker|Lawkeeper|Divine Clerk',
@@ -893,8 +887,8 @@ RELOCATE = {
     '05BC041T1': ('demacia', 'outros'),  # Poppy
     '05BC163T1': ('zaun', 'chempunks'),  # Ziggs
     '05BC006': ('zaun', 'chempunks'),  # O Arsenal
-    '06MT008': ('demacia', 'illuminators'),  # Kayle
-    '06MT008T2': ('demacia', 'illuminators'),  # Kayle
+    '06MT008': ('demacia', 'outros'),  # Kayle
+    '06MT008T2': ('demacia', 'outros'),  # Kayle
     '06MT018': ('targon', 'aspects'),  # Guardião da Lei
     '01NX055': ('shadow-isles', 'spider'),  # Aranha Doméstica
     '01NX023': ('shadow-isles', 'spider'),  # Anfitriã Aracnídea
@@ -1034,4 +1028,12 @@ RELOCATE = {
     '05PZ022T1': ('piltover', 'academy'),  # Jayce
     '06RU005T8': ('ionia', 'shadow'),  # Kayn
     '06RU005T1': ('ionia', 'shadow'),  # O Assassino das Sombras
+    '07IO043': ('ionia', 'monks'),  # Oráculo Que Tudo Vê
+    '04IO004': ('ionia', 'dancers'),  # Lâmina Florescente
+    '01IO048': ('ionia', 'shadow'),  # Yusari
+    '06FR040': ('freljord', 'creatures'),  # Vigia das Tribos
+    '09DE045': ('demacia', 'mageseekers'),  # Alina Sonhaluz
+    '08SI037': ('noxus', 'ironlegion'),  # Caniferrus Espectral
+    '07SH003': ('piltover', 'outros'),  # Furtivista de Dirigível
+    '03BW002': ('bilgewater', 'underworld'),  # Lagarto Boêmio
 }
