@@ -1035,6 +1035,7 @@ RELOCATE = {
     '06FR040': ('freljord', 'creatures'),  # Vigia das Tribos
     '09DE045': ('demacia', 'mageseekers'),  # Alina Sonhaluz
     '08SI037': ('noxus', 'ironlegion'),  # Caniferrus Espectral
+    '08SI036': ('noxus', 'places'),  # Limiar Cinzento
     '07SH003': ('piltover', 'outros'),  # Furtivista de Dirigível
     '03BW002': ('bilgewater', 'underworld'),  # Lagarto Boêmio
     'lkarthus': ('shadow-isles', 'specters'),  # Karthus
