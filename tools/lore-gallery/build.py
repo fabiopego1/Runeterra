@@ -26,7 +26,7 @@ import urllib.request
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(__file__))
-from groups import CREATURE_CARDS, CREATURE_CHAMPS, FORCE_REGION, FORCE_SPLASH, GROUPS, MOVES, PULL, UNI_CREATURES, UNI_MODULE_TITLES, UNI_PEOPLE, UNI_TITLES, RELOCATE, RENAME, UNIVERSE_SPLASH, WIKI_PICKS  # noqa: E402
+from groups import CREATURE_CARDS, CREATURE_CHAMPS, FORCE_REGION, FORCE_SPLASH, GROUPS, MOVES, PULL, UNI_CREATURES, UNI_MODULE_TITLES, UNI_PEOPLE, UNI_TITLES, RELOCATE, RENAME, FLAVOR_PT, GLOSSARY, UNIVERSE_SPLASH, WIKI_PICKS  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 OUT_IMG = os.path.join(ROOT, 'assets', 'lore-gallery')
@@ -176,7 +176,10 @@ def ptbr(text):
     text = re.sub(r'\bVoidborn\b', 'Vastinata', text)
     text = re.sub(r'\bVoidlings\b', 'Crias do Vazio', text)
     text = re.sub(r'\bVoidling\b', 'Cria do Vazio', text)
-    return re.sub(r'\bVoid\b', 'Vazio', text)
+    text = re.sub(r'\bVoid\b', 'Vazio', text)
+    for pat, rep in GLOSSARY:
+        text = re.sub(pat, rep, text)
+    return text
 
 
 def clean_text(text, limit=420):
@@ -415,7 +418,7 @@ def main():
         r = data.setdefault(j['region'], {'groups': {}, 'places': [], 'creatures': []})
         item = {'s': j['key'], 'n': RENAME.get(j['key']) or ptbr(j['name'])}
         if j['flavor']:
-            item['f'] = ptbr(clean_text(j['flavor']))
+            item['f'] = FLAVOR_PT.get(j['key']) or ptbr(clean_text(j['flavor']))
         if j['kind'] == 'wiki':
             item['w'] = 1
         elif j['kind'] == 'uni':
@@ -426,7 +429,7 @@ def main():
             r['groups'].setdefault(gid, []).append(item)
         else:
             r[cat].append(item)
-    meta = {g['region'] + '/' + g['id']: {'name': g['name'], 'desc': g['desc']} for g in GROUPS}
+    meta = {g['region'] + '/' + g['id']: {'name': ptbr(g['name']), 'desc': ptbr(g['desc'])} for g in GROUPS}
     out = {}
     for region, r in data.items():
         order = list(dict.fromkeys([g['id'] for g in GROUPS if g['region'] == region] + ['outros']))

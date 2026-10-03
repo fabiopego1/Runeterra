@@ -19,17 +19,17 @@ GROUPS = [
     dict(region='demacia', id='durand', name='Escultores Durand',
          desc='Herdeiros do escultor que criou Galio. Moldam a petricita que protege Demacia da magia.',
          champs=['Galio'], match=r'Durand|Petricite (?!Hound|Stag|Charger|Broadwing)'),
-    dict(region='demacia', id='mageseekers', name='Caça-Magos e os magos perseguidos',
+    dict(region='demacia', id='mageseekers', name='Caçadores de Magos e magos perseguidos',
          desc='A ordem que persegue, prende e "protege" os magos de Demacia, odiada por quem tem magia no sangue. Do outro lado estão os perseguidos: Sylas, que escapou da prisão e lidera a rebelião dos magos, e Morgana, nascida em Demacia e marcada pela magia.',
          champs=['Sylas', 'Morgana'], match=r'Mageseeker|Stony Suppressor|Penitent'),
     dict(region='demacia', id='rangers', name='Patrulheiros e Asa-Prateada',
          desc='Batedores e cavaleiros de rapina que vigiam as fronteiras. Quinn e sua águia Valor são os mais famosos.',
          champs=['Quinn'], match=r'Ranger|Silverwing|Swiftwing|Fleetfeather|Tracker|Valor|Jarro', uni=['Cavaleiro de Rapina']),
-    dict(region='demacia', id='dragonguard', name='Guarda dos Dragões',
+    dict(region='demacia', id='dragonguard', name='Dracoguarda',
          desc='Os que servem ao lado de Shyvana e protegem (ou caçam) os dragões que ainda voam sobre Demacia.',
          champs=['Shyvana', 'Dragon Shyvana'], match=r'Dragonguard|Dragon Allegiant|Dragon Chow'),
     dict(region='demacia', id='houses', name='Casas Nobres',
-         desc='As casas que juraram lealdade à coroa. Os Crownguard guardam o trono (Garen e Lux, que esconde sua magia); os Laurent são duelistas de esgrima, hoje sob Fiora; e há Vayne, a caçadora de monstros, e Sona, virtuose do etwahl.',
+         desc='As casas que juraram lealdade à coroa. Os Stemmaguarda guardam o trono (Garen e Lux, que esconde sua magia); os Laurent são duelistas de esgrima, hoje sob Fiora; e há Vayne, a caçadora de monstros, e Sona, virtuose do etwahl.',
          champs=['Lux', 'Lux: Illuminated', 'Vayne', 'Sona', 'Fiora'], match=r'Crownguard|Laurent'),
     # ---------------------------------------------------------------- Noxus
     dict(region='noxus', id='trifarian', name='Trifarix e a Legião Trifariana',
@@ -58,18 +58,18 @@ GROUPS = [
          desc='As famílias antigas de Noxus (Darkwill, Swain, Talis), os assassinos da Família Du Couteau, como Katarina, e os Medarda, que ascenderam com Ambessa.',
          champs=['Ambessa', 'Katarina', 'Cassiopeia', 'Talon'], match=r'^Lord (Mallat|Broadmane)|Noble|Elegant Edge'),
     # ---------------------------------------------------------------- Freljord
-    dict(region='freljord', id='avarosan', name='Avarosanos',
+    dict(region='freljord', id='avarosan', name='Avarosianos',
          desc='A tribo de Ashe, que sonha unir o Freljord em paz. Arqueiros, guardas e caçadores das terras geladas.',
          champs=['Ashe', 'Tryndamere', 'Braum'], match=r'Avarosan|Hearthguard|Icevale Archer|Warden of the Tribes'),
     dict(region='freljord', id='winters-claw', name='Garra do Inverno',
          desc='A tribo guerreira de Sejuani. Saqueadores que acreditam que só os fortes merecem viver.',
          champs=['Sejuani', 'Olaf'], match=r'Scar|Unscarred|Raider|Reaver|Wolfrider|Tuskraider|Ruthless',
          uni=['SAQUEADORES E RAPINADORES', 'ASSENTAMENTOS SAZONAIS', 'TOME O QUE PRECISAR', 'MONTADORES DE FERAS', 'CAÇANDO NAS PROFUNDEZAS', 'UMA TRIBO EM MARCHA']),
-    dict(region='freljord', id='frostguard', name='Guarda Gélida e os Observadores',
+    dict(region='freljord', id='frostguard', name='Praeglacius e os Observadores',
          desc='Lissandra e seus seguidores guardam o Abismo Uivante. Em segredo, servem às entidades antigas presas sob o gelo.',
          champs=['Lissandra'], match=r'Frostguard|Thrall|Draklorn|Ice Pillar|Watcher|It That Stares|Icevale Cultist|Harbinger',
          uni=['O domínio da Bruxa Gélida', 'Os Draklorn', 'Contendo a escuridão', 'Olhos no Abismo', 'Pedras Mortis']),
-    dict(region='freljord', id='ursine', name='Ursine (seguidores de Volibear)',
+    dict(region='freljord', id='ursine', name='Ursinos (seguidores de Volibear)',
          desc='Guerreiros ursinos devotos do semideus da tempestade. Selvagens, livres e ferozes.',
          champs=['Volibear'], match=r'Ursine|Stormclaw|Thundersong|Sigil of the Storm'),
     dict(region='freljord', id='hearthblood', name='Ferreiros de Ornn',
@@ -99,7 +99,7 @@ GROUPS = [
          desc='Os bailarinos e músicos do Placídio, o coração sagrado de Navori: Irelia, que luta como quem dança com suas lâminas, e quem faz da música e da dança uma forma de resistir.',
          champs=['Irelia'], match=r'Ribbon Dancer|Field Musicians|Zinneia'),
     dict(region='ionia', id='monks', name='Mestres e monastérios',
-         desc='Monges, mestres de artes marciais e sábios espirituais, como Lee Sin, Master Yi e Karma, e os Seguidores do Dragão, guerreiros que tomam nomes das partes de um dragão (olho, garras, escamas, cauda) e evocam sua força.',
+         desc='Monges, mestres de artes marciais e sábios espirituais, como Lee Sin, Mestre Yi e Karma, e os Seguidores do Dragão, guerreiros que tomam nomes das partes de um dragão (olho, garras, escamas, cauda) e evocam sua força.',
          champs=['Lee Sin', 'Master Yi', 'Karma', 'Wukong'], match=r'Wuju|Monk|Disciple|Student|Mentor|Bingwen|Hirana|Doran|Jun, the Prodigy|Keeper of Masks|of the Dragon|Dragoncaller',
          uni=['Os Grandes Monastérios']),
     dict(region='ionia', id='wanderers', name='Espadachins errantes',
@@ -146,7 +146,7 @@ GROUPS = [
          desc='Uma antiga ordem que combate a Névoa Negra e os mortos. Senna, Lucian e Akshan levam sua luz pelo mundo.',
          champs=['Senna', 'Senna, Sentinel of Light', 'Lucian', 'Akshan'], match=r'Sentinel|Rekindler|Redeemed'),
     dict(region='shadow-isles', id='spider', name='Culto da Aranha',
-         desc='Elise e seus devotos, que oferecem vidas a Vilemaw, a aranha gigante das Ilhas.',
+         desc='Elise e seus devotos, que oferecem vidas a Maldíbula, a aranha gigante das Ilhas.',
          champs=['Elise', 'Spider Queen Elise'], match=r'Vilemaw|Cultist|Keeper of the Box'),
     dict(region='shadow-isles', id='helia', name='Os Heliatas',
          desc='Os sábios, escrivães e guardiões de Hélia, a cidade das Ilhas Abençoadas antes da Ruína, e os que sobreviveram a ela: Yorick, o pastor de almas, Gwen, a costureira, Maokai, o treant, e Thresh, o carcereiro que coleciona almas numa lanterna, junto de quem ele guia ou caça.',
@@ -307,7 +307,7 @@ GROUPS = [
          desc="Tope, de Marrowmark, caçador de longo alcance e parceiro de K'Sante. Seu diário revelou o que a dupla não via sobre o monstro cobra-leão."),
     # ---------------------------------------------------------------- groups added in the Universe review
     dict(region='shadow-isles', id='revelry', name='Festa da Meia-Noite',
-         desc='Espíritos que ainda dançam, tocam e brindam nos salões assombrados das Ilhas das Sombras, repetindo as festas de uma vida que já acabou, e o poeta sombrio Grimm.'),
+         desc='Espíritos que ainda dançam, tocam e brindam nos salões assombrados das Ilhas das Sombras, repetindo as festas de uma vida que já acabou, e o poeta sombrio Tristálio.'),
     dict(region='shadow-isles', id='specters', name='Espectros e almas penadas',
          desc='Os mortos das Ilhas das Sombras, presos à Névoa Negra: dos espectros mais fracos aos que ainda lembram quem foram, como Karthus, o cantor da morte.', champs=['Karthus']),
     dict(region='bandle', id='citizens', name='Cidadãos de Bandópolis',
@@ -1044,3 +1044,27 @@ RELOCATE = {
     'ufe00d1b066': ('ionia', 'dancers'),  # A Grande Resistência
     'u355695faeb': ('ionia', 'places'),  # O Placídio de Navori
 }
+
+
+# Universe descriptions that Riot only publishes in English: translated by hand, using the official PT names.
+FLAVOR_PT = {
+    'uc79ba28b71': 'Em pontos-chave do Abismo dos Uivos, barricadas gigantes de pedra e ferro, cheias de espetos, foram fixadas nas paredes pela Praeglacius há muitos milhares de anos. Um dia, quando os Observadores despertarem, essas defesas modestas podem dar um tempo precioso para os que estão acima se prepararem para a batalha final.',
+    'u5f58453419': 'Nos salões mais profundos da Cidadela Praeglacius, Lissandra passa a maior parte do tempo desperta nesta grandiosa câmara de audiências abobadada. É daqui que ela profere seus sermões gélidos, ouve os relatos de seus sacerdotes... e decide o destino dos hereges entre as tribos que servem.',
+    'u3d28c70ca7': 'Guerreiros da Loja do Guardião patrulham diligentemente os locais onde estão alguns dos maiores Observadores conhecidos, ou ao menos os mais próximos da superfície gelada. Esta fera em particular é chamada de "Olho-Perfurado", desde que foi empalada por titânicas Pedras Mortis lançadas da fortaleza lá no alto.',
+    'u1ec29de661': 'Como o mais alto escalão do sacerdócio — respondendo apenas à própria Bruxa Gélida —, os Draklorn estão entre os mais zelosos e eruditos de toda a Praeglacius. Alguns raramente saem das muralhas da Cidadela e, sem dúvida, conhecem segredos que jamais seriam confiados aos escalões inferiores.',
+    'u1973c52d61': 'Estas adagas elegantes de granito congelado, com mais de trinta metros de comprimento, são armas de último recurso quando um Observador se agita em seu sono. A Praeglacius não precisou lançar nem uma única pedra em muitos séculos... mas está pronta para fazê-lo sempre que o alarme soar.',
+}
+
+# Official PT names for proper nouns that the English sources still carry.
+GLOSSARY = [
+    (r'\bMaster Yi\b', 'Mestre Yi'),
+    (r'\bCrownguard\b', 'Stemmaguarda'),
+    (r'\bNagakabouros\b', 'Nagacáburos'),
+    (r'\bVilemaw\b', 'Maldíbula'),
+    (r'\bGrimm\b', 'Tristálio'),
+    (r'\bFrostguard\b', 'Praeglacius'),
+    (r'\bDragonguard\b', 'Dracoguarda'),
+    (r'\bMageseekers\b', 'Caçadores de Magos'),
+    (r'\bMageseeker\b', 'Caçador de Magos'),
+    (r'\bAvarosan\b', 'Avarosianos'),
+]
