@@ -149,8 +149,8 @@ GROUPS = [
          desc='Elise e seus devotos, que oferecem vidas a Vilemaw, a aranha gigante das Ilhas.',
          champs=['Elise', 'Spider Queen Elise'], match=r'Vilemaw|Cultist|Keeper of the Box'),
     dict(region='shadow-isles', id='helia', name='Os Heliatas',
-         desc='Os sábios, escrivães e guardiões de Hélia, a cidade das Ilhas Abençoadas antes da Ruína, e os que sobreviveram a ela: Karthus, o cantor da morte, Yorick, o pastor de almas, Gwen, a costureira, Maokai, o treant, e Thresh, o carcereiro que coleciona almas numa lanterna, junto de quem ele guia ou caça.',
-         champs=['Karthus', 'Yorick', 'Gwen', 'Maokai', 'Thresh'], match=r'Scribe|Chronicler|Archivist|Prodigy|Keeper|Islander|Catalogue|Soul Shepherd|Warden',
+         desc='Os sábios, escrivães e guardiões de Hélia, a cidade das Ilhas Abençoadas antes da Ruína, e os que sobreviveram a ela: Yorick, o pastor de almas, Gwen, a costureira, Maokai, o treant, e Thresh, o carcereiro que coleciona almas numa lanterna, junto de quem ele guia ou caça.',
+         champs=['Yorick', 'Gwen', 'Maokai', 'Thresh'], match=r'Scribe|Chronicler|Archivist|Prodigy|Keeper|Islander|Catalogue|Soul Shepherd|Warden',
          uni=['Escrivão Eterno', 'Cidadãos das Ilhas das Bênçãos']),
     # ---------------------------------------------------------------- Targon
     dict(region='targon', id='solari', name='Os Solari',
@@ -309,7 +309,7 @@ GROUPS = [
     dict(region='shadow-isles', id='revelry', name='Festa da Meia-Noite',
          desc='Espíritos que ainda dançam, tocam e brindam nos salões assombrados das Ilhas das Sombras, repetindo as festas de uma vida que já acabou, e o poeta sombrio Grimm.'),
     dict(region='shadow-isles', id='specters', name='Espectros e almas penadas',
-         desc='Os mortos das Ilhas das Sombras: almas presas à Névoa que perderam o corpo, mas guardam fragmentos de memória, personalidade e desejos, dos espectros mais fracos aos que ainda lembram quem foram, e a Névoa Negra que os prende.'),
+         desc='Os mortos das Ilhas das Sombras, presos à Névoa Negra: dos espectros mais fracos aos que ainda lembram quem foram, como Karthus, o cantor da morte.', champs=['Karthus']),
     dict(region='bandle', id='citizens', name='Cidadãos de Bandópolis',
          desc='Prefeitos, empresários da arena, tios e vizinhos: o povo comum de Bandópolis, entre festas e confusões.'),
     dict(region='piltover', id='seraphine', name='Seraphine e o palco de Piltover',
@@ -654,10 +654,10 @@ RENAME = {'03MT059': 'A Irmã Dourada e A Irmã Prateada'}
 # Relocations decided one by one against the Universe and the wiki (key of the picture -> region, group id | places | creatures).
 # The card regions of Legends of Runeterra were chosen for gameplay and are not always the lore.
 RELOCATE = {
-    '09DE033': ('ionia', 'creatures'),  # Espiritinhos
-    '09DE036': ('ionia', 'creatures'),  # Espíritos Arbóreos
-    '09DE029': ('ionia', 'creatures'),  # Luminispírito
-    '01DE049': ('freljord', 'creatures'),  # Poro Valente
+    '09DE033': ('ionia', 'creatures'),  # ?
+    '09DE036': ('ionia', 'creatures'),  # ?
+    '09DE029': ('ionia', 'creatures'),  # ?
+    '01DE049': ('freljord', 'creatures'),  # ?
     '03DE004': ('demacia', 'vanguard'),  # Capitã Arrika
     '04DE009': ('demacia', 'vanguard'),  # Cavaleiro Galante
     '01DE043': ('demacia', 'outros'),  # Chefs de Guerra
@@ -718,9 +718,9 @@ RELOCATE = {
     '04SI014': ('runeterra', 'legends'),  # Presa
     '04SI004': ('runeterra', 'legends'),  # As Asas e a Onda
     '08SI015': ('noxus', 'ironlegion'),  # Amálgama de Ritos Vis
-    '03SI001': ('shadow-isles', 'creatures'),  # Espreitador Eternebroso
-    '01SI004': ('shadow-isles', 'creatures'),  # Perdição das Águas Sombrias
-    '02SI010': ('shadow-isles', 'creatures'),  # Florimorta Errante
+    '03SI001': ('shadow-isles', 'creatures'),  # ?
+    '01SI004': ('shadow-isles', 'creatures'),  # ?
+    '02SI010': ('shadow-isles', 'creatures'),  # ?
     '01FR021': ('freljord', 'wanderers-fr'),  # Tarkaz, o Desgarrado
     '01FR007': ('freljord', 'wanderers-fr'),  # Bjerg Balbuciador
     '01FR050': ('freljord', 'avarosan'),  # Taverneiro Gentil
@@ -731,14 +731,14 @@ RELOCATE = {
     '05FR001T1': ('freljord', 'old-gods'),  # Combatente Trevoguari
     '05FR004': ('freljord', 'old-gods'),  # Errante Vulpina
     '01FR047': ('freljord', 'ursine'),  # Místico Selvagem
-    '06FR030': ('freljord', 'creatures'),  # Precursor dos Servos
+    '06FR030': ('freljord', 'creatures'),  # ?
     '08FR015': ('freljord', 'old-gods'),  # Rhond, a Serpente de Magma
-    '01IO005': ('freljord', 'creatures'),  # Poro Parrudo
-    '03IO008T1': ('bandle', 'creatures'),  # Esquilo
-    '03IO011': ('bandle', 'creatures'),  # Esquilo Bombado
-    '03IO001': ('bandle', 'creatures'),  # Florzinha de Estimação
-    '03IO007T1': ('bandle', 'creatures'),  # Murmuduende
-    '03IO009': ('bandle', 'creatures'),  # Silfo Saboroso
+    '01IO005': ('freljord', 'creatures'),  # ?
+    '03IO008T1': ('bandle', 'creatures'),  # ?
+    '03IO011': ('bandle', 'creatures'),  # ?
+    '03IO001': ('bandle', 'creatures'),  # ?
+    '03IO007T1': ('bandle', 'creatures'),  # ?
+    '03IO009': ('bandle', 'creatures'),  # ?
     '03IO017': ('bandle', 'fae'),  # Pix!
     '03IO003': ('bandle', 'fae'),  # Guia Feérico
     '03IO018': ('bandle', 'fae'),  # Cuidador Felpudo
@@ -746,9 +746,9 @@ RELOCATE = {
     '03IO010': ('bandle', 'fae'),  # Jovem Bruxa
     '03IO007': ('bandle', 'fae'),  # Trevor Dorminhão
     '01IO036': ('bandle', 'fae'),  # Vigia da Clareira Verdejante
-    '01IO031': ('ionia', 'creatures'),  # Sorvedor de Nuvens
-    '04IO020': ('ionia', 'creatures'),  # Cardume Disperso
-    '04IO015': ('ionia', 'creatures'),  # Gotinha Dançante
+    '01IO031': ('ionia', 'creatures'),  # ?
+    '04IO020': ('ionia', 'creatures'),  # ?
+    '04IO015': ('ionia', 'creatures'),  # ?
     '06IO004': ('ionia', 'artists'),  # A Criadora
     '06IO015': ('ionia', 'artists'),  # A Testemunha
     '04IO002': ('ionia', 'dancers'),  # Zinneia, Crescendo de Aço
@@ -770,8 +770,8 @@ RELOCATE = {
     '09IO053': ('ionia', 'spirits'),  # Dona Raiz
     '09IO055': ('ionia', 'spirits'),  # Fadinha Floral
     '05IO003': ('ionia', 'spirits'),  # Ancestral Sem Rumo
-    '01NX034': ('freljord', 'creatures'),  # Poro Carinhoso
-    '06NX031': ('freljord', 'creatures'),  # Yeti Acorrentado
+    '01NX034': ('freljord', 'creatures'),  # ?
+    '06NX031': ('freljord', 'creatures'),  # ?
     '05NX005': ('noxus', 'crimson'),  # Belicista Ancestral
     '05NX016': ('noxus', 'crimson'),  # A Senhora do Sangue
     '05NX006': ('noxus', 'crimson'),  # Granadeiro Renascido
@@ -788,7 +788,7 @@ RELOCATE = {
     '01PZ059': ('piltover', 'hextech'),  # Esmagobô Dourado
     '03PZ019': ('piltover', 'hextech'),  # Porobot Recauchutado
     '08PZ025': ('piltover', 'hextech'),  # Protótipo de Porobot
-    '01PZ020': ('freljord', 'creatures'),  # Poro Audacioso
+    '01PZ020': ('freljord', 'creatures'),  # ?
     '07PZ017': ('piltover', 'hextech'),  # Comerciante de Bombas de Clarão
     '01PZ025': ('zaun', 'sump'),  # Comerciante de Cogumelos
     '01PZ017': ('zaun', 'sump'),  # Vendedor de Barris Usados
@@ -796,16 +796,16 @@ RELOCATE = {
     '06PZ042': ('zaun', 'firelights'),  # Imperfeccionista Maligna
     '06PZ021T2': ('piltover', 'seraphine'),  # Seraphine
     '06PZ014': ('piltover', 'seraphine'),  # Presidente do Fã-clube
-    '08PZ006': ('bilgewater', 'creatures'),  # Iascylla, Acrostólio das Profundezas
+    '08PZ006': ('bilgewater', 'creatures'),  # ?
     'lmel': ('noxus', 'houses'),  # Mel
-    '04PZ016': ('zaun', 'creatures'),  # Bumbuíno
+    '04PZ016': ('zaun', 'creatures'),  # ?
     '08PZ008': ('zaun', 'firelights'),  # Maryam, a Protetora do Templo
     '05PZ012': ('piltover', 'wardens'),  # Arquivista da Delegacia
     '05PZ009': ('piltover', 'wardens'),  # Policial Infiltrado
     '01PZ051': ('zaun', 'chempunks'),  # Malucânica
     '01PZ007': ('zaun', 'chempunks'),  # Carro Alegórico
-    '05BC160': ('freljord', 'creatures'),  # Poro Primitivo
-    '05BC140': ('freljord', 'creatures'),  # Trenó de Poros
+    '05BC160': ('freljord', 'creatures'),  # ?
+    '05BC140': ('freljord', 'creatures'),  # ?
     '06BC016': ('bandle', 'fae'),  # Biblioteca Viva
     '05BC020': ('bandle', 'fae'),  # Bibliotecária Assistente
     '07BC018': ('bandle', 'fae'),  # Estudioso do Portal
@@ -837,11 +837,11 @@ RELOCATE = {
     '05BC173': ('bandle', 'inventors'),  # Roleta Marítima
     '05BC082': ('bandle', 'inventors'),  # Segurança e Parafuso
     '05BC089': ('bandle', 'inventors'),  # Tectrompete
-    '05BC050': ('bandle', 'creatures'),  # Benêmona
-    '05BC084': ('bandle', 'creatures'),  # Chio
-    '05BC010T1': ('bandle', 'creatures'),  # Dentinho
-    '05BC106': ('bandle', 'creatures'),  # Resmunguesma
-    '02BW010': ('freljord', 'creatures'),  # Poro Saqueador
+    '05BC050': ('bandle', 'creatures'),  # ?
+    '05BC084': ('bandle', 'creatures'),  # ?
+    '05BC010T1': ('bandle', 'creatures'),  # ?
+    '05BC106': ('bandle', 'creatures'),  # ?
+    '02BW010': ('freljord', 'creatures'),  # ?
     '08MT031': ('targon', 'ottrani'),  # Adorante de Dragões Ottrani
     '09MT005': ('targon', 'ottrani'),  # Sonhadora da Canção Dracônica
     '03MT014': ('targon', 'ottrani'),  # Arauta dos Dragões
@@ -849,8 +849,8 @@ RELOCATE = {
     '06MT038': ('targon', 'lunari'),  # A Luz Sinuosa
     '03MT221': ('targon', 'lunari'),  # As Presas
     '03MT216': ('targon', 'lunari'),  # Sombras Celestes
-    '03MT092': ('targon', 'creatures'),  # Cabra da Montanha
-    '03MT001': ('targon', 'creatures'),  # Furins Furtivos
+    '03MT092': ('targon', 'creatures'),  # ?
+    '03MT001': ('targon', 'creatures'),  # ?
     '06MT004': ('targon', 'rakkor'),  # Pastor Errante
     '03MT080': ('targon', 'rakkor'),  # Guardião da Nascente
     '03MT079': ('targon', 'aspects'),  # Pestinha Estelar
@@ -858,8 +858,8 @@ RELOCATE = {
     '03MT048': ('targon', 'aspects'),  # Doadora de Dádivas
     '08MT045': ('demacia', 'mageseekers'),  # Conjurador Acorrentado
     '08MT024': ('demacia', 'mageseekers'),  # Conjurador do Olho-Rubi
-    '04SH049': ('freljord', 'creatures'),  # Poro Destinado
-    '04SH049T1': ('freljord', 'creatures'),  # Poro Venerado
+    '04SH049': ('freljord', 'creatures'),  # ?
+    '04SH049T1': ('freljord', 'creatures'),  # ?
     '04SH009': ('shurima', 'baccai'),  # Baccai Enfurecido
     '06SH005': ('shurima', 'baccai'),  # Baccai Esquecido
     '04SH002': ('shurima', 'baccai'),  # Ceifeiro Baccai
@@ -881,9 +881,9 @@ RELOCATE = {
     '04SH003T8': ('shurima', 'empire'),  # Gladiador Eterno
     '04SH077': ('shurima', 'empire'),  # Voz dos Reerguidos
     '06SI031T1': ('void', 'icathia'),  # Miragem Icathiana
-    '04SH076T1': ('shurima', 'places'),  # Estátua de Estase
-    '07RU015': ('freljord', 'creatures'),  # O Rei Poro
-    '07RU015T4': ('freljord', 'creatures'),  # O Rei Poro
+    '04SH076T1': ('shurima', 'places'),  # ?
+    '07RU015': ('freljord', 'creatures'),  # ?
+    '07RU015T4': ('freljord', 'creatures'),  # ?
     '05BC041T1': ('demacia', 'outros'),  # Poppy
     '05BC163T1': ('zaun', 'chempunks'),  # Ziggs
     '05BC006': ('zaun', 'chempunks'),  # O Arsenal
@@ -927,7 +927,7 @@ RELOCATE = {
     '09DE031': ('demacia', 'outros'),  # Jarro Plumaluz
     '01DE015': ('demacia', 'vanguard'),  # Guardiã Radiante
     '09DE039': ('drop', 'drop'),  # ?
-    'uc8d4b4194d': ('demacia', 'places'),  # O Templo dos Arautos da Luz
+    'uc8d4b4194d': ('demacia', 'places'),  # ?
     '08DE022': ('demacia', 'outros'),  # O Martim-Pescador
     '05DE012': ('demacia', 'durand'),  # Asalonga de Petricita
     '05DE013': ('demacia', 'durand'),  # Cervo de Petricita
@@ -936,14 +936,14 @@ RELOCATE = {
     '01DE004': ('demacia', 'rangers'),  # Vanguarda de Rapinas Prateadas
     '06DE010': ('ionia', 'shadow'),  # Desertora dos Cavaleiros-Patrulheiros
     '04IO010': ('drop', 'drop'),  # ?
-    '01IO021': ('ionia', 'creatures'),  # Cria do Vento
+    '01IO021': ('ionia', 'creatures'),  # ?
     '05IO020': ('ionia', 'vastaya'),  # Cantaventos
     '07IO023': ('ionia', 'pit'),  # Veterano
     '07IO014': ('ionia', 'pit'),  # Mestre Bingwen, o Analista
     'lsyndra': ('ionia', 'outros'),  # Syndra
     '04IO005': ('ionia', 'dancers'),  # Irelia
     '04IO005T2': ('ionia', 'dancers'),  # Irelia
-    '04IO013': ('ionia', 'creatures'),  # Protetor Sagrado
+    '04IO013': ('ionia', 'creatures'),  # ?
     '06NX023': ('ionia', 'outros'),  # Pescadora Ioniana
     '06NX019': ('ionia', 'shadow'),  # Desertor Noxiano
     '02FR001': ('freljord', 'winters-claw'),  # Guerreira Incandescente
@@ -956,8 +956,8 @@ RELOCATE = {
     '06PZ010': ('piltover', 'seraphine'),  # Acusticista
     '01PZ021': ('zaun', 'barons'),  # Capangas de Midenstokke
     '06PZ025': ('zaun', 'sump'),  # Solidão
-    'u1bace67821': ('piltover', 'places'),  # Oficina do Instituto Horológico
-    'u865c7bec6d': ('piltover', 'places'),  # Oficinas
+    'u1bace67821': ('piltover', 'places'),  # ?
+    'u865c7bec6d': ('piltover', 'places'),  # ?
     '07PZ015T1': ('piltover', 'hextech'),  # Bugiganga Fujona
     '01PZ045': ('zaun', 'sump'),  # Pedinte Zaunita
     '04SH003T14': ('shurima', 'empire'),  # Combatente de Arenito
@@ -969,8 +969,8 @@ RELOCATE = {
     '04SH089': ('shurima', 'taliyah'),  # Naturalista do Deserto
     '06SH051': ('shurima', 'taliyah'),  # Pastora de Pedregursos
     '05SH015': ('shurima', 'xerath'),  # Vidente das Areias
-    '04SH042': ('shurima', 'creatures'),  # Pedregurso Hibernado
-    'u65e3c56b81': ('shurima', 'creatures'),  # No Topo dos Dormuns
+    '04SH042': ('shurima', 'creatures'),  # ?
+    'u65e3c56b81': ('shurima', 'creatures'),  # ?
     '04SH011': ('shurima', 'time'),  # Pesquisadoras de Xenótipo
     '05BW004': ('targon', 'marai'),  # Avatar das Marés
     '05BW010': ('targon', 'marai'),  # Grande Mãe Marai
@@ -982,10 +982,10 @@ RELOCATE = {
     'w46dfca26a8': ('targon', 'marai'),  # Marai (arte conceitual 2)
     'w670fc6a88f': ('targon', 'marai'),  # Marai (arte conceitual 3)
     '05BW002': ('targon', 'marai'),  # Aventureiro Saltareias
-    '08BW036': ('targon', 'places'),  # Pináculo Coralino Marai
+    '08BW036': ('targon', 'places'),  # ?
     '06SH008': ('void', 'touched'),  # Anciã Belvethiana
     '06SH016': ('void', 'prophets'),  # Arauto do Enxame
-    'u9af8e4424e': ('bilgewater', 'places'),  # Templo Buhru
+    'u9af8e4424e': ('bilgewater', 'places'),  # ?
     '06NX012T7': ('noxus', 'floricorvus'),  # Annie
     '06NX012T1': ('noxus', 'floricorvus'),  # Tibbers
     '06NX013': ('noxus', 'floricorvus'),  # Lançador de Feitiços
@@ -1023,7 +1023,7 @@ RELOCATE = {
     '04PZ015': ('piltover', 'hextech'),  # Adaptatron 3000
     'lorianna': ('piltover', 'hextech'),  # Orianna
     '01PZ035': ('piltover', 'explorers'),  # Jae Medarda
-    '08PZ020': ('piltover', 'creatures'),  # Eolinuvem Glorioso
+    '08PZ020': ('piltover', 'creatures'),  # ?
     '01PZ009': ('piltover', 'academy'),  # Aeronauta Amador
     '05PZ022T1': ('piltover', 'academy'),  # Jayce
     '06RU005T8': ('ionia', 'shadow'),  # Kayn
@@ -1031,9 +1031,10 @@ RELOCATE = {
     '07IO043': ('ionia', 'monks'),  # Oráculo Que Tudo Vê
     '04IO004': ('ionia', 'dancers'),  # Lâmina Florescente
     '01IO048': ('ionia', 'shadow'),  # Yusari
-    '06FR040': ('freljord', 'creatures'),  # Vigia das Tribos
+    '06FR040': ('freljord', 'creatures'),  # ?
     '09DE045': ('demacia', 'mageseekers'),  # Alina Sonhaluz
     '08SI037': ('noxus', 'ironlegion'),  # Caniferrus Espectral
     '07SH003': ('piltover', 'outros'),  # Furtivista de Dirigível
     '03BW002': ('bilgewater', 'underworld'),  # Lagarto Boêmio
+    'lkarthus': ('shadow-isles', 'specters'),  # Karthus
 }
