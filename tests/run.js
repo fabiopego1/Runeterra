@@ -337,6 +337,8 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.emulateMedia({ media: 'screen' });
     await p.goto(`${BASE}/lore.html`);
     ok(await p.$$eval('img', e => e.length) > 5, 'Lore shows its images');
+    const spirit = await p.$eval('#realms', e => ({ html: e.innerHTML, hrefs: [...e.querySelectorAll('li a')].map(a => a.getAttribute('href')) }));
+    ok(['#r-ionia', '#r-freljord', '#r-noxus', '#r-bilgewater', '#r-shurima', '#andarilhos'].every(h => spirit.hrefs.includes(h)) && /Mitna Rachnun/.test(spirit.html) && /Cordeira/.test(spirit.html) && (await p.$$eval('#realms li a', e => e.every(a => !!document.querySelector(a.getAttribute('href'))))), 'the Spirit Realm lists how each region sees the afterlife, with links to those regions');
     await p.goto(`${BASE}/lore.html?galeria#r-demacia`); await p.waitForTimeout(500);
     ok(await p.$eval('#r-demacia details.rg', d => d.open) && (await p.$$eval('#r-demacia .rg-th', e => e.length)) > 20, 'lore.html?galeria#section opens that region\'s gallery');
     await p.goto(`${BASE}/lore.html`);

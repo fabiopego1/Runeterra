@@ -1092,6 +1092,9 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .lore-art h3 { font-size: 1.6rem; color: var(--text); margin-bottom: 10px; }
 .lore-art h4 { font-size: 1.12rem; color: var(--gold-hi); margin: 18px 0 4px; }
 .lore-art p { color: var(--text-2); }
+.lore-art ul { margin: 6px 0 12px; padding-left: 1.2em; color: var(--text-2); }
+.lore-art li { margin: 4px 0; line-height: 1.55; }
+.lore-art li::marker { color: var(--gold-lo); }
 .lore-art b, .tl-card b, .region-body b, .race b { color: var(--text); font-weight: 600; }
 .lore-fig.float { float: right; width: 40%; margin: 6px 0 16px 28px; }
 
