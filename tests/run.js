@@ -96,7 +96,15 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('#tour h4', e => e.textContent.includes('Ligue os dados')), 'once the dice section opens, its guide steps appear');
     await p.click('#tour [data-act=tourOk]');
     ok(!!(await p.$('#flow-background-pick.folded')) && !(await p.$('[data-act=expand]')), 'the chosen Origin folds into a summary, with no "change" button');
-    await sel('bg.assign.b0', 'magical-lore'); await sel('bg.assign.b1', 'history'); await p.waitForTimeout(150);
+    // A trait that sits on another die of the same step can be picked anyway: the two dice trade places
+    await sel('bg.assign.b0', 'history');
+    if (!(await p.$('.rune[data-bind="bg.assign.b1"][data-val="history"]'))) await p.click('.sock-slot[data-bind="bg.assign.b1"]');
+    ok(await p.$eval('.rune[data-bind="bg.assign.b1"][data-val="history"]', e => e.classList.contains('swap') && !e.classList.contains('off') && e.getAttribute('aria-disabled') !== 'true' && /pegar/i.test(e.textContent)), 'a trait held by another die of the step offers to take it from that die');
+    await p.click('.rune[data-bind="bg.assign.b1"][data-val="history"]'); await p.waitForTimeout(100);
+    const taken = await p.evaluate(() => { const a = window.ForgeDebug.state().bg.assign; return [a.b0 || '', a.b1 || ''].join(); });
+    ok(taken === ',history', `picking it moves the trait to the new die and frees the old one (${taken})`);
+    await sel('bg.assign.b0', 'magical-lore'); await p.waitForTimeout(150);
+    await p.waitForTimeout(0);
     ok(await p.$eval('#tour h4', e => e.textContent.includes('Princípio')), 'the principle guide waits for the principle section');
     await p.click('#tour [data-act=tourOk]');
     const origHover = await p.$eval('[data-act=principle][data-id=magic]', e => e.dataset.tip);
@@ -114,6 +122,14 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await next();
     await p.click('[data-kind=ps][data-id=mystical]');
     await sel('ps.assign.p0', 'cosmic'); await sel('ps.assign.p1', 'transmutation'); await sel('ps.assign.p2', 'flight');
+    if (await p.$('.sock-slot[data-bind="ps.assign.p2"]')) {   // both dice already bound: the two trade places
+      if (!(await p.$('.rune[data-bind="ps.assign.p2"][data-val="cosmic"]'))) await p.click('.sock-slot[data-bind="ps.assign.p2"]');
+      await p.click('.rune[data-bind="ps.assign.p2"][data-val="cosmic"]'); await p.waitForTimeout(100);
+      const sw = await p.evaluate(() => { const a = window.ForgeDebug.state().ps.assign; return [a.p0, a.p1, a.p2].join(); });
+      ok(sw === 'flight,transmutation,cosmic', `two bound dice trade places when one picks the trait of the other (${sw})`);
+      await sel('ps.assign.p0', 'cosmic');
+      ok(await p.evaluate(() => { const a = window.ForgeDebug.state().ps.assign; return [a.p0, a.p1, a.p2].join() === 'cosmic,transmutation,flight'; }), 'and trading again restores them');
+    }
     await sel('ps.extra.key', 'otherworldly-mythos');
     await ab('ps-yellow', 'Modification Wave'); await ab('ps-yellow', 'Sever Link');
     await sel('sel.ps-yellow.0.trait', 'cosmic'); await sel('sel.ps-yellow.1.trait', 'transmutation');
@@ -519,6 +535,14 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.click('.socket.open .rune[data-val="medicine"]', { force: true }); await p.waitForTimeout(200);
     ok(!(await p.evaluate(() => window.ForgeDebug.state().bg.assign.b0)), 'a locked trait cannot be chosen');
     ok(/Origem não oferece|Origin does not offer/.test(await p.$eval('#tip', e => e.textContent)), 'clicking a locked trait says why');
+    // Both Origin dice already bound: choosing the trait of the other one trades the two places
+    await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.step = 'background'; s.bg = { id: 'anachronistic', assign: { b0: 'magical-lore', b1: 'history' }, principle: 'magic' }; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
+    await p.reload(); await p.waitForTimeout(400);
+    if (!(await p.$('.sock-slot[data-bind="bg.assign.b1"]'))) { await p.click('#flow-background-assign .flow-head'); await p.waitForTimeout(250); }
+    await p.click('.sock-slot[data-bind="bg.assign.b1"]'); await p.waitForTimeout(120);
+    ok(await p.$eval('.rune[data-bind="bg.assign.b1"][data-val="magical-lore"]', e => e.classList.contains('swap') && /trocar/i.test(e.textContent)), 'a trait on the other bound die offers "trocar com o seu d..."');
+    await p.click('.rune[data-bind="bg.assign.b1"][data-val="magical-lore"]'); await p.waitForTimeout(150);
+    ok(await p.evaluate(() => { const a = window.ForgeDebug.state().bg.assign; return a.b0 === 'history' && a.b1 === 'magical-lore'; }), 'picking it trades the places of the two bound dice');
     await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.step = 'powersource'; s.bg = { id: 'anachronistic', assign: { b0: 'magical-lore', b1: 'history' }, principle: 'magic' }; s.ps.assign = {}; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
     await p.reload(); await p.waitForTimeout(400);
     if (!(await p.$('.socket.open'))) { await p.click('.sock-slot[data-bind="ps.assign.p0"]'); await p.waitForTimeout(200); }

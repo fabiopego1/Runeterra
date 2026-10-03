@@ -864,8 +864,10 @@
       const onOther = k => slots.concat(others).some(x => x !== s && x.key === k);
       const canSwap = k => swap.includes(k) && before[k] && !s.freed && dn(s.die) > dn(before[k].die) && !onOther(k);
       const takenBy = k => { const o = slots.concat(others).find(x => x !== s && x.key === k); if (o) return tr('on your {die}', { die: o.die }); if (before[k] && s.key !== k && !canSwap(k)) return tr('you already have {die}', { die: before[k].die }); return ''; };
+      // a trait held by another die of this same group: picking it trades places with that die
+      const holder = k => (s.key !== k && !before[k] ? slots.find(x => x !== s && x.key === k) : null);
       const groups = traitGroups(everyKey, k => optionKeys.includes(k)
-        ? traitItem(k, { taken: takenBy(k), after: canSwap(k) && s.key !== k ? tr('{from} → {to}, the {from} comes back', { from: before[k].die, to: s.die }) : '' })
+        ? traitItem(k, { taken: takenBy(k), swapWith: holder(k) ? holder(k).id : '', swapLabel: holder(k) ? tr(s.key ? 'swap with your {die}' : 'take it from your {die}', { die: holder(k).die }) : '', after: canSwap(k) && s.key !== k ? tr('{from} → {to}, the {from} comes back', { from: before[k].die, to: s.die }) : '' })
         : traitItem(k, { locked: lockWhy }));
       let note = '';
       if (s.key) note = s.upgrade ? tr('You already had {trait}: bind this {die} to something else.', { trait: traitName(s.key), die: s.die }) : s.swap ? tr('{trait} goes from {from} to {to}; its old {from} is below for you to use in this step.', { trait: traitName(s.key), from: s.swap.from, to: s.swap.to }) : '';
@@ -1037,10 +1039,10 @@
       : `<span class="sock-empty">${esc(ask)}</span>`;
     const filter = all.length > 12 ? `<label class="tray-filter">${ico('mark')}<input type="search" data-filter="1" placeholder="${tr('Filter {n} options…', { n: all.length })}" aria-label="${tr('Filter options')}"></label>` : '';
     const groupHtml = g => `<div class="tray-group"><div class="tray-label">${esc(g.label)}${g.sub ? `<span>${esc(g.sub)}</span>` : ''}</div><div class="tray-grid">${g.items.map(i => {
-      const on = i.k === cur, lock = !!i.locked && !on, off = (!!i.taken || lock) && !on, fit = !lock && fitTrait(i.k);
+      const on = i.k === cur, lock = !!i.locked && !on, off = (!!i.taken || lock) && !on && !i.swapWith, fit = !lock && fitTrait(i.k);
       const why = lock ? i.locked : off ? tr('You already have this trait here, so this die would be wasted. Choose a different trait, or unbind it where it is first.') : '';
-      return `<button class="rune k-${kindOf(i.k)}${on ? ' on' : ''}${off ? ' off' : ''}${lock ? ' locked' : ''}${fit ? ' fits' : ''}" data-act="socket" data-bind="${bind}" data-val="${i.k}" data-q="${esc((i.name + ' ' + (i.sub || '') + ' ' + g.label).toLowerCase())}"${off ? ` aria-disabled="true" data-why="${esc(why)}"` : ''}${on ? ' aria-pressed="true"' : ''}${tip(traitTip(i.k) + (lock ? `<hr>${ico('lock')} ${esc(i.locked)}` : '') + (fit ? `<hr>✦ <b>${tr('Suggestion')}</b>: ${esc(fit)}. ${tr('Only a suggestion: you can pick any option.')}` : ''))}>
-        ${lock ? `<span class="rune-lock">${ico('lock')}</span>` : ''}<span class="rune-name">${esc(i.name)}</span>${fit ? `<span class="rune-sugg">${ico('mark')} ${tr('Suggestion')}</span>` : ''}${i.sub ? `<span class="rune-sub">${esc(i.sub)}</span>` : ''}${i.after ? `<span class="rune-badge">${esc(i.after)}</span>` : ''}${off && !lock ? `<span class="rune-badge taken">${esc(i.taken)}</span>` : ''}</button>`;
+      return `<button class="rune k-${kindOf(i.k)}${on ? ' on' : ''}${off ? ' off' : ''}${i.swapWith && !on ? ' swap' : ''}${lock ? ' locked' : ''}${fit ? ' fits' : ''}" data-act="socket" data-bind="${bind}" data-val="${i.k}"${i.swapWith && !on ? ` data-swap="${i.swapWith}"` : ''} data-q="${esc((i.name + ' ' + (i.sub || '') + ' ' + g.label).toLowerCase())}"${off ? ` aria-disabled="true" data-why="${esc(why)}"` : ''}${on ? ' aria-pressed="true"' : ''}${tip(traitTip(i.k) + (lock ? `<hr>${ico('lock')} ${esc(i.locked)}` : '') + (fit ? `<hr>✦ <b>${tr('Suggestion')}</b>: ${esc(fit)}. ${tr('Only a suggestion: you can pick any option.')}` : ''))}>
+        ${lock ? `<span class="rune-lock">${ico('lock')}</span>` : ''}<span class="rune-name">${esc(i.name)}</span>${fit ? `<span class="rune-sugg">${ico('mark')} ${tr('Suggestion')}</span>` : ''}${i.sub ? `<span class="rune-sub">${esc(i.sub)}</span>` : ''}${i.after ? `<span class="rune-badge">${esc(i.after)}</span>` : ''}${off && !lock ? `<span class="rune-badge taken">${esc(i.taken)}</span>` : ''}${i.swapWith && !on ? `<span class="rune-badge swapb">⇄ ${esc(i.swapLabel)}</span>` : ''}</button>`;
     }).join('')}</div></div>`;
     const body = !both ? groups.map(groupHtml).join('')
       : ['power', 'quality'].sort((a, b) => (groups.some(g => kindOf(g.items[0].k) === b && g.items.some(open1)) ? 1 : 0) - (groups.some(g => kindOf(g.items[0].k) === a && g.items.some(open1)) ? 1 : 0)).map(k => {
@@ -2335,6 +2337,11 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       if (el.getAttribute('aria-disabled') === 'true') {
         el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(0)' }], { duration: 220 });
         showTipFor(el, `<h5>${tr('Not available')}</h5>` + esc(el.dataset.why || '')); setTimeout(hideTip, 2200); return;
+      }
+      if (el.dataset.swap) {   // the trait sits on another die of this step: the two dice trade places
+        const bind = el.dataset.bind, otherBind = bind.replace(/[^.]+$/, el.dataset.swap);
+        const mine = bind.split('.').reduce((o, k) => (o == null ? o : o[k]), st) || null;
+        setPath(st, otherBind, mine);
       }
       setPath(st, el.dataset.bind, el.dataset.val || null); ui.socket = null; hideTip(); render();
       const next = document.querySelector('.socket.open .rune');           // keyboard users land in the next tray
