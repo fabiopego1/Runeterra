@@ -805,6 +805,8 @@ Object.assign(window.I18N.ui, {
  "Note line {n}": "Linha de anotação {n}",
  "Lore guide": "Guia de lore",
  "Read in the Lore": "Ler na Lore",
+ "swap with your {die}": "trocar com o seu {die}",
+ "take it from your {die}": "pegar do seu {die}",
  "Yordles and Spirits only": "Só para yordles e espíritos",
  "Bandle City is only open to Yordles and Spirits: change your people or pick another homeland.": "Bandópolis só é aberta a yordles e espíritos: mude seu povo ou escolha outra terra natal.",
  "Bandle City only accepts Yordles and Spirits. Go back to the People chapter and choose one of them, or pick another homeland.": "Bandópolis só aceita yordles e espíritos. Volte ao capítulo Povo e escolha Yordle ou Espírito, ou escolha outra terra natal.",

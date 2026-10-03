@@ -557,6 +557,8 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .rune.on::before { background: var(--gold); border-color: var(--gold); }
 .rune.off { cursor: not-allowed; color: var(--text-3); }
 .rune.off::before { border-style: dotted; }
+.rune.swap { cursor: pointer; }
+.rune-badge.swapb { color: var(--gold); }
 /* traits this step does not offer: listed for reference, locked */
 .rune.locked { color: var(--text-3); opacity: .55; background: transparent; }
 .rune.locked:hover { background: transparent; opacity: .8; }
