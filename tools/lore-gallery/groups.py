@@ -1041,4 +1041,6 @@ RELOCATE = {
     '07SH040': ('ixtal', 'creatures'),  # Porcouriço
     '07SH043': ('ixtal', 'creatures'),  # Parofante Grandioso
     '07SH044': ('ixtal', 'creatures'),  # Aurora Alucinati
+    'ufe00d1b066': ('ionia', 'dancers'),  # A Grande Resistência
+    'u355695faeb': ('ionia', 'places'),  # O Placídio de Navori
 }
