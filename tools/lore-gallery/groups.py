@@ -642,6 +642,7 @@ WIKI_PICKS = [
     ('Nilah_Concept_04.jpg', 'runeterra', 'kathkan', 'Nilah (arte conceitual 2)'),
     ('Nilah_Concept_06.jpg', 'runeterra', 'kathkan', 'Nilah (arte conceitual 3)'),
     ('Nilah_Concept_07.jpg', 'runeterra', 'kathkan', 'Nilah: retrato (arte conceitual)'),
+    ("RUINATION_Kalista's_Odyssey_WR_Promo_01.jpg", 'shadow-isles', 'places', 'Hélia, a capital das Ilhas das Bênçãos'),
 ]
 
 # Champions whose ddragon splash is outdated: use the current art from the Universe champion page.
