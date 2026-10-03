@@ -43,7 +43,7 @@ GROUPS = [
          desc='Academia fundada em segredo pela Rosa Negra. Annie ateou fogo à escola e fugiu; os alunos se dividem entre a Trifarix e a Rosa Negra.',
          champs=['Annie'], match=r'Tibbers|Floricorvus|Manasoul|Prefect|Headmistress|Spell Slinger'),
     dict(region='noxus', id='ironlegion', name='Legião de Ferro de Mordekaiser',
-         desc='O exército de Mordekaiser, o antigo tirano que voltou dos mortos: legionários de ferro, revenantes e as almas acorrentadas que lutam por ele.',
+         desc='O exército de Mordekaiser, o tirano que voltou dos mortos, e Mitna Rachnun, o reino de almas aprisionadas que serve de fortaleza à Legião.',
          champs=['Mordekaiser'], match=r'Iron Legionary|Bladepierced|Iron Conquest|Deathgrasp|Shackled|Severed|Amalgamation|Deathwinder'),
     dict(region='noxus', id='crimson', name='Círculo Carmesim e a Legião Cinza',
          desc='Os hemomantes de Vladimir e a Legião Cinza da Senhora do Sangue, de mortos reerguidos, como Sion.',

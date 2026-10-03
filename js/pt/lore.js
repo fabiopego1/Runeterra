@@ -16,7 +16,18 @@
       <h4>O Material</h4>
       <p>Também chamado de Reino Elemental, o Reino Material é o reino físico onde os elementos, as ideias e os espíritos se manifestam. É também onde se encontram as criaturas mortais, sujeitas ao sabor do tempo e predestinadas a ter uma breve história em meio à imensidão desse mundo. Sejam humanos, minotauros ou vastaya, essas espécies humanoides e inteligentes podem ser encontradas nas mais variadas expressões de existência.</p>
       <h4>O Espiritual</h4>
-      <p>O Reino Espiritual se encontra em paralelo com o Reino Material e, em alguns pontos, pode se mesclar com ele, como no caso de <b>Ionia</b>, onde o véu que divide os dois reinos é mais fino e os espíritos influenciam diretamente a vida local, tanto a fauna quanto a flora, trazendo magia em abundância para o ambiente.</p>
+      <p>O Reino Espiritual se encontra em paralelo com o Reino Material e, em alguns pontos, pode se mesclar com ele, como no caso de <b><a href="#r-ionia">Ionia</a></b>, onde o véu que divide os dois reinos é mais fino e os espíritos influenciam diretamente a vida local, tanto a fauna quanto a flora, trazendo magia em abundância para o ambiente.</p>
+      <p>É também o pós-vida de Runeterra: um plano sem governo único, moldado pelas crenças de cada cultura. Os <b>Kindred</b>, a Cordeira e o Lobo, são uma das principais representações da morte, mas cada região tem as suas tradições:</p>
+      <ul>
+        <li><b>Mitna Rachnun</b> (<a href="#r-noxus">Noxus</a>): reino criado por Mordekaiser a partir das almas que aprisionou, serve de fortaleza ao seu exército imortal. Todos que morrem perto do Bastião Imortal são levados a esse sub-reino.</li>
+        <li><a href="#r-ionia">Ionia</a>: os mortos seguem O Caminho até o Florescer Espiritual. Almas em paz tornam-se <b>Kanmei</b> (espíritos benevolentes); as atormentadas, <b>Akana</b> (demônios).</li>
+        <li><a href="#r-freljord">Freljord</a>: guerreiros mortos juntam-se a uma matilha espiritual e participam de uma caça eterna.</li>
+        <li><a href="#r-noxus">Noxus</a>: os dignos enfrentam provações após a morte para poder caçar ao lado do Lobo.</li>
+        <li><b>Buhru</b> (<a href="#r-bilgewater">Águas de Sentina</a>): a alma retorna ao fluxo do oceano e do universo; mortos-vivos são vistos como uma violação desse ciclo.</li>
+        <li><a href="#r-shurima">Shurima</a>: antigas crenças mencionam as Terras Sem Sol como pós-vida.</li>
+        <li><b>Camavor</b> (<a href="#andarilhos">Outras</a>): os mortos eram recebidos no Salão dos Ancestrais, junto aos antigos reis e fundadores.</li>
+      </ul>
+      <p>As regiões não mencionadas não têm uma definição universal, mas a maioria dos reinos acredita nos Kindred, às vezes adaptando o nome ou a aparência. Algumas nações se alinham mais com a ideia da Cordeira (aceitar a morte em paz) e outras com a do Lobo (lutar até o fim), mas geralmente os dois são tratados como uma entidade dupla, e você escolhe seu caminho na hora em que a morte chega.</p>
       <h4>O Celestial</h4>
       <p>O Reino Celestial, muitas vezes chamado de <b>Cidade de Ouro e Prata</b>, é um reino além de Runeterra, cuja entrada pode ser encontrada no topo do <b>Monte Targon</b>, local que também serve de acesso das criaturas celestiais ao Reino Material. Esse reino é uma vastidão banhada em luz dourada durante o dia e estrelas cintilantes à noite.</p>
       <h4>O Vazio</h4>
