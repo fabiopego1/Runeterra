@@ -13,7 +13,7 @@ GROUPS = [
          desc='A elite do exército demaciano, liderada por Garen. Soldados escolhidos a dedo que marcham na frente de cada batalha.',
          champs=['Garen', 'Xin Zhao'], match=r'Vanguard|Dauntless|Bannerman|Scrutinizing Sergeant',
          uni=['Guarda de Elite de Demacia', 'Elite Militar', 'Linha Guerreira e Guarda do Palácio', 'Armas Demacianas', 'Aço de Demacia', 'Equipamentos']),
-    dict(region='demacia', id='crown', name='A Coroa e a Casa Lightshield',
+    dict(region='demacia', id='crown', name='A Coroa e a Casa Lumescudo',
          desc='A família real de Demacia. O rei Jarvan III morreu, e a sucessão do jovem Jarvan IV ainda divide as casas nobres.',
          champs=['Jarvan IV'], match=r'Jarvan|Honored Lord|Dawnspeakers', uni=['Príncipe Jarvan IV']),
     dict(region='demacia', id='durand', name='Escultores Durand',
@@ -69,7 +69,7 @@ GROUPS = [
          desc='Lissandra e seus seguidores guardam o Abismo Uivante. Em segredo, servem às entidades antigas presas sob o gelo.',
          champs=['Lissandra'], match=r'Frostguard|Thrall|Draklorn|Ice Pillar|Watcher|It That Stares|Icevale Cultist|Harbinger',
          uni=['O domínio da Bruxa Gélida', 'Os Draklorn', 'Contendo a escuridão', 'Olhos no Abismo', 'Pedras Mortis']),
-    dict(region='freljord', id='ursine', name='Ursinos (seguidores de Volibear)',
+    dict(region='freljord', id='ursine', name='Ursine (seguidores de Volibear)',
          desc='Guerreiros ursinos devotos do semideus da tempestade. Selvagens, livres e ferozes.',
          champs=['Volibear'], match=r'Ursine|Stormclaw|Thundersong|Sigil of the Storm'),
     dict(region='freljord', id='hearthblood', name='Ferreiros de Ornn',
@@ -1067,4 +1067,5 @@ GLOSSARY = [
     (r'\bMageseekers\b', 'Caçadores de Magos'),
     (r'\bMageseeker\b', 'Caçador de Magos'),
     (r'\bAvarosan\b', 'Avarosianos'),
+    (r'\bLightshield\b', 'Lumescudo'),
 ]
