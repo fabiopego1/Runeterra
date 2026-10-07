@@ -14,7 +14,7 @@
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
   const toB64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
   const TRACKERS = { standard: ['Padrão', [2, 4, 2]], prolonged: ['Prolongado', [3, 5, 3]], epic: ['Épico', [1, 3, 4]] };
-  const KINDS = { hero: 'Herói', villain: 'Vilão', minion: 'Lacaios', lieutenant: 'Tenente', tracker: 'Marcador', challenge: 'Desafio', other: 'Outro' };
+  const KINDS = { hero: 'Campeão', villain: 'Vilão', minion: 'Lacaios', lieutenant: 'Tenente', tracker: 'Marcador', challenge: 'Desafio', other: 'Outro' };
   const dieBadge = d => `<span class="die ${d}">${d.slice(1)}</span>`;
   const blank = () => ({ tracker: { g: 2, y: 4, r: 2, marked: 0 }, round: 1, turns: [], challenges: [], foes: [], villains: [], region: 'any', twist: null });
 
@@ -101,7 +101,7 @@
   function turnsHtml() {
     const left = S.turns.filter(x => !x.acted).length;
     return `<section class="gmt-panel gmt-turns" id="gmt-turns"><h3>${ico('next')} Ordem de turno <small>Rodada ${S.round}</small></h3>
-      <ol class="gmt-list">${S.turns.map(x => `<li class="${x.acted ? 'done' : ''}"><button type="button" class="gmt-check" data-gm="acted" data-id="${x.id}" aria-pressed="${!!x.acted}" aria-label="${esc(x.name)} já agiu">${x.acted ? ico('mark') : ''}</button><span class="gmt-kind k-${x.kind}">${KINDS[x.kind] || ''}</span><span class="gmt-name">${esc(x.name)}</span><button type="button" class="gmt-x" data-gm="turnDel" data-id="${x.id}" aria-label="Tirar ${esc(x.name)}">×</button></li>`).join('') || '<li class="gmt-empty">Adicione heróis, vilões, grupos de lacaios e o marcador de cena.</li>'}</ol>
+      <ol class="gmt-list">${S.turns.map(x => `<li class="${x.acted ? 'done' : ''}"><button type="button" class="gmt-check" data-gm="acted" data-id="${x.id}" aria-pressed="${!!x.acted}" aria-label="${esc(x.name)} já agiu">${x.acted ? ico('mark') : ''}</button><span class="gmt-kind k-${x.kind}">${KINDS[x.kind] || ''}</span><span class="gmt-name">${esc(x.name)}</span><button type="button" class="gmt-x" data-gm="turnDel" data-id="${x.id}" aria-label="Tirar ${esc(x.name)}">×</button></li>`).join('') || '<li class="gmt-empty">Adicione campeões, vilões, grupos de lacaios e o marcador de cena.</li>'}</ol>
       ${S.turns.length ? `<p class="gmt-hint">${left ? `Faltam ${left} para agir nesta rodada. Quem termina o turno escolhe quem joga em seguida.` : 'Todos agiram. Quem jogou por último escolhe quem abre a próxima rodada, menos a si mesmo.'}</p>` : ''}
       <form class="gmt-form" data-gm-form="turn"><input name="name" placeholder="Nome" aria-label="Nome" required maxlength="40"><select name="kind" aria-label="Tipo">${Object.entries(KINDS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select><button class="btn small">Adicionar</button></form>
       <div class="gmt-row"><button type="button" class="btn small primary" data-gm="newRound"${S.turns.length ? '' : ' disabled'}>Nova rodada</button>${S.turns.some(x => x.kind === 'tracker') ? '' : '<button type="button" class="btn small ghost" data-gm="addTracker">+ Marcador de cena</button>'}</div></section>`;
@@ -152,12 +152,12 @@
     return `<section class="gmt-panel gmt-twists" id="gmt-twists"><h3>${ico('map')} Gerador de reviravoltas</h3>
       <label class="gmt-field">Onde a cena acontece <select data-gmv="region"><option value="any">Qualquer lugar</option>${regions.map(r => `<option value="${r.id}"${S.region === r.id ? ' selected' : ''}>${esc(r.name)}</option>`).join('')}</select></label>
       <div class="gmt-row"><button type="button" class="btn small" data-gm="twist" data-t="minor">Reviravolta menor</button><button type="button" class="btn small" data-gm="twist" data-t="major">Reviravolta maior</button></div>
-      ${t ? `<div class="gmt-twist ${t.t}"><span>${t.t === 'major' ? 'Maior' : 'Menor'} · ${esc(t.where)}</span><p>${esc(t.text)}</p></div>` : '<p class="gmt-hint">Antes, confira as perguntas de reviravolta dos princípios dos heróis: elas são sempre a primeira opção.</p>'}</section>`;
+      ${t ? `<div class="gmt-twist ${t.t}"><span>${t.t === 'major' ? 'Maior' : 'Menor'} · ${esc(t.where)}</span><p>${esc(t.text)}</p></div>` : '<p class="gmt-hint">Antes, confira as perguntas de reviravolta dos princípios dos campeões: elas são sempre a primeira opção.</p>'}</section>`;
   }
 
   function notesHtml() {
     return `<section class="gmt-panel gmt-notes" id="gmt-notes-sec"><h3>${ico('lock')} Notas do Mestre</h3>
-      <textarea id="gmt-notes" spellcheck="true" placeholder="Planos, segredos dos vilões, ganchos para as próximas edições…" aria-label="Notas do Mestre"></textarea>
+      <textarea id="gmt-notes" spellcheck="true" placeholder="Planos, segredos dos vilões, ganchos para as próximas sessões…" aria-label="Notas do Mestre"></textarea>
       <p class="gmt-notes-status gmt-hint" aria-live="polite"></p>
       <div class="gmt-row"><button type="button" class="btn small" data-gm="backup">${ico('download')} Exportar backup</button><label class="btn small" for="gmt-import" tabindex="0">${ico('upload')} Importar backup</label><input id="gmt-import" type="file" accept="application/json,.json" hidden><button type="button" class="btn small ghost" data-gm="tableReset">Limpar a mesa</button></div>
       <p class="gmt-hint">As notas e a mesa ficam só neste navegador (nada vai para a internet). O backup sai criptografado e só abre com a senha do Mestre: use-o para levar tudo para outro aparelho.</p></section>`;

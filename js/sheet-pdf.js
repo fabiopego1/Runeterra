@@ -106,7 +106,7 @@
       const doc = await PDFDocument.create();
       const T = window.T || (x => x);
       const heroName = [...fdoc.querySelectorAll('.hs-name')].map(e => e.textContent.trim()).filter(Boolean).join(', ');
-      doc.setTitle(heroName ? `Ficha de Herói de ${heroName}` : T('Hero Sheet'));
+      doc.setTitle(heroName ? `Ficha de Campeão de ${heroName}` : T('Hero Sheet'));
       doc.setCreator('Forja de Campeões · Runeterra');
       let fonts = {}, fieldFont, fallback;
       if (!window.fontkit && fontkitSrc) await loadScript(fontkitSrc).catch(() => {});   // big: fetched only when exporting

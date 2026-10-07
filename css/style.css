@@ -723,7 +723,7 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .hs-pr-h { font-family: var(--font-display); color: var(--text-2); margin-bottom: 4px; font-size: 1rem; }
 .hs-pr-h b { color: var(--gold-hi); font-weight: 400; font-size: 1.2rem; }
 .hs-pr-s { font-size: .9rem; padding: 5px 0; border-top: 1px dotted var(--line-2); min-height: 3em; color: var(--text-2); }
-.hs-bottom { display: grid; grid-template-columns: 1fr 1.2fr 1.2fr; gap: 18px; }
+.hs-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .hs-hp { display: flex; align-items: center; gap: 10px; margin: 5px 0; }
 .hs-hp b { width: 22px; color: var(--gold); font-size: .85rem; font-family: var(--font-mono); font-weight: 400; }
 .hs-line { border: 0 !important; border-bottom: 1px dotted var(--line-2) !important; background: transparent !important; padding: 3px 2px !important; font-size: .92rem !important; }
