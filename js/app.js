@@ -1515,9 +1515,15 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const B = R.before.retcon, out = [];
     for (const x of allAbilities(R)) {
       if (x.iid === skip) continue;
-      if (!x.gkey || !A[x.name] || !usesTrait(x.name)) continue;
+      // Ultimates are not part of New Technique (the Hidden Reserves option and their own category rules cover them)
+      if (!x.gkey || x.gkey === 'red' || x.color === 'red' || !A[x.name] || !usesTrait(x.name)) continue;
       const cur = x.entry.baseTrait;
-      const keys = sortTraits(Object.values(B)).map(t => t.key).filter(k => k !== cur && evoFits(x.name, { ...x.entry, trait: k }, B));
+      // The pool is the ability's own: only a power, only a quality or either, and its category, among the
+      // traits you have unlocked. Only the Path's list ("from the Shadow list") is lifted.
+      const g = groups().find(y => y.key === x.gkey), ru = (g && g.rules) || {};
+      let keys = allowedTraits({ ...R, T: B }, x.name, { pool: Object.keys(B), powersOnly: g && g.powersOnly }).keys.filter(k => k !== cur);
+      if (ru.kind) keys = keys.filter(k => TRAIT[k].kind === ru.kind);
+      if (ru.cat) keys = keys.filter(k => TRAIT[k].cat === ru.cat);
       if (keys.length) out.push({ x, keys });
     }
     return out;
