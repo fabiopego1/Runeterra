@@ -214,6 +214,8 @@ Object.assign(window.I18N.ui, {
  "New power or quality for this ability": "Novo poder ou qualidade para esta habilidade",
  "Pick the ability to change.": "Escolha a habilidade a mudar.",
  "Pick the new power or quality for this ability.": "Escolha o novo poder ou qualidade desta habilidade.",
+ "Pick your extra Red ability.": "Escolha sua habilidade Vermelha extra.",
+ "Pick one more Ultimate. Your first two stay as they are.": "Escolha mais uma Suprema. As suas duas primeiras continuam como estão.",
  "Pick two different traits to swap.": "Escolha duas características diferentes para trocar.",
  "Pick the new d6 power or quality.": "Escolha o novo poder ou qualidade d6.",
  "Pick which principle to change and its replacement.": "Escolha qual princípio trocar e o substituto.",

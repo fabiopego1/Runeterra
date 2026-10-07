@@ -107,6 +107,8 @@
       else out.retcon = { type: null };
     } else if (!out.retcon) out.retcon = { type: null };
     delete out.noRetcon;
+    // Twist of Fate "extra Red ability": it used to be a third pick in the Ultimates chapter, now it has its own pick.
+    if (out.retcon && out.retcon.type === 'extra-red' && out.sel && Array.isArray(out.sel.red) && out.sel.red.length > 2) out.sel['red-extra'] = out.sel.red.splice(2);
     // Older saves stored element choices as "Energia Hextec Bruta (Nuclear)", or under an earlier name: use the current name.
     const EL = window.TRAIT_CATEGORIES['P:elemental'].items;
     const OLD_EL = { 'Gelo & Gelo Verdadeiro': 'cold', 'Poder Celestial': 'cosmic', 'Relâmpago': 'electricity', 'Chama': 'fire', 'Sombra & Névoa Negra': 'infernal', 'Energia Hextec Bruta': 'nuclear', 'Luz': 'radiant', 'Radiante': 'radiant', 'Tempestade & Vento': 'weather' };
@@ -554,6 +556,19 @@
     for (const t of choiceTokens(A[e.name] && A[e.name].text)) if (!tokenOk(t, (e.ch || {})[t], pool)) I.push(tr('Choose [{what}] for “{ab}”.', { what: tokenLabel(t), ab }));
     return I;
   }
+  // One Ultimate (the two of the Ultimates chapter, or the extra one of the Twist of Fate).
+  function redEntryIssues(e, R) {
+    const I = [], ashape = abilityShape(), pool = Object.keys(R.T);
+    const isX = !!(e.cat && e.cat.startsWith('X:'));
+    // p.106: a Red ability comes from a category where you have a power or quality of d6 or more (or your Path's own list)
+    const def = isX ? null : ((window.RED_ABILITIES.find(c => c.cat === e.cat) || { list: [] }).list.find(x => x.a === e.name));
+    if (isX ? !(ashape && e.cat === 'X:' + ashape.id && (ashape.extraRed || []).includes(e.name)) : !def) { I.push(tr('“{ab}” is not one of your Ultimate options: untick it.', { ab: abName(e.name) })); return I; }
+    if (!isX && !Object.values(R.T).some(t => TRAIT[t.key].cat === e.cat && dn(t.die) >= 6)) I.push(tr('“{ab}” needs one of your {cat} at d6 or more: untick it.', { ab: abName(e.name), cat: catLabel(e.cat) }));
+    const use = def && def.use;
+    if (use && !use.some(k => R.T[k])) I.push(tr('“{ab}” requires {trait}, which you don\'t have.', { ab: abName(e.name), trait: traitName(use[0]) }));
+    I.push(...traitIssues(e, allowedTraits(R, e.name, { cat: isX ? null : e.cat, use }), R, pool));
+    return I;
+  }
   function groupIssues(g, R) {
     const I = [];
     const s = selOf(g);
@@ -723,21 +738,11 @@
       }
     }
     if (id === 'red') {
-      const need = 2 + (st.retcon.type === 'extra-red' ? 1 : 0);
+      const need = 2;
       const s = st.sel.red || [];
       const I = [];
       if (s.length !== need) I.push(tr('Pick {n} Ultimates ({have}/{n} chosen).', { n: need, have: s.length }));
-      const ashape = abilityShape(), pool = Object.keys(R.T);
-      for (const e of s) {
-        const isX = !!(e.cat && e.cat.startsWith('X:'));
-        // p.106: a Red ability comes from a category where you have a power or quality of d6 or more (or your Path's own list)
-        const def = isX ? null : ((window.RED_ABILITIES.find(c => c.cat === e.cat) || { list: [] }).list.find(x => x.a === e.name));
-        if (isX ? !(ashape && e.cat === 'X:' + ashape.id && (ashape.extraRed || []).includes(e.name)) : !def) { I.push(tr('“{ab}” is not one of your Ultimate options: untick it.', { ab: abName(e.name) })); continue; }
-        if (!isX && !Object.values(R.T).some(t => TRAIT[t.key].cat === e.cat && dn(t.die) >= 6)) I.push(tr('“{ab}” needs one of your {cat} at d6 or more: untick it.', { ab: abName(e.name), cat: catLabel(e.cat) }));
-        const use = def && def.use;
-        if (use && !use.some(k => R.T[k])) I.push(tr('“{ab}” requires {trait}, which you don\'t have.', { ab: abName(e.name), trait: traitName(use[0]) }));
-        I.push(...traitIssues(e, allowedTraits(R, e.name, { cat: isX ? null : e.cat, use }), R, pool));
-      }
+      for (const e of s) I.push(...redEntryIssues(e, R));
       if (new Set(s.map(e => displayName(e.name))).size !== s.length) I.push(tr('You picked the same Ultimate twice.'));
       add('pick', tr('Choose {n} Ultimates', { n: need }), I, tr('Only categories marked <b>eligible</b> can be picked — they match powers and qualities you have. Tick {n} abilities, then choose the trait each one uses.', { n: need }));
     }
@@ -754,7 +759,14 @@
       if (rc.type === 'change-principle' && (!rc.which || !rc.principle)) I.push(tr('Pick which principle to change and its replacement.'));
       if (rc.type === 'change-principle' && rc.principle && [st.bg.principle, st.arch.principle].includes(rc.principle)) I.push(tr('Your two principles must be different.'));
       if (rc.type === 'red-up' && pers && pers.status[2] === 'd12') I.push(tr('Your Red status die is already d12 — pick another option.'));
-      if (rc.type === 'extra-red' && (st.sel.red || []).length < 3) I.push(tr('Go back to Ultimates and pick your third Red ability.'));
+      if (rc.type === 'extra-red') {
+        const x = st.sel['red-extra'] || [];
+        if (x.length !== 1) I.push(tr('Pick your extra Red ability.'));
+        else {
+          I.push(...redEntryIssues(x[0], R));
+          if ((st.sel.red || []).some(e => displayName(e.name) === displayName(x[0].name))) I.push(tr('You picked the same Ultimate twice.'));
+        }
+      }
       add('cfg', tr('Set it up'), I, tr('Complete the choice for your Twist of Fate.'));
     }
     if (id === 'health') add('review', tr('Review your Health'), st.health.mode === 'roll' && st.health.roll != null && !(st.health.roll >= 1 && st.health.roll <= 8) ? [tr('Roll the d8 again.')] : [], tr('Pick the trait that adds to your Health and whether to roll.'), { opt: true });
@@ -1428,46 +1440,53 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     return stepPanel('Step 5 · Sentinels: Personality', tr('Temperament'), 'personality', flowHtml('personality', sectionsFor('personality', R), H), true);
   }
 
-  function renderRed() {
-    const R = R0;
-    if (!persDef()) return lockedPanel(tr('Ultimates'), tr('Choose your Temperament first.'), 'personality');
-    const need = 2 + (st.retcon.type === 'extra-red' ? 1 : 0);
-    const s = st.sel.red = st.sel.red || [];
+  // The Ultimates catalogue (categories you qualify for, each with its abilities). Used by the Ultimates chapter
+  // (key 'red', two picks) and by the Twist of Fate "extra Red ability" (key 'red-extra', one pick that never
+  // touches the first two).
+  function redCatalog(R, key, s, need) {
+    const extra = key === 'red-extra';
     const cats = window.RED_ABILITIES.slice();
     const shape = abilityShape();
     if (shape && shape.extraRed) cats.push({ cat: 'X:' + shape.id, label: shape.rt + ' (' + tr('Path') + ')', list: shape.extraRed.map(a => ({ a })) });
     // Older saves stored Path Red abilities without their category.
     if (shape && shape.extraRed) for (const e of s) if (!e.cat && shape.extraRed.includes(e.name)) e.cat = 'X:' + shape.id;
+    const others = extra ? (st.sel.red || []) : [];
     const catHtml = c => {
       const isX = c.cat.startsWith('X:');
       const inCat = isX ? [] : Object.values(R.T).filter(t => TRAIT[t.key].cat === c.cat && dn(t.die) >= 6);
-      const eligible = isX || inCat.length > 0;
       const label = isX ? c.label : catLabel(c.cat);
-      const sub = '';
       // abilities tied to a trait you do not have are left out (the book only allows them with that trait)
       const usable = c.list.filter(({ use }) => !use || use.some(k => R.T[k]));
       const mine = usable.filter(({ a }) => s.some(e => e.name === a && e.cat === c.cat)).length;
-      const open = ui.redOpen[c.cat] != null ? ui.redOpen[c.cat] : mine > 0;
+      const ok = (extra ? 'x:' : '') + c.cat;
+      const open = ui.redOpen[ok] != null ? ui.redOpen[ok] : mine > 0;
       const cards = !open ? '' : usable.map(({ a, use }) => {
         const idx = s.findIndex(e => e.name === a && e.cat === c.cat);
         const picked = idx >= 0;
-        const takenElsewhere = !picked && s.some(e => displayName(e.name) === displayName(a));
-        const card = abilityCard({ key: 'red', color: 'red', count: need, list: [] }, a, s[idx], picked, R, { idx, cat: isX ? null : c.cat, dataCat: c.cat, use, color: 'red' });
-        const block = takenElsewhere || (!picked && s.length >= need);
+        const takenElsewhere = !picked && (s.concat(others)).some(e => displayName(e.name) === displayName(a));
+        const card = abilityCard({ key, color: 'red', count: need, list: [] }, a, s[idx], picked, R, { idx, cat: isX ? null : c.cat, dataCat: c.cat, use, color: 'red' });
+        const block = takenElsewhere || (!extra && !picked && s.length >= need);
         return block && !picked ? card.replace('type="checkbox"', 'type="checkbox" disabled').replace('class="ab red', 'class="ab red disabled') : card;
       }).join('');
       if (!usable.length) return '';
-      return `<div class="redcat${open ? ' open' : ''}"><button type="button" class="redcat-h" data-act="redCat" data-cat="${esc(c.cat)}" aria-expanded="${open}">` +
+      return `<div class="redcat${open ? ' open' : ''}"><button type="button" class="redcat-h" data-act="redCat" data-cat="${esc(c.cat)}" data-ok="${esc(ok)}" aria-expanded="${open}">` +
         `<span class="redcat-t">${esc(label)}</span>${!isX ? `<span class="redcat-have">${inCat.map(t => esc(traitName(t.key)) + ' ' + die(t.die, 'sm')).join(' ')}</span>` : ''}` +
         `<span class="redcat-n">${mine ? `<b>${tr('{n} chosen', { n: mine })}</b> · ` : ''}${tr('{n} abilities', { n: usable.length })}</span><span class="redcat-arrow" aria-hidden="true">${ico(open ? 'close' : 'next')}</span></button>` +
         (open ? `<div class="ab-list">${cards}</div>` : '') + '</div>';
     };
     const eligibleCats = cats.filter(c => c.cat.startsWith('X:') || Object.values(R.T).some(t => TRAIT[t.key].cat === c.cat && dn(t.die) >= 6));
     const lockedCats = cats.filter(c => !eligibleCats.includes(c));
+    return eligibleCats.map(catHtml).join('') +
+      (lockedCats.length ? `<p class="muted"${tip(tr('You need a power or quality of these categories rated d6 or higher to take their Red abilities.'))}>${tr('Not available to you (you have no traits in these categories):')} ${lockedCats.map(c => esc(catLabel(c.cat))).join(', ')}.</p>` : '');
+  }
+
+  function renderRed() {
+    const R = R0;
+    if (!persDef()) return lockedPanel(tr('Ultimates'), tr('Choose your Temperament first.'), 'personality');
+    const need = 2;
+    const s = st.sel.red = st.sel.red || [];
     const H = {
-      pick: () => `<p class="count-line"><b>${s.length}/${need}</b> ${tr('chosen')}. ${need > 2 ? `<span class="pill red">${tr('+1 from Twist of Fate')}</span>` : ''} <span class="muted">${tr('Open a category to see its abilities.')}</span></p>` +
-        eligibleCats.map(catHtml).join('') +
-        (lockedCats.length ? `<p class="muted"${tip(tr('You need a power or quality of these categories rated d6 or higher to take their Red abilities.'))}>${tr('Not available to you (you have no traits in these categories):')} ${lockedCats.map(c => esc(catLabel(c.cat))).join(', ')}.</p>` : '')
+      pick: () => `<p class="count-line"><b>${s.length}/${need}</b> ${tr('chosen')}. <span class="muted">${tr('Open a category to see its abilities.')}</span></p>` + redCatalog(R, 'red', s, need)
     };
     return stepPanel('Step 6 · Sentinels: Red Abilities', tr('Ultimates'), 'red', flowHtml('red', sectionsFor('red', R), H), false);
   }
@@ -1516,7 +1535,10 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
             (cur ? socket({ bind: 'retcon.trait', cur: cur.keys.includes(rc.trait) ? rc.trait : null, groups: traitGroups(cur.keys, k => traitItem(k)), empty: tr('New power or quality for this ability') }) : '');
         }
         if (rc.type === 'red-up' && R.status) return `<p>${tr('Red status die:')} ${die(persDef().status[2])} → ${die(R.status[2])}</p>`;
-        if (rc.type === 'extra-red') return `<p>${tr('Go back to <a href="#" data-act="go" data-step="red">Ultimates</a> and pick a third Red ability ({n}/3 chosen).', { n: (st.sel.red || []).length })}</p>`;
+        if (rc.type === 'extra-red') {
+          const x = st.sel['red-extra'] = st.sel['red-extra'] || [];
+          return `<p class="muted">${tr('Pick one more Ultimate. Your first two stay as they are.')}</p><p class="count-line"><b>${x.length}/1</b> ${tr('chosen')}. <span class="muted">${tr('Open a category to see its abilities.')}</span></p>` + redCatalog(R, 'red-extra', x, 1);
+        }
         return '';
       }
     };
@@ -1803,7 +1825,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     for (const x of principlesFinal()) {
       L.push({ iid: 'pr:' + x.slot, name: x.p.name, color: 'green', src: 'Principle', text: x.p.ability, type: x.p.type, entry: { ch: { 'energy/element': st.pch[x.slot] } } });
     }
-    for (const e of st.sel.red || []) L.push(evoAb({ iid: 'red:' + e.cat + ':' + e.name, gkey: 'red', name: e.name, color: 'red', src: 'Ultimate', entry: e }));
+    const reds = (st.sel.red || []).concat(st.retcon.type === 'extra-red' ? (st.sel['red-extra'] || []) : []);   // the Twist of Fate Ultimate goes straight onto the sheet
+    for (const e of reds) L.push(evoAb({ iid: 'red:' + e.cat + ':' + e.name, gkey: 'red', name: e.name, color: 'red', src: 'Ultimate', entry: e }));
     const pe = persDef();
     if (pe) L.push({ iid: 'out', name: 'Out', color: 'out', src: 'Temperament', text: pe.out, type: PT ? '' : '—', entry: { trait: evoTrait(st.pers.outTrait) } });
     return L;
@@ -2356,12 +2379,13 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   }
 
   function toggleAb(gkey, name, cat) {
-    if (gkey === 'red') {
-      const s = st.sel.red = st.sel.red || [];
+    if (gkey === 'red' || gkey === 'red-extra') {
+      const s = st.sel[gkey] = st.sel[gkey] || [];
       const i = s.findIndex(e => e.name === name && e.cat === cat);
       if (i >= 0) s.splice(i, 1);
       else {
         const entryDef = (window.RED_ABILITIES.find(c => c.cat === cat) || { list: [] }).list.find(x => x.a === name) || {};
+        if (gkey === 'red-extra') s.length = 0;   // one extra Ultimate: picking another replaces it
         s.push({ name, cat, use: entryDef.use || null, ch: {} });
       }
       return;
@@ -2408,7 +2432,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     if (act === 'qok') { confirmQname(); return; }
     if (act === 'powerless') { st.arch.powerless = Object.assign({}, st.arch.powerless, { on: !!el.dataset.v }); render(); return; }
     if (act === 'pers2') { st.pers.id2 = el.dataset.id || null; render(); return; }
-    if (act === 'redCat') { const c = el.dataset.cat, now = el.getAttribute('aria-expanded') === 'true'; ui.redOpen[c] = !now; render(); return; }
+    if (act === 'redCat') { const c = el.dataset.ok || el.dataset.cat, now = el.getAttribute('aria-expanded') === 'true'; ui.redOpen[c] = !now; render(); return; }
     if (act === 'setBind') { if (el.disabled) return; setPath(st, el.dataset.bind, el.dataset.val); hideTip(); render(); return; }
     if (act === 'flowGo') { ui.at[st.step] = +el.dataset.i; render(); return; }
     if (act === 'next') {
@@ -2481,7 +2505,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     if (act === 'retcon') {
       const was = st.retcon.type;
       st.retcon = { type: was === el.dataset.id ? null : el.dataset.id }; ui.advance = true;
-      if (was === 'extra-red' && st.sel.red && st.sel.red.length > 2) st.sel.red.length = 2;
+      if (st.retcon.type !== 'extra-red') delete st.sel['red-extra'];
       render(); return;
     }
     if (act === 'hmode') { if (st.health.roll) return; st.health.mode = el.dataset.m; if (el.dataset.m === 'roll') { st.health.roll = roll(['d8'])[0]; st.health.rerolled = false; } render(); return; }

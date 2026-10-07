@@ -493,6 +493,12 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     const rc = await p.evaluate(() => window.ForgeDebug.state().retcon);
     ok(rc.type === 'change-ability' && rc.ab === abs[0] && !!rc.trait, 'New Technique stores the ability and its new power or quality');
     ok(!(await p.$('#flow-retcon-cfg .flow-todo, #flow-retcon-cfg.todo')), 'New Technique is complete once both are chosen');
+    await p.click('#flow-retcon-pick .flow-head'); await p.waitForTimeout(200);
+    await p.click('[data-act=retcon][data-id=extra-red]'); await p.waitForTimeout(200);
+    await p.click('.redcat-h'); await p.waitForTimeout(200);
+    await p.click('[data-act=toggleAb][data-g=red-extra]:not([disabled])'); await p.waitForTimeout(300);
+    const rs = await p.evaluate(() => { const x = window.ForgeDebug.state(); return [x.sel.red.length, (x.sel['red-extra'] || []).length]; });
+    ok(rs[0] === 2 && rs[1] === 1, 'the extra Red ability of the Twist of Fate is picked on its own, leaving the first two Ultimates alone');
   }
   // Book p.44 "I've Already Got That": a Path's required trait you already have can take a bigger new die,
   // and its old die comes back to be used in the same step.
