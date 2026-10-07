@@ -186,7 +186,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('.hchoice', e => /Definitivo/.test(e.textContent)), 'rolling for Health warns it cannot be undone');
     await p.click('.step-footer [data-act=back]'); await p.waitForTimeout(600);
     ok(await step() === 'Reviravolta do Destino', 'Back from the first section goes to the previous chapter');
-    await next(); await next();
+    for (let i = 0; i < 5 && !(await p.$('input[data-bind="info.name"]')); i++) await next();   // slow machines need a beat per chapter
     ok(!(await p.$('#stage .flow-todo')) && await p.$eval('.step-footer', f => !!f), 'nothing in the Legend chapter is required');
     await p.fill('input[data-bind="info.name"]', 'Bruxaria'); await p.press('input[data-bind="info.name"]', 'Enter'); await p.waitForTimeout(100);
     ok(await p.$$eval('.grid3 .field span', l => l.slice(0, 2).map(e => e.textContent).join('|')) === 'Nome|Título', 'the Legend asks for the Name first, then the Title');
