@@ -196,6 +196,8 @@ Object.assign(window.I18N.ui, {
  "Type a name for your Signature Quality.": "Digite um nome para sua Qualidade Marcante.",
  "Type a short phrase that sums up your champion, like <em>Last Kinkou of the Eastern Isles</em>.": "Digite uma <b>frase curta</b> que resuma seu campeão, como <em>Último Kinkou das Ilhas Orientais</em>.",
  "Set up your Out ability": "Configure sua habilidade de Nocaute",
+ "Your Out ability": "Sua habilidade de Nocaute",
+ "Nothing to choose: this Temperament's Out ability uses no power or quality.": "Nada a escolher: a habilidade de Nocaute desta Personalidade não usa poder nem qualidade.",
  "Choose which trait your Out ability uses.": "Escolha qual característica sua habilidade de Nocaute usa.",
  "Pick the power or quality used when you're knocked out.": "Escolha o poder ou qualidade usado quando você é nocauteado.",
  "Reckless upgrade": "Aprimoramento impulsivo",

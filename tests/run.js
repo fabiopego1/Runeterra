@@ -158,6 +158,17 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('.qname-have', e => /Convicção/.test(e.textContent) && !/Marcante/.test(e.textContent)), 'naming the Signature Quality shows a reminder of the qualities already taken');
     await p.click('[data-act=qok]'); await p.waitForTimeout(150);
     ok(!!(await p.$('#flow-personality-qname.folded')), 'Confirm keeps the name and moves on');
+    await p.click('#flow-personality-pick .flow-head'); await p.waitForTimeout(150);
+    await p.click('[data-kind=pers][data-id=distant]'); await p.waitForTimeout(150);
+    await p.click('[data-act=qok]'); await p.waitForTimeout(150);
+    await p.click('#flow-personality-out .flow-head'); await p.waitForTimeout(150);
+    ok(await p.$eval('#flow-personality-out', e => /Sua habilidade de Nocaute/.test(e.textContent) && /Vermelho/.test(e.textContent) && !e.querySelector('.chip, [data-bind="pers.outTrait"]')), 'a Temperament whose Out ability has no trait still shows the Out ability, with nothing to choose');
+    await p.click('#flow-personality-pick .flow-head'); await p.waitForTimeout(150);
+    await p.click('[data-kind=pers][data-id=decisive]'); await p.waitForTimeout(150);
+    await p.click('#flow-personality-qname .flow-head'); await p.waitForTimeout(150);
+    await p.fill('input[data-bind="pers.qdesc"]', 'Sonhos que ganham forma quando ela acredita neles!'); await p.waitForTimeout(100);
+    await p.click('[data-act=qok]'); await p.waitForTimeout(150);
+    await next();
     await sel('pers.outTrait', 'cosmic');
     await next();
     ok(await p.$$eval('.redcat', e => e.length) > 2 && !(await p.$('.redcat .ab')), 'Ultimates list their categories closed, so the page is not a wall of abilities');
