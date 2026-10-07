@@ -13,7 +13,7 @@
   window.CHEAT_GROUPS_PT = [
     { name: BASICO, lede: 'Como o jogo se organiza, como os dados funcionam e o que acontece quando você se machuca.' },
     { name: ACAO, lede: 'Turnos, ações, mods e reviravoltas: tudo o que você usa durante uma luta, perseguição ou resgate.' },
-    { name: ENTRE, lede: 'Recuperação, conversas, pontos de inspiração e coleções: o que acontece entre uma cena de ação e outra.' },
+    { name: ENTRE, lede: 'Recuperação, conversas, pontos de inspiração e memórias: o que acontece entre uma cena de ação e outra.' },
     { name: MESTRE, lede: 'Como montar e conduzir uma cena de ação: marcador, ambiente, desafios, lacaios, tenentes e vilões. Termina com um exemplo de jogo completo.' }
   ];
 
@@ -24,8 +24,8 @@
       <table class="cs-table"><tbody>
         <tr><td>Turno</td><td>Um a três quadros de ação de um personagem numa cena de ação.</td></tr>
         <tr><td>Cena</td><td>Um trecho contínuo da história. Pode ser de <b>ação</b> (lutas, perseguições, resgates), ${see('social', 'social')} (conversas e drama) ou de ${see('montage', 'montagem')} (viagem, descanso, investigação).</td></tr>
-        <tr><td>Edição</td><td>Uma sessão de jogo, de 2 a 4 horas, que resolve uma aventura. No fim, o grupo dá um título a ela, e cada jogador o anota em <b>Edições Anteriores</b>.</td></tr>
-        <tr><td>Coleção</td><td>Um volume com as edições de uma mesma história (normalmente seis). Veja ${see('collections', 'Coleções')}.</td></tr></tbody></table>` },
+        <tr><td>Sessão</td><td>Um encontro de jogo, de 2 a 4 horas, que resolve uma aventura. No fim, o grupo dá um título a ela, e cada jogador o anota em <b>Sessões Anteriores</b>.</td></tr>
+        <tr><td>Memória</td><td>Um conjunto de sessões de uma mesma história (normalmente seis), guardado como uma lembrança do grupo. Veja ${see('collections', 'Memórias')}.</td></tr></tbody></table>` },
 
     { id: 'dice', group: BASICO, title: 'Dados e a reserva', nav: 'Dados e reserva', body: `
       <p>Toda rolagem usa <b>exatamente três dados</b>: o de um <b>Poder</b>, o de uma <b>Qualidade</b> e o seu <b>dado de status</b>. Se nenhum poder ou qualidade combina com o que você quer fazer, use um <b>d6</b> no lugar (pergunte antes ao Mestre: ele pode ter uma ideia com o que você já tem).</p>
@@ -73,10 +73,10 @@
     { id: 'turn-order', group: ACAO, title: 'Ordem dos turnos', body: `
       <p>Não existe iniciativa fixa. O Mestre apresenta a cena e decide quem começa. Depois disso:</p>
       <ul class="cs-list">
-        <li>Quem termina o turno <b>escolhe quem joga em seguida</b>: qualquer herói, vilão ou o ambiente que ainda não agiu nesta rodada. Avise antes ("quer ir depois de mim?") para a pessoa já ir pensando; você pode mudar de ideia até passar a vez.</li>
-        <li>Uma <b>rodada</b> termina quando todos os heróis, vilões e o ambiente agiram uma vez.</li>
+        <li>Quem termina o turno <b>escolhe quem joga em seguida</b>: qualquer campeão, vilão ou o ambiente que ainda não agiu nesta rodada. Avise antes ("quer ir depois de mim?") para a pessoa já ir pensando; você pode mudar de ideia até passar a vez.</li>
+        <li>Uma <b>rodada</b> termina quando todos os campeões, vilões e o ambiente agiram uma vez.</li>
         <li>Quem joga por último escolhe quem abre a próxima rodada, <b>menos a si mesmo</b>: ninguém joga dois turnos seguidos.</li></ul>
-      <div class="cs-callout"><b>Cuidado:</b> se todos os heróis jogarem de uma vez antes dos inimigos, o último herói passa a vez a um inimigo, e os inimigos podem terminar esta rodada e abrir a próxima, agindo várias vezes em sequência.</div>` },
+      <div class="cs-callout"><b>Cuidado:</b> se todos os campeões jogarem de uma vez antes dos inimigos, o último campeão passa a vez a um inimigo, e os inimigos podem terminar esta rodada e abrir a próxima, agindo várias vezes em sequência.</div>` },
 
     { id: 'movement', group: ACAO, title: 'Movimento', body: `
       <p>O jogo é de <b>teatro da mente</b>: distância e posições não são marcadas num mapa. A narrativa decide se um personagem está perto o bastante para agir. Numa batalha espalhada por Piltover, quem protege o conselheiro no Salão do Conselho está longe demais para lidar com o vilão que ataca as docas.</p>
@@ -153,8 +153,8 @@
         <li>o <b>ambiente</b>, a critério do Mestre.</li></ul>
       <p>Você e o Mestre combinam a reviravolta; as perguntas de reviravolta dos seus princípios servem de inspiração. O Mestre pode vetar o que não fizer sentido, e você <b>sempre pode recusar</b> e ficar com a falha (ou desistir da Ação Arriscada). Uma reviravolta <b>nunca anula o sucesso</b> que ela pagou.</p>
       <table class="cs-table"><thead><tr><th></th><th>Menor</th><th>Maior</th></tr></thead><tbody>
-        <tr><td>Peso</td><td>Um incômodo que se resolve na mesma cena</td><td>Uma grande complicação, que pode durar a edição toda</td></tr>
-        <tr><td>Duração</td><td>Os efeitos de jogo somem no início da próxima cena de montagem</td><td>Os efeitos de jogo duram até o fim da edição</td></tr></tbody></table>
+        <tr><td>Peso</td><td>Um incômodo que se resolve na mesma cena</td><td>Uma grande complicação, que pode durar a sessão toda</td></tr>
+        <tr><td>Duração</td><td>Os efeitos de jogo somem no início da próxima cena de montagem</td><td>Os efeitos de jogo duram até o fim da sessão</td></tr></tbody></table>
       <h4>Exemplos de reviravoltas menores</h4>
       <ul class="cs-list">
         <li>Perder Vida igual ao dado Médio, ou ser Atrapalhado com o dado Máx.</li>
@@ -165,13 +165,13 @@
       <h4>Exemplos de reviravoltas maiores</h4>
       <ul class="cs-list">
         <li>Perder Vida igual a Máx+Mín, ou ser Atrapalhado com Máx+Mín de forma persistente.</li>
-        <li>Sacrificar algo importante, pelo menos até o fim da edição.</li>
+        <li>Sacrificar algo importante, pelo menos até o fim da sessão.</li>
         <li>A cena avança vários espaços no marcador.</li>
-        <li>Ficar muito longe do grupo, ou atrair um esquadrão de lacaios (um por herói).</li>
+        <li>Ficar muito longe do grupo, ou atrair um esquadrão de lacaios (um por campeão).</li>
         <li>Perder várias habilidades, ou o acesso a poderes e qualidades.</li></ul>` },
 
     { id: 'enemies', group: ACAO, title: 'Inimigos: vilões, tenentes e lacaios', nav: 'Inimigos', body: `
-      <p>O turno dos vilões funciona como o dos heróis. A diferença é o <b>dado de status</b>, que no vilão pode ser definido de várias formas, indicadas na ficha dele.</p>
+      <p>O turno dos vilões funciona como o dos campeões. A diferença é o <b>dado de status</b>, que no vilão pode ser definido de várias formas, indicadas na ficha dele.</p>
       <p><b>Tenentes e lacaios</b> têm um único dado, usado em todas as rolagens e igual ao tamanho atual deles. Quando vários lacaios fazem a mesma ação, agem num único turno e rolam todos os dados de uma vez. Eles não têm Vida: quando atacados, rolam o próprio dado contra o dano (é a "defesa" deles).</p>
       <table class="cs-table"><thead><tr><th>Resultado</th><th>Lacaio</th><th>Tenente</th></tr></thead><tbody>
         <tr><td>A defesa falha (rolou menos que o dano)</td><td>Derrotado na hora</td><td>O dado diminui um tamanho; um tenente em d4 é derrotado</td></tr>
@@ -181,55 +181,55 @@
     // ------------------------------------------------------------------ III · Entre as cenas
     { id: 'montage', group: ENTRE, title: 'Cena de montagem', nav: 'Montagem', body: `
       <p>Cenas de montagem representam viagem, descanso, conserto, treino e investigação: pequenos momentos que levam a história de um ponto de destaque ao próximo.</p>
-      <p>No início da montagem, todas as <b>reviravoltas menores</b> se resolvem e <b>todos os mods</b> somem, até os persistentes. Depois, cada herói descreve <b>uma</b> destas tarefas:</p>
+      <p>No início da montagem, todas as <b>reviravoltas menores</b> se resolvem e <b>todos os mods</b> somem, até os persistentes. Depois, cada campeão descreve <b>uma</b> destas tarefas:</p>
       <table class="cs-table"><tbody>
         <tr><td>Recuperar Vida</td><td>Volte ao máximo da zona acima da sua (ex.: de algum ponto da Vermelha ao máximo da Amarela). Com uma reviravolta menor, suba uma zona a mais. Se estiver no Nocaute, uma reviravolta maior te devolve a Vida cheia. Descreva como: um curandeiro em Ionia é fácil de achar; no meio do deserto de Shurima, nem tanto.</td></tr>
-        <tr><td>Ajudar outro herói</td><td>Ele recupera uma zona extra de Vida: primeiros socorros, levá-lo a um curandeiro, um remédio químico de Zaun.</td></tr>
+        <tr><td>Ajudar outro campeão</td><td>Ele recupera uma zona extra de Vida: primeiros socorros, levá-lo a um curandeiro, um remédio químico de Zaun.</td></tr>
         <tr><td>Se preparar</td><td>Faça um Fortalecer para a próxima cena: pesquisar numa biblioteca, treinar, estudar o inimigo. O bônus não é persistente.</td></tr></tbody></table>` },
 
     { id: 'social', group: ENTRE, title: 'Cena social', nav: 'Cena social', body: `
       <p>Cenas sociais são conversas, negociações, confissões e discussões, sem turnos nem marcador de cena. Normalmente não há rolagem, mas o Mestre pode pedir um Superar, principalmente quando envolve um princípio.</p>
-      <p>Diga quem está na cena, o que acontece e onde. Fale como o seu personagem. Nunca force um confronto com outro herói se o jogador dele não quiser: quem briga são os personagens, não as pessoas.</p>
+      <p>Diga quem está na cena, o que acontece e onde. Fale como o seu personagem. Nunca force um confronto com outro campeão se o jogador dele não quiser: quem briga são os personagens, não as pessoas.</p>
       <h4>Pontos de inspiração na cena social</h4>
-      <p>Se a cena for marcante, o Mestre dá <b>1 ponto de inspiração a todos os heróis</b>, até aos que não estavam nela. Conta como marcante quando um herói:</p>
+      <p>Se a cena for marcante, o Mestre dá <b>1 ponto de inspiração a todos os campeões</b>, até aos que não estavam nela. Conta como marcante quando um campeão:</p>
       <ul class="cs-list">
         <li>revela um segredo que o deixa vulnerável;</li>
-        <li>cede para resolver um desentendimento com outro herói;</li>
+        <li>cede para resolver um desentendimento com outro campeão;</li>
         <li>diz uma verdade incômoda que faz a cena avançar;</li>
         <li>deixa um princípio forçar um confronto ou uma escolha difícil;</li>
         <li>viola um dos próprios princípios, com consequências interessantes.</li></ul>
       <ul class="cs-list">
         <li><b>No máximo 1 ponto por cena.</b></li>
-        <li><b>Varie os heróis:</b> uma segunda cena conduzida pelos mesmos heróis, na mesma edição, não rende ponto.</li></ul>` },
+        <li><b>Varie os campeões:</b> uma segunda cena conduzida pelos mesmos campeões, na mesma sessão, não rende ponto.</li></ul>` },
 
     { id: 'hero-points', group: ENTRE, title: 'Pontos de inspiração', body: `
       <ul class="cs-list">
-        <li><b>Como ganhar:</b> sempre que um herói usa um dos seus <b>princípios</b> numa ação de Superar (dando certo ou não), <b>cada herói do grupo</b> ganha 1 ponto. ${see('social', 'Cenas sociais')} marcantes também dão 1 ponto.</li>
-        <li><b>Limite:</b> no máximo 5 pontos por herói em cada edição. Marque em <b>Pontos de Inspiração</b> na ficha.</li>
-        <li><b>Trocar:</b> no fim da edição, cada ponto vira 1 ponto de bônus, dividido como você quiser. Com 5 pontos: +3 e +2, ou +4 e +1, ou cinco +1. Marque em <b>Recompensas de Pontos de Inspiração</b>.</li>
-        <li><b>Usar:</b> os bônus são <b>exclusivos</b>. Dê um nome ao usar, lembrando algo da edição anterior (ex.: "Favor da Xerife +3").</li>
-        <li><b>Validade:</b> pontos não passam de uma edição para a outra, e os bônus que sobrarem somem no fim da edição em que podiam ser usados.</li></ul>` },
+        <li><b>Como ganhar:</b> sempre que um campeão usa um dos seus <b>princípios</b> numa ação de Superar (dando certo ou não), <b>cada campeão do grupo</b> ganha 1 ponto. ${see('social', 'Cenas sociais')} marcantes também dão 1 ponto.</li>
+        <li><b>Limite:</b> no máximo 5 pontos por campeão em cada sessão. Marque em <b>Pontos de Inspiração</b> na ficha.</li>
+        <li><b>Trocar:</b> no fim da sessão, cada ponto vira 1 ponto de bônus, dividido como você quiser. Com 5 pontos: +3 e +2, ou +4 e +1, ou cinco +1. Marque em <b>Recompensas de Pontos de Inspiração</b>.</li>
+        <li><b>Usar:</b> os bônus são <b>exclusivos</b>. Dê um nome ao usar, lembrando algo da sessão anterior (ex.: "Favor da Xerife +3").</li>
+        <li><b>Validade:</b> pontos não passam de uma sessão para a outra, e os bônus que sobrarem somem no fim da sessão em que podiam ser usados.</li></ul>` },
 
-    { id: 'collections', group: ENTRE, title: 'Coleções', body: `
-      <p>Quando você junta seis edições (o Mestre pode mudar esse número), elas viram uma <b>coleção</b>: o grupo escolhe um nome, você o anota em <b>Coleções</b> e apaga as Edições Anteriores.</p>
-      <p>Você pode usar <b>cada coleção uma vez por sessão</b>, lembrando uma aventura passada, para:</p>
+    { id: 'collections', group: ENTRE, title: 'Memórias', body: `
+      <p>Quando você junta seis sessões (o Mestre pode mudar esse número), elas viram uma <b>memória</b>: o grupo escolhe um nome, você o anota em <b>Memórias</b> e apaga as Sessões Anteriores.</p>
+      <p>Você pode usar <b>cada memória uma vez por sessão</b>, lembrando uma aventura passada, para:</p>
       <ul class="cs-list">
         <li>depois de rolar, mudar o número de um dado para o que quiser (e só então definir Mín, Médio e Máx);</li>
-        <li>estabelecer um fato sobre a cena, baseado numa edição anterior;</li>
+        <li>estabelecer um fato sobre a cena, baseado numa sessão anterior;</li>
         <li>evitar uma reviravolta menor, explicando como aquela experiência ajuda agora.</li></ul>
-      <p>Justifique com uma lembrança ("Da última vez que enfrentei o Swain, ele estava ferido do lado direito...") e, se quiser, com uma "nota do editor" citando a edição. É também entre coleções que o herói pode ${see('gm-evolution', 'evoluir e mudar de ficha')}.</p>` },
+      <p>Justifique com uma lembrança ("Da última vez que enfrentei o Swain, ele estava ferido do lado direito...") e, se quiser, com uma "nota do editor" citando a sessão. É também entre memórias que o campeão pode ${see('gm-evolution', 'evoluir e mudar de ficha')}.</p>` },
 
     // ------------------------------------------------------------------ IV · Para o Mestre
     { id: 'gm-scene', group: MESTRE, title: 'Montando uma cena de ação', nav: 'Montando a cena', body: `
-      <p>Uma cena de ação é montada com <b>elementos</b>: desafios, lacaios, tenentes, vilões e o ambiente, mais o ${see('gm-tracker', 'marcador de cena')}. A regra de bolso: uma cena tem cerca de <b>H elementos</b>, em que <b>H</b> é o número de heróis. Assim todo mundo tem algo para fazer no próprio turno.</p>
+      <p>Uma cena de ação é montada com <b>elementos</b>: desafios, lacaios, tenentes, vilões e o ambiente, mais o ${see('gm-tracker', 'marcador de cena')}. A regra de bolso: uma cena tem cerca de <b>H elementos</b>, em que <b>H</b> é o número de campeões. Assim todo mundo tem algo para fazer no próprio turno.</p>
       <div class="cs-scroll"><table class="cs-table cs-wide"><thead><tr><th>Dificuldade</th><th>Desafios</th><th>Lacaios</th><th>Tenentes</th><th>Vilões</th><th>Ambiente</th></tr></thead><tbody>
         <tr><td><b>Fácil</b></td><td>1 a 2 sucessos, ou 1 com dificuldade extra (como um contador)</td><td>H lacaios d6</td><td>½H tenentes d8</td><td>Nenhum</td><td>Nenhum</td></tr>
         <tr><td><b>Moderada</b></td><td>3 a 4 sucessos, ou 1 a 2 com dificuldade extra</td><td>H lacaios d8</td><td>½H tenentes d10</td><td>Vilão menor (sem aprimoramentos)</td><td>Ambiente comum</td></tr>
         <tr><td><b>Difícil</b></td><td>5 ou mais sucessos, ou 3 a 4 com dificuldade extra</td><td>H lacaios d10</td><td>½H tenentes d12</td><td>Vilão maior (com aprimoramentos)</td><td>Ambiente hostil</td></tr></tbody></table></div>
-      <p class="cs-note">½H = metade do número de heróis, arredondada para cima. Cada linha é <b>um</b> elemento: "H lacaios d8" conta como um elemento moderado.</p>
+      <p class="cs-note">½H = metade do número de campeões, arredondada para cima. Cada linha é <b>um</b> elemento: "H lacaios d8" conta como um elemento moderado.</p>
       <ul class="cs-list">
         <li><b>Cena fácil:</b> quase só elementos fáceis, nenhum difícil. Serve de aquecimento ou de passagem na história.</li>
-        <li><b>Cena moderada:</b> a maioria das cenas de uma edição.</li>
+        <li><b>Cena moderada:</b> a maioria das cenas de uma sessão.</li>
         <li><b>Cena difícil:</b> o grande confronto. Quase só elementos difíceis, nenhum fácil.</li></ul>
       <h4>Trocas que mantêm o equilíbrio</h4>
       <ul class="cs-list">
@@ -248,31 +248,31 @@
       <h4>O turno do marcador</h4>
       <p>O marcador tem um turno na ordem de ação, como qualquer personagem. Nele, faça nesta ordem:</p>
       <ol class="cs-steps">
-        <li><b>Avance o marcador:</b> marque o próximo espaço. Ao marcar o último Verde, a cena fica Amarela; ao marcar o último Amarelo, fica Vermelha. Anuncie a mudança: os heróis ganham acesso a novas habilidades.</li>
+        <li><b>Avance o marcador:</b> marque o próximo espaço. Ao marcar o último Verde, a cena fica Amarela; ao marcar o último Amarelo, fica Vermelha. Anuncie a mudança: os campeões ganham acesso a novas habilidades.</li>
         <li><b>Ative as ameaças do ambiente</b> que já estão em jogo (lacaios e tenentes do lugar agem agora).</li>
         <li>Se não houver nenhuma ameaça do ambiente, <b>introduza uma nova</b>, liberada pela cor atual da cena.</li>
         <li>Se nenhuma ameaça entrou, <b>dispare uma reviravolta do ambiente</b> da cor atual. Se nenhuma servir, role os três dados do ambiente como um Atacar, Fortalecer ou Atrapalhar.</li></ol>
       <ul class="cs-list">
         <li>Sem ambiente, o turno do marcador é só o passo 1.</li>
         <li>O ambiente nunca faz Defender nem Superar. Cada reviravolta maior do ambiente acontece no máximo uma vez por cena.</li>
-        <li>Quando um herói consegue um Superar com reviravolta, você pode sugerir uma reviravolta do ambiente da cor atual.</li></ul>
+        <li>Quando um campeão consegue um Superar com reviravolta, você pode sugerir uma reviravolta do ambiente da cor atual.</li></ul>
       <div class="cs-callout"><b>Fim do marcador:</b> quando o último espaço Vermelho é marcado, algo ruim acontece e a cena termina. O plano do vilão avança, alguém não é salvo, a fenda do Vazio se abre de vez. A história segue para uma nova cena, provavelmente com muito mais em jogo.</div>` },
 
     { id: 'gm-challenges', group: MESTRE, title: 'Desafios', body: `
-      <p>Desafios são obstáculos, perigos para inocentes e complicações que precisam ser resolvidos durante a cena: um prédio desabando em Piltover, um vazamento de química em Zaun, um navio pegando fogo em Águas de Sentina. São resolvidos com ações de <b>Superar</b>, e dão aos heróis que não brilham no combate a chance de salvar o dia.</p>
+      <p>Desafios são obstáculos, perigos para inocentes e complicações que precisam ser resolvidos durante a cena: um prédio desabando em Piltover, um vazamento de química em Zaun, um navio pegando fogo em Águas de Sentina. São resolvidos com ações de <b>Superar</b>, e dão aos campeões que não brilham no combate a chance de salvar o dia.</p>
       <table class="cs-table"><tbody>
         <tr><td><b>Simples</b></td><td>Um Superar resolve. Não ameaça ninguém a cada turno, mas se ficar sem solução até o fim da cena, gera consequências na história.</td></tr>
-        <tr><td><b>Em etapas</b></td><td>Vários sucessos em ordem (ex.: <i>achar</i> a fábrica de golens, depois <i>destruí-la</i>). Vários heróis podem avançar o mesmo desafio no mesmo turno. Um <b>12+</b> conta como dois sucessos. Mantenha em torno de 3 sucessos, no máximo 5.</td></tr>
+        <tr><td><b>Em etapas</b></td><td>Vários sucessos em ordem (ex.: <i>achar</i> a fábrica de golens, depois <i>destruí-la</i>). Vários campeões podem avançar o mesmo desafio no mesmo turno. Um <b>12+</b> conta como dois sucessos. Mantenha em torno de 3 sucessos, no máximo 5.</td></tr>
         <tr><td><b>Várias soluções</b></td><td>Caminhos que se excluem: <i>hackear</i> a porta hextec <b>ou</b> <i>arrombá-la</i>, não os dois.</td></tr>
         <tr><td><b>Ramificados</b></td><td>Resolver um desafio libera outros, conforme o jeito que foi resolvido. Ótimo para invadir uma base ou explorar uma tumba em Shurima.</td></tr>
         <tr><td><b>Com contador</b></td><td>Tem um turno próprio. A cada turno dele, marque uma caixa; quando marcar a última, as consequências acontecem na hora.</td></tr></tbody></table>
       <h4>Quanto tempo dar ao contador</h4>
       <table class="cs-table"><thead><tr><th>Impacto se disparar</th><th>Contador</th></tr></thead><tbody>
-        <tr><td>Pouco impacto em civis, ou perigo para os heróis</td><td>1 a 2 turnos</td></tr>
-        <tr><td>Grande impacto em civis, ou grande perigo para os heróis</td><td>Até a próxima mudança de cor da cena</td></tr>
+        <tr><td>Pouco impacto em civis, ou perigo para os campeões</td><td>1 a 2 turnos</td></tr>
+        <tr><td>Grande impacto em civis, ou grande perigo para os campeões</td><td>Até a próxima mudança de cor da cena</td></tr>
         <tr><td>Catástrofe na região</td><td>Use um Dispositivo do Juízo Final</td></tr></tbody></table>
       <p><b>Dispositivos do Juízo Final</b> são desafios com contador e vários sucessos que, no próprio turno, <b>aceleram o marcador de cena</b> (um espaço, dois, ou direto para a próxima cor). Se o marcador acabar com um deles em jogo, ele dispara e a cena termina, quase sempre de forma catastrófica.</p>
-      <p class="cs-note">Um desafio também pode ter uma habilidade própria e agir no turno dele, como uma torre de defesa. Transformar um inimigo em desafio, e não em lacaio, dá chance aos heróis de Superar em cenas cheias de combate.</p>` },
+      <p class="cs-note">Um desafio também pode ter uma habilidade própria e agir no turno dele, como uma torre de defesa. Transformar um inimigo em desafio, e não em lacaio, dá chance aos campeões de Superar em cenas cheias de combate.</p>` },
 
     { id: 'gm-minions', group: MESTRE, title: 'Conduzindo lacaios e tenentes', nav: 'Lacaios e tenentes', body: `
       <p>As regras básicas de dano estão em ${see('enemies', 'Inimigos')}. Do lado do Mestre:</p>
@@ -285,40 +285,40 @@
       <ul class="cs-list">
         <li><b>Em grupo:</b> lacaios iguais agem juntos. Role todos os dados de uma vez e distribua o resultado entre os alvos.</li>
         <li><b>Um dado só</b> para qualquer ação básica. Se tiverem habilidade, ela é a jogada preferida deles.</li>
-        <li><b>Não concentre</b> todos os ataques no mesmo herói, principalmente no que está quase em Nocaute, a não ser que o vilão deixe isso claro antes ("Acabem com a Demaciana!").</li>
+        <li><b>Não concentre</b> todos os ataques no mesmo campeão, principalmente no que está quase em Nocaute, a não ser que o vilão deixe isso claro antes ("Acabem com a Demaciana!").</li>
         <li><b>Superar:</b> lacaios e tenentes nunca aceitam reviravolta maior; com 1 a 3, apenas falham. Com 4 a 7, conseguem com um custo: o lacaio sai de cena, o tenente perde um tamanho de dado. Eles <b>não podem avançar o marcador</b>; isso só os vilões fazem.</li>
         <li>Para lacaios mais perigosos sem aumentar o dado, dê bônus em ações específicas ("+1 para Atacar em bando").</li></ul>
       <h4>Ideias de habilidade para tenentes</h4>
       <ul class="cs-list">
         <li>Bônus em Fortalecer, Atrapalhar ou Defender, ou afetar vários alvos no mesmo local com essas ações.</li>
         <li>Atacar e Fortalecer um aliado (ou Atrapalhar um inimigo) com a mesma rolagem.</li>
-        <li>Ação especial: criar lacaios, curar o vilão, trazer uma ameaça do ambiente, levar um herói para outro local.</li>
+        <li>Ação especial: criar lacaios, curar o vilão, trazer uma ameaça do ambiente, levar um campeão para outro local.</li>
         <li>Sacrificar-se para o vilão fugir, agir fora de hora ou avançar o marcador um espaço.</li></ul>` },
 
     { id: 'gm-villains', group: MESTRE, title: 'Vilões, ameaças e reviravoltas', nav: 'Vilões e ameaças', body: `
       <ul class="cs-list">
-        <li><b>Vilões</b> agem como heróis: poderes, qualidades, habilidades, Vida e um dado de status próprio, descrito na ficha deles. Cada vilão tem o próprio turno.</li>
-        <li>Só vilões podem usar <b>Superar para avançar o marcador de cena</b>, e podem pagar Ações Arriscadas com reviravoltas, como os heróis.</li>
-        <li><b>Aprimoramentos</b> tornam o vilão mais forte e dão aos heróis outra forma de vencê-lo, como uma armadura hextec que cai depois de alguns Superar.</li>
+        <li><b>Vilões</b> agem como campeões: poderes, qualidades, habilidades, Vida e um dado de status próprio, descrito na ficha deles. Cada vilão tem o próprio turno.</li>
+        <li>Só vilões podem usar <b>Superar para avançar o marcador de cena</b>, e podem pagar Ações Arriscadas com reviravoltas, como os campeões.</li>
+        <li><b>Aprimoramentos</b> tornam o vilão mais forte e dão aos campeões outra forma de vencê-lo, como uma armadura hextec que cai depois de alguns Superar.</li>
         <li><b>Ameaças</b> são lacaios, tenentes ou vilões que entram no meio da cena, trazidos por outro personagem, pelo ambiente ou por uma reviravolta. Começam a agir no turno seguinte ao da entrada.</li>
         <li><b>Personagens da trama</b> aliados podem ser lacaios (civis frágeis) ou tenentes (um guarda de elite amigo). Você pode deixar os jogadores controlarem esses aliados.</li></ul>
       <h4>De onde tirar reviravoltas</h4>
       <ol class="cs-steps">
-        <li>Das <b>perguntas de reviravolta dos princípios</b> dos heróis: sempre a primeira opção.</li>
+        <li>Das <b>perguntas de reviravolta dos princípios</b> dos campeões: sempre a primeira opção.</li>
         <li>Do <b>ambiente</b> ou da própria cena (o cano de química que estoura, a ponte que cede).</li>
         <li>Da sua cabeça, misturando os dois. Prefira reviravoltas que tiram a atenção do combate: um inocente em perigo, um segredo exposto, um novo desafio.</li></ol>
-      <p class="cs-note">Reviravoltas menores duram até a próxima cena de montagem; as maiores, até o fim da edição. Mesmo resolvidas, podem voltar como gancho para outra cena, edição ou coleção.</p>` },
+      <p class="cs-note">Reviravoltas menores duram até a próxima cena de montagem; as maiores, até o fim da sessão. Mesmo resolvidas, podem voltar como gancho para outra cena, sessão ou memória.</p>` },
 
-    { id: 'gm-evolution', group: MESTRE, title: 'Evolução entre coleções', nav: 'Evolução', body: `
-      <p>Ao fechar uma ${see('collections', 'coleção')}, o arco de história termina e os heróis podem mudar. Há três tamanhos de mudança:</p>
+    { id: 'gm-evolution', group: MESTRE, title: 'Evolução entre memórias', nav: 'Evolução', body: `
+      <p>Ao fechar uma ${see('collections', 'memória')}, o arco de história termina e os campeões podem mudar. Há três tamanhos de mudança:</p>
       <table class="cs-table"><tbody>
         <tr><td><b>Visual</b></td><td>Novo traje, alcunha, cabelo. Livre, sem pedir permissão, mas vale pensar no motivo.</td></tr>
         <tr><td><b>Detalhes</b></td><td>Trocar um poder ou qualidade por outro do <b>mesmo dado</b> (as habilidades passam a usar o novo), trocar um princípio, ou trocar uma habilidade por outra da <b>mesma cor</b>, das mesmas listas da criação, usando o mesmo poder ou qualidade.</td></tr>
-        <tr><td><b>Reescrita</b></td><td>Quando muita coisa mudou: refaça a criação, mantendo a história e as coleções.</td></tr></tbody></table>
-      <p>Mudanças também podem acontecer no meio de uma coleção, se a história pedir.</p>` },
+        <tr><td><b>Reescrita</b></td><td>Quando muita coisa mudou: refaça a criação, mantendo a história e as memórias.</td></tr></tbody></table>
+      <p>Mudanças também podem acontecer no meio de uma memória, se a história pedir.</p>` },
 
     { id: 'example', group: MESTRE, title: 'Exemplo de jogo: fumaça nas docas do Entresol', nav: 'Exemplo de jogo', body: `
-      <p>Três heróis seguem a pista de um carregamento de química ilegal até as docas do Entresol, em Zaun:</p>
+      <p>Três campeões seguem a pista de um carregamento de química ilegal até as docas do Entresol, em Zaun:</p>
       <table class="cs-table"><tbody>
         <tr><td><b>Rix Ferrugem</b> (Zaun)</td><td>Inventor de dispositivos químicos. Poder <i>Química</i> d10, qualidade <i>Tecnologia</i> d8. Personalidade Impulsivo: status Verde d6, Amarelo d6, Vermelho d8.</td></tr>
         <tr><td><b>Aldric Valmont</b> (Demacia)</td><td>Soldado da Vanguarda. Poder <i>Força</i> d10, qualidade <i>Combate</i> d8. Personalidade Líder Nato: status d6, d8, d10. Vida 28 (Verde 28 a 22, Amarela 21 a 11, Vermelha 10 a 1).</td></tr>
@@ -332,14 +332,14 @@
           O capanga rola o próprio d8 para resistir e tira 4. Menos que 5: <b>derrotado</b>. Aldric passa a vez para Sen.</li>
         <li><b>Sen tenta fechar a válvula</b> do vazamento (Superar), agindo pelo seu princípio de proteger inocentes:
           ${roll([['d8', 2], ['d10', 9], ['d6', 6]], 'Médio 6: sucesso com reviravolta menor.')}
-          O vazamento está resolvido. Como ela usou um princípio num Superar, <b>cada herói ganha 1 ponto de inspiração</b>. Para a reviravolta, o Mestre propõe e Sen aceita: o assobio da válvula chama atenção, e <b>o marcador avança um espaço</b>. Sen passa a vez para os capangas.</li>
+          O vazamento está resolvido. Como ela usou um princípio num Superar, <b>cada campeão ganha 1 ponto de inspiração</b>. Para a reviravolta, o Mestre propõe e Sen aceita: o assobio da válvula chama atenção, e <b>o marcador avança um espaço</b>. Sen passa a vez para os capangas.</li>
         <li><b>Os dois capangas agem juntos</b>, cada um rolando seu d8: um Ataca Aldric e tira 6; o outro Ataca Rix e tira 3. Aldric cai para 22 de Vida (ainda Verde). Os capangas passam a vez para Rix.</li>
         <li><b>Rix Fortalece Aldric</b> arremessando uma cápsula de fumaça:
           ${roll([['d10', 8], ['d8', 8], ['d6', 4]], 'Dois 8: Rix escolhe a ordem. Médio 8 = bônus de +3.')}
           O Mod vira um cartão na frente de Aldric: <b>"Cortina de fumaça +3"</b>. Rix passa a vez para o marcador.</li>
         <li><b>Turno do marcador:</b> o Mestre marca o segundo espaço Verde. Com os dois Verdes marcados, <b>a cena agora é Amarela</b>. O status de todos passa a ser pelo menos Amarelo, e as habilidades Amarelas ficam liberadas. O marcador passa a vez para Gorn.</li>
         <li><b>Gorn Ataca Aldric</b> com seu d10 e tira 9. Aldric vai para 13: <b>zona Amarela</b> pela própria Vida também. Todos já agiram, a rodada acaba. Gorn escolheria quem abre a próxima, mas não pode escolher a si mesmo: escolhe os capangas.</li></ol>
-      <div class="cs-callout">Repare na armadilha: os heróis jogaram todos antes dos inimigos, então os capangas terminam a rodada 1 e abrem a rodada 2, agindo duas vezes seguidas. Na próxima, vale intercalar.</div>
+      <div class="cs-callout">Repare na armadilha: os campeões jogaram todos antes dos inimigos, então os capangas terminam a rodada 1 e abrem a rodada 2, agindo duas vezes seguidas. Na próxima, vale intercalar.</div>
 
       <h4>Rodada 2</h4>
       <ol class="cs-steps cs-example">
@@ -347,6 +347,6 @@
         <li><b>Aldric Ataca Gorn</b> usando o Mod de Rix, agora com o status Amarelo (d8):
           ${roll([['d10', 9], ['d8', 6], ['d8', 2]], 'Médio 6 +3 da fumaça = 9 de dano.')}
           O Mod é gasto e o cartão sai da mesa. Gorn rola o d10 para resistir e tira 7, menos que 9: <b>falhou</b>, então o tenente <b>perde um tamanho</b> e vira d8. (Com 20 de dano ou mais, o dobro do d10, ele cairia direto, sem rolar.)</li>
-        <li>E a luta continua. Quando o grupo derrubar Gorn, o Mestre retira o último cartão e a cena termina antes do Vermelho. Na <b>cena de montagem</b> seguinte, cada herói recupera Vida e o grupo decide para onde leva a pista do carregamento.</li></ol>` }
+        <li>E a luta continua. Quando o grupo derrubar Gorn, o Mestre retira o último cartão e a cena termina antes do Vermelho. Na <b>cena de montagem</b> seguinte, cada campeão recupera Vida e o grupo decide para onde leva a pista do carregamento.</li></ol>` }
   ];
 })();

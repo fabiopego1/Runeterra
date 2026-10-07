@@ -60,12 +60,13 @@
   const ROSTER = 'runeterra-forge-roster-v1', SLOT = id => 'runeterra-forge-c-' + id;
   const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   const blank = () => ({
-    v: 1, cid: newId(), updated: Date.now(), noRetcon: true, step: 'intro', maxStep: 0, method: 'constructed', people: null, region: null, unlocked: {},   // Construído is the default method
+    v: 1, cid: newId(), updated: Date.now(), step: 'intro', maxStep: 0, method: 'constructed', people: null, region: null, unlocked: {},   // Construído is the default method
     rolls: {}, rerolls: {},
     bg: { id: null, assign: {}, principle: null },
     ps: { id: null, assign: {}, extra: {} },
     arch: { id: null, base: null, assign: {}, principle: null, extra: {}, divMethod: null, minionQ: null, minionForms: [], notes: '' },
     pers: { id: null, qname: '', qdesc: '', outTrait: null, upgrade: null, id2: null },
+    retcon: { type: null },
     health: { trait: null, mode: 'fixed', roll: null, rerolled: false },
     pch: {},
     sel: {},
@@ -99,14 +100,13 @@
     out.maxStep = typeof s.maxStep === 'number' ? s.maxStep : -1;   // older saves: recomputed after load
     // Saves from before the People chapter: every chapter after the welcome moved one place down.
     if (!('people' in s) && out.maxStep >= 1) out.maxStep += 1;
-    // Saves from before the Twist of Fate chapter was removed: the chapters after Ultimates moved up one place,
-    // and a third Ultimate from "Hidden Reserves" no longer has a source.
-    if (!s.noRetcon) {
-      if (out.maxStep >= 9) out.maxStep -= 1;
-      if (out.step === 'retcon') out.step = 'health';
-      if (out.sel && Array.isArray(out.sel.red) && out.sel.red.length > 2) out.sel.red.length = 2;
-    }
-    out.noRetcon = true; delete out.retcon;
+    // Saves made while the Twist of Fate chapter was hidden: the chapters after Ultimates moved down one place.
+    // A champion that already went past Ultimates keeps its dice as they are ('skip': no Twist of Fate was taken).
+    if (s.noRetcon) {
+      if (out.maxStep >= 8) { out.maxStep += 1; out.retcon = { type: 'skip' }; }
+      else out.retcon = { type: null };
+    } else if (!out.retcon) out.retcon = { type: null };
+    delete out.noRetcon;
     // Older saves stored element choices as "Energia Hextec Bruta (Nuclear)", or under an earlier name: use the current name.
     const EL = window.TRAIT_CATEGORIES['P:elemental'].items;
     const OLD_EL = { 'Gelo & Gelo Verdadeiro': 'cold', 'Poder Celestial': 'cosmic', 'Relâmpago': 'electricity', 'Chama': 'fire', 'Sombra & Névoa Negra': 'infernal', 'Energia Hextec Bruta': 'nuclear', 'Luz': 'radiant', 'Radiante': 'radiant', 'Tempestade & Vento': 'weather' };
@@ -222,12 +222,12 @@
   // Glossary-aware rules text
   const TERM_RE = /\[(d4|d6|d8|d10|d12)\]|\[([^\]]+)\]|\b(Max\+Mid\+Min|Max\+Mid|Max\+Min|Mid\+Min|Min die|Mid die|Max die|Green zone|Yellow zone|Red zone|status die|minor twist|major twist|hero points?|Attack(?:s|ed|ing)?|Defend(?:s|ed|ing)?|Overcome|Overcoming|Boost(?:s|ed|ing)?|Hinder(?:s|ed|ing)?|Recover(?:s|ing)?|persistent|exclusive|irreducible|bonus(?:es)?|penalt(?:y|ies)|minions?|lieutenants?|Reactions?|doubles|nearby|close|scene|collection|Health|environment(?:al)?|twists?)\b/gi;
   // Portuguese rules text: same glossary, Portuguese words (accent-aware boundaries; "próximo turno" is not "nearby").
-  const TERM_RE_PT = /\[(d4|d6|d8|d10|d12)\]|\[([^\]]+)\]|(?<![A-Za-zÀ-ÿ])(Máx\+Médio\+Mín|Máx\+Médio|Máx\+Mín|Médio\+Mín|dados? Mín(?!\+)|dados? Médio(?!\+)|dados? Máx(?!\+)|Zona Verde|Zona Amarela|Zona Vermelha|dados? de status|reviravoltas? menor(?:es)?|reviravoltas? maior(?:es)?|pontos? de herói|Atac[a-zà-ÿ]*|Ataque[a-zà-ÿ]*|Defend[a-zà-ÿ]*|Defesa|Super[aeo][a-zà-ÿ]*|Fortale[a-zà-ÿ]*|Atrapalh[a-zà-ÿ]*|Recuper[a-zà-ÿ]*|persistentes?|exclusiv[oa]s?|irredutíve(?:l|is)|bônus|penalidades?|lacaios?|tenentes?|Reaç(?:ão|ões)|dados iguais|próxim[oa]s?(?! (?:turno|rodada|vez|ação|edição))|cenas?|coleç(?:ão|ões)|Vida|ambientes?|ambienta(?:l|is)|reviravoltas?)(?![A-Za-zÀ-ÿ])/g;
+  const TERM_RE_PT = /\[(d4|d6|d8|d10|d12)\]|\[([^\]]+)\]|(?<![A-Za-zÀ-ÿ])(Máx\+Médio\+Mín|Máx\+Médio|Máx\+Mín|Médio\+Mín|dados? Mín(?!\+)|dados? Médio(?!\+)|dados? Máx(?!\+)|Zona Verde|Zona Amarela|Zona Vermelha|dados? de status|reviravoltas? menor(?:es)?|reviravoltas? maior(?:es)?|pontos? de (?:herói|inspiração)|Atac[a-zà-ÿ]*|Ataque[a-zà-ÿ]*|Defend[a-zà-ÿ]*|Defesa|Super[aeo][a-zà-ÿ]*|Fortale[a-zà-ÿ]*|Atrapalh[a-zà-ÿ]*|Recuper[a-zà-ÿ]*|persistentes?|exclusiv[oa]s?|irredutíve(?:l|is)|bônus|penalidades?|lacaios?|tenentes?|Reaç(?:ão|ões)|dados iguais|próxim[oa]s?(?! (?:turno|rodada|vez|ação|sessão))|cenas?|memór(?:ia|ias)|Vida|ambientes?|ambienta(?:l|is)|reviravoltas?)(?![A-Za-zÀ-ÿ])/g;
   const GLOSS_PT = [[/^máx\+médio\+mín/, 'Max+Mid+Min'], [/^máx\+médio/, 'Max+Mid'], [/^máx\+mín/, 'Max+Min'], [/^médio\+mín/, 'Mid+Min'], [/^dados? mín/, 'Min die'], [/^dados? médio/, 'Mid die'], [/^dados? máx/, 'Max die'],
     [/^zona verde/, 'Green zone'], [/^zona amarela/, 'Yellow zone'], [/^zona vermelha/, 'Red zone'], [/^dados? de status/, 'status die'], [/^reviravoltas? men/, 'minor twist'], [/^reviravoltas? mai/, 'major twist'],
-    [/^pontos? de herói/, 'hero point'], [/^atac/, 'Attack'], [/^defe/, 'Defend'], [/^super/, 'Overcome'], [/^fortale/, 'Boost'], [/^atrapalh/, 'Hinder'], [/^recuper/, 'Recover'], [/^persist/, 'persistent'],
+    [/^pontos? de (?:herói|inspiração)/, 'hero point'], [/^atac/, 'Attack'], [/^defe/, 'Defend'], [/^super/, 'Overcome'], [/^fortale/, 'Boost'], [/^atrapalh/, 'Hinder'], [/^recuper/, 'Recover'], [/^persist/, 'persistent'],
     [/^exclusiv/, 'exclusive'], [/^irredut/, 'irreducible'], [/^bônus/, 'bonus'], [/^penalidade/, 'penalty'], [/^lacaio/, 'minion'], [/^tenente/, 'lieutenant'], [/^reaç/, 'Reaction'], [/^dados iguais/, 'doubles'],
-    [/^próxim/, 'nearby'], [/^cena/, 'scene'], [/^coleç/, 'collection'], [/^vida$/, 'Health'], [/^ambient/, 'environment'], [/^reviravolta/, 'twist']];
+    [/^próxim/, 'nearby'], [/^cena/, 'scene'], [/^memór/, 'collection'], [/^vida$/, 'Health'], [/^ambient/, 'environment'], [/^reviravolta/, 'twist']];
   const glossTitle = k => (PT && window.I18N.glossLabel && window.I18N.glossLabel[k]) || k;
   function glossKey(m) {
     const l = m.toLowerCase();
@@ -413,8 +413,19 @@
       T['rp-quality'] = { key: 'rp-quality', die: 'd8', src: ['Temperament'] };
       if (pers.extra === 'impulsive' && st.pers.upgrade && T[st.pers.upgrade] && dn(T[st.pers.upgrade].die) < 12) T[st.pers.upgrade].die = upDie(T[st.pers.upgrade].die);
     }
+    R.before.retcon = snap(T);
+    const rc = st.retcon;
+    if ((rc.type === 'swap-powers' || rc.type === 'swap-quals') && rc.a && rc.b && T[rc.a] && T[rc.b] && rc.a !== rc.b) {
+      const t = T[rc.a].die; T[rc.a].die = T[rc.b].die; T[rc.b].die = t;
+    }
+    if (rc.type === 'add-d6' && rc.key && !T[rc.key]) T[rc.key] = { key: rc.key, die: 'd6', src: ['Twist of Fate'] };
     R.T = T;
-    if (pers) R.status = pers.status.slice();   // status dice
+    // status dice
+    if (pers) {
+      const s = pers.status.slice();
+      if (rc.type === 'red-up') s[2] = upDie(s[2]);
+      R.status = s;
+    }
     // Divided (p.95): optionally a second Temperament for the other form. It only changes that form's status dice.
     const pers2 = ar && ar.divided && st.pers.id2 && st.pers.id2 !== st.pers.id ? byId(window.PERSONALITIES, st.pers.id2) : null;
     if (pers && pers2) R.status2 = pers2.status.slice();
@@ -712,7 +723,7 @@
       }
     }
     if (id === 'red') {
-      const need = 2;
+      const need = 2 + (st.retcon.type === 'extra-red' ? 1 : 0);
       const s = st.sel.red || [];
       const I = [];
       if (s.length !== need) I.push(tr('Pick {n} Ultimates ({have}/{n} chosen).', { n: need, have: s.length }));
@@ -729,6 +740,17 @@
       }
       if (new Set(s.map(e => displayName(e.name))).size !== s.length) I.push(tr('You picked the same Ultimate twice.'));
       add('pick', tr('Choose {n} Ultimates', { n: need }), I, tr('Only categories marked <b>eligible</b> can be picked — they match powers and qualities you have. Tick {n} abilities, then choose the trait each one uses.', { n: need }));
+    }
+    if (id === 'retcon') {
+      const rc = st.retcon, I = [];
+      add('pick', tr('Choose one Twist of Fate'), rc.type ? [] : [tr('Choose one option.')], tr('Pick one small tweak to your champion.'));
+      if ((rc.type === 'swap-powers' || rc.type === 'swap-quals') && (!rc.a || !rc.b || rc.a === rc.b)) I.push(tr('Pick two different traits to swap.'));
+      if (rc.type === 'add-d6' && !rc.key) I.push(tr('Pick the new d6 power or quality.'));
+      if (rc.type === 'change-principle' && (!rc.which || !rc.principle)) I.push(tr('Pick which principle to change and its replacement.'));
+      if (rc.type === 'change-principle' && rc.principle && [st.bg.principle, st.arch.principle].includes(rc.principle)) I.push(tr('Your two principles must be different.'));
+      if (rc.type === 'red-up' && pers && pers.status[2] === 'd12') I.push(tr('Your Red status die is already d12 — pick another option.'));
+      if (rc.type === 'extra-red' && (st.sel.red || []).length < 3) I.push(tr('Go back to Ultimates and pick your third Red ability.'));
+      add('cfg', tr('Set it up'), I, tr('Complete the choice for your Twist of Fate.'));
     }
     if (id === 'health') add('review', tr('Review your Health'), st.health.mode === 'roll' && st.health.roll != null && !(st.health.roll >= 1 && st.health.roll <= 8) ? [tr('Roll the d8 again.')] : [], tr('Pick the trait that adds to your Health and whether to roll.'), { opt: true });
     if (id === 'finish') {
@@ -770,6 +792,7 @@
     { id: 'archetype', name: tr('Path'), sub: '' },
     { id: 'personality', name: tr('Temperament'), sub: '' },
     { id: 'red', name: tr('Ultimates'), sub: '' },
+    { id: 'retcon', name: tr('Twist of Fate'), sub: '' },
     { id: 'health', name: tr('Health'), sub: '' },
     { id: 'finish', name: tr('Legend'), sub: tr('Finishing Touches & Sheet') }
   ];
@@ -1119,6 +1142,7 @@
     switch (s.id) {
       case 'pick':
         if (stepId === 'red') return abl(st.sel.red);
+        if (stepId === 'retcon') { const r = (window.RETCONS || []).find(x => x.id === st.retcon.type); return r ? esc(r.rt) : ''; }
         return def && def() ? esc(def().rt) : '';
       case 'base': return shapeDef() ? esc(shapeDef().rt) : '';
       case 'assign': {
@@ -1402,7 +1426,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   function renderRed() {
     const R = R0;
     if (!persDef()) return lockedPanel(tr('Ultimates'), tr('Choose your Temperament first.'), 'personality');
-    const need = 2;
+    const need = 2 + (st.retcon.type === 'extra-red' ? 1 : 0);
     const s = st.sel.red = st.sel.red || [];
     const cats = window.RED_ABILITIES.slice();
     const shape = abilityShape();
@@ -1436,11 +1460,44 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const eligibleCats = cats.filter(c => c.cat.startsWith('X:') || Object.values(R.T).some(t => TRAIT[t.key].cat === c.cat && dn(t.die) >= 6));
     const lockedCats = cats.filter(c => !eligibleCats.includes(c));
     const H = {
-      pick: () => `<p class="count-line"><b>${s.length}/${need}</b> ${tr('chosen')}. <span class="muted">${tr('Open a category to see its abilities.')}</span></p>` +
+      pick: () => `<p class="count-line"><b>${s.length}/${need}</b> ${tr('chosen')}. ${need > 2 ? `<span class="pill red">${tr('+1 from Twist of Fate')}</span>` : ''} <span class="muted">${tr('Open a category to see its abilities.')}</span></p>` +
         eligibleCats.map(catHtml).join('') +
         (lockedCats.length ? `<p class="muted"${tip(tr('You need a power or quality of these categories rated d6 or higher to take their Red abilities.'))}>${tr('Not available to you (you have no traits in these categories):')} ${lockedCats.map(c => esc(catLabel(c.cat))).join(', ')}.</p>` : '')
     };
     return stepPanel('Step 6 · Sentinels: Red Abilities', tr('Ultimates'), 'red', flowHtml('red', sectionsFor('red', R), H), false);
+  }
+
+  function renderRetcon() {
+    const R = R0;
+    if (!persDef()) return lockedPanel(tr('Twist of Fate'), tr('Choose your Temperament first.'), 'personality');
+    const rc = st.retcon;
+    const B = R.before.retcon;
+    const traitsOf = kind => sortTraits(Object.values(B).filter(t => TRAIT[t.key].kind === kind)).map(t => t.key);
+    const H = {
+      pick: () => `<div class="principles">${window.RETCONS.filter(x => !x.back || rc.type === x.id).map(x => `<button class="principle${rc.type === x.id ? ' selected' : ''}" data-act="retcon" data-id="${x.id}"${x.id === 'red-up' && rc.type !== x.id && persDef() && persDef().status[2] === 'd12' ? ' disabled' : ''}${tip(`<h5>${esc(x.rt)}</h5>${esc(x.desc || x.sc)}`)}><div class="pn">${esc(x.rt)}</div><div class="ph">${esc(x.desc || x.sc)}</div></button>`).join('')}</div>`,
+      cfg: () => {
+        if (rc.type === 'swap-powers' || rc.type === 'swap-quals') {
+          const keys = traitsOf(rc.type === 'swap-powers' ? 'power' : 'quality');
+          const it = k => traitItem(k, { after: B[k] ? B[k].die : '' });
+          return socket({ bind: 'retcon.a', mark: 'A', cur: rc.a, groups: traitGroups(keys, it), empty: tr('First trait to swap') }) +
+            socket({ bind: 'retcon.b', mark: 'B', cur: rc.b, groups: traitGroups(keys.filter(k => k !== rc.a), it), empty: tr('Swap its die with…') });
+        }
+        if (rc.type === 'add-d6') {
+          const keys = Object.values(CATS).flatMap(def => def.items.map(i => i[0])).filter(k => TRAIT[k] && !B[k]);
+          return socket({ bind: 'retcon.key', d: 'd6', cur: rc.key, groups: traitGroups(keys, k => traitItem(k)), empty: tr('Bind this d6 to any power or quality') });
+        }
+        if (rc.type === 'change-principle') {
+          const mine = [st.bg.principle, st.arch.principle];   // your current principles can't be taken again
+          const opts = PRINCIPLES.filter(p => !mine.includes(p.id) || rc.principle === p.id).map(p => `<option value="${p.id}"${rc.principle === p.id ? ' selected' : ''}>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}${PT ? ` (${esc(tr(p.cat))})` : ` — ${esc(tr(p.cat))}`}</option>`).join('');
+          return `<div class="grid2"><label class="field"><span>${tr('Replace')}</span><select data-bind="retcon.which"><option value="">${tr('— choose —')}</option><option value="bg"${rc.which === 'bg' ? ' selected' : ''}>${tr('Origin principle')}</option><option value="arch"${rc.which === 'arch' ? ' selected' : ''}>${tr('Path principle')}</option></select></label><label class="field"><span>${tr('With (any category)')}</span><select data-bind="retcon.principle"><option value="">${tr('— choose —')}</option>${opts}</select></label></div>`;
+        }
+        if (rc.type === 'change-ability') return `<p class="muted">${tr('Go back to any ability (Source, Path or Ultimates) and change which power or quality it uses. Everything stays editable — this option simply makes it “official”.')}</p>`;
+        if (rc.type === 'red-up' && R.status) return `<p>${tr('Red status die:')} ${die(persDef().status[2])} → ${die(R.status[2])}</p>`;
+        if (rc.type === 'extra-red') return `<p>${tr('Go back to <a href="#" data-act="go" data-step="red">Ultimates</a> and pick a third Red ability ({n}/3 chosen).', { n: (st.sel.red || []).length })}</p>`;
+        return '';
+      }
+    };
+    return stepPanel('Step 7 · Sentinels: Retcon', tr('Twist of Fate'), 'retcon', flowHtml('retcon', sectionsFor('retcon', R), H), false);
   }
 
   function healthCalc(R) {
@@ -1510,8 +1567,10 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   function principlesFinal() {
     const out = [];
     const bgP = st.bg.principle, arP = st.arch.principle;
-    if (bgP) out.push({ slot: 'bg', id: st.evo.principles.bg || bgP });
-    if (arP) out.push({ slot: 'arch', id: st.evo.principles.arch || arP });
+    const rc = st.retcon;
+    const pick = (slot, id) => (rc.type === 'change-principle' && rc.which === slot && rc.principle ? rc.principle : id);
+    if (bgP) out.push({ slot: 'bg', id: st.evo.principles.bg || pick('bg', bgP) });
+    if (arP) out.push({ slot: 'arch', id: st.evo.principles.arch || pick('arch', arP) });
     return out.map(x => ({ ...x, p: PRINCIPLES.find(p => p.id === x.id) })).filter(x => x.p);
   }
 
@@ -1838,6 +1897,10 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
           </div>
         </div>
         <div class="hs-prs">${principleCol(pr[0])}${principleCol(pr[1])}</div>
+        <div class="hs-bottom">
+          <div class="hs-card"><div class="hs-h"${tip(tr('Past sessions ("issues") your champion took part in.'))}>${tr('Back Issues')}</div>${[0, 1, 2, 3, 4, 5].map(n => `<input class="hs-line" type="text" data-bind="play.issues.${n}" data-live="1" value="${esc(pl.issues[n] || '')}" aria-label="${tr('Back issue {n}', { n: n + 1 })}">`).join('')}</div>
+          <div class="hs-card"><div class="hs-h"${tip(window.GLOSSARY.collection + ' ' + tr('Tick a collection when it is complete — that is when your champion advances.'))}>${tr('Collections')}</div>${[0, 1, 2, 3, 4, 5, 6, 7].map(n => `<div class="hs-coll">${check(`play.cdone.${n}`, pl.cdone[n], tr('Collection {n} complete', { n: n + 1 }))}<input class="hs-line" type="text" data-bind="play.coll.${n}" data-live="1" value="${esc(pl.coll[n] || '')}" aria-label="${tr('Collection {n}', { n: n + 1 })}"></div>`).join('')}</div>
+        </div>
       </div>
       <div class="hs-page" id="hs-p2">
         <div class="hs-card hs-3"><div><div class="hs-h">${tr('Alias')}</div>${esc(i.alias || '')}</div><div><div class="hs-h">${tr('Hero Name')}</div>${esc(i.name || '')}</div><div><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}</div></div>
@@ -1991,7 +2054,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   }
 
   // ------------------------------------------------------------------ main render
-  const RENDER = { intro: renderIntro, people: renderPeople, region: renderRegion, background: renderBackground, powersource: renderPowerSource, archetype: renderArchetype, personality: renderPersonality, red: renderRed, health: renderHealth, finish: renderFinish };
+  const RENDER = { intro: renderIntro, people: renderPeople, region: renderRegion, background: renderBackground, powersource: renderPowerSource, archetype: renderArchetype, personality: renderPersonality, red: renderRed, retcon: renderRetcon, health: renderHealth, finish: renderFinish };
   // For saves made before step locking existed: unlock up to the first incomplete step.
   function reachedStep() {
     const R = compute();
@@ -2388,6 +2451,12 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       const f = st.arch.minionForms = st.arch.minionForms || [];
       const i = f.indexOf(el.dataset.name);
       if (i >= 0) f.splice(i, 1); else f.push(el.dataset.name);
+      render(); return;
+    }
+    if (act === 'retcon') {
+      const was = st.retcon.type;
+      st.retcon = { type: was === el.dataset.id ? null : el.dataset.id }; ui.advance = true;
+      if (was === 'extra-red' && st.sel.red && st.sel.red.length > 2) st.sel.red.length = 2;
       render(); return;
     }
     if (act === 'hmode') { if (st.health.roll) return; st.health.mode = el.dataset.m; if (el.dataset.m === 'roll') { st.health.roll = roll(['d8'])[0]; st.health.rerolled = false; } render(); return; }

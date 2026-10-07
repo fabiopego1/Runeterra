@@ -10,7 +10,7 @@ try { playwright = require('playwright'); } catch (e) { playwright = require(req
 
 const BASE = (process.env.BASE_URL || 'http://localhost:8765').replace(/\/$/, '');
 const FIXTURE = fs.readFileSync(path.join(__dirname, 'fixtures', 'champion.json'), 'utf8');
-const STEPS = ['intro', 'people', 'region', 'background', 'powersource', 'archetype', 'personality', 'red', 'health', 'finish'];
+const STEPS = ['intro', 'people', 'region', 'background', 'powersource', 'archetype', 'personality', 'red', 'retcon', 'health', 'finish'];
 
 let failures = 0;
 const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if (!cond) failures++; };
@@ -174,10 +174,17 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$$eval('.redcat', e => e.length) > 2 && !(await p.$('.redcat .ab')), 'Ultimates list their categories closed, so the page is not a wall of abilities');
     await ab('red', 'Purification', 'Q:mental'); await ab('red', 'Summoned Allies', 'P:elemental'); await sel('sel.red.1.trait', 'cosmic');
     await next();
-    ok(!(await p.$$eval('.rail-name', e => e.some(x => /Reviravolta/.test(x.textContent)))), 'there is no Twist of Fate chapter');
+    await p.click('[data-act=retcon][data-id=change-principle]'); await p.waitForTimeout(100);
+    const princ = await p.evaluate(() => { const s = window.ForgeDebug.state(); return [s.bg.principle, s.arch.principle]; });
+    const popts = await p.$$eval('select[data-bind="retcon.principle"] option', os => os.map(o => o.value));
+    ok(popts.length > 5 && princ.every(x => !popts.includes(x)), 'Twist of Fate cannot swap in a principle you already have');
+    await p.click('.step-footer [data-act=back]'); await p.waitForTimeout(100);
+    ok(!!(await p.$('#flow-retcon-pick.current')), 'Back reopens the previous section of the chapter');
+    await p.click('[data-act=retcon][data-id=red-up]');
+    await next();
     ok(await p.$eval('.hchoice', e => /Definitivo/.test(e.textContent)), 'rolling for Health warns it cannot be undone');
     await p.click('.step-footer [data-act=back]'); await p.waitForTimeout(600);
-    ok(await step() === 'Supremas', 'Back from the first section goes to the previous chapter');
+    ok(await step() === 'Reviravolta do Destino', 'Back from the first section goes to the previous chapter');
     await next(); await next();
     ok(!(await p.$('#stage .flow-todo')) && await p.$eval('.step-footer', f => !!f), 'nothing in the Legend chapter is required');
     await p.fill('input[data-bind="info.name"]', 'Bruxaria'); await p.press('input[data-bind="info.name"]', 'Enter'); await p.waitForTimeout(100);
@@ -248,7 +255,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     // Evolve tab: swap a power, an ability and a principle; undo; history on page 3
     const stored = () => p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-forge-v1')));
     ok(!(await p.$('[data-act=sheetTab][data-tab=evolve]')) && !(await p.$('.finish-bar a[href*=evoluir]')), 'Evolve your champion stays hidden from players (work in progress)');
-    ok(await p.$eval('#hs-p1 .hs-left', e => !!e.querySelector('.hs-portrait') && !!e.querySelector('[data-bind="play.hp.0"]')) && !(await p.$('[data-bind="play.issues.0"]')) && !(await p.$('[data-bind="play.coll.0"]')), 'Inspiration points sit under the portrait; back issues and collections are off the sheet');
+    ok(await p.$eval('#hs-p1 .hs-left', e => !!e.querySelector('.hs-portrait') && !!e.querySelector('[data-bind="play.hp.0"]')) && !!(await p.$('#hs-p1 [data-bind="play.issues.0"]')) && !!(await p.$('#hs-p1 [data-bind="play.coll.0"]')) && (await p.$eval('#hs-p1', e => /Sessões Anteriores/.test(e.textContent) && /Memórias/.test(e.textContent))), 'Inspiration points sit under the portrait; Sessões Anteriores and Memórias are on the sheet');
     await p.goto(`${BASE}/ficha.html?wip`); await p.waitForSelector('#sp-rail');
     await p.click('[data-act=sheetTab][data-tab=evolve]');
     ok(!!(await p.$('#flow-evolve')), 'Evolve tab opens the evolve tools');

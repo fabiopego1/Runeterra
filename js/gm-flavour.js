@@ -14,8 +14,8 @@
     ['Archetype', 'Caminho', 'Passo 3'],
     ['Personality', 'Personalidade', 'Passo 4'],
     ['Red Abilities', 'Supremas', 'Passo 5'],
-    ['Retcon', '(não usado)', 'A Forja pula este passo do livro'],
-    ['Health', 'Vida', 'Passo 6'],
+    ['Retcon', 'Reviravolta do Destino', 'Passo 6'],
+    ['Health', 'Vida', 'Passo 7'],
     ['Finishing Touches', 'Lenda', 'Nome, visual e a ficha'],
     ['(não existe)', 'Povo', 'Passo extra, só para interpretação: humano, vastaya, yordle, espírito e outros'],
     ['(não existe)', 'Terra Natal', 'Passo extra, só para interpretação: a região de Runeterra'],
@@ -37,9 +37,9 @@
     ['Out ability', 'Habilidade de Nocaute', ''],
     ['Signature Weaponry', 'Arma Emblemática', ''],
     ['Signature Vehicle', 'Montaria Emblemática', ''],
-    ['Rp quality ("high concept")', 'Qualidade Marcante', 'Conceito central do herói'],
-    ['Issue / Back Issues', 'Edição / Edições Anteriores', 'Sessões de jogo'],
-    ['Collection', 'Coleção', 'Arco da campanha; é quando o herói evolui'],
+    ['Rp quality ("high concept")', 'Qualidade Marcante', 'Conceito central do campeão'],
+    ['Issue / Back Issues', 'Sessão / Sessões Anteriores', 'Sessões de jogo'],
+    ['Collection', 'Memória', 'Arco da campanha; é quando o campeão evolui'],
     ['GM', 'Mestre', '']
   ];
 
@@ -71,6 +71,8 @@
       rows: cats.filter(([, d]) => d.kind !== 'power').flatMap(([, d]) => d.items.map(i => [i[1], i[2], d.rt, i[4]])) });
     S.push({ id: 'principios', title: 'Princípios', sc: 'Principles', cols: ['Sentinels', 'Runeterra', 'Categoria', 'Leitura em Runeterra'],
       rows: W.PRINCIPLES.map(p => [p.name, principleName(p.id), `${W.T(p.cat)} (${p.cat})`, (W.PRINCIPLE_LORE[p.id] || [])[1]]) });
+    S.push({ id: 'reviravoltas', title: 'Reviravoltas do Destino', sc: 'Retcons', cols: ['Sentinels', 'Runeterra', 'Efeito'],
+      rows: W.RETCONS.map(r => [r.sc, r.rt, r.desc || '']) });
     const abil = Object.keys(W.ABILITIES).filter(n => I.names[n]).sort((a, b) => a.localeCompare(b));
     S.push({ id: 'habilidades', title: 'Habilidades', sc: 'Abilities', cols: ['Sentinels', 'Runeterra', 'Tipo'],
       rows: abil.map(n => [n, I.names[n], { A: 'Ação', R: 'Reação', I: 'Inerente' }[W.ABILITIES[n].type] || '']) });

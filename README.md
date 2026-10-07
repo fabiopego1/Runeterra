@@ -10,7 +10,7 @@ Site publicado: https://fabiopego1.github.io/Runeterra/
   * Método **Construído** (você escolhe tudo) ou **Guiado** (rola os dados e escolhe entre o que eles liberam, com uma nova rolagem por capítulo).
   * Todo termo sublinhado explica o que significa ao passar o mouse (ou tocar, no celular).
   * O progresso fica salvo no navegador. O menu **Arquivo** exporta e importa o campeão em `.json`, imprime a ficha e recomeça do zero.
-  * **Ficha do campeão** na tela, para imprimir ou em **PDF** vetorial (`js/sheet-pdf.js`, com [pdf-lib](https://pdf-lib.js.org/) e fontkit em `js/vendor/`). Pontos, coleções e Vida atual continuam editáveis em qualquer leitor de PDF.
+  * **Ficha do campeão** na tela, para imprimir ou em **PDF** vetorial (`js/sheet-pdf.js`, com [pdf-lib](https://pdf-lib.js.org/) e fontkit em `js/vendor/`). Pontos, memórias e Vida atual continuam editáveis em qualquer leitor de PDF.
 * **Lore** (`lore.html`): o planeta, a linha do tempo, as regiões e os povos, com espaço para imagens.
 * **Regras** (`regras.html`): o resumo para a mesa, em três partes, com busca e glossário de A a Z. Na Forja, a tecla `?` abre essa página.
 * **Escudo do Mestre** (`gm.html`): página protegida por senha (veja abaixo).
