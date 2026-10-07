@@ -1678,3 +1678,11 @@ body.ro-lock { overflow: hidden; }
 .rc-diff { margin: 12px 0 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .rc-warn { margin-top: 10px; padding: 10px 14px; border: 1px solid var(--red, #c0504d); color: var(--text); }
 .rc-warn ul { margin: 6px 0 0 18px; padding: 0; }
+
+.rc-menu { border: 1px solid var(--line-2); padding: 12px; margin-top: 10px; }
+.rc-menu-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.rc-ab { display: block; width: 100%; text-align: left; font: inherit; color: var(--text); background: transparent; border-top: 0; border-right: 0; border-bottom: 0; cursor: pointer; }
+.rc-ab:hover { background: var(--ink-2); }
+.rc-using { margin-left: auto; font: 600 .72rem var(--font-ui); letter-spacing: .1em; text-transform: uppercase; color: var(--text-2); }
+.rc-empty { margin-top: 10px; }
+.rc-slot-btns { display: flex; gap: 16px; margin-top: 10px; }
