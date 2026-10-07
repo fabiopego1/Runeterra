@@ -705,6 +705,7 @@
         const rq = reqFromText(pers.out);
         const outOk = st.pers.outTrait && owned(R, rq.kind).some(t => t.key === st.pers.outTrait);
         if (rq.kind !== 'none') add('out', tr('Set up your Out ability'), outOk ? [] : [tr('Choose which trait your Out ability uses.')], tr('Pick the power or quality used when you\'re knocked out.'));
+        else add('out', tr('Your Out ability'), [], tr('Nothing to choose: this Temperament\'s Out ability uses no power or quality.'));
         if (ar && ar.divided) add('pers2', tr('Temperament of your other form (optional)'), [], '', { opt: true });
         const up = R.before.personality[st.pers.upgrade];
         if (pers.extra === 'impulsive') add('reckless', tr('Reckless upgrade'), up && dn(up.die) < 12 ? [] : [tr('Choose a power or quality to upgrade.')], tr('Pick one trait to raise by one die size.'));
@@ -1383,6 +1384,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       out: () => {
         const rq = reqFromText(pe.out);
         const outKeys = sortTraits(owned(R, rq.kind)).map(t => t.key);
+        if (rq.kind === 'none') return `<p class="muted"${tip(`<h5>${tr('Out ability')}</h5>${window.COLOR_INFO.out}`)}>${tr('Used when your champion is knocked out.')}</p><div class="ab out picked"><div class="ab-text">${rulesText(pe.out, {})}</div></div>`;
         return `<p class="muted"${tip(`<h5>${tr('Out ability')}</h5>${window.COLOR_INFO.out}`)}>${tr('Used when your champion is knocked out.')}</p><div class="ab out picked"><div class="ab-text">${rulesText(pe.out, { trait: st.pers.outTrait })}</div>
           <div class="ab-cfg"><div class="cfg-l">${tr('Uses')}</div>${traitChips('pers.outTrait', outKeys, st.pers.outTrait)}</div></div>`;
       },
