@@ -1532,6 +1532,25 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     return `<button type="button" class="principle${on ? ' selected' : ''}" data-act="${act}" data-id="${slot || p.id}"${tip(t)}>` +
       `<div class="pn">${esc(lore[0])}${tag ? ` <span class="muted">(${esc(tag)})</span>` : ''}</div><div class="po">${esc(tr(p.cat))}</div><div class="ph">${esc(p.rp.replace(/\[energy\/element\]/g, PT ? 'seu elemento' : 'your element'))}</div></button>`;
   }
+  // One New Technique slot: an empty slot opens a menu with every ability you have (with its text);
+  // a chosen one shows as a card with the row of powers/qualities it may use now.
+  function retconSlot(R, abK, trK, skip, required) {
+    const rc = st.retcon, list = retconAbilities(R, skip), cur = list.find(o => o.x.iid === rc[abK]);
+    const open = ui.rcOpen === abK || (!cur && required && ui.rcOpen == null);
+    const colorName = c => tr(c === 'green' ? 'Green' : c === 'yellow' ? 'Yellow' : 'Red');
+    const head = (x, trait) => `<div class="ab-top"><span class="ab-name">${esc(abName(x.name))}</span><span class="pill ${x.color}">${colorName(x.color)}</span><span class="ab-type">${esc(A[x.name].type || '')}</span>${trait ? `<span class="rc-using">${tr('uses')} ${esc(traitName(trait))}</span>` : ''}</div>`;
+    if (open) {
+      const cards = list.map(o => `<button type="button" class="rc-ab ab ${o.x.color}${rc[abK] === o.x.iid ? ' picked' : ''}" data-act="rcPick" data-slot="${abK}" data-id="${esc(o.x.iid)}">${head(o.x, o.x.entry.baseTrait)}<div class="ab-text">${rulesText(A[o.x.name].text, o.x.entry)}</div></button>`).join('');
+      return `<div class="rc-menu"><div class="rc-menu-h"><b>${tr('Choose one of your abilities')}</b>${cur || !required ? `<button type="button" class="linkbtn" data-act="rcOpen" data-slot="${abK}">${tr('Close')}</button>` : ''}</div><div class="ab-list">${cards}</div></div>`;
+    }
+    if (!cur) return `<button type="button" class="btn rc-empty" data-act="rcOpen" data-slot="${abK}">${ico('mark')} ${tr('Choose an ability')}</button>`;
+    const base = cur.x.entry.baseTrait, now = rc[trK] && cur.keys.includes(rc[trK]) ? rc[trK] : null;
+    const keys = [base].concat(cur.keys);
+    const preview = { ...cur.x.entry, trait: now || base };
+    return `<div class="ab ${cur.x.color} picked">${head(cur.x)}<div class="ab-text">${rulesText(A[cur.x.name].text, preview)}</div>` +
+      `<div class="ab-cfg"><div class="cfg-l">${tr('Uses power or quality')}</div>${traitChips('retcon.' + trK, keys, now, { [base]: tr('Its current trait: pick another one') })}` +
+      `<div class="rc-slot-btns"><button type="button" class="linkbtn" data-act="rcOpen" data-slot="${abK}">${tr('Change ability')}</button>${required ? '' : `<button type="button" class="linkbtn" data-act="rcPick" data-slot="${abK}" data-id="">${tr('Remove')}</button>`}</div></div></div>`;
+  }
   function renderRetcon() {
     const R = R0;
     if (!persDef()) return lockedPanel(tr('Twist of Fate'), tr('Choose your Temperament first.'), 'personality');
@@ -1540,12 +1559,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const traitsOf = kind => sortTraits(Object.values(B).filter(t => TRAIT[t.key].kind === kind)).map(t => t.key);
     const H = {
       pick: () => `<div class="principles">${window.RETCONS.filter(x => !x.back || rc.type === x.id).map(x => `<button class="principle${rc.type === x.id ? ' selected' : ''}" data-act="retcon" data-id="${x.id}"${x.id === 'red-up' && rc.type !== x.id && persDef() && persDef().status[2] === 'd12' ? ' disabled' : ''}${tip(`<h5>${esc(x.rt)}</h5>${esc(x.desc || x.sc)}`)}><div class="pn">${esc(x.rt)}</div><div class="ph">${esc(x.desc || x.sc)}</div></button>`).join('')}</div>`,
-      cfg2: () => {
-        const list = retconAbilities(R, rc.ab), cur = list.find(o => o.x.iid === rc.ab2);
-        const opts = list.map(o => `<option value="${esc(o.x.iid)}"${rc.ab2 === o.x.iid ? ' selected' : ''}>${esc(abName(o.x.name))} · ${tr(o.x.color === 'green' ? 'Green' : o.x.color === 'yellow' ? 'Yellow' : 'Red')} (${esc(traitName(o.x.entry.baseTrait))})</option>`).join('');
-        return `<div class="grid2"><label class="field"><span>${tr('Ability')} 2 (${tr('optional')})</span><select data-bind="retcon.ab2"><option value="">${tr('— none —')}</option>${opts}</select></label></div>` +
-          (cur ? socket({ bind: 'retcon.trait2', cur: cur.keys.includes(rc.trait2) ? rc.trait2 : null, groups: traitGroups(cur.keys, k => traitItem(k, { after: B[k].die })), empty: tr('New power or quality for this ability') }) : '');
-      },
+      cfg2: () => retconSlot(R, 'ab2', 'trait2', rc.ab, false),
       cfg: () => {
         if (rc.type === 'swap-powers' || rc.type === 'swap-quals') {
           const keys = traitsOf(rc.type === 'swap-powers' ? 'power' : 'quality');
@@ -1572,13 +1586,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
             `<h4 class="rc-h">${tr('Which principle takes its place? (any category)')}</h4><div class="principles">${to}</div>${el}`;
         }
         if (rc.type === 'change-ability') {
-          const block = (n, abK, trK, skip, required) => {
-            const list = retconAbilities(R, skip), cur = list.find(o => o.x.iid === rc[abK]);
-            const opts = list.map(o => `<option value="${esc(o.x.iid)}"${rc[abK] === o.x.iid ? ' selected' : ''}>${esc(abName(o.x.name))} · ${tr(o.x.color === 'green' ? 'Green' : o.x.color === 'yellow' ? 'Yellow' : 'Red')} (${esc(traitName(o.x.entry.baseTrait))})</option>`).join('');
-            return `<div class="grid2"><label class="field"><span>${tr('Ability')} ${n}${required ? '' : ' (' + tr('optional') + ')'}</span><select data-bind="retcon.${abK}"><option value="">${tr('— choose —')}</option>${opts}</select></label></div>` +
-              (cur ? socket({ bind: 'retcon.' + trK, cur: cur.keys.includes(rc[trK]) ? rc[trK] : null, groups: traitGroups(cur.keys, k => traitItem(k, { after: B[k].die })), empty: tr('New power or quality for this ability') }) : '');
-          };
-          return `<p class="muted">${tr('Pick up to two abilities and the power or quality each one uses from now on. Here you may use any power or quality you have, even ones outside your Path\'s list.')}</p>` + block(1, 'ab', 'trait', null, true);
+          return `<p class="muted">${tr('Pick up to two abilities and the power or quality each one uses from now on. Here you may use any power or quality you have, even ones outside your Path\'s list.')}</p>` + retconSlot(R, 'ab', 'trait', null, true);
         }
         if (rc.type === 'red-up' && R.status) return `<p>${tr('Red status die:')} ${die(persDef().status[2])} → ${die(R.status[2])}</p>`;
         if (rc.type === 'extra-red') {
@@ -2548,11 +2556,19 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       if (i >= 0) f.splice(i, 1); else f.push(el.dataset.name);
       render(); return;
     }
+    if (act === 'rcOpen') { ui.rcOpen = ui.rcOpen === el.dataset.slot ? '' : el.dataset.slot; render(); return; }
+    if (act === 'rcPick') {
+      const k = el.dataset.slot, t = k === 'ab' ? 'trait' : 'trait2', id = el.dataset.id || null;
+      if (st.retcon[k] !== id) st.retcon[t] = null;
+      st.retcon[k] = id; ui.rcOpen = '';
+      if (k === 'ab' && id && id === st.retcon.ab2) { st.retcon.ab2 = null; st.retcon.trait2 = null; }
+      render(); return;
+    }
     if (act === 'retconWhich') { st.retcon.which = el.dataset.id; render(); return; }
     if (act === 'retconPrinciple') { st.retcon.principle = el.dataset.id; render(); return; }
     if (act === 'retcon') {
       const was = st.retcon.type;
-      st.retcon = { type: was === el.dataset.id ? null : el.dataset.id }; ui.advance = true;
+      st.retcon = { type: was === el.dataset.id ? null : el.dataset.id }; ui.advance = true; ui.rcOpen = null;
       if (st.retcon.type !== 'extra-red') delete st.sel['red-extra'];
       render(); return;
     }

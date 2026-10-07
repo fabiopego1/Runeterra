@@ -486,20 +486,18 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.reload(); await p.waitForTimeout(500);
     ok(await p.$$eval('[data-act=retcon]', e => e.length) === 7, 'Twist of Fate offers all seven options of the book');
     await p.click('[data-act=retcon][data-id=change-ability]'); await p.waitForTimeout(200);
-    const abs = await p.$$eval('select[data-bind="retcon.ab"] option', e => e.map(o => o.value).filter(Boolean));
-    ok(abs.length > 2, 'New Technique lists the abilities that use a power or quality');
-    await p.selectOption('select[data-bind="retcon.ab"]', abs[0]); await p.waitForTimeout(200);
-    if (!(await p.$('.rune[data-bind="retcon.trait"]'))) await p.click('.sock-slot[data-bind="retcon.trait"]');
-    await p.click('.rune[data-bind="retcon.trait"]:not(.off)'); await p.waitForTimeout(300);
+    const abs = await p.$$eval('[data-act=rcPick][data-slot=ab]', e => e.map(o => o.dataset.id));
+    ok(abs.length > 2 && (await p.$$eval('[data-act=rcPick][data-slot=ab] .ab-text', e => e.every(x => x.textContent.trim().length > 20))), 'New Technique lists the abilities that use a power or quality, with their text');
+    await p.click('[data-act=rcPick][data-slot=ab]'); await p.waitForTimeout(250);
+    await p.click('.tchip[data-bind="retcon.trait"]:not([disabled]):not(.on)'); await p.waitForTimeout(300);
     const rc = await p.evaluate(() => window.ForgeDebug.state().retcon);
     ok(rc.type === 'change-ability' && rc.ab === abs[0] && !!rc.trait, 'New Technique stores the ability and its new power or quality');
     ok(!(await p.$('#flow-retcon-cfg .flow-todo, #flow-retcon-cfg.todo')), 'New Technique is complete once both are chosen');
-    if (!(await p.$('select[data-bind="retcon.ab2"]'))) { await p.click('#flow-retcon-cfg2 .flow-head'); await p.waitForTimeout(200); }
-    ok(!!(await p.$('select[data-bind="retcon.ab2"]')), 'New Technique offers a second ability');
-    const abs2 = await p.$$eval('select[data-bind="retcon.ab2"] option', e => e.map(o => o.value).filter(Boolean));
-    await p.selectOption('select[data-bind="retcon.ab2"]', abs2[0]); await p.waitForTimeout(200);
-    if (!(await p.$('.rune[data-bind="retcon.trait2"]'))) await p.click('.sock-slot[data-bind="retcon.trait2"]');
-    await p.click('.rune[data-bind="retcon.trait2"]:not(.off)'); await p.waitForTimeout(300);
+    if (!(await p.$('[data-act=rcOpen][data-slot=ab2]'))) { await p.click('#flow-retcon-cfg2 .flow-head'); await p.waitForTimeout(200); }
+    await p.click('[data-act=rcOpen][data-slot=ab2]'); await p.waitForTimeout(250);
+    ok(!!(await p.$('[data-act=rcPick][data-slot=ab2]')), 'New Technique offers a second ability');
+    await p.click('[data-act=rcPick][data-slot=ab2]'); await p.waitForTimeout(250);
+    await p.click('.tchip[data-bind="retcon.trait2"]:not([disabled]):not(.on)'); await p.waitForTimeout(300);
     const rc2 = await p.evaluate(() => window.ForgeDebug.state().retcon);
     ok(!!rc2.ab2 && rc2.ab2 !== rc2.ab && !!rc2.trait2, 'New Technique changes two abilities');
     await p.click('#flow-retcon-pick .flow-head'); await p.waitForTimeout(200);
