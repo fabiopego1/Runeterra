@@ -493,13 +493,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     const rc = await p.evaluate(() => window.ForgeDebug.state().retcon);
     ok(rc.type === 'change-ability' && rc.ab === abs[0] && !!rc.trait, 'New Technique stores the ability and its new power or quality');
     ok(!(await p.$('#flow-retcon-cfg .flow-todo, #flow-retcon-cfg.todo')), 'New Technique is complete once both are chosen');
-    if (!(await p.$('[data-act=rcOpen][data-slot=ab2]'))) { await p.click('#flow-retcon-cfg2 .flow-head'); await p.waitForTimeout(200); }
-    await p.click('[data-act=rcOpen][data-slot=ab2]'); await p.waitForTimeout(250);
-    ok(!!(await p.$('[data-act=rcPick][data-slot=ab2]')), 'New Technique offers a second ability');
-    await p.click('[data-act=rcPick][data-slot=ab2]'); await p.waitForTimeout(250);
-    await p.click('.tchip[data-bind="retcon.trait2"]:not([disabled]):not(.on)'); await p.waitForTimeout(300);
-    const rc2 = await p.evaluate(() => window.ForgeDebug.state().retcon);
-    ok(!!rc2.ab2 && rc2.ab2 !== rc2.ab && !!rc2.trait2, 'New Technique changes two abilities');
+    ok(!(await p.$('[data-slot=ab2]')) && !(await p.$$eval('[data-act=rcPick][data-slot=ab] .pill.red', e => e.length)), 'New Technique changes one ability and leaves the Ultimates out');
     await p.click('#flow-retcon-pick .flow-head'); await p.waitForTimeout(200);
     await p.click('[data-act=retcon][data-id=extra-red]'); await p.waitForTimeout(200);
     await p.click('.redcat-h'); await p.waitForTimeout(200);

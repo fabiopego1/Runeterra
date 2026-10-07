@@ -136,7 +136,7 @@
   patch(W.RETCONS, {
     'swap-powers': ['Dons Trocados', 'Troque dois dados quaisquer entre os seus poderes.'],
     'swap-quals': ['Retreinado', 'Troque dois dados quaisquer entre as suas qualidades.'],
-    'change-ability': ['Nova Técnica', 'Escolha um poder ou qualidade diferente para uma das suas habilidades.'],
+    'change-ability': ['Nova Técnica', 'Escolha um poder ou qualidade diferente para uma das suas habilidades da Fonte ou do Caminho. As Supremas não entram aqui.'],
     'add-d6': ['Talento Oculto', 'Adicione um poder ou qualidade d6 de qualquer categoria.'],
     'red-up': ['Vontade de Ferro', 'Aumente seu dado de status Vermelho em um tamanho (máximo d12).'],
     'change-principle': ['Convicções Mudadas', 'Troque um dos seus princípios por qualquer outro princípio.'],
