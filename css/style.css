@@ -1672,3 +1672,9 @@ body.ro-lock { overflow: hidden; }
 .region-card.blocked:hover { opacity: .75; }
 .block-note { display: flex; align-items: center; gap: 6px; }
 .block-note .ico { flex: none; width: 14px; height: 14px; }
+
+/* Twist of Fate screens */
+.rc-h { margin: 18px 0 8px; font: 600 .78rem var(--font-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--text-2); }
+.rc-diff { margin: 12px 0 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rc-warn { margin-top: 10px; padding: 10px 14px; border: 1px solid var(--red, #c0504d); color: var(--text); }
+.rc-warn ul { margin: 6px 0 0 18px; padding: 0; }

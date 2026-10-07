@@ -176,7 +176,8 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await next();
     await p.click('[data-act=retcon][data-id=change-principle]'); await p.waitForTimeout(100);
     const princ = await p.evaluate(() => { const s = window.ForgeDebug.state(); return [s.bg.principle, s.arch.principle]; });
-    const popts = await p.$$eval('select[data-bind="retcon.principle"] option', os => os.map(o => o.value));
+    const popts = await p.$$eval('[data-act=retconPrinciple]', os => os.map(o => o.dataset.id));
+    ok(await p.$$eval('[data-act=retconWhich]', e => e.length === 2 && e.every(x => /\((Origem|Caminho)/.test(x.textContent))), 'Changed Convictions names each current principle and where it came from');
     ok(popts.length > 5 && princ.every(x => !popts.includes(x)), 'Twist of Fate cannot swap in a principle you already have');
     await p.click('.step-footer [data-act=back]'); await p.waitForTimeout(100);
     ok(!!(await p.$('#flow-retcon-pick.current')), 'Back reopens the previous section of the chapter');
@@ -185,7 +186,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('.hchoice', e => /Definitivo/.test(e.textContent)), 'rolling for Health warns it cannot be undone');
     await p.click('.step-footer [data-act=back]'); await p.waitForTimeout(600);
     ok(await step() === 'Reviravolta do Destino', 'Back from the first section goes to the previous chapter');
-    await next(); await next();
+    for (let i = 0; i < 5 && !(await p.$('input[data-bind="info.name"]')); i++) await next();   // slow machines need a beat per chapter
     ok(!(await p.$('#stage .flow-todo')) && await p.$eval('.step-footer', f => !!f), 'nothing in the Legend chapter is required');
     await p.fill('input[data-bind="info.name"]', 'Bruxaria'); await p.press('input[data-bind="info.name"]', 'Enter'); await p.waitForTimeout(100);
     ok(await p.$$eval('.grid3 .field span', l => l.slice(0, 2).map(e => e.textContent).join('|')) === 'Nome|Título', 'the Legend asks for the Name first, then the Title');
@@ -493,6 +494,14 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     const rc = await p.evaluate(() => window.ForgeDebug.state().retcon);
     ok(rc.type === 'change-ability' && rc.ab === abs[0] && !!rc.trait, 'New Technique stores the ability and its new power or quality');
     ok(!(await p.$('#flow-retcon-cfg .flow-todo, #flow-retcon-cfg.todo')), 'New Technique is complete once both are chosen');
+    if (!(await p.$('select[data-bind="retcon.ab2"]'))) { await p.click('#flow-retcon-cfg2 .flow-head'); await p.waitForTimeout(200); }
+    ok(!!(await p.$('select[data-bind="retcon.ab2"]')), 'New Technique offers a second ability');
+    const abs2 = await p.$$eval('select[data-bind="retcon.ab2"] option', e => e.map(o => o.value).filter(Boolean));
+    await p.selectOption('select[data-bind="retcon.ab2"]', abs2[0]); await p.waitForTimeout(200);
+    if (!(await p.$('.rune[data-bind="retcon.trait2"]'))) await p.click('.sock-slot[data-bind="retcon.trait2"]');
+    await p.click('.rune[data-bind="retcon.trait2"]:not(.off)'); await p.waitForTimeout(300);
+    const rc2 = await p.evaluate(() => window.ForgeDebug.state().retcon);
+    ok(!!rc2.ab2 && rc2.ab2 !== rc2.ab && !!rc2.trait2, 'New Technique changes two abilities');
     await p.click('#flow-retcon-pick .flow-head'); await p.waitForTimeout(200);
     await p.click('[data-act=retcon][data-id=extra-red]'); await p.waitForTimeout(200);
     await p.click('.redcat-h'); await p.waitForTimeout(200);
