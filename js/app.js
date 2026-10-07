@@ -107,6 +107,7 @@
       else out.retcon = { type: null };
     } else if (!out.retcon) out.retcon = { type: null };
     delete out.noRetcon;
+    if (out.retcon) { delete out.retcon.ab2; delete out.retcon.trait2; }   // New Technique changes one ability
     // Twist of Fate "extra Red ability": it used to be a third pick in the Ultimates chapter, now it has its own pick.
     if (out.retcon && out.retcon.type === 'extra-red' && out.sel && Array.isArray(out.sel.red) && out.sel.red.length > 2) out.sel['red-extra'] = out.sel.red.splice(2);
     // Older saves stored element choices as "Energia Hextec Bruta (Nuclear)", or under an earlier name: use the current name.
@@ -769,12 +770,6 @@
         }
       }
       add('cfg', tr('Set it up'), I, tr('Complete the choice for your Twist of Fate.'));
-      if (rc.type === 'change-ability') {
-        const I2 = [], o2 = rc.ab2 && retconAbilities(R, rc.ab).find(y => y.x.iid === rc.ab2);
-        if (rc.ab2 && !o2) I2.push(tr('Pick the second ability to change, or clear it.'));
-        else if (rc.ab2 && (!rc.trait2 || !o2.keys.includes(rc.trait2))) I2.push(tr('Pick the new power or quality for the second ability.'));
-        add('cfg2', tr('A second ability (optional)'), I2, tr('You may change one more ability. Skip it to keep just the first.'), { opt: true });
-      }
     }
     if (id === 'health') add('review', tr('Review your Health'), st.health.mode === 'roll' && st.health.roll != null && !(st.health.roll >= 1 && st.health.roll <= 8) ? [tr('Roll the d8 again.')] : [], tr('Pick the trait that adds to your Health and whether to roll.'), { opt: true });
     if (id === 'finish') {
@@ -1184,7 +1179,6 @@
       case 'split': { const sp = st.arch.split || {}; const b = Object.keys(sp).filter(k => sp[k] === 'both'); return b.length ? tr('Both forms: {list}', { list: b.map(k => esc(traitName(k))).join(', ') }) : ''; }
       case 'reckless': return st.pers.upgrade ? esc(traitName(st.pers.upgrade)) : '';
       case 'review': { const h = healthCalc(R); return h ? tr('Health {n}', { n: h.max }) : ''; }
-      case 'cfg2': { const x = allAbilities(R).find(y => y.iid === st.retcon.ab2); return x && st.retcon.trait2 ? `${esc(abName(x.name))}: ${esc(traitName(x.entry.baseTrait))} → ${esc(traitName(st.retcon.trait2))}` : tr('None'); }
       case 'cfg': {   // Twist of Fate, before → after
         const rc = st.retcon, B = R.before.retcon || {};
         if ((rc.type === 'swap-powers' || rc.type === 'swap-quals') && B[rc.a] && B[rc.b]) return `${esc(traitName(rc.a))} ${die(B[rc.a].die, 'sm')} → ${die(B[rc.b].die, 'sm')} · ${esc(traitName(rc.b))} ${die(B[rc.b].die, 'sm')} → ${die(B[rc.a].die, 'sm')}`;
@@ -1565,7 +1559,6 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     const traitsOf = kind => sortTraits(Object.values(B).filter(t => TRAIT[t.key].kind === kind)).map(t => t.key);
     const H = {
       pick: () => `<div class="principles">${window.RETCONS.filter(x => !x.back || rc.type === x.id).map(x => `<button class="principle${rc.type === x.id ? ' selected' : ''}" data-act="retcon" data-id="${x.id}"${x.id === 'red-up' && rc.type !== x.id && persDef() && persDef().status[2] === 'd12' ? ' disabled' : ''}${tip(`<h5>${esc(x.rt)}</h5>${esc(x.desc || x.sc)}`)}><div class="pn">${esc(x.rt)}</div><div class="ph">${esc(x.desc || x.sc)}</div></button>`).join('')}</div>`,
-      cfg2: () => retconSlot(R, 'ab2', 'trait2', rc.ab, false),
       cfg: () => {
         if (rc.type === 'swap-powers' || rc.type === 'swap-quals') {
           const keys = traitsOf(rc.type === 'swap-powers' ? 'power' : 'quality');
@@ -1592,7 +1585,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
             `<h4 class="rc-h">${tr('Which principle takes its place? (any category)')}</h4><div class="principles">${to}</div>${el}`;
         }
         if (rc.type === 'change-ability') {
-          return `<p class="muted">${tr('Pick up to two abilities and the power or quality each one uses from now on. Here you may use any power or quality you have, even ones outside your Path\'s list.')}</p>` + retconSlot(R, 'ab', 'trait', null, true);
+          return `<p class="muted">${tr('Pick one ability from your Source or Path and the power or quality it uses from now on. Ultimates are not included here. Here you may use any power or quality you have, even ones outside your Path\'s list.')}</p>` + retconSlot(R, 'ab', 'trait', null, true);
         }
         if (rc.type === 'red-up' && R.status) return `<p>${tr('Red status die:')} ${die(persDef().status[2])} → ${die(R.status[2])}</p>`;
         if (rc.type === 'extra-red') {
@@ -1692,7 +1685,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   function evoAb(x) {
     const e = x.entry || {};
     const rc = st.retcon;   // Twist of Fate: New Technique (up to two abilities)
-    const rcT = rc.type === 'change-ability' ? [[rc.ab, rc.trait], [rc.ab2, rc.trait2]].filter(([a, t]) => a === x.iid && t && TRAIT[t]).map(([, t]) => t)[0] : null;
+    const rcT = rc.type === 'change-ability' && rc.ab === x.iid && rc.trait && TRAIT[rc.trait] ? rc.trait : null;
     const entry = { ...e, trait: evoTrait(rcT || e.trait), trait2: evoTrait(e.trait2), baseTrait: e.trait };
     const o = st.evo.abilities[x.iid];
     if (!o) return { ...x, entry };
@@ -2564,10 +2557,9 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
     if (act === 'rcOpen') { ui.rcOpen = ui.rcOpen === el.dataset.slot ? '' : el.dataset.slot; render(); return; }
     if (act === 'rcPick') {
-      const k = el.dataset.slot, t = k === 'ab' ? 'trait' : 'trait2', id = el.dataset.id || null;
-      if (st.retcon[k] !== id) st.retcon[t] = null;
-      st.retcon[k] = id; ui.rcOpen = '';
-      if (k === 'ab' && id && id === st.retcon.ab2) { st.retcon.ab2 = null; st.retcon.trait2 = null; }
+      const id = el.dataset.id || null;
+      if (st.retcon.ab !== id) st.retcon.trait = null;
+      st.retcon.ab = id; ui.rcOpen = '';
       render(); return;
     }
     if (act === 'retconWhich') { st.retcon.which = el.dataset.id; render(); return; }
@@ -2637,8 +2629,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     let path = el.dataset.bind;
     if (el.dataset.rename) { st.renames[el.dataset.rename] = el.value; return; }
     if (path.startsWith('pers.qname') || path === 'pers.qdesc' || path.startsWith('info.') || path.startsWith('traitNames.') || path === 'arch.notes' || (path.startsWith('play.') && el.type !== 'checkbox')) v = el.value;
-    if (path === 'retcon.ab') { st.retcon.trait = null; if (v && v === st.retcon.ab2) { st.retcon.ab2 = null; st.retcon.trait2 = null; } }   // a new ability starts over
-    if (path === 'retcon.ab2') st.retcon.trait2 = null;
+    if (path === 'retcon.ab') st.retcon.trait = null;   // a new ability starts over
     setPath(st, path, v);
   }
   document.addEventListener('change', ev => {

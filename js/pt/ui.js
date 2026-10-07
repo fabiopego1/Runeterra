@@ -232,6 +232,7 @@ Object.assign(window.I18N.ui, {
  "Uses power or quality": "Usa poder ou qualidade",
  "Its current trait: pick another one": "É o traço atual: escolha outro",
  "Change ability": "Trocar habilidade",
+ "Pick one ability from your Source or Path and the power or quality it uses from now on. Ultimates are not included here. Here you may use any power or quality you have, even ones outside your Path's list.": "Escolha uma habilidade da sua Fonte ou do seu Caminho e o poder ou qualidade que ela passa a usar. As Supremas não entram aqui. Vale qualquer poder ou qualidade que você tenha, mesmo fora da lista do seu Caminho.",
  "Pick two different traits to swap.": "Escolha duas características diferentes para trocar.",
  "Pick the new d6 power or quality.": "Escolha o novo poder ou qualidade d6.",
  "Pick which principle to change and its replacement.": "Escolha qual princípio trocar e o substituto.",
