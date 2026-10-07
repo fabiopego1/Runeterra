@@ -474,6 +474,26 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(!dupSrc.length && !dupFile.length, `no picture is used twice${dupSrc.length || dupFile.length ? ': ' + dupSrc.concat(dupFile).join(', ') : ''}`);
   }
   errors.forEach(e => console.log('     ', e));
+  // Book p.112, Retcon: "Choose a different power or quality used in one of your abilities" may leave the Path's list.
+  {
+    const p = await newPage();
+    await p.goto(`${BASE}/index.html`);
+    const S = JSON.parse(FIXTURE);
+    Object.assign(S, { step: 'retcon', maxStep: 10, tour: { on: false, seen: {} }, retcon: { type: null } });
+    delete S.noRetcon;
+    await p.evaluate(s => localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)), S);
+    await p.reload(); await p.waitForTimeout(500);
+    ok(await p.$$eval('[data-act=retcon]', e => e.length) === 7, 'Twist of Fate offers all seven options of the book');
+    await p.click('[data-act=retcon][data-id=change-ability]'); await p.waitForTimeout(200);
+    const abs = await p.$$eval('select[data-bind="retcon.ab"] option', e => e.map(o => o.value).filter(Boolean));
+    ok(abs.length > 2, 'New Technique lists the abilities that use a power or quality');
+    await p.selectOption('select[data-bind="retcon.ab"]', abs[0]); await p.waitForTimeout(200);
+    if (!(await p.$('.rune[data-bind="retcon.trait"]'))) await p.click('.sock-slot[data-bind="retcon.trait"]');
+    await p.click('.rune[data-bind="retcon.trait"]:not(.off)'); await p.waitForTimeout(300);
+    const rc = await p.evaluate(() => window.ForgeDebug.state().retcon);
+    ok(rc.type === 'change-ability' && rc.ab === abs[0] && !!rc.trait, 'New Technique stores the ability and its new power or quality');
+    ok(!(await p.$('#flow-retcon-cfg .flow-todo, #flow-retcon-cfg.todo')), 'New Technique is complete once both are chosen');
+  }
   // Book p.44 "I've Already Got That": a Path's required trait you already have can take a bigger new die,
   // and its old die comes back to be used in the same step.
   {

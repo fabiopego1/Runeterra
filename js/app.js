@@ -745,6 +745,11 @@
       const rc = st.retcon, I = [];
       add('pick', tr('Choose one Twist of Fate'), rc.type ? [] : [tr('Choose one option.')], tr('Pick one small tweak to your champion.'));
       if ((rc.type === 'swap-powers' || rc.type === 'swap-quals') && (!rc.a || !rc.b || rc.a === rc.b)) I.push(tr('Pick two different traits to swap.'));
+      if (rc.type === 'change-ability') {
+        const o = retconAbilities(R).find(y => y.x.iid === rc.ab);
+        if (!o) I.push(tr('Pick the ability to change.'));
+        else if (!rc.trait || !o.keys.includes(rc.trait)) I.push(tr('Pick the new power or quality for this ability.'));
+      }
       if (rc.type === 'add-d6' && !rc.key) I.push(tr('Pick the new d6 power or quality.'));
       if (rc.type === 'change-principle' && (!rc.which || !rc.principle)) I.push(tr('Pick which principle to change and its replacement.'));
       if (rc.type === 'change-principle' && rc.principle && [st.bg.principle, st.arch.principle].includes(rc.principle)) I.push(tr('Your two principles must be different.'));
@@ -1467,6 +1472,18 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     return stepPanel('Step 6 · Sentinels: Red Abilities', tr('Ultimates'), 'red', flowHtml('red', sectionsFor('red', R), H), false);
   }
 
+  // New Technique: any ability that uses a power or quality, and every power/quality you own that it can use
+  // (the Path's list does not apply here: this is the way out of it).
+  function retconAbilities(R) {
+    const B = R.before.retcon, out = [];
+    for (const x of allAbilities(R)) {
+      if (!x.gkey || !A[x.name] || !usesTrait(x.name)) continue;
+      const cur = x.entry.baseTrait;
+      const keys = sortTraits(Object.values(B)).map(t => t.key).filter(k => k !== cur && evoFits(x.name, { ...x.entry, trait: k }, B));
+      if (keys.length) out.push({ x, keys });
+    }
+    return out;
+  }
   function renderRetcon() {
     const R = R0;
     if (!persDef()) return lockedPanel(tr('Twist of Fate'), tr('Choose your Temperament first.'), 'personality');
@@ -1491,7 +1508,13 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
           const opts = PRINCIPLES.filter(p => !mine.includes(p.id) || rc.principle === p.id).map(p => `<option value="${p.id}"${rc.principle === p.id ? ' selected' : ''}>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}${PT ? ` (${esc(tr(p.cat))})` : ` — ${esc(tr(p.cat))}`}</option>`).join('');
           return `<div class="grid2"><label class="field"><span>${tr('Replace')}</span><select data-bind="retcon.which"><option value="">${tr('— choose —')}</option><option value="bg"${rc.which === 'bg' ? ' selected' : ''}>${tr('Origin principle')}</option><option value="arch"${rc.which === 'arch' ? ' selected' : ''}>${tr('Path principle')}</option></select></label><label class="field"><span>${tr('With (any category)')}</span><select data-bind="retcon.principle"><option value="">${tr('— choose —')}</option>${opts}</select></label></div>`;
         }
-        if (rc.type === 'change-ability') return `<p class="muted">${tr('Go back to any ability (Source, Path or Ultimates) and change which power or quality it uses. Everything stays editable — this option simply makes it “official”.')}</p>`;
+        if (rc.type === 'change-ability') {
+          const list = retconAbilities(R), cur = list.find(o => o.x.iid === rc.ab);
+          const opts = list.map(o => `<option value="${esc(o.x.iid)}"${rc.ab === o.x.iid ? ' selected' : ''}>${esc(abName(o.x.name))} · ${tr(o.x.color === 'green' ? 'Green' : o.x.color === 'yellow' ? 'Yellow' : 'Red')} (${esc(traitName(o.x.entry.baseTrait))})</option>`).join('');
+          return `<p class="muted">${tr('Pick one ability and the power or quality it uses from now on. Here you may use any power or quality you have, even ones outside your Path\'s list.')}</p>` +
+            `<div class="grid2"><label class="field"><span>${tr('Ability')}</span><select data-bind="retcon.ab"><option value="">${tr('— choose —')}</option>${opts}</select></label></div>` +
+            (cur ? socket({ bind: 'retcon.trait', cur: cur.keys.includes(rc.trait) ? rc.trait : null, groups: traitGroups(cur.keys, k => traitItem(k)), empty: tr('New power or quality for this ability') }) : '');
+        }
         if (rc.type === 'red-up' && R.status) return `<p>${tr('Red status die:')} ${die(persDef().status[2])} → ${die(R.status[2])}</p>`;
         if (rc.type === 'extra-red') return `<p>${tr('Go back to <a href="#" data-act="go" data-step="red">Ultimates</a> and pick a third Red ability ({n}/3 chosen).', { n: (st.sel.red || []).length })}</p>`;
         return '';
@@ -1586,7 +1609,9 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   }
   function evoAb(x) {
     const e = x.entry || {};
-    const entry = { ...e, trait: evoTrait(e.trait), trait2: evoTrait(e.trait2) };
+    const rc = st.retcon;
+    const rcOn = rc.type === 'change-ability' && rc.ab === x.iid && rc.trait && TRAIT[rc.trait];   // Twist of Fate: New Technique
+    const entry = { ...e, trait: evoTrait(rcOn ? rc.trait : e.trait), trait2: evoTrait(e.trait2), baseTrait: e.trait };
     const o = st.evo.abilities[x.iid];
     if (!o) return { ...x, entry };
     return { ...x, name: o.name, orig: x.name, entry: { ...entry, ch: o.ch || {}, trait: o.trait || entry.trait } };
@@ -2518,6 +2543,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     let path = el.dataset.bind;
     if (el.dataset.rename) { st.renames[el.dataset.rename] = el.value; return; }
     if (path.startsWith('pers.qname') || path === 'pers.qdesc' || path.startsWith('info.') || path.startsWith('traitNames.') || path === 'arch.notes' || (path.startsWith('play.') && el.type !== 'checkbox')) v = el.value;
+    if (path === 'retcon.ab') st.retcon.trait = null;   // a new ability starts over
     setPath(st, path, v);
   }
   document.addEventListener('change', ev => {
