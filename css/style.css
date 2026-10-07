@@ -890,11 +890,13 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .cs-roll-note { font-size: .88rem; color: var(--text-3); font-style: italic; }
 .cs-example li { margin-bottom: 12px; line-height: 1.6; }
 
-.rules-print { margin-top: 14px; }
+.btn.rules-print { margin-top: 18px; padding: 16px 34px 17px 28px; font-size: 1.25rem; text-decoration: none; }
+.btn.rules-print svg { width: 22px; height: 22px; }
 /* One-page table summary (resumo.html): a dark card on screen, a dense A4 sheet on paper */
 .page-summary .page { max-width: 1180px; margin: 0 auto; padding: 28px 32px 40px; }
 .sum-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; color: var(--text-2); }
 .sum-bar p { margin: 0; }
+.sum-bar .btn { padding: 14px 30px 15px 24px; font-size: 1.2rem; }
 .sum-sheet { background: var(--ink-1); box-shadow: inset 0 0 0 1px var(--gold-lo); padding: 22px 26px; font-size: .9rem; line-height: 1.4; }
 .sum-head { display: flex; justify-content: space-between; align-items: end; gap: 18px; flex-wrap: wrap; border-bottom: 1px solid var(--gold-lo); padding-bottom: 10px; margin-bottom: 12px; }
 .sum-head h1 { font-size: 1.9rem; margin: 0; color: var(--gold-hi); }
