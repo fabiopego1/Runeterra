@@ -449,24 +449,34 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.click('#bp-viloes [data-bp=villain]'); await p.waitForTimeout(200);
     const tableNow = await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')));
     ok(tableNow.foes.length === foesBefore + 1 && tableNow.villains.length >= 1 && tableNow.villains[tableNow.villains.length - 1].max > 30, 'an example minion and an example villain go to the table with one click');
-    // villain builder: approach + archetype + upgrade, Health = approach + archetype + 5 x N + upgrades
-    await p.selectOption('#bancada [data-bpb=ap]', 'tactician'); await p.selectOption('#bancada [data-bpb=arch]', 'squad');
-    await p.check('#bancada [data-bpb=up][data-id=mook]');
-    for (const id of ['a:0', 'a:1', 'a:2']) await p.click(`#bancada [data-bpb=ab][data-id="${id}"]`, { force: true });
-    ok(await p.$eval('#bancada [data-bpb=ab][data-id="a:2"]', e => !e.checked && e.disabled), 'the villain builder stops at the number of abilities the approach gives');
-    await p.fill('#bancada [data-bpb=name]', 'Capitã Sylva');
-    ok(await p.$eval('#bancada .gm-bp-sheet', e => /20 \+ 5 \+ 5×4 = 45/.test(e.textContent)), 'the villain builder computes Health: approach + archetype + 5 x heroes + upgrades');
-    await p.click('#bancada [data-bpb=toTable]'); await p.waitForTimeout(200);
-    ok(await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')).villains.some(v => v.name === 'Capitã Sylva' && v.max === 45)), 'a villain built in the builder goes to the table');
-    // the builder warns when an approach's own rule is broken (Focused: two abilities on one power, one on another)
-    await p.selectOption('#bancada [data-bpb=ap]', 'focused');
-    await p.selectOption('#bancada [data-bpb=P][data-i="0"]', 'fire'); await p.selectOption('#bancada [data-bpb=P][data-i="1"]', 'water');
-    for (const id of ['a:1', 'a:3', 'a:5']) { await p.click(`#bancada [data-bpb=ab][data-id="${id}"]`); await p.selectOption(`#bancada [data-bpb=tk][data-id="${id}"][data-t="poder"]`, 'fire'); }
-    ok(await p.$eval('#bancada .gm-bp-warn', e => /Focado/.test(e.textContent)), 'the villain builder warns when the three Focused abilities use the same power');
-    await p.selectOption('#bancada [data-bpb=tk][data-id="a:5"][data-t="poder"]', 'water');
-    ok(!(await p.$$eval('#bancada .gm-bp-warn li', e => e.some(x => /Focado/.test(x.textContent)))), 'the warning goes away with two abilities on one power and one on another');
-    ok(await p.$$eval('#bancada .gm-bp-step', e => e.length) === 9 && await p.$$eval('#bancada .gm-bp-guide', e => e.length) === 9, 'the builder has nine steps, each with its own guide');
-    ok(await p.$eval('#bancada #g-viloes, #bancada [id^=g-]', e => !!e) && /sucesso automático/.test(await p.$eval('#bancada', e => e.textContent)), 'the masteries are explained');
+    // villain forge: a full-screen builder, one step per screen, options as cards
+    await p.click('#bancada [data-vf=open]'); await p.waitForSelector('.vf .vf-steps');
+    ok(await p.$$eval('.vf .vf-steps .vf-dot', e => e.length) === 9 && await p.$$eval('.vf .gm-bp-guide', e => e.length) === 1, 'the villain forge opens full screen with nine steps and a guide for the current one');
+    await p.fill('.vf [data-bpb=name]', 'Capitã Sylva'); await p.click('.vf [data-vf=next]');
+    ok(await p.$$eval('.vf .vf-card', e => e.length) >= 15 && await p.$eval('.vf .vf-card[data-v=tactician]', e => /coordena planos|escolha 2 de 6/.test(e.textContent)), 'the approaches are cards that show what each one does before it is chosen');
+    await p.click('.vf .vf-card[data-v=tactician]');
+    await p.click('.vf [data-vf=next]'); await p.click('.vf [data-vf=next]');
+    for (const id of ['a:0', 'a:1']) await p.click(`.vf .vf-card[data-id="${id}"]`);
+    ok(await p.$eval('.vf .vf-card[data-id="a:2"]', e => !e.classList.contains('on') && e.classList.contains('dis')), 'the villain forge stops at the number of abilities the approach gives');
+    await p.click('.vf [data-vf=next]'); await p.click('.vf .vf-card[data-v=squad]');
+    await p.click('.vf [data-vf=next]'); await p.click('.vf [data-vf=next]'); await p.click('.vf .vf-card[data-id=mook]');
+    await p.click('.vf [data-vf=go][data-i="8"]');
+    ok(await p.$eval('.vf .vf-sheet', e => /20 \+ 5 \+ 5×4/.test(e.textContent) && /45/.test(e.textContent)), 'the compact sheet computes Health: approach + archetype + 5 x heroes + upgrades');
+    await p.click('.vf [data-bpb=toTable]'); await p.waitForTimeout(200);
+    ok(await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')).villains.some(v => v.name === 'Capitã Sylva' && v.max === 45)), 'a villain built in the forge goes to the table');
+    // the forge warns when an approach's own rule is broken (Focused: two abilities on one power, one on another)
+    await p.click('.vf [data-vf=go][data-i="1"]'); await p.click('.vf .vf-card[data-v=focused]');
+    await p.click('.vf [data-vf=next]');
+    await p.selectOption('.vf [data-bpb=P][data-i="0"]', 'fire'); await p.selectOption('.vf [data-bpb=P][data-i="1"]', 'water');
+    await p.click('.vf [data-vf=next]');
+    for (const id of ['a:1', 'a:3', 'a:5']) { await p.click(`.vf .vf-card[data-id="${id}"]`); await p.selectOption(`.vf [data-bpb=tk][data-id="${id}"][data-t="poder"]`, 'fire'); }
+    ok(await p.$eval('.vf .gm-bp-warn', e => /Focado/.test(e.textContent)), 'the villain forge warns when the three Focused abilities use the same power');
+    await p.selectOption('.vf [data-bpb=tk][data-id="a:5"][data-t="poder"]', 'water');
+    ok(!(await p.$$eval('.vf .gm-bp-warn li', e => e.some(x => /Focado/.test(x.textContent)))), 'the warning goes away with two abilities on one power and one on another');
+    await p.click('.vf [data-vf=go][data-i="7"]'); await p.click('.vf .gm-bp-guide summary');
+    ok(/sucesso automático/.test(await p.$eval('.vf .gm-bp-guide', e => e.textContent)), 'the masteries are explained in the guide of their step');
+    await p.click('.vf [data-vf=close]');
+    ok(!(await p.$('.vf')) && await p.$eval('#bancada', e => !!e), 'the forge closes back to the Bancada');
     await p.context().close();
   } else console.log('skip GM Screen unlock (GM_PASSWORD not set)');
 
