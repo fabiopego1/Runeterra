@@ -926,9 +926,9 @@
       let note = '';
       if (s.key) note = s.upgrade ? tr('You already had {trait}: bind this {die} to something else.', { trait: traitName(s.key), die: s.die }) : s.swap ? tr('{trait} goes from {from} to {to}; its old {from} is below for you to use in this step.', { trait: traitName(s.key), from: s.swap.from, to: s.swap.to }) : '';
       if (s.freed) note = note || tr('This is the old {die} of {trait}. Use it for something else in this step.', { die: s.die, trait: traitName(s.from) });
-      return socket({ bind: `${stepPrefix}.assign.${s.id}`, d: s.die, cur: s.key, groups, empty: tr('Bind this {die} to a trait', { die: s.die }), note, freed: s.freed, hint, auto: false });
+      return socket({ bind: `${stepPrefix}.assign.${s.id}`, d: s.die, cur: s.key, groups, empty: tr('Bind this {die} to a trait', { die: s.die }), note, freed: s.freed, auto: false });
     }).join('');
-    return `<div class="assign"><div class="muted"${tip(tr('<h5>Assigning dice</h5>Only the die <b>size</b> matters. Each die becomes the rating of one power or quality. Powers and qualities you already have cannot be chosen again.'))}>${label}</div>${rows}</div>`;
+    return `<div class="assign">${hint ? `<p class="assign-opts">${esc(hint)}</p>` : ''}<div class="muted"${tip(tr('<h5>Assigning dice</h5>Only the die <b>size</b> matters. Each die becomes the rating of one power or quality. Powers and qualities you already have cannot be chosen again.'))}>${label}</div>${rows}</div>`;
   }
 
   function abilityCard(g, name, entry, picked, R, ctx = {}) {

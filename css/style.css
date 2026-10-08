@@ -1761,3 +1761,5 @@ body.ro-lock { overflow: hidden; }
 
 .sock-empty { display: grid; gap: 0.15rem; }
 .sock-hint { font-size: .78rem; line-height: 1.35; color: var(--text-3); letter-spacing: 0; }
+
+.assign-opts { margin: 0 0 0.6rem; color: var(--text-2); }
