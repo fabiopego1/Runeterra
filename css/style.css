@@ -1532,8 +1532,9 @@ a.brand, a.hbtn { text-decoration: none; }
 
 /* Chapter tools: the Guide button (reopens this chapter's popup) next to the method toggle */
 .chapter-tools { display: flex; align-items: center; gap: 0.694rem; flex-wrap: wrap; justify-content: flex-end; }
-.guide-btn { border-color: var(--gold-lo); color: var(--gold-hi); }
-.guide-btn .ico { width: 0.81rem; height: 0.81rem; }
+.btn.guide-btn { border-color: var(--gold); color: var(--gold-hi); background: rgba(200, 164, 94, .14); font-size: 1.05rem; padding: 0.55rem 1.3rem; letter-spacing: .14em; box-shadow: 0 0 0 1px rgba(200, 164, 94, .25); }
+.btn.guide-btn:hover { background: rgba(200, 164, 94, .26); color: #fff; }
+.btn.guide-btn .ico { width: 1.3rem; height: 1.3rem; }
 /* Guide popup body: short paragraphs, a "how to fill it in" list and small headings */
 .tour-body { font-size: .95rem; line-height: 1.55; color: var(--text-2); margin-bottom: 0.81rem; }
 .tour-body p { margin: 0 0 0.579rem; }

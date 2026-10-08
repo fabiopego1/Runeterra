@@ -146,6 +146,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.click('#tour [data-act=tourNext]');
     ok(await p.$eval('#tour h4', e => e.textContent.includes('Dados de status')), 'the Guide button reopens the chapter guide, whose steps explain the status dice');
     ok(await p.$eval('#tour', e => !e.classList.contains('no-target')) && await p.$eval('#tour .tour-spot', e => e.getBoundingClientRect().width > 0), 'the guide step highlights the part of the page it talks about');
+    ok(await p.evaluate(() => { const a = document.querySelector('#tour .tour-spot').getBoundingClientRect(), b = document.querySelector('#tour .tour').getBoundingClientRect(); return Math.abs(a.left - b.left) < 14 || b.left >= a.right; }), 'the guide popup lines up with the left edge of the highlighted item');
     await p.click('#tour [data-act=tourPrev]');
     ok(await p.$eval('#tour h4', e => e.textContent.includes('Personalidade')), 'the guide can go back a step');
     await p.click('[data-act=tourOk]');

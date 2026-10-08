@@ -2250,9 +2250,10 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     if (vw < 700) { pop.style.left = pop.style.top = ''; return; }   // phones: the popup is a bottom sheet (CSS)
     const pw = pop.offsetWidth, ph = pop.offsetHeight, gap = 16;
     let x, y;
-    if (R.left + R.width + gap + pw <= vw - 12) { x = R.left + R.width + gap; y = R.top; }            // right of the target
-    else if (R.top + R.height + gap + ph <= vh - 12) { x = R.left; y = R.top + R.height + gap; }     // below
+    // left edges line up with the item being explained: below it, else above, else beside it
+    if (R.top + R.height + gap + ph <= vh - 12) { x = R.left; y = R.top + R.height + gap; }          // below
     else if (R.top - gap - ph >= 12) { x = R.left; y = R.top - gap - ph; }                           // above
+    else if (R.left + R.width + gap + pw <= vw - 12) { x = R.left + R.width + gap; y = R.top; }      // right of the target
     else if (R.left - gap - pw >= 12) { x = R.left - gap - pw; y = R.top; }                          // left
     else { x = vw - pw - 12; y = vh - ph - 12; }
     pop.style.left = Math.max(12, Math.min(x, vw - pw - 12)) + 'px';
