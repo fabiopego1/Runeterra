@@ -2250,12 +2250,12 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     if (vw < 700) { pop.style.left = pop.style.top = ''; return; }   // phones: the popup is a bottom sheet (CSS)
     const pw = pop.offsetWidth, ph = pop.offsetHeight, gap = 16;
     let x, y;
-    // left edges line up with the item being explained: below it, else above, else beside it
-    if (R.top + R.height + gap + ph <= vh - 12) { x = R.left; y = R.top + R.height + gap; }          // below
-    else if (R.top - gap - ph >= 12) { x = R.left; y = R.top - gap - ph; }                           // above
-    else if (R.left + R.width + gap + pw <= vw - 12) { x = R.left + R.width + gap; y = R.top; }      // right of the target
-    else if (R.left - gap - pw >= 12) { x = R.left - gap - pw; y = R.top; }                          // left
-    else { x = vw - pw - 12; y = vh - ph - 12; }
+    // always left-aligned with the item being explained (people read left to right): below it, else above,
+    // else over its lower part, even when that covers part of the highlight
+    x = R.left;
+    if (R.top + R.height + gap + ph <= vh - 12) y = R.top + R.height + gap;     // below
+    else if (R.top - gap - ph >= 12) y = R.top - gap - ph;                      // above
+    else y = R.top + R.height - ph - gap;                                       // over the item's lower part
     pop.style.left = Math.max(12, Math.min(x, vw - pw - 12)) + 'px';
     pop.style.top = Math.max(12, Math.min(y, vh - ph - 12)) + 'px';
   }
