@@ -457,6 +457,15 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('#bancada .gm-bp-sheet', e => /20 \+ 5 \+ 5×4 = 45/.test(e.textContent)), 'the villain builder computes Health: approach + archetype + 5 x heroes + upgrades');
     await p.click('#bancada [data-bpb=toTable]'); await p.waitForTimeout(200);
     ok(await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')).villains.some(v => v.name === 'Capitã Sylva' && v.max === 45)), 'a villain built in the builder goes to the table');
+    // the builder warns when an approach's own rule is broken (Focused: two abilities on one power, one on another)
+    await p.selectOption('#bancada [data-bpb=ap]', 'focused');
+    await p.selectOption('#bancada [data-bpb=P][data-i="0"]', 'fire'); await p.selectOption('#bancada [data-bpb=P][data-i="1"]', 'water');
+    for (const id of ['a:1', 'a:3', 'a:5']) { await p.click(`#bancada [data-bpb=ab][data-id="${id}"]`); await p.selectOption(`#bancada [data-bpb=tk][data-id="${id}"][data-t="poder"]`, 'fire'); }
+    ok(await p.$eval('#bancada .gm-bp-warn', e => /Focado/.test(e.textContent)), 'the villain builder warns when the three Focused abilities use the same power');
+    await p.selectOption('#bancada [data-bpb=tk][data-id="a:5"][data-t="poder"]', 'water');
+    ok(!(await p.$$eval('#bancada .gm-bp-warn li', e => e.some(x => /Focado/.test(x.textContent)))), 'the warning goes away with two abilities on one power and one on another');
+    ok(await p.$$eval('#bancada .gm-bp-step', e => e.length) === 9 && await p.$$eval('#bancada .gm-bp-guide', e => e.length) === 9, 'the builder has nine steps, each with its own guide');
+    ok(await p.$eval('#bancada #g-viloes, #bancada [id^=g-]', e => !!e) && /sucesso automático/.test(await p.$eval('#bancada', e => e.textContent)), 'the masteries are explained');
     await p.context().close();
   } else console.log('skip GM Screen unlock (GM_PASSWORD not set)');
 

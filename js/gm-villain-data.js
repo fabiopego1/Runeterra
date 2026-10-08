@@ -68,7 +68,7 @@ window.GM_VDATA = (() => {
         A('Provar a Loucura', 'R', 'Sempre que um alvo fizer uma ação de Atrapalhar contra você, você pode antes rolar seu dado de [poder] como Atrapalhar contra ele.')
       ] },
     { id: 'focused', n: 'Focado', d: 'Um vilão focado tem um poder principal forte, que usa de várias maneiras.',
-      P: ['d12', 'd8'], Q: ['d10', 'd8'], sp: 'Elemental/Energia, Materiais', sq: 'Criatividade, Combate à Distância, Autodisciplina', hp: 15, pick: 3, note: 'Escolha três habilidades: duas usando o mesmo poder e uma terceira usando um poder diferente.',
+      P: ['d12', 'd8'], Q: ['d10', 'd8'], sp: 'Elemental/Energia, Materiais', sq: 'Criatividade, Combate à Distância, Autodisciplina', hp: 15, pick: 3, rule: 'two-one', kind: 'poder', note: 'Escolha três habilidades: duas usando o mesmo poder e uma terceira usando um poder diferente.',
       ab: [
         A('Absorção Elemental', 'R', 'Quando for Atacado com [energia/elemento], Recupere essa quantidade de Vida em vez de sofrer dano. Quando for Atrapalhado com [energia/elemento], Fortaleça a si mesmo em vez disso.'),
         A('Carga Defensiva', 'A', 'Defenda a si mesmo usando [poder]. Essa Defesa dura até o seu próximo turno. Se um Ataque causar mais dano que o valor da Defesa, encerre a Defesa e Ataque o atacante com o valor dela.'),
@@ -128,7 +128,7 @@ window.GM_VDATA = (() => {
         A('Vocês Não São Dignos do Meu Poder', 'A', 'Ataque vários alvos usando [poder] e o dado Máx. Atrapalhe cada alvo com o dado Médio.')
       ] },
     { id: 'prideful', n: 'Orgulhoso', d: 'O vilão orgulhoso luta para provar a própria superioridade, em geral enfrentando um a um os campeões mais poderosos.',
-      P: ['d10', 'd10', 'd10', 'd8'], Q: ['d10', 'd10', 'd8', 'd8'], sp: 'Percepção, Engenhocas, Traje de Poder, Força', sq: 'Combate Corpo a Corpo, Convicção, Imponente, Autodisciplina', hp: 25, pick: 2, note: 'Escolha duas habilidades, usando poderes ou qualidades diferentes.',
+      P: ['d10', 'd10', 'd10', 'd8'], Q: ['d10', 'd10', 'd8', 'd8'], sp: 'Percepção, Engenhocas, Traje de Poder, Força', sq: 'Combate Corpo a Corpo, Convicção, Imponente, Autodisciplina', hp: 25, pick: 2, rule: 'all-diff', note: 'Escolha duas habilidades, usando poderes ou qualidades diferentes.',
       ab: [
         A('Eu Conheço a Sua Fraqueza', 'R', 'Quando um campeão próximo tirar 1 em um dos dados no turno dele, role só o seu dado de [poder/qualidade] como Ataque contra ele.'),
         A('Cuido do Resto de Vocês Depois', 'A', 'Ataque um alvo usando [poder/qualidade] e os dados Máx+Mín. Defenda-se de todos os Ataques de todos os outros alvos com o dado Médio até o início do seu próximo turno.'),
@@ -158,7 +158,7 @@ window.GM_VDATA = (() => {
         A('Despistar', 'A', 'Atrapalhe vários alvos usando [qualidade] e o dado Máx. Se tirar dados iguais, também Ataque cada alvo com o dado Médio.')
       ] },
     { id: 'specialized', n: 'Especialista', d: 'Um vilão especialista é de nível mundial em uma perícia e a explora ao máximo para cumprir a tarefa.',
-      P: ['d10', 'd8'], Q: ['d12', 'd8'], sp: 'Poderes Atléticos, Poderes Intelectuais', sq: 'Qualidades Mentais, Qualidades Físicas', hp: 20, pick: 3, note: 'Escolha três habilidades: duas usando a mesma qualidade e uma terceira usando uma qualidade diferente.',
+      P: ['d10', 'd8'], Q: ['d12', 'd8'], sp: 'Poderes Atléticos, Poderes Intelectuais', sq: 'Qualidades Mentais, Qualidades Físicas', hp: 20, pick: 3, rule: 'two-one', kind: 'qualidade', note: 'Escolha três habilidades: duas usando a mesma qualidade e uma terceira usando uma qualidade diferente.',
       ab: [
         A('Cobertura Ativa', 'R', 'Defenda-se de um Ataque em que você seja o único alvo rolando só o seu dado de [qualidade]. Outro alvo próximo sofre dano igual ao dano reduzido.'),
         A('Corte Amplo', 'A', 'Ataque usando [qualidade]: um alvo com o dado Máx, outro com o Médio e um terceiro com o Mín.'),
@@ -178,7 +178,7 @@ window.GM_VDATA = (() => {
         A('Trabalhando Juntos', 'I', 'Enquanto tiver pelo menos 1 aliado próximo, você pode rolar de novo todos os 1 dos seus dados.')
       ] },
     { id: 'underpowered', n: 'Subpoderoso', d: 'Vilões subpoderosos provavelmente não deveriam estar lutando na primeira divisão… mas não percebem. Seus poderes não estão na escala dos outros, mas ainda podem ser uma ameaça na situação certa.',
-      P: ['d8', 'd6', 'd6', 'd6'], Q: ['d10', 'd8', 'd6'], sp: 'Elemental/Energia, Poderes Tecnológicos', sq: 'Gracejos, Convicção, Informações do Submundo, Tecnologia', hp: 10, pick: 3, note: 'Escolha três habilidades, todas usando poderes e qualidades diferentes.',
+      P: ['d8', 'd6', 'd6', 'd6'], Q: ['d10', 'd8', 'd6'], sp: 'Elemental/Energia, Poderes Tecnológicos', sq: 'Gracejos, Convicção, Informações do Submundo, Tecnologia', hp: 10, pick: 3, rule: 'all-diff', note: 'Escolha três habilidades, todas usando poderes e qualidades diferentes.',
       ab: [
         A('Evitar o Inevitável', 'I', 'Sempre que sua Vida fosse a 0 ou menos, evite esse dano e reduza todos os seus poderes em um tamanho. Se isso reduzir algum dado para menos que d4, você é nocauteado.'),
         A('Não Me Subestime', 'A', 'Ataque usando [poder] e os dados Máx+Médio. Sofra dano irredutível igual ao seu dado Mín. Se tirar dados iguais, não pode usar esta habilidade de novo nesta cena.'),
@@ -363,17 +363,17 @@ window.GM_VDATA = (() => {
   ];
 
   const masteries = [
-    { n: 'Maestria da Aniquilação', x: 'Se puder causar destruição em massa sem se importar com as vítimas, passa automaticamente em um Superar que uma demonstração de força esmagadora possa resolver.' },
-    { n: 'Maestria dos Bastidores', x: 'Enquanto não estiver diretamente na briga e usar a sua influência de forma indireta, passa automaticamente em um Superar para manipular uma situação.' },
-    { n: 'Maestria da Conquista', x: 'Enquanto comandar as próprias forças, passa automaticamente em um Superar que envolva tomar uma área ou capturar civis.' },
-    { n: 'Maestria da Ordem Forçada', x: 'Se tiver controle total do entorno imediato, passa automaticamente em um Superar para organizar a ralé e cumprir uma tarefa.' },
-    { n: 'Maestria da Ciência Louca', x: 'Enquanto tiver acesso a materiais, passa automaticamente num Superar usando princípios científicos e invenções.' },
-    { n: 'Maestria do Mercenário', x: 'Se tiver recebido um contrato para uma tarefa específica, passa automaticamente num Superar em que a diferença é receber ou não o pagamento.' },
-    { n: 'Maestria do Misticismo', x: 'Se tiver acesso aos materiais certos, passa automaticamente num Superar que envolva canalizar forças mágicas.' },
-    { n: 'Maestria da Lucratividade', x: 'Se tiver acesso a muita riqueza e recursos, passa automaticamente num Superar para usá-los e ficar ainda mais rico, não importa quem pague a conta.' },
-    { n: 'Maestria da Superioridade', x: 'Enquanto manifestar efeitos de um poder que tenha em d12, passa automaticamente num Superar que envolva o uso desses poderes.' },
-    { n: 'Maestria do Caos Total', x: 'Numa situação em que tudo foge ao controle, passa automaticamente num Superar para cumprir uma tarefa jogando as regras fora.' },
-    { n: 'Maestria do Inconcebível', x: 'Numa situação com forças sombrias e perturbadoras, passa automaticamente num Superar para cumprir a vontade de um ser além da compreensão humana.' }
+    { n: 'Maestria da Aniquilação', cond: 'Pode causar destruição em massa, sem se importar com as vítimas.', x: 'Se puder causar destruição em massa sem se importar com as vítimas, passa automaticamente em um Superar que uma demonstração de força esmagadora possa resolver.', ex: 'O General Veyra derruba a muralha de uma cidade de fronteira com artilharia pesada. Não há teste: a muralha cai.' },
+    { n: 'Maestria dos Bastidores', cond: 'Não está diretamente na briga e age por meios indiretos.', x: 'Enquanto não estiver diretamente na briga e usar a sua influência de forma indireta, passa automaticamente em um Superar para manipular uma situação.', ex: 'A Dra. Kaelor, longe da rua, manipula o conselho de Piltover com cartas anônimas e doações. Os conselheiros fazem o que ela quer.' },
+    { n: 'Maestria da Conquista', cond: 'Está no comando das próprias forças.', x: 'Enquanto estiver no comando das próprias forças, passa automaticamente em um Superar que envolva tomar uma área ou capturar civis.', ex: 'Cercado pelos seus soldados, um senhor da guerra toma uma vila e prende os moradores numa noite.' },
+    { n: 'Maestria da Ordem Forçada', cond: 'Tem controle total do entorno imediato.', x: 'Se tiver controle total do entorno imediato, passa automaticamente em um Superar para organizar a ralé e cumprir uma tarefa.', ex: 'Dentro do próprio forte, um tirano põe prisioneiros e guardas para erguer uma barricada em poucas horas, sem ninguém desobedecer.' },
+    { n: 'Maestria da Ciência Louca', cond: 'Tem acesso a materiais e equipamentos.', x: 'Enquanto tiver acesso a materiais, passa automaticamente em um Superar usando princípios científicos e invenções.', ex: 'No laboratório de Zaun, a Dra. Kaelor improvisa um antídoto, ou uma arma, do que há nas prateleiras. Funciona.' },
+    { n: 'Maestria do Mercenário', cond: 'Tem um contrato para uma tarefa específica.', x: 'Se tiver recebido um contrato para uma tarefa específica, passa automaticamente em um Superar numa situação em que a diferença é receber ou não o pagamento.', ex: 'Contratado para tirar uma carga do porto, o Capitão Dorrick sempre acha um jeito de entregar, porque ser pago depende disso.' },
+    { n: 'Maestria do Misticismo', cond: 'Tem os materiais certos para o ritual.', x: 'Se tiver acesso aos materiais certos, passa automaticamente em um Superar numa situação que envolva canalizar forças mágicas.', ex: 'Com as cinzas de um relicário nas mãos, Mareya abre um portal nas Ilhas das Sombras sem erro.' },
+    { n: 'Maestria da Lucratividade', cond: 'Tem acesso a muita riqueza e recursos.', x: 'Se tiver acesso a muita riqueza e outros recursos, passa automaticamente em um Superar para usá-los e ficar ainda mais rico, não importa quem pague a conta.', ex: 'Um barão do contrabando compra a guarda do porto e dobra a fortuna com a mesma carga, sem rolar.' },
+    { n: 'Maestria da Superioridade', cond: 'Usa um poder que tenha em d12.', x: 'Enquanto manifestar efeitos de um poder que tenha em d12, passa automaticamente em um Superar que envolva o uso desses poderes.', ex: 'Karzul, o Colosso de Areia, tem Força d12: arromba qualquer porta de pedra sem teste.' },
+    { n: 'Maestria do Caos Total', cond: 'Tudo está fora de controle.', x: 'Numa situação em que tudo foge ao controle, passa automaticamente em um Superar para cumprir uma tarefa jogando as regras fora.', ex: 'No meio de um motim no porto, o vilão faz uma proeza impossível na base da sorte e da loucura e sai ileso.' },
+    { n: 'Maestria do Inconcebível', cond: 'Está numa situação com forças sombrias e perturbadoras.', x: 'Numa situação que envolva forças sombrias e perturbadoras, passa automaticamente em um Superar para cumprir a vontade de um ser além da compreensão humana.', ex: 'Ykara, a Voz do Abismo, cumpre o desejo de algo que mora do outro lado de uma fenda do Vazio: o pedido é atendido.' }
   ];
 
   return { approaches, archetypes, upgrades, masteries };
