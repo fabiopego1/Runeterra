@@ -337,7 +337,7 @@ window.GM_VDATA = (() => {
       ] },
     { id: 'titan', n: 'Titã', hp: 30, pick: 3, pairs: 'Ancestral, Sobrepoderoso',
       d: 'Titãs são ENORMES. O tamanho os torna difíceis de enfrentar e exige medidas extraordinárias. O Titã começa com status d12 e tem um desafio em duas partes para reduzir o status.',
-      status: [['Começa em', 'd12']], challenge: ['Duas caixas: exponha uma parte vulnerável do Titã e reduza o status dele em um tamanho de dado.', 'Uma caixa: aproveite a fraqueza exposta e reduza o status do Titã em mais um tamanho de dado.'],
+      status: [['Começa em', 'd12']], challenge: ['Dois sucessos em ações de Superar: exponha uma parte vulnerável do Titã e reduza o status dele em um tamanho de dado.', 'Mais um sucesso em Superar: aproveite a fraqueza exposta e reduza o status do Titã em mais um tamanho de dado.'],
       ab: [
         A('Esmagar Tudo por Baixo', 'A', 'Ataque vários alvos usando [poder]. Atrapalhe esses alvos com o dado Mín.'),
         A('Goela Abaixo', 'A', 'Ataque usando [poder] e o dado Máx. O alvo pode ser Atrapalhado pelos dados Máx+Médio+Mín, ou ficar impedido de fazer qualquer coisa além de um Superar para tentar escapar.'),
