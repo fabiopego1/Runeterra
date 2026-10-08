@@ -441,6 +441,13 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     const [bk] = await Promise.all([p.waitForEvent('download'), p.click('[data-gm=backup]')]);
     const bkText = fs.readFileSync(await bk.path(), 'utf8');
     ok(/runeterra-gm-backup/.test(bkText) && !bkText.includes('Singed'), 'backup is exported encrypted');
+    // Bancada do Mestre: how to build scenes and foes, and a shelf of ready examples
+    ok(await p.$$eval('#bancada .gm-bp-card', e => e.length) >= 25 && await p.$$eval('#bancada details', e => e.length) >= 7, 'the Bancada do Mestre guides the building of scenes, minions, villains and environments, with examples');
+    const foesBefore = await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')).foes.length);
+    await p.click('#bp-lacaios [data-bp=foe]'); await p.waitForTimeout(200);
+    await p.click('#bp-viloes [data-bp=villain]'); await p.waitForTimeout(200);
+    const tableNow = await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')));
+    ok(tableNow.foes.length === foesBefore + 1 && tableNow.villains.length >= 1 && tableNow.villains[tableNow.villains.length - 1].max > 30, 'an example minion and an example villain go to the table with one click');
     await p.context().close();
   } else console.log('skip GM Screen unlock (GM_PASSWORD not set)');
 

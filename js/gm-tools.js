@@ -255,6 +255,16 @@
   }
 
   window.GM_TOOLS = {
+    // Called by the Bancada do Mestre: put a ready example on the table.
+    addFoe(name, kind, die, count) {
+      S.foes.push({ id: uid(), name, kind: kind === 'lieutenant' ? 'lieutenant' : 'minion', dice: Array(Math.max(1, count | 0)).fill(DICE.includes(die) ? die : 'd8'), sel: 0, out: 0, dmg: '', last: '' });
+      save(); if (root) render();
+    },
+    addVillain(name, max) {
+      const m = Math.max(1, Math.min(200, max | 0));
+      S.villains.push({ id: uid(), name, max: m, hp: m, st0: 'd8', st1: 'd8', st2: 'd8', notes: '' });
+      save(); if (root) render();
+    },
     async mount(el, rawKeyB64) {
       root = el;
       root.innerHTML = `<div class="gmt"><div class="gmt-head"><div><div class="eyebrow">Durante a sessão</div><h2>Mesa do Mestre</h2>

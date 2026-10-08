@@ -51,6 +51,7 @@
   const show = (html, rawKey) => {
     document.getElementById('gm-content').innerHTML = html;
     if (window.GM_TOOLS) window.GM_TOOLS.mount(document.getElementById('gm-tools'), rawKey);
+    if (window.GM_BULLPEN) window.GM_BULLPEN.render(document.getElementById('gm-bullpen'));
     if (window.GM_FLAVOUR) window.GM_FLAVOUR.render(document.getElementById('gm-flavour'));
     gate.hidden = true; room.hidden = false; lockBtn.hidden = false;
   };
