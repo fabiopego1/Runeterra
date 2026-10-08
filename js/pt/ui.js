@@ -718,7 +718,7 @@ Object.assign(window.I18N.ui, {
  "<h5>Not available with this roll</h5>Guided method: pick an entry matching one die or the sum of two dice. Use your one re-roll, or switch to the Constructed method.": "<h5>Indisponível com esta rolagem</h5>Método Guiado: escolha uma opção igual a um dado ou à soma de dois. Use sua nova rolagem ou mude para o método Construído.",
  "Not a Champion Forge file": "Não é um arquivo da Forja de Campeões",
  "Could not import:": "Não foi possível importar:",
- "Runeterra · Tabletop Chronicle": "Runeterra · Crônica de Mesa",
+ "Runeterra · Tabletop Chronicle": "Runeterra · Criador de Ficha",
  "Champion Forge": "Forja de Campeões",
  "World lore": "Lore do mundo",
  "Lore": "Lore",

@@ -4,7 +4,7 @@
 (() => {
   'use strict';
   const PT_UI = {
-    'Runeterra · Tabletop Chronicle': 'Runeterra · Crônica de Mesa',
+    'Runeterra · Tabletop Chronicle': 'Runeterra · Criador de Ficha',
     'GM Screen': 'Escudo do Mestre',
     'Champion Forge': 'Forja de Campeões',
     'Lock': 'Trancar',
