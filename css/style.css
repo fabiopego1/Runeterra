@@ -1690,3 +1690,31 @@ body.ro-lock { overflow: hidden; }
 .rc-using { margin-left: auto; font: 600 .72rem var(--font-ui); letter-spacing: .1em; text-transform: uppercase; color: var(--text-2); }
 .rc-empty { margin-top: 0.579rem; }
 .rc-slot-btns { display: flex; gap: 0.926rem; margin-top: 0.579rem; }
+
+/* GM Screen: Bancada do Mestre (guide and shelf of examples) */
+.gm-bp { margin-top: 3rem; }
+.gm-bp h3 { font-family: var(--font-display); font-weight: 400; font-size: 1.7rem; color: var(--gold-hi); margin: 2.4rem 0 0.8rem; }
+.gm-bp h4 { font-family: var(--font-ui); font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; color: var(--text-2); margin: 1.4rem 0 0.5rem; }
+.gm-bp-n { display: grid; gap: 0.3rem; font: 600 .74rem var(--font-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--text-2); }
+.gm-bp-n select { font: inherit; padding: 0.4rem 0.6rem; background: var(--ink-0); color: var(--text); border: 1px solid var(--line-2); }
+.gm-bp-sec { border: 1px solid var(--line); margin-bottom: 0.6rem; background: var(--ink-1); }
+.gm-bp-sec > summary { cursor: pointer; padding: 0.8rem 1rem; font-family: var(--font-display); font-size: 1.2rem; color: var(--text); }
+.gm-bp-sec[open] > summary { color: var(--gold-hi); border-bottom: 1px solid var(--line); }
+.gm-bp-sec > :not(summary) { margin-left: 1rem; margin-right: 1rem; }
+.gm-bp-sec > p:first-of-type { margin-top: 0.8rem; }
+.gm-bp-sec > :last-child { margin-bottom: 1rem; }
+.gm-bp-sec > .gm-bp-t { width: calc(100% - 2rem); }
+.gm-bp-steps, .gm-bp-list { padding-left: 1.3rem; line-height: 1.6; }
+.gm-bp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr)); gap: 1rem; }
+.gm-bp-card { border: 1px solid var(--line); background: var(--ink-1); padding: 0.9rem 1rem 1rem; display: grid; gap: 0.35rem; align-content: start; }
+.gm-bp-card header { display: flex; justify-content: space-between; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+.gm-bp-card h4 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; letter-spacing: 0; text-transform: none; color: var(--gold-hi); }
+.gm-bp-card p { margin: 0; line-height: 1.5; }
+.gm-bp-card .btn { justify-self: start; margin-top: 0.4rem; }
+.gm-bp-tag { font: 600 .72rem var(--font-ui); letter-spacing: .1em; text-transform: uppercase; color: var(--text-2); display: inline-flex; gap: 0.4rem; align-items: center; }
+.gm-bp-ty { font: 600 .72rem var(--font-mono); color: var(--gold); }
+.gm-bp-zone { padding-left: 0.6rem; }
+.gm-bp-zone.z-g { border-left: 3px solid var(--zone-g); }
+.gm-bp-zone.z-y { border-left: 3px solid var(--zone-y); }
+.gm-bp-zone.z-r { border-left: 3px solid var(--zone-r); }
+.gm-bp-scenes { margin: 0.2rem 0; padding-left: 1.2rem; line-height: 1.5; }
