@@ -2761,17 +2761,18 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   function importJson(file) {
     if (!file) return;
     const r = new FileReader();
-    r.onload = () => {
-      try {
-        const s = JSON.parse(r.result);
-        if (!s || s.v !== 1) throw new Error(tr('Not a Champion Forge file'));
-        save();   // the champion open now stays in the roster; the file comes in as a new one
-        s.cid = newId();
-        st = upgradeState(s); rosterHooks.opened(); render();
-        rosterHooks.say(tr('Imported as a new champion. The others are in Champions.'));
-      } catch (e) { alert(tr('Could not import:') + ' ' + e.message); }
-    };
+    r.onload = () => importText(r.result);
     r.readAsText(file);
+  }
+  function importText(text) {
+    try {
+      const s = JSON.parse(text);
+      if (!s || s.v !== 1) throw new Error(tr('Not a Champion Forge file'));
+      save();   // the champion open now stays in the roster; the file comes in as a new one
+      s.cid = newId();
+      st = upgradeState(s); rosterHooks.opened(); render();
+      rosterHooks.say(tr('Imported as a new champion. The others are in Champions.'));
+    } catch (e) { alert(tr('Could not import:') + ' ' + e.message); }
   }
 
   // ------------------------------------------------------------------ tooltip
@@ -3091,4 +3092,16 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   };
 
   render();
+  // Arriving from another page's header: the champion list, a file picked in its Arquivo menu, or the sheet to print.
+  (() => {
+    const h = location.hash;
+    if (h !== '#campeoes' && h !== '#importar' && h !== '#imprimir') return;
+    history.replaceState(null, '', location.pathname + location.search);
+    if (h === '#campeoes') showRoster();
+    else if (h === '#importar') {
+      let text = null;
+      try { text = sessionStorage.getItem('runeterra-import'); sessionStorage.removeItem('runeterra-import'); } catch (e) { /* ignore */ }
+      if (text) importText(text);
+    } else if (SHEET_PAGE) setTimeout(() => window.print(), 600);
+  })();
 })();

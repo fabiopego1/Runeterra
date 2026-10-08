@@ -475,6 +475,20 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(!dupSrc.length && !dupFile.length, `no picture is used twice${dupSrc.length || dupFile.length ? ': ' + dupSrc.concat(dupFile).join(', ') : ''}`);
   }
   errors.forEach(e => console.log('     ', e));
+  // The header is the same on every page: Campeões, Ficha, Lore, Regras and Arquivo; only the Forja button comes and goes.
+  {
+    const p = await newPage();
+    for (const pg of ['index', 'ficha', 'lore', 'regras', 'resumo', 'gm']) {
+      await p.goto(`${BASE}/${pg}.html`); await p.waitForTimeout(300);
+      const h = await p.$$eval('.site-header .hbtn', e => e.map(x => x.textContent.replace(/\s+/g, ' ').trim().replace(/[?\d]+$/, '').trim()));
+      const base = ['Campeões', 'Ficha', 'Lore', 'Regras', 'Arquivo'];
+      ok(base.every(x => h.includes(x)) && h.includes('Forja') === (pg !== 'index'), `${pg}: the header has the same buttons (${h.join(', ')})`);
+      ok(await p.$eval('.brand-kicker', e => /Criador de Ficha/.test(e.textContent)), `${pg}: the header says Criador de Ficha`);
+    }
+    await p.goto(`${BASE}/lore.html`); await p.waitForTimeout(300);
+    await p.click('.site-header a[href="index.html#campeoes"]'); await p.waitForTimeout(800);
+    ok(await p.$eval('#roster', e => !e.hidden), 'Campeões in the header of another page opens the champion list in the Forge');
+  }
   // Book p.112, Retcon: "Choose a different power or quality used in one of your abilities" may leave the Path's list.
   {
     const p = await newPage();
