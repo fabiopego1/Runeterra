@@ -1742,3 +1742,19 @@ body.ro-lock { overflow: hidden; }
 .gm-bp-sheet { border-top: 1px solid var(--gold-lo); margin-top: 0.6rem; padding-top: 0.6rem; }
 .gm-bp-sheet p { margin: 0.35rem 0; line-height: 1.5; }
 .gm-bp-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.6rem; }
+
+.gm-bp-step { border: 1px solid var(--line); background: var(--ink-0); padding: 0.7rem 0.9rem; display: grid; gap: 0.4rem; }
+.gm-bp-step > header { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
+.gm-bp-step h4 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; letter-spacing: 0; text-transform: none; color: var(--gold-hi); }
+.gm-bp-step h5 { margin: 0.6rem 0 0.3rem; font: 600 .78rem var(--font-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--text-2); }
+.gm-bp-sn { display: grid; place-items: center; width: 1.7rem; height: 1.7rem; border: 1px solid var(--gold-lo); color: var(--gold); font: 600 .85rem var(--font-mono); transform: rotate(45deg); }
+.gm-bp-sn { transform: none; border-radius: 50%; }
+.gm-bp-step.done .gm-bp-sn { background: var(--gold); color: #17130b; }
+.gm-bp-sum { margin-left: auto; color: var(--text-2); font-size: .85rem; }
+.gm-bp-guide { border-left: 3px solid var(--gold-lo); background: var(--ink-1); padding: 0.2rem 0.8rem; }
+.gm-bp-guide > summary { cursor: pointer; color: var(--gold); font: 600 .78rem var(--font-ui); letter-spacing: .1em; text-transform: uppercase; padding: 0.3rem 0; }
+.gm-bp-guide > div { padding-bottom: 0.4rem; }
+.gm-bp-guide p { margin: 0.4rem 0; line-height: 1.5; }
+.gm-bp-warn { border: 1px solid var(--zone-y); background: rgba(217, 171, 69, .08); padding: 0.6rem 0.9rem; }
+.gm-bp-warn ul { margin: 0.3rem 0 0 1.1rem; padding: 0; }
+.gm-bp-ready { margin: 0; color: var(--zone-g); font-weight: 600; }
