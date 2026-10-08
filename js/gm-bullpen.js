@@ -188,7 +188,7 @@
     [40, ['40−30', '29−15', '14−1']], [35, ['35−27', '26−13', '12−1']], [30, ['30−23', '22−12', '11−1']], [25, ['25−20', '19−10', '9−1']],
     [20, ['20−16', '15−8', '7−1']], [15, ['15−11', '10−6', '5−1']], [10, ['10', '9−5', '4−1']]];
   const zonesFor = max => { const r = ZONES.find(z => max >= z[0]) || ZONES[ZONES.length - 1]; return r[1]; };
-  const blankB = () => ({ name: '', concept: '', ap: '', arch: '', P: {}, Q: {}, rp: '', ab: {}, tk: {}, up: {}, mastery: '', note: '' });
+  const blankB = () => ({ name: '', concept: '', ap: '', arch: '', P: {}, Q: {}, rp: '', ab: {}, tk: {}, up: {}, mastery: '', note: '', vstep: 0 });
   let B = (() => { try { return Object.assign(blankB(), JSON.parse(localStorage.getItem(BKEY))); } catch (e) { return blankB(); } })();
   const saveB = () => { try { localStorage.setItem(BKEY, JSON.stringify(B)); } catch (e) { /* ignore */ } };
   const cats = () => Object.entries(window.TRAIT_CATEGORIES || {});
@@ -273,48 +273,145 @@
     mast: '<p>A <b>maestria</b> é uma habilidade passiva que só vilões com melhorias ganham. Ela dá um <b>sucesso automático em um Superar</b> (resolver problemas fora de combate: convencer, tomar, construir, abrir) <b>sempre que a condição for cumprida</b>. Não rola dado e não vale para ataques.</p><p>Escolha uma que combine com o que o vilão faz fora da luta. Os campeões enfrentam a maestria <b>quebrando a condição</b>: cortar o contrato, destruir o laboratório, tirá-lo do comando.</p>',
     done: '<p><b>Vida = abordagem + arquétipo + 5 × número de campeões + melhorias.</b> Com mais campeões na mesa, o vilão aguenta mais. Confira os avisos: eles mostram o que ainda falta.</p><p>Por fim, anote a <b>aparência, o jeito de falar e os motivos</b>: um bom vilão é lembrado por isso tanto quanto pelas habilidades.</p>'
   };
-  let GOPEN = {};
-  function builderHtml(N) {
-    const m = model(N), ap = m.ap, ar = m.ar, I = issues(m, N);
-    const apSel = `<select data-bpb="ap"><option value="">escolher abordagem…</option>${VD.approaches.map(a => `<option value="${a.id}"${B.ap === a.id ? ' selected' : ''}>${esc(a.n)} (Vida ${a.hp})</option>`).join('')}</select>`;
-    const arSel = `<select data-bpb="arch"><option value="">escolher arquétipo…</option>${VD.archetypes.map(a => `<option value="${a.id}"${B.arch === a.id ? ' selected' : ''}>${esc(a.n)} (Vida ${a.hp >= 0 ? '+' : ''}${a.hp})</option>`).join('')}</select>`;
-    const diceSlots = (kind, dice, store) => dice.map((d, i) => `<label class="gm-bp-slot">${die(d)} <select data-bpb="${kind}" data-i="${i}"><option value="">—</option>${traitOptions(kind === 'P' ? 'power' : 'quality', store[i])}</select></label>`).join('');
-    const picked = (list, need) => `<span class="gm-bp-count${list.length === need ? ' ok' : list.length > need ? ' bad' : ''}">${list.length}/${need}</span>`;
-    const step = (n, id, title, sum, done, body) => `<section class="gm-bp-step${done ? ' done' : ''}" id="bs-${id}"><header><span class="gm-bp-sn">${done ? '✓' : n}</span><h4>${title}</h4><span class="gm-bp-sum">${sum}</span></header>
-      <details class="gm-bp-guide" data-g="${id}"${GOPEN[id] ? ' open' : ''}><summary>Guia deste passo</summary><div>${GUIDE[id]}</div></details><div class="gm-bp-body">${body}</div></section>`;
-    const lackDice = ap && (m.pDice.some((d, i) => !B.P[i]) || m.qDice.some((d, i) => !B.Q[i]) || !B.rp.trim());
-    const tokensOk = list => list.every(x => tokensOf(x.a.x).every(t => B.tk[x.id + '|' + t]));
-    const ruleOk = !I.some(t => ap && t.startsWith(ap.n + ':'));
-    let h = '<div class="gm-bp-mont">';
-    h += step(1, 'concept', 'Conceito', esc(B.name || 'sem nome'), !!B.name.trim(), `<div class="gm-bp-row">
-      <label class="gm-bp-f">Nome do vilão<input type="text" data-bpb="name" value="${esc(B.name)}" placeholder="Ex.: Capitão Dorrick Maré-Negra"></label>
-      <label class="gm-bp-f gm-bp-wide">Conceito<input type="text" data-bpb="concept" value="${esc(B.concept)}" placeholder="Quem é, o que quer, como enfrenta seus campeões"></label></div>`);
-    h += step(2, 'ap', 'Abordagem', ap ? esc(ap.n) + ' · Vida ' + ap.hp : 'a escolher', !!ap, `<label class="gm-bp-f">${apSel}</label>${ap ? `<p class="muted"><b>${esc(ap.n)}:</b> ${esc(ap.d)}${ap.note ? ' <i>' + esc(ap.note) + '</i>' : ''}</p>` : ''}`);
-    h += step(3, 'dice', 'Poderes e qualidades', ap ? (lackDice ? 'faltam dados' : 'dados atribuídos') : 'escolha a abordagem', !!ap && !lackDice, ap ? `
-        <h5>Poderes <small>sugestão: ${esc(ap.sp)}</small></h5><div class="gm-bp-slots">${diceSlots('P', m.pDice, B.P)}</div>
-        <h5>Qualidades <small>sugestão: ${esc(ap.sq)}</small></h5><div class="gm-bp-slots">${diceSlots('Q', m.qDice, B.Q)}
+  // ------------------------------------------------------------------ the villain forge: a full-screen builder, one step at a time
+  const STEPS = [['concept', 'Conceito'], ['ap', 'Abordagem'], ['dice', 'Dados'], ['abap', 'Hab. da abordagem'], ['arch', 'Arquétipo'], ['abar', 'Hab. do arquétipo'], ['up', 'Melhorias'], ['mast', 'Maestria'], ['done', 'Ficha']];
+  const STEP_TITLE = { concept: 'Dê vida ao vilão', ap: 'Escolha a abordagem', dice: 'Ligue os dados a poderes e qualidades', abap: 'Escolha as habilidades da abordagem', arch: 'Escolha o arquétipo', abar: 'Escolha as habilidades do arquétipo', up: 'Melhorias (opcional)', mast: 'Maestria (opcional)', done: 'A ficha do vilão' };
+  const VF = { open: false, step: 0, el: null, N: 4, onClose: null };
+  const sgn = n => (n >= 0 ? '+' : '') + n;
+  const diceRow = arr => arr.map(d => die(d)).join(' ');
+  const firstSentence = t => String(t).split(/(?<=[.!?])\s/)[0];
+  const pairsHit = (ar, ap) => !!(ap && ar.pairs && ar.pairs.toLowerCase().includes(ap.n.toLowerCase()));
+  const tokensOk = list => list.every(x => tokensOf(x.a.x).every(t => B.tk[x.id + '|' + t]));
+  const lackDice = m => !!m.ap && (m.pDice.some((d, i) => !B.P[i]) || m.qDice.some((d, i) => !B.Q[i]) || !B.rp.trim());
+
+  // what is still missing in one step, in plain words
+  function needs(id, m, I) {
+    const N = [];
+    if (id === 'ap' && !m.ap) N.push('Escolha uma abordagem.');
+    if (id === 'arch' && !m.ar) N.push('Escolha um arquétipo.');
+    if (['dice', 'abap'].includes(id) && !m.ap) return ['Escolha primeiro a abordagem.'];
+    if (['abar'].includes(id) && !m.ar) return ['Escolha primeiro o arquétipo.'];
+    if (id === 'dice') {
+      const p = m.pDice.filter((d, i) => !B.P[i]).length, q = m.qDice.filter((d, i) => !B.Q[i]).length;
+      if (p) N.push(`Faltam ${p} dado(s) de poder.`);
+      if (q) N.push(`Faltam ${q} dado(s) de qualidade.`);
+      if (!B.rp.trim()) N.push('Dê um nome à qualidade de interpretação (d8).');
+    }
+    if (id === 'abap' || id === 'abar') {
+      const ch = id === 'abap' ? m.chosenA : m.chosenR, need = id === 'abap' ? m.needA : m.needR;
+      if (ch.length < need) N.push(`Faltam ${need - ch.length} habilidade(s).`);
+      for (const x of (id === 'abap' ? ch : ch.concat(m.gain))) { const open = tokensOf(x.a.x).filter(t => !B.tk[x.id + '|' + t]); if (open.length) N.push(`Escolha o ${open.map(t => '[' + t + ']').join(' e ')} usado em “${x.a.n}”.`); }
+      if (id === 'abap' && m.ap) for (const t of I) if (t.startsWith(m.ap.n + ':')) N.push(t);
+    }
+    if (id === 'up') for (const x of m.upAb) { const open = tokensOf(x.a.x).filter(t => !B.tk[x.id + '|' + t]); if (open.length) N.push(`Escolha o ${open.map(t => '[' + t + ']').join(' e ')} usado em “${x.a.n}”.`); }
+    return N;
+  }
+  const stepDone = (id, m, I) => ({
+    concept: !!B.name.trim(), ap: !!m.ap, dice: !!m.ap && !lackDice(m), abap: !!m.ap && !needs('abap', m, I).length,
+    arch: !!m.ar, abar: !!m.ar && !needs('abar', m, I).length, up: m.ups.length > 0 && !needs('up', m, I).length, mast: !!B.mastery && m.ups.length > 0, done: m.hp != null && !I.length
+  })[id];
+
+  const vcard = (data, on, dis, inner) => `<div class="vf-card${on ? ' on' : ''}${dis ? ' dis' : ''}" role="button" tabindex="${dis ? -1 : 0}" aria-pressed="${on ? 'true' : 'false'}"${dis ? ' aria-disabled="true"' : ''} ${data}>${inner}</div>`;
+  const abCard = (id, a, on, dis, extra) => vcard(`data-vf="ab" data-id="${esc(id)}"`, on, dis, `<header><h4>${esc(a.n)}</h4><span class="gm-bp-ty">${a.t === 'A' ? 'Ação' : a.t === 'R' ? 'Reação' : 'Passiva'}</span></header><p>${dt(a.x)}</p>${on ? tokenPick(id, a.x) : ''}${extra || ''}`);
+  const fixedCard = (id, a, src) => `<div class="vf-card on fixed"><header><h4>${esc(a.n)}</h4><span class="gm-bp-ty">${a.t === 'A' ? 'Ação' : a.t === 'R' ? 'Reação' : 'Passiva'}</span></header><p>${dt(a.x)}</p>${tokenPick(id, a.x)}<small class="muted">Sempre inclusa (${esc(src)})</small></div>`;
+  const counter = (list, need) => `<span class="gm-bp-count${list.length === need ? ' ok' : list.length > need ? ' bad' : ''}">${list.length}/${need}</span>`;
+
+  function stepBody(id, m, N) {
+    const ap = m.ap, ar = m.ar;
+    if (id === 'concept') return `<div class="gm-bp-row"><label class="gm-bp-f">Nome do vilão<input type="text" data-bpb="name" value="${esc(B.name)}" placeholder="Ex.: Capitão Dorrick Maré-Negra"></label>
+      <label class="gm-bp-f gm-bp-wide">Conceito<input type="text" data-bpb="concept" value="${esc(B.concept)}" placeholder="Quem é, o que quer, como enfrenta seus campeões"></label></div>`;
+    if (id === 'ap') return `<div class="vf-cards">${VD.approaches.map(a => vcard(`data-vf="ap" data-v="${a.id}"`, B.ap === a.id, false, `<header><h4>${esc(a.n)}</h4><span class="vf-hp">Vida base ${a.hp}</span></header><p class="vf-d">${esc(a.d)}</p>
+        <p class="vf-stat"><b>Poderes</b> ${diceRow(a.P)}</p><p class="vf-stat"><b>Qualidades</b> ${diceRow(a.Q)} ${die('d8')}</p>
+        <p class="vf-stat"><b>Habilidades</b> escolha ${a.pick} de ${a.ab.length}</p><p class="vf-list">${a.ab.map(x => esc(x.n)).join(' · ')}</p>${a.note ? `<p class="vf-note">${esc(a.note)}</p>` : ''}`)).join('')}</div>`;
+    if (id === 'dice') {
+      const slots = (kind, dice, store) => dice.map((d, i) => `<label class="gm-bp-slot">${die(d)} <select data-bpb="${kind}" data-i="${i}"><option value="">—</option>${traitOptions(kind === 'P' ? 'power' : 'quality', store[i])}</select></label>`).join('');
+      return `<h5>Poderes <small>sugestão: ${esc(ap.sp)}</small></h5><div class="gm-bp-slots">${slots('P', m.pDice, B.P)}</div>
+        <h5>Qualidades <small>sugestão: ${esc(ap.sq)}</small></h5><div class="gm-bp-slots">${slots('Q', m.qDice, B.Q)}
           <label class="gm-bp-slot">${die('d8')} <input type="text" data-bpb="rp" value="${esc(B.rp)}" placeholder="Qualidade de interpretação"></label></div>
-        ${m.pOver || m.qOver ? '<p class="muted">Um dado já era d12 e o aprimoramento não o sobe mais: em troca, você ganha uma habilidade extra.</p>' : ''}` : '<p class="muted">Escolha primeiro a abordagem.</p>');
-    h += step(4, 'abap', 'Habilidades da abordagem', ap ? `${m.chosenA.length}/${m.needA}` : '–', !!ap && m.chosenA.length === m.needA && tokensOk(m.chosenA) && ruleOk,
-      ap ? `<p>Escolha ${m.needA} ${picked(m.chosenA, m.needA)}</p><div class="gm-bp-abs">${ap.ab.map((a, i) => abBox('a:' + i, a, !!B.ab['a:' + i], !B.ab['a:' + i] && m.chosenA.length >= m.needA)).join('')}</div>` : '<p class="muted">Escolha primeiro a abordagem.</p>');
-    h += step(5, 'arch', 'Arquétipo', ar ? esc(ar.n) + ' · Vida ' + (ar.hp >= 0 ? '+' : '') + ar.hp : 'a escolher', !!ar, `<label class="gm-bp-f">${arSel}</label>${ar ? `<p class="muted"><b>${esc(ar.n)}:</b> ${esc(ar.d)} <i>Combina bem com: ${esc(ar.pairs)}.</i></p>
-        <h5>Status do arquétipo</h5>${table(['Condição', 'Dado de status'], ar.status.map(s => [s[0], s[1]]))}
-        ${ar.challenge ? '<ul class="gm-bp-list">' + ar.challenge.map(c => '<li>' + esc(c) + '</li>').join('') + '</ul>' : ''}
-        ${['bruiser', 'fragile'].includes(ar.id) && m.hp ? `<p class="muted">Zonas de Vida (máx. ${m.hp}): Verde ${zonesFor(m.hp)[0]} · Amarela ${zonesFor(m.hp)[1]} · Vermelha ${zonesFor(m.hp)[2]}</p>` : ''}` : ''}`);
-    h += step(6, 'abar', 'Habilidades do arquétipo', ar ? `${m.chosenR.length}/${m.needR}` : '–', !!ar && m.chosenR.length === m.needR && tokensOk(m.chosenR.concat(m.gain)),
-      ar ? `<p>Escolha ${m.needR} ${picked(m.chosenR, m.needR)}</p><div class="gm-bp-abs">${m.arPool.map(a => abBox('r:' + ar.ab.indexOf(a), a, !!B.ab['r:' + ar.ab.indexOf(a)], !B.ab['r:' + ar.ab.indexOf(a)] && m.chosenR.length >= m.needR)).join('')}
-        ${m.gain.map(g => `<div class="gm-bp-ab on fixed"><b>${esc(g.a.n)}</b> <span class="gm-bp-ty">${g.a.t}</span> <small>(sempre inclusa)</small><p>${dt(g.a.x)}</p>${tokenPick(g.id, g.a.x)}</div>`).join('')}</div>` : '<p class="muted">Escolha primeiro o arquétipo.</p>');
-    const upList = m.ups.filter(u => u.ab.length);
-    h += step(7, 'up', 'Melhorias (opcional)', m.ups.length ? m.ups.map(u => esc(u.n)).join(', ') : 'vilão menor', true, `<div class="gm-bp-ups">${VD.upgrades.map(u => `<label class="gm-bp-up"><input type="checkbox" data-bpb="up" data-id="${u.id}"${B.up[u.id] ? ' checked' : ''}> <b>${esc(u.n)}</b> <span class="gm-bp-ty">Vida ${u.hp >= 0 ? '+' : ''}${u.hp}</span><span class="muted">${esc(u.when)}</span></label>`).join('')}</div>
-      ${upList.length ? `<h5>Habilidades das melhorias</h5><div class="gm-bp-abs">${upList.map(u => u.ab.map((a, i) => u.id === 'vehicle' ? abBox('u:vehicle:' + i, a, !!B.ab['u:vehicle:' + i], false) : `<div class="gm-bp-ab on fixed"><b>${esc(a.n)}</b> <span class="gm-bp-ty">${a.t}</span> <small>(${esc(u.n)})</small><p>${dt(a.x)}</p>${tokenPick('u:' + u.id + ':' + i, a.x)}</div>`).join('')).join('')}</div>${m.ups.some(u => u.id === 'vehicle') ? '<p class="muted">Veículo vilanesco: monte um tenente com 2 a 4 destas habilidades (mais habilidades para mais campeões).</p>' : ''}${m.ups.some(u => u.note) ? '<p class="muted">' + esc(m.ups.find(u => u.note).note) + '</p>' : ''}` : ''}`);
-    const mm = VD.masteries.find(x => x.n === B.mastery);
-    h += step(8, 'mast', 'Maestria (opcional)', m.ups.length ? (mm ? esc(mm.n) : 'sem maestria') : 'precisa de uma melhoria', true, `<select data-bpb="mastery"${m.ups.length ? '' : ' disabled'}><option value="">${m.ups.length ? 'sem maestria' : 'adicione uma melhoria para escolher'}</option>${VD.masteries.map(x => `<option${B.mastery === x.n ? ' selected' : ''}>${esc(x.n)}</option>`).join('')}</select>
-      ${mm && m.ups.length ? `<p><b>Quando vale:</b> ${esc(mm.cond)}</p><p><b>O que faz:</b> ${esc(mm.x)}</p><p class="muted"><b>Exemplo:</b> ${esc(mm.ex)}</p>` : ''}`);
-    h += step(9, 'done', 'Acabamento e Vida', m.hp != null ? 'Vida ' + m.hp : '–', m.hp != null && !I.length, `<label class="gm-bp-f gm-bp-wide">Aparência, jeito de falar e motivos<textarea data-bpb="note" rows="2">${esc(B.note)}</textarea></label>
-      ${I.length ? `<div class="gm-bp-warn"><b>Ainda falta ou está fora da regra:</b><ul>${I.map(t => '<li>' + esc(t) + '</li>').join('')}</ul></div>` : (m.hp != null ? '<p class="gm-bp-ready">Vilão completo, pronto para a mesa.</p>' : '')}
-      ${m.hp != null ? `<div class="gm-bp-sheet"><h5>Ficha do vilão</h5>${sheetHtml(m, N)}
-        <div class="gm-bp-btns"><button type="button" class="btn small" data-bpb="toTable">Adicionar à mesa (Vida ${m.hp})</button><button type="button" class="btn small" data-bpb="copy">Copiar ficha</button><button type="button" class="btn small" data-bpb="clear">Limpar</button></div></div>` : ''}`);
-    return h + '</div>';
+        ${m.pOver || m.qOver ? '<p class="muted">Um dado já era d12 e o aprimoramento não o sobe mais: em troca, você ganha uma habilidade extra.</p>' : ''}`;
+    }
+    if (id === 'abap') return `<p class="vf-count">Escolha ${m.needA} ${counter(m.chosenA, m.needA)}</p><div class="vf-cards wide">${ap.ab.map((a, i) => abCard('a:' + i, a, !!B.ab['a:' + i], !B.ab['a:' + i] && m.chosenA.length >= m.needA)).join('')}</div>`;
+    if (id === 'arch') return `<div class="vf-cards">${VD.archetypes.map(a => vcard(`data-vf="arch" data-v="${a.id}"`, B.arch === a.id, false, `<header><h4>${esc(a.n)}</h4><span class="vf-hp">Vida ${sgn(a.hp)}</span></header>${pairsHit(a, ap) ? '<span class="vf-fit">Combina com a abordagem escolhida</span>' : ''}<p class="vf-d">${esc(a.d)}</p>
+        <table class="vf-mini">${a.status.map(s => `<tr><td>${dt(s[0])}</td><td>${die(s[1])}</td></tr>`).join('')}</table>
+        <p class="vf-stat"><b>Habilidades</b> escolha ${a.pick} de ${a.ab.length - (a.gain ? 1 : 0)}${a.gain ? ' (+ ' + esc(a.gain) + ')' : ''}</p>
+        ${a.challenge ? `<ul class="vf-note">${a.challenge.map(c => '<li>' + esc(c) + '</li>').join('')}</ul>` : ''}<p class="vf-note">Combina bem com: ${esc(a.pairs)}.</p>`)).join('')}</div>`;
+    if (id === 'abar') return `<p class="vf-count">Escolha ${m.needR} ${counter(m.chosenR, m.needR)}</p><div class="vf-cards wide">${m.arPool.map(a => abCard('r:' + ar.ab.indexOf(a), a, !!B.ab['r:' + ar.ab.indexOf(a)], !B.ab['r:' + ar.ab.indexOf(a)] && m.chosenR.length >= m.needR)).join('')}${m.gain.map(g => fixedCard(g.id, g.a, ar.n)).join('')}</div>`;
+    if (id === 'up') {
+      const upList = m.ups.filter(u => u.ab.length);
+      return `<div class="vf-cards">${VD.upgrades.map(u => vcard(`data-vf="up" data-id="${u.id}"`, !!B.up[u.id], false, `<header><h4>${esc(u.n)}</h4><span class="vf-hp">Vida ${sgn(u.hp)}</span></header><p class="vf-d">${esc(u.when)}</p>
+          ${u.ab.length ? `<ul class="vf-ablist">${u.ab.map(a => `<li><b>${esc(a.n)}</b> <span class="gm-bp-ty">${a.t}</span> ${dt(firstSentence(a.x))}</li>`).join('')}</ul>` : '<p class="vf-note">Sem habilidades extras: só soma Vida.</p>'}${u.note ? `<p class="vf-note">${esc(u.note)}</p>` : ''}`)).join('')}</div>
+        ${upList.length ? `<h5>Habilidades das melhorias</h5><div class="vf-cards wide">${upList.map(u => u.ab.map((a, i) => u.id === 'vehicle' ? abCard('u:vehicle:' + i, a, !!B.ab['u:vehicle:' + i], false) : fixedCard('u:' + u.id + ':' + i, a, u.n)).join('')).join('')}</div>${m.ups.some(u => u.id === 'vehicle') ? '<p class="muted">Veículo vilanesco: monte um tenente com 2 a 4 destas habilidades (mais habilidades para mais campeões).</p>' : ''}` : ''}`;
+    }
+    if (id === 'mast') {
+      if (!m.ups.length) return '<p class="muted">A maestria só existe para vilões com pelo menos uma melhoria. Volte ao passo anterior se quiser um vilão maior.</p>';
+      return `<div class="vf-cards">${vcard('data-vf="mast" data-v=""', !B.mastery, false, '<header><h4>Sem maestria</h4></header><p class="vf-d">O vilão fica só com as habilidades e as melhorias.</p>')}${VD.masteries.map(x => vcard(`data-vf="mast" data-v="${esc(x.n)}"`, B.mastery === x.n, false, `<header><h4>${esc(x.n)}</h4><span class="gm-bp-ty">Passiva</span></header>
+        <p class="vf-stat"><b>Quando vale</b> ${esc(x.cond)}</p><p class="vf-stat"><b>O que faz</b> ${esc(x.x)}</p><p class="vf-note">Exemplo: ${esc(x.ex)}</p>`)).join('')}</div>`;
+    }
+    // done: warnings and the compact sheet
+    const I = issues(m, N);
+    return `${I.length ? `<div class="gm-bp-warn vf-warn"><b>Ainda falta ou está fora da regra:</b><ul>${I.map(t => '<li>' + esc(t) + '</li>').join('')}</ul></div>` : (m.hp != null ? '<p class="gm-bp-ready">Vilão completo, pronto para a mesa.</p>' : '')}
+      ${m.hp != null ? `${compactSheet(m, N)}<div class="gm-bp-btns"><button type="button" class="btn small" data-bpb="toTable">Adicionar à mesa (Vida ${m.hp})</button><button type="button" class="btn small" data-bpb="copy">Copiar ficha</button><button type="button" class="btn small" data-bpb="clear">Recomeçar</button></div>` : '<p class="muted">Escolha a abordagem e o arquétipo para ver a ficha.</p>'}
+      <label class="gm-bp-f gm-bp-wide vf-note-f">Aparência, jeito de falar e motivos<textarea data-bpb="note" rows="2">${esc(B.note)}</textarea></label>`;
+  }
+
+  // the sheet, small: one column, one line per ability (the full text is in the tooltip)
+  function compactSheet(m, N) {
+    const chips = (dice, store) => dice.map((d, i) => `<span class="vf-chip">${die(d)} ${esc(store[i] ? tName(store[i]) : '?')}</span>`).join('');
+    const z = ['bruiser', 'fragile'].includes(m.ar.id) ? zonesFor(m.hp) : null;
+    return `<article class="vf-sheet"><header><h3>${esc(B.name || 'Vilão sem nome')}</h3>${B.concept ? `<p class="muted">${esc(B.concept)}</p>` : ''}
+        <div class="vf-tags"><span>${esc(m.ap.n)}</span><span>${esc(m.ar.n)}</span>${m.ups.map(u => `<span>${esc(u.n)}</span>`).join('')}${m.ups.length ? '' : '<span>vilão menor</span>'}</div></header>
+      <div class="vf-nums"><div class="vf-hpn"><small>Vida (${N} campeões)</small><b>${m.hp}</b><small>${m.ap.hp}${m.ar.hp >= 0 ? ' + ' + m.ar.hp : ' − ' + -m.ar.hp} + 5×${N}${m.upH ? ' + ' + m.upH : ''}</small>${z ? `<small>Verde ${z[0]} · Amarela ${z[1]} · Vermelha ${z[2]}</small>` : ''}</div>
+        <div class="vf-st"><small>Status</small>${m.ar.status.map(s => `<span>${dt(s[0])} ${die(s[1])}</span>`).join('')}</div></div>
+      <div class="vf-tr"><p><b>Poderes</b> ${chips(m.pDice, B.P)}</p><p><b>Qualidades</b> ${chips(m.qDice, B.Q)}<span class="vf-chip">${die('d8')} ${esc(B.rp || '?')}</span></p></div>
+      <ul class="vf-ab">${abLines(m).map(l => `<li title="${esc(l[2].replace(/«|»/g, ''))}"><b>${esc(l[0])}</b> <span class="gm-bp-ty">${l[1]}</span> ${dt(firstSentence(l[2])).replace(/«([^»]+)»/g, '<b>$1</b>')}</li>`).join('')}
+        ${m.mastery ? `<li title="${esc(m.mastery.x)}"><b>${esc(m.mastery.n)}</b> <span class="gm-bp-ty">I</span> ${esc(firstSentence(m.mastery.x))}</li>` : ''}</ul>${B.note ? `<p class="muted"><i>${esc(B.note)}</i></p>` : ''}</article>`;
+  }
+
+  let GOPEN = {};
+  function vfHtml() {
+    const N = VF.N, m = model(N), I = issues(m, N), id = STEPS[VF.step][0], n = needs(id, m, I), last = VF.step === STEPS.length - 1;
+    return `<header class="vf-top"><div class="vf-title"><span class="eyebrow">Escudo do Mestre</span><h3>Forja de Vilões</h3></div>
+        <label class="gm-bp-n">Campeões (N)<select data-vf="n">${[2, 3, 4, 5, 6].map(k => `<option${k === N ? ' selected' : ''}>${k}</option>`).join('')}</select></label>
+        <div class="vf-hpbox"><small>Vida</small><b>${m.hp != null ? m.hp : '–'}</b></div><button type="button" class="btn small" data-vf="close">Fechar</button></header>
+      <nav class="vf-steps" aria-label="Passos">${STEPS.map((s, i) => `<button type="button" class="vf-dot${i === VF.step ? ' on' : ''}${stepDone(s[0], m, I) && i !== VF.step ? ' done' : ''}" data-vf="go" data-i="${i}"${i === VF.step ? ' aria-current="step"' : ''}><span>${stepDone(s[0], m, I) && i !== VF.step ? '✓' : i + 1}</span><em>${esc(s[1])}</em></button>`).join('')}</nav>
+      <main class="vf-body"><h2>${esc(STEP_TITLE[id])}</h2>
+        <details class="gm-bp-guide" data-g="${id}"${GOPEN[id] ? ' open' : ''}><summary>Guia deste passo</summary><div>${GUIDE[id]}</div></details>
+        ${n.length && !last ? `<div class="gm-bp-warn"><b>Ainda falta:</b><ul>${n.map(t => '<li>' + esc(t) + '</li>').join('')}</ul></div>` : ''}
+        <div class="vf-step">${stepBody(id, m, N)}</div></main>
+      <footer class="vf-foot"><button type="button" class="btn" data-vf="prev"${VF.step === 0 ? ' disabled' : ''}>Voltar</button><span class="vf-pos">Passo ${VF.step + 1} de ${STEPS.length}</span>
+        ${last ? '<button type="button" class="btn primary" data-vf="close">Concluir</button>' : '<button type="button" class="btn primary" data-vf="next">Continuar</button>'}</footer>`;
+  }
+  function vfDraw(top) {
+    if (!VF.open || !VF.el) return;
+    const body = VF.el.querySelector('.vf-body'), y = body ? body.scrollTop : 0, a = document.activeElement;
+    const key = a && VF.el.contains(a) && a.dataset ? ['data-vf', 'data-bpb', 'data-id', 'data-v', 'data-i', 't'].map(k => (a.getAttribute && a.getAttribute(k)) || '').join('|') : '';
+    const sel = a && a.getAttribute ? ['data-vf', 'data-bpb', 'data-id', 'data-v', 'data-i'].filter(k => a.getAttribute(k) != null).map(k => `[${k}="${CSS.escape(a.getAttribute(k))}"]`).join('') : '';
+    VF.el.innerHTML = vfHtml();
+    const nb = VF.el.querySelector('.vf-body'); if (nb) nb.scrollTop = top ? 0 : y;
+    if (key && sel && !['INPUT', 'TEXTAREA'].includes(a.tagName)) { const e = VF.el.querySelector(sel); if (e) e.focus({ preventScroll: true }); }
+  }
+  function vfOpen(root, N, onClose) {
+    if (VF.open) return;
+    VF.N = N; VF.onClose = onClose; VF.open = true;
+    VF.step = Math.min(Math.max(+B.vstep || 0, 0), STEPS.length - 1);
+    VF.el = document.createElement('div'); VF.el.className = 'vf'; VF.el.setAttribute('role', 'dialog'); VF.el.setAttribute('aria-modal', 'true'); VF.el.setAttribute('aria-label', 'Forja de Vilões');
+    root.appendChild(VF.el); document.body.classList.add('vf-open');
+    vfDraw(true);
+    const f = VF.el.querySelector('.vf-body h2'); if (f) { f.tabIndex = -1; f.focus({ preventScroll: true }); }
+  }
+  function vfClose() {
+    if (!VF.open) return;
+    VF.open = false; document.body.classList.remove('vf-open');
+    if (VF.el) VF.el.remove(); VF.el = null;
+    if (VF.onClose) VF.onClose(VF.N);
+  }
+  function vfGo(i) { VF.step = Math.min(Math.max(i, 0), STEPS.length - 1); B.vstep = VF.step; saveB(); vfDraw(true); const f = VF.el.querySelector('.vf-body h2'); if (f) { f.tabIndex = -1; f.focus({ preventScroll: true }); } }
+
+  // the little summary shown in the page, where the forge opens from
+  function miniHtml(N) {
+    const m = model(N), started = B.name.trim() || B.ap || B.arch;
+    return `<div class="gm-bp-mont vf-mini-box">${started ? `<p><b>${esc(B.name || 'Vilão sem nome')}</b>${m.ap ? ` <span class="muted">· ${esc(m.ap.n)}${m.ar ? ' + ' + esc(m.ar.n) : ''}${m.hp != null ? ' · Vida ' + m.hp : ''}</span>` : ''}</p><p class="muted">Seu vilão em construção está salvo neste navegador.</p>` : '<p class="muted">Nove passos, cada um numa tela, com todas as opções à vista em cartas.</p>'}
+      <div class="gm-bp-btns"><button type="button" class="btn primary" data-vf="open">${started ? 'Continuar a Forja de Vilões' : 'Abrir a Forja de Vilões'}</button></div></div>`;
   }
   function abLines(m) {
     const L = [];
@@ -323,16 +420,6 @@
     for (const x of m.gain) L.push([x.a.n, x.a.t, fill(x.a, x.id), 'arquétipo']);
     for (const x of m.upAb) L.push([x.a.n, x.a.t, fill(x.a, x.id), x.src]);
     return L;
-  }
-  function sheetHtml(m, N) {
-    const traits = (dice, store) => dice.map((d, i) => `${die(d)} ${esc(store[i] ? tName(store[i]) : '?')}`).join(' · ');
-    return `<p><b>${esc(B.name || 'Vilão sem nome')}</b>${B.concept ? ` <span class="muted">· ${esc(B.concept)}</span>` : ''}</p>
-      <p class="muted">${esc(m.ap.n)} (${m.ap.hp}) + ${esc(m.ar.n)} (${m.ar.hp >= 0 ? '+' : ''}${m.ar.hp})${m.ups.length ? ' + ' + m.ups.map(u => esc(u.n)).join(', ') : ' · vilão menor'}${m.mastery ? ' · ' + esc(m.mastery.n) : ''}</p>
-      <p><b>Poderes:</b> ${traits(m.pDice, B.P)}</p><p><b>Qualidades:</b> ${traits(m.qDice, B.Q)} · ${die('d8')} ${esc(B.rp || 'qualidade de interpretação')}</p>
-      <p><b>Status:</b> ${m.ar.status.map(s => `${esc(s[0])}: ${die(s[1])}`).join(' · ')}</p>
-      <p><b>Vida para ${N} campeões:</b> ${m.ap.hp} + ${m.ar.hp} + 5×${N}${m.upH ? ' + ' + m.upH : ''} = <b>${m.hp}</b></p>
-      ${abLines(m).map(l => `<p><b>${esc(l[0])}</b> <span class="gm-bp-ty">${l[1]}</span> <span class="muted">(${esc(l[3])})</span> ${dt(l[2]).replace(/«([^»]+)»/g, '<b>$1</b>')}</p>`).join('')}
-      ${m.mastery ? `<p><b>${esc(m.mastery.n)}</b> <span class="gm-bp-ty">I</span> ${esc(m.mastery.x)}</p>` : ''}${B.note ? `<p class="muted"><i>${esc(B.note)}</i></p>` : ''}`;
   }
   function sheetText(m, N) {
     const tr = (dice, store) => dice.map((d, i) => `${d} ${store[i] ? tName(store[i]) : '?'}`).join(', ');
@@ -451,7 +538,7 @@
             <p>Use este molde como ponto de partida: abra com um gancho, alterne cenas sociais, de montagem e de ação, e termine com uma consequência que alimente a próxima sessão.</p>
             ${ol(['<b>Gancho:</b> um problema que os campeões têm motivo para resolver.', '<b>Cena social ou de montagem:</b> informação, aliados, preparação.', '<b>Ação (fácil ou moderada):</b> aquece e mostra o estilo do vilão ou do ambiente.', '<b>Interlúdio:</b> descanso, escolhas difíceis, uma revelação.', '<b>Ação (difícil):</b> o confronto com o vilão no ambiente, com um desafio central.', '<b>Desfecho:</b> consequências, anotação na Sessões Anteriores e ganchos para a próxima.'])}
           </div>
-          <div id="bp-montador"><h3>Montador de vilões</h3><p class="muted">Monte um vilão passo a passo: abordagem, arquétipo, dados, habilidades, melhorias e maestria. A Vida usa o número de campeões (N) escolhido acima. Suas escolhas ficam salvas neste navegador.</p><div id="bp-mont">${builderHtml(N)}</div></div>
+          <div id="bp-montador"><h3>Forja de Vilões</h3><p class="muted">Monte um vilão passo a passo, numa tela cheia: abordagem, dados, habilidades, arquétipo, melhorias e maestria, com todas as opções em cartas e uma ficha no final. A Vida usa o número de campeões (N). Suas escolhas ficam salvas neste navegador.</p><div id="bp-mont">${miniHtml(N)}</div></div>
           <div id="bp-lacaios"><h3>Exemplos: lacaios</h3><div class="gm-bp-grid">${MINIONS.map(m => minionCard(m, 'minion', N)).join('')}</div></div>
           <div id="bp-tenentes"><h3>Exemplos: tenentes</h3><div class="gm-bp-grid">${LIEUTENANTS.map(m => minionCard(m, 'lieutenant', N)).join('')}</div></div>
           <div id="bp-viloes"><h3>Exemplos: vilões</h3><div class="gm-bp-grid">${VILLAINS.map(v => villainCard(v, N)).join('')}</div></div>
@@ -468,9 +555,20 @@
         open.forEach(id => { const d = root.querySelector('#' + id); if (d) d.open = true; });
         scrollTo(0, y);
       });
-      // villain builder: it redraws only its own block, so typing is never interrupted
-      const redrawB = () => { const el = root.querySelector('#bp-mont'); if (el) { const y = scrollY; el.innerHTML = builderHtml(N); scrollTo(0, y); } };
+      // villain forge: it redraws only its own screen, so typing is never interrupted
+      const redrawB = () => { if (VF.open) vfDraw(); else { const el = root.querySelector('#bp-mont'); if (el) el.innerHTML = miniHtml(N); } };
       const dropAb = prefix => { for (const k of Object.keys(B.ab)) if (k.startsWith(prefix)) delete B.ab[k]; for (const k of Object.keys(B.tk)) if (k.startsWith(prefix)) delete B.tk[k]; };
+      const applyB = (f, o) => {
+        if (f === 'ap') { B.ap = o.value; B.P = {}; B.Q = {}; dropAb('a:'); }
+        else if (f === 'arch') { B.arch = o.value; dropAb('r:'); dropAb('g:'); }
+        else if (f === 'P' || f === 'Q') { const s = B[f]; if (o.value) s[o.i] = o.value; else delete s[o.i]; }
+        else if (f === 'tk') { const k = o.id + '|' + o.t; if (o.value) B.tk[k] = o.value; else delete B.tk[k]; }
+        else if (f === 'ab') { if (o.checked) B.ab[o.id] = true; else { delete B.ab[o.id]; dropAb(o.id + '|'); } }
+        else if (f === 'up') { if (o.checked) B.up[o.id] = true; else { delete B.up[o.id]; dropAb('u:' + o.id + ':'); if (!Object.keys(B.up).length) B.mastery = ''; } }
+        else if (f === 'mastery') B.mastery = o.value;
+        saveB(); redrawB();
+      };
+      document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && VF.open) vfClose(); });
       root.addEventListener('toggle', ev => { const d = ev.target; if (d.matches && d.matches('details.gm-bp-guide')) GOPEN[d.dataset.g] = d.open; }, true);
       root.addEventListener('input', ev => {
         const f = ev.target.dataset && ev.target.dataset.bpb;
@@ -478,25 +576,44 @@
         B[f] = ev.target.value; saveB();
       });
       root.addEventListener('change', ev => {
-        const t = ev.target, f = t.dataset && t.dataset.bpb;
+        const t = ev.target;
+        if (t.dataset && t.dataset.vf === 'n') { VF.N = +t.value; vfDraw(); return; }
+        const f = t.dataset && t.dataset.bpb;
         if (!f || ['name', 'concept', 'rp', 'note'].includes(f)) return;
-        if (f === 'ap') { B.ap = t.value; B.P = {}; B.Q = {}; dropAb('a:'); }
-        else if (f === 'arch') { B.arch = t.value; dropAb('r:'); dropAb('g:'); }
-        else if (f === 'P' || f === 'Q') { const o = B[f]; if (t.value) o[t.dataset.i] = t.value; else delete o[t.dataset.i]; }
-        else if (f === 'tk') { const k = t.dataset.id + '|' + t.dataset.t; if (t.value) B.tk[k] = t.value; else delete B.tk[k]; }
-        else if (f === 'ab') { if (t.checked) B.ab[t.dataset.id] = true; else { delete B.ab[t.dataset.id]; dropAb(t.dataset.id + '|'); } }
-        else if (f === 'up') { if (t.checked) B.up[t.dataset.id] = true; else { delete B.up[t.dataset.id]; dropAb('u:' + t.dataset.id + ':'); if (!Object.keys(B.up).length) B.mastery = ''; } }
-        else if (f === 'mastery') B.mastery = t.value;
-        saveB(); redrawB();
+        applyB(f, { value: t.value, checked: t.checked, id: t.dataset.id, t: t.dataset.t, i: t.dataset.i });
+        if (f === 'P' || f === 'Q') vfDraw();   // dice picked: refresh the "falta" strip and the steps
+      });
+      // cards and navigation
+      const cardAct = c => {
+        const k = c.dataset.vf;
+        if (c.classList.contains('dis')) return;
+        if (k === 'ap' || k === 'arch') applyB(k, { value: c.dataset.v });
+        else if (k === 'ab') applyB('ab', { id: c.dataset.id, checked: !B.ab[c.dataset.id] });
+        else if (k === 'up') applyB('up', { id: c.dataset.id, checked: !B.up[c.dataset.id] });
+        else if (k === 'mast') applyB('mastery', { value: c.dataset.v });
+      };
+      root.addEventListener('keydown', ev => {
+        const c = ev.target.closest && ev.target.closest('.vf-card[role=button]');
+        if (c && ev.target === c && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); cardAct(c); }
       });
       root.addEventListener('click', ev => {
+        const v = ev.target.closest('[data-vf]');
+        if (v && !ev.target.closest('select, input, textarea, label')) {
+          const k = v.dataset.vf;
+          if (k === 'open') { vfOpen(root, N, n => { if (n !== N) { N = n; const y = scrollY; draw(); scrollTo(0, y); } else redrawB(); }); return; }
+          if (k === 'close') { vfClose(); return; }
+          if (k === 'next') { vfGo(VF.step + 1); return; }
+          if (k === 'prev') { vfGo(VF.step - 1); return; }
+          if (k === 'go') { vfGo(+v.dataset.i); return; }
+          if (['ap', 'arch', 'ab', 'up', 'mast'].includes(k)) { cardAct(v); return; }
+        }
         const bb = ev.target.closest('[data-bpb="toTable"], [data-bpb="copy"], [data-bpb="clear"]');
         if (!bb) return;
-        const m = model(N), f = bb.dataset.bpb;
-        if (f === 'clear') { if (confirm('Limpar o vilão em construção?')) { B = blankB(); saveB(); redrawB(); } return; }
+        const m = model(VF.open ? VF.N : N), f = bb.dataset.bpb;
+        if (f === 'clear') { if (confirm('Recomeçar o vilão? Isso apaga o que você montou.')) { B = blankB(); saveB(); VF.step = 0; redrawB(); vfDraw(true); } return; }
         if (m.hp == null) return;
         if (f === 'toTable') { if (window.GM_TOOLS) window.GM_TOOLS.addVillain(B.name || 'Vilão sem nome', m.hp); }
-        else if (navigator.clipboard) navigator.clipboard.writeText(sheetText(m, N)).catch(() => {});
+        else if (navigator.clipboard) navigator.clipboard.writeText(sheetText(m, VF.open ? VF.N : N)).catch(() => {});
         const old = bb.textContent; bb.textContent = f === 'toTable' ? 'Adicionado na Mesa do Mestre' : 'Copiado'; setTimeout(() => { bb.textContent = old; }, 1600);
       });
       root.addEventListener('click', ev => {
