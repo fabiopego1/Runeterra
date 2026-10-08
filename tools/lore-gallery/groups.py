@@ -228,11 +228,11 @@ GROUPS = [
          champs=['Viktor', 'Blitzcrank'], match=r'Augment|Evolution|Clockling|Mechanized|Swapbot'),
     dict(region='zaun', id='sump', name='Trabalhadores do Sumidouro',
          desc='Mecânicos, catadores e encanadores dos níveis mais baixos e tóxicos da cidade.',
-         champs=['Twitch'], match=r'Sump|Dredger|Chirean|Scavenger|Forge Worker|Scrap',
+         match=r'Sump|Dredger|Chirean|Scavenger|Forge Worker|Scrap',
          uni=['Mecânico', 'Catador do Sumidouro', 'Respirador do Sumidouro com elmo de Cinza', 'Quimio-encanadores', 'Viginauta', 'Mensageiros do Calçadão', 'Residente do Calçadão', 'Pesquisador Quimtec', 'Mercador horticultor']),
     dict(region='zaun', id='experiments', name='Experimentos e monstros de Zaun',
          desc='O que sai dos laboratórios e do lixo químico da cidade: Singed, o alquimista, Warwick, transformado em monstro por experimentos dolorosos, Zac, nascido de um vazamento tóxico no Sumidouro, e o Dr. Mundo, o louco de Zaun.',
-         champs=['Singed', 'Warwick', 'Zac', 'Dr. Mundo']),
+         champs=['Singed', 'Warwick', 'Zac', 'Dr. Mundo', 'Twitch']),
 
     # ---------------------------------------------------------------- Bandle City
     dict(region='bandle', id='squads', name='Batedores e artilheiros',

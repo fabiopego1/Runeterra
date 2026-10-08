@@ -905,7 +905,7 @@
     for (const k of keys) if (TRAIT[k]) (by[TRAIT[k].cat] = by[TRAIT[k].cat] || []).push(k);
     const parts = Object.entries(by).map(([c, ks]) => {
       const all = (CATS[c] ? CATS[c].items : []).map(i => i[0]);
-      return all.length && all.every(k => ks.includes(k)) ? `${catName(c)} (${tr('all')})` : ks.map(traitName).join(', ');
+      return all.length && all.every(k => ks.includes(k)) ? catName(c) : ks.map(traitName).join(', ');
     });
     return parts.length ? `${tr('Options:')} ${parts.join('; ')}` : '';
   }
