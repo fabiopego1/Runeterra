@@ -899,8 +899,19 @@
   // others: slots of another group in the same step (e.g. the Training bonus next to the Path dice), also off-limits
   // Every power and quality is listed; the ones this step does not offer stay locked, with why (lockWhy).
   // onlyKind: the step gives only powers or only qualities, so the other kind is left out of the list.
+  // "Options: Physical (all); Medicine, Magical Lore…": what this choice lets the player bind a die to
+  function optionHint(keys) {
+    const by = {};
+    for (const k of keys) if (TRAIT[k]) (by[TRAIT[k].cat] = by[TRAIT[k].cat] || []).push(k);
+    const parts = Object.entries(by).map(([c, ks]) => {
+      const all = (CATS[c] ? CATS[c].items : []).map(i => i[0]);
+      return all.length && all.every(k => ks.includes(k)) ? `${catName(c)} (${tr('all')})` : ks.map(traitName).join(', ');
+    });
+    return parts.length ? `${tr('Options:')} ${parts.join('; ')}` : '';
+  }
   function assignHtml(slots, optionKeys, before, stepPrefix, label, others = [], swap = [], lockWhy = '', onlyKind = '') {
     if (!slots || !slots.length) return '';
+    const hint = optionHint(optionKeys);
     const everyKey = !lockWhy ? optionKeys : onlyKind ? allOf(onlyKind) : allOf('power').concat(allOf('quality'));
     const rows = slots.map(s => {
       // a required trait you already have can take a bigger new die; its old die then comes back to this step
@@ -915,7 +926,7 @@
       let note = '';
       if (s.key) note = s.upgrade ? tr('You already had {trait}: bind this {die} to something else.', { trait: traitName(s.key), die: s.die }) : s.swap ? tr('{trait} goes from {from} to {to}; its old {from} is below for you to use in this step.', { trait: traitName(s.key), from: s.swap.from, to: s.swap.to }) : '';
       if (s.freed) note = note || tr('This is the old {die} of {trait}. Use it for something else in this step.', { die: s.die, trait: traitName(s.from) });
-      return socket({ bind: `${stepPrefix}.assign.${s.id}`, d: s.die, cur: s.key, groups, empty: tr('Bind this {die} to a trait', { die: s.die }), note, freed: s.freed });
+      return socket({ bind: `${stepPrefix}.assign.${s.id}`, d: s.die, cur: s.key, groups, empty: tr('Bind this {die} to a trait', { die: s.die }), note, freed: s.freed, hint, auto: false });
     }).join('');
     return `<div class="assign"><div class="muted"${tip(tr('<h5>Assigning dice</h5>Only the die <b>size</b> matters. Each die becomes the rating of one power or quality. Powers and qualities you already have cannot be chosen again.'))}>${label}</div>${rows}</div>`;
   }
@@ -1064,7 +1075,7 @@
   // the tray splits into a Powers block and a Qualities block, each with its own colour.
   const kindOf = k => (TRAIT[k] ? TRAIT[k].kind : '');
   const kindTag = k => `<span class="sock-kind k-${k}">${tr(k)}</span>`;
-  function socket({ bind, d, mark, cur, groups, empty, note, freed }) {
+  function socket({ bind, d, mark, cur, groups, empty, note, freed, hint, auto = true }) {
     // open options first: inside each group, then groups, then the Powers/Qualities blocks
     const open1 = i => !i.locked;
     groups = groups.map(g => ({ ...g, items: g.items.filter(open1).concat(g.items.filter(i => !open1(i))) }))
@@ -1074,12 +1085,12 @@
     const kinds = [...new Set(all.map(i => kindOf(i.k)).filter(Boolean))];
     const both = kinds.length > 1;
     let open = ui.socket === bind;
-    if (!open && !cur && ui.socket == null && !socketAuto) { open = socketAuto = true; }
+    if (!open && !cur && ui.socket == null && !socketAuto && auto) { open = socketAuto = true; }
     const gem = d ? die(d) : `<span class="sock-mark">${esc(mark || '')}</span>`;
     const ask = d ? tr(both ? 'Which power or quality does this {die} become?' : kinds[0] === 'power' ? 'Which power does this {die} become?' : 'Which quality does this {die} become?', { die: d }) : (empty || tr('Choose'));
     const face = curItem
       ? `${kindOf(cur) ? kindTag(kindOf(cur)) : ''}<span class="sock-name"${TRAIT[cur] ? tip(traitTip(cur)) : ''}>${esc(curItem.name)}</span>${d ? die(d, 'sm') : ''}<span class="sock-cat">${esc(TRAIT[cur] ? catName(TRAIT[cur].cat) : '')}${curItem.after ? ` · ${esc(curItem.after)}` : ''}</span>`
-      : `<span class="sock-empty">${esc(ask)}</span>`;
+      : `<span class="sock-empty">${esc(ask)}${hint ? `<small class="sock-hint">${esc(hint)}</small>` : ''}</span>`;
     const filter = all.length > 12 ? `<label class="tray-filter">${ico('mark')}<input type="search" data-filter="1" placeholder="${tr('Filter {n} options…', { n: all.length })}" aria-label="${tr('Filter options')}"></label>` : '';
     const groupHtml = g => `<div class="tray-group"><div class="tray-label">${esc(g.label)}${g.sub ? `<span>${esc(g.sub)}</span>` : ''}</div><div class="tray-grid">${g.items.map(i => {
       const on = i.k === cur, lock = !!i.locked && !on, off = (!!i.taken || lock) && !on && !i.swapWith, fit = !lock && fitTrait(i.k);
