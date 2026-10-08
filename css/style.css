@@ -1758,3 +1758,6 @@ body.ro-lock { overflow: hidden; }
 .gm-bp-warn { border: 1px solid var(--zone-y); background: rgba(217, 171, 69, .08); padding: 0.6rem 0.9rem; }
 .gm-bp-warn ul { margin: 0.3rem 0 0 1.1rem; padding: 0; }
 .gm-bp-ready { margin: 0; color: var(--zone-g); font-weight: 600; }
+
+.sock-empty { display: grid; gap: 0.15rem; }
+.sock-hint { font-size: .78rem; line-height: 1.35; color: var(--text-3); letter-spacing: 0; }
