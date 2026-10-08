@@ -448,6 +448,15 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.click('#bp-viloes [data-bp=villain]'); await p.waitForTimeout(200);
     const tableNow = await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')));
     ok(tableNow.foes.length === foesBefore + 1 && tableNow.villains.length >= 1 && tableNow.villains[tableNow.villains.length - 1].max > 30, 'an example minion and an example villain go to the table with one click');
+    // villain builder: approach + archetype + upgrade, Health = approach + archetype + 5 x N + upgrades
+    await p.selectOption('#bancada [data-bpb=ap]', 'tactician'); await p.selectOption('#bancada [data-bpb=arch]', 'squad');
+    await p.check('#bancada [data-bpb=up][data-id=mook]');
+    for (const id of ['a:0', 'a:1', 'a:2']) await p.click(`#bancada [data-bpb=ab][data-id="${id}"]`, { force: true });
+    ok(await p.$eval('#bancada [data-bpb=ab][data-id="a:2"]', e => !e.checked && e.disabled), 'the villain builder stops at the number of abilities the approach gives');
+    await p.fill('#bancada [data-bpb=name]', 'Capitã Sylva');
+    ok(await p.$eval('#bancada .gm-bp-sheet', e => /20 \+ 5 \+ 5×4 = 45/.test(e.textContent)), 'the villain builder computes Health: approach + archetype + 5 x heroes + upgrades');
+    await p.click('#bancada [data-bpb=toTable]'); await p.waitForTimeout(200);
+    ok(await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')).villains.some(v => v.name === 'Capitã Sylva' && v.max === 45)), 'a villain built in the builder goes to the table');
     await p.context().close();
   } else console.log('skip GM Screen unlock (GM_PASSWORD not set)');
 

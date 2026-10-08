@@ -190,6 +190,129 @@
       end: 'Se a Rainha fugir, a Névoa recua mas deixa uma marca: o vilarejo vira ponto de partida para a próxima história.' }
   ];
 
+  // ------------------------------------------------------------------ villain builder
+  const VD = window.GM_VDATA;
+  const BKEY = 'runeterra-gm-villain-v1';
+  const DIES = ['d4', 'd6', 'd8', 'd10', 'd12'];
+  const bump = d => DIES[Math.min(DIES.length - 1, DIES.indexOf(d) + 1)];
+  const ZONES = [[100, ['Máx−75', '74−26', '25−1']], [95, ['95−70', '69−25', '24−1']], [90, ['90−66', '65−23', '22−1']], [85, ['85−60', '59−22', '21−1']],
+    [80, ['80−55', '54−21', '20−1']], [75, ['75−50', '49−20', '19−1']], [70, ['70−50', '49−18', '17−1']], [65, ['65−45', '44−18', '17−1']],
+    [60, ['60−41', '40−17', '16−1']], [55, ['55−38', '37−17', '16−1']], [50, ['50−35', '34−16', '15−1']], [45, ['45−32', '31−16', '15−1']],
+    [40, ['40−30', '29−15', '14−1']], [35, ['35−27', '26−13', '12−1']], [30, ['30−23', '22−12', '11−1']], [25, ['25−20', '19−10', '9−1']],
+    [20, ['20−16', '15−8', '7−1']], [15, ['15−11', '10−6', '5−1']], [10, ['10', '9−5', '4−1']]];
+  const zonesFor = max => { const r = ZONES.find(z => max >= z[0]) || ZONES[ZONES.length - 1]; return r[1]; };
+  const blankB = () => ({ name: '', concept: '', ap: '', arch: '', P: {}, Q: {}, rp: '', ab: {}, tk: {}, up: {}, mastery: '', note: '' });
+  let B = (() => { try { return Object.assign(blankB(), JSON.parse(localStorage.getItem(BKEY))); } catch (e) { return blankB(); } })();
+  const saveB = () => { try { localStorage.setItem(BKEY, JSON.stringify(B)); } catch (e) { /* ignore */ } };
+  const cats = () => Object.entries(window.TRAIT_CATEGORIES || {});
+  const traitKinds = k => (k.startsWith('P:') ? 'power' : 'quality');
+  const allTraits = () => cats().flatMap(([ck, v]) => (v.items || []).map(i => ({ key: i[0], name: i[2] || i[1], kind: traitKinds(ck), cat: ck })));
+  const tName = key => { const t = allTraits().find(x => x.key === key); return t ? t.name : ''; };
+  const traitOptions = (kind, sel) => cats().filter(([ck]) => traitKinds(ck) === kind)
+    .map(([ck, v]) => `<optgroup label="${esc(v.rt || ck)}">${(v.items || []).map(i => `<option value="${esc(i[0])}"${sel === i[0] ? ' selected' : ''}>${esc(i[2] || i[1])}</option>`).join('')}</optgroup>`).join('');
+  const TOKEN_RE = /\[(poder\/qualidade|energia\/elemento|poder|qualidade)\]/g;
+  const tokensOf = text => [...new Set([...text.matchAll(TOKEN_RE)].map(m => m[1]))];
+
+  // everything the sheet shows, computed from the choices
+  function model(N) {
+    const ap = VD.approaches.find(x => x.id === B.ap), ar = VD.archetypes.find(x => x.id === B.arch);
+    const ups = VD.upgrades.filter(u => B.up[u.id]);
+    const pUp = ups.some(u => u.id === 'power'), qUp = ups.some(u => u.id === 'quality');
+    const pDice = ap ? ap.P.map(d => (pUp ? bump(d) : d)) : [], qDice = ap ? ap.Q.map(d => (qUp ? bump(d) : d)) : [];
+    const pOver = ap && pUp && ap.P.some(d => d === 'd12'), qOver = ap && qUp && ap.Q.some(d => d === 'd12');
+    const needA = ap ? ap.pick + (qOver ? 1 : 0) : 0;
+    const arPool = ar ? ar.ab.filter(a => a.n !== ar.gain) : [];
+    const needR = ar ? ar.pick + (pOver ? 1 : 0) : 0;
+    const chosenA = ap ? ap.ab.map((a, i) => ({ a, id: 'a:' + i })).filter(x => B.ab[x.id]) : [];
+    const chosenR = ar ? arPool.map(a => ({ a, id: 'r:' + ar.ab.indexOf(a) })).filter(x => B.ab[x.id]) : [];
+    const gain = ar && ar.gain ? ar.ab.filter(a => a.n === ar.gain).map(a => ({ a, id: 'g:' + a.n })) : [];
+    const upAb = [];
+    for (const u of ups) u.ab.forEach((a, i) => { if (u.id !== 'vehicle' || B.ab['u:vehicle:' + i]) upAb.push({ a, id: `u:${u.id}:${i}`, src: u.n }); });
+    const upH = ups.reduce((n, u) => n + u.hp, 0);
+    const hp = ap && ar ? ap.hp + ar.hp + 5 * N + upH : null;
+    const mastery = ups.length ? VD.masteries.find(m => m.n === B.mastery) : null;
+    return { ap, ar, ups, pDice, qDice, pOver, qOver, needA, needR, arPool, chosenA, chosenR, gain, upAb, upH, hp, mastery };
+  }
+  // an ability's text with the traits the Game Master picked
+  function fill(x, id) {
+    return x.x.replace(TOKEN_RE, (m, t) => { const k = B.tk[id + '|' + t]; const n = k ? tName(k) : ''; return n ? `«${n}»` : m; });
+  }
+  const mine = kind => { const ap = VD.approaches.find(x => x.id === B.ap); return ap ? Object.values(kind === 'power' ? B.P : B.Q).filter(Boolean) : []; };
+  function tokenPick(id, text) {
+    return tokensOf(text).map(t => {
+      const keys = t === 'poder' ? mine('power') : t === 'qualidade' ? mine('quality') : t === 'energia/elemento' ? mine('power').filter(k => (window.TRAIT_CATEGORIES['P:elemental'] || { items: [] }).items.some(i => i[0] === k)) : mine('power').concat(mine('quality'));
+      const cur = B.tk[id + '|' + t] || '';
+      return `<label class="gm-bp-tok">[${esc(t)}] <select data-bpb="tk" data-id="${esc(id)}" data-t="${esc(t)}"><option value="">escolher…</option>${[...new Set(keys)].map(k => `<option value="${esc(k)}"${cur === k ? ' selected' : ''}>${esc(tName(k))}</option>`).join('')}</select></label>`;
+    }).join('');
+  }
+  const abBox = (id, a, on, dis, extra) => `<div class="gm-bp-ab${on ? ' on' : ''}"><label><input type="checkbox" data-bpb="ab" data-id="${esc(id)}"${on ? ' checked' : ''}${dis ? ' disabled' : ''}> <b>${esc(a.n)}</b> <span class="gm-bp-ty">${a.t}</span></label><p>${dt(a.x)}</p>${on ? tokenPick(id, a.x) : ''}${extra || ''}</div>`;
+
+  function builderHtml(N) {
+    const m = model(N), ap = m.ap, ar = m.ar;
+    const apSel = `<select data-bpb="ap"><option value="">escolher abordagem…</option>${VD.approaches.map(a => `<option value="${a.id}"${B.ap === a.id ? ' selected' : ''}>${esc(a.n)} (Vida ${a.hp})</option>`).join('')}</select>`;
+    const arSel = `<select data-bpb="arch"><option value="">escolher arquétipo…</option>${VD.archetypes.map(a => `<option value="${a.id}"${B.arch === a.id ? ' selected' : ''}>${esc(a.n)} (Vida ${a.hp >= 0 ? '+' : ''}${a.hp})</option>`).join('')}</select>`;
+    const diceSlots = (kind, dice, store) => dice.map((d, i) => `<label class="gm-bp-slot">${die(d)} <select data-bpb="${kind}" data-i="${i}"><option value="">—</option>${traitOptions(kind === 'P' ? 'power' : 'quality', store[i])}</select></label>`).join('');
+    const picked = (list, need) => `<span class="gm-bp-count${list.length === need ? ' ok' : list.length > need ? ' bad' : ''}">${list.length}/${need}</span>`;
+    let h = `<div class="gm-bp-mont"><div class="gm-bp-row">
+      <label class="gm-bp-f">Nome do vilão<input type="text" data-bpb="name" value="${esc(B.name)}" placeholder="Ex.: Capitão Dorrick Maré-Negra"></label>
+      <label class="gm-bp-f gm-bp-wide">Conceito (quem é, o que quer, como enfrenta seus campeões)<input type="text" data-bpb="concept" value="${esc(B.concept)}"></label></div>
+      <div class="gm-bp-row"><label class="gm-bp-f">1. Abordagem ${apSel}</label><label class="gm-bp-f">2. Arquétipo ${arSel}</label></div>`;
+    if (ap) {
+      h += `<p class="muted"><b>${esc(ap.n)}:</b> ${esc(ap.d)}${ap.note ? ' <i>' + esc(ap.note) + '</i>' : ''}</p>
+        <h4>Poderes <small>sugestão: ${esc(ap.sp)}</small></h4><div class="gm-bp-slots">${diceSlots('P', m.pDice, B.P)}</div>
+        <h4>Qualidades <small>sugestão: ${esc(ap.sq)}</small></h4><div class="gm-bp-slots">${diceSlots('Q', m.qDice, B.Q)}
+          <label class="gm-bp-slot">${die('d8')} <input type="text" data-bpb="rp" value="${esc(B.rp)}" placeholder="Qualidade de interpretação"></label></div>
+        ${m.pOver || m.qOver ? '<p class="muted">Um dado já era d12 e o aprimoramento não o sobe mais: em troca, você ganha uma habilidade extra (abaixo).</p>' : ''}
+        <h4>Habilidades da abordagem ${picked(m.chosenA, m.needA)}</h4><div class="gm-bp-abs">${ap.ab.map((a, i) => abBox('a:' + i, a, !!B.ab['a:' + i], !B.ab['a:' + i] && m.chosenA.length >= m.needA)).join('')}</div>`;
+    }
+    if (ar) {
+      h += `<p class="muted"><b>${esc(ar.n)}:</b> ${esc(ar.d)} <i>Combina bem com: ${esc(ar.pairs)}.</i></p>
+        <h4>Status do arquétipo</h4>${table(['Condição', 'Dado de status'], ar.status.map(s => [s[0], s[1]]))}
+        ${ar.challenge ? '<ul class="gm-bp-list">' + ar.challenge.map(c => '<li>' + esc(c) + '</li>').join('') + '</ul>' : ''}
+        ${['bruiser', 'fragile'].includes(ar.id) && m.hp ? `<p class="muted">Zonas de Vida (máx. ${m.hp}): Verde ${zonesFor(m.hp)[0]} · Amarela ${zonesFor(m.hp)[1]} · Vermelha ${zonesFor(m.hp)[2]}</p>` : ''}
+        <h4>Habilidades do arquétipo ${picked(m.chosenR, m.needR)}</h4><div class="gm-bp-abs">${m.arPool.map(a => abBox('r:' + ar.ab.indexOf(a), a, !!B.ab['r:' + ar.ab.indexOf(a)], !B.ab['r:' + ar.ab.indexOf(a)] && m.chosenR.length >= m.needR)).join('')}
+        ${m.gain.map(g => `<div class="gm-bp-ab on fixed"><b>${esc(g.a.n)}</b> <span class="gm-bp-ty">${g.a.t}</span> <small>(sempre inclusa)</small><p>${dt(g.a.x)}</p>${tokenPick(g.id, g.a.x)}</div>`).join('')}</div>`;
+    }
+    h += `<h4>Melhorias <small>(opcional: cada uma ajuda a enfrentar mais um campeão)</small></h4><div class="gm-bp-ups">${VD.upgrades.map(u => `<label class="gm-bp-up"><input type="checkbox" data-bpb="up" data-id="${u.id}"${B.up[u.id] ? ' checked' : ''}> <b>${esc(u.n)}</b> <span class="gm-bp-ty">Vida ${u.hp >= 0 ? '+' : ''}${u.hp}</span><span class="muted">${esc(u.when)}</span></label>`).join('')}</div>`;
+    const ups = m.ups.filter(u => u.ab.length);
+    if (ups.length) h += `<h4>Habilidades das melhorias</h4><div class="gm-bp-abs">${ups.map(u => u.ab.map((a, i) => u.id === 'vehicle' ? abBox('u:vehicle:' + i, a, !!B.ab['u:vehicle:' + i], false) : `<div class="gm-bp-ab on fixed"><b>${esc(a.n)}</b> <span class="gm-bp-ty">${a.t}</span> <small>(${esc(u.n)})</small><p>${dt(a.x)}</p>${tokenPick('u:' + u.id + ':' + i, a.x)}</div>`).join('')).join('')}</div>${m.ups.some(u => u.id === 'vehicle') ? '<p class="muted">Veículo vilanesco: monte um tenente com 2 a 4 destas habilidades (mais habilidades para mais campeões).</p>' : ''}${m.ups.some(u => u.note) ? '<p class="muted">' + esc(m.ups.find(u => u.note).note) + '</p>' : ''}`;
+    h += `<h4>Maestria <small>(só para vilões com melhorias)</small></h4><select data-bpb="mastery"${m.ups.length ? '' : ' disabled'}><option value="">${m.ups.length ? 'sem maestria' : 'adicione uma melhoria para escolher'}</option>${VD.masteries.map(x => `<option${B.mastery === x.n ? ' selected' : ''}>${esc(x.n)}</option>`).join('')}</select>`;
+    h += `<label class="gm-bp-f gm-bp-wide">Aparência, jeito de falar e motivos<textarea data-bpb="note" rows="2">${esc(B.note)}</textarea></label>`;
+    if (m.hp != null) {
+      h += `<div class="gm-bp-sheet"><h4>Ficha do vilão</h4>${sheetHtml(m, N)}
+        <div class="gm-bp-btns"><button type="button" class="btn small" data-bpb="toTable">Adicionar à mesa (Vida ${m.hp})</button><button type="button" class="btn small" data-bpb="copy">Copiar ficha</button><button type="button" class="btn small" data-bpb="clear">Limpar</button></div></div>`;
+    }
+    return h + '</div>';
+  }
+  function abLines(m) {
+    const L = [];
+    for (const x of m.chosenA) L.push([x.a.n, x.a.t, fill(x.a, x.id), 'abordagem']);
+    for (const x of m.chosenR) L.push([x.a.n, x.a.t, fill(x.a, x.id), 'arquétipo']);
+    for (const x of m.gain) L.push([x.a.n, x.a.t, fill(x.a, x.id), 'arquétipo']);
+    for (const x of m.upAb) L.push([x.a.n, x.a.t, fill(x.a, x.id), x.src]);
+    return L;
+  }
+  function sheetHtml(m, N) {
+    const traits = (dice, store) => dice.map((d, i) => `${die(d)} ${esc(store[i] ? tName(store[i]) : '?')}`).join(' · ');
+    return `<p><b>${esc(B.name || 'Vilão sem nome')}</b>${B.concept ? ` <span class="muted">· ${esc(B.concept)}</span>` : ''}</p>
+      <p class="muted">${esc(m.ap.n)} (${m.ap.hp}) + ${esc(m.ar.n)} (${m.ar.hp >= 0 ? '+' : ''}${m.ar.hp})${m.ups.length ? ' + ' + m.ups.map(u => esc(u.n)).join(', ') : ' · vilão menor'}${m.mastery ? ' · ' + esc(m.mastery.n) : ''}</p>
+      <p><b>Poderes:</b> ${traits(m.pDice, B.P)}</p><p><b>Qualidades:</b> ${traits(m.qDice, B.Q)} · ${die('d8')} ${esc(B.rp || 'qualidade de interpretação')}</p>
+      <p><b>Status:</b> ${m.ar.status.map(s => `${esc(s[0])}: ${die(s[1])}`).join(' · ')}</p>
+      <p><b>Vida para ${N} campeões:</b> ${m.ap.hp} + ${m.ar.hp} + 5×${N}${m.upH ? ' + ' + m.upH : ''} = <b>${m.hp}</b></p>
+      ${abLines(m).map(l => `<p><b>${esc(l[0])}</b> <span class="gm-bp-ty">${l[1]}</span> <span class="muted">(${esc(l[3])})</span> ${dt(l[2]).replace(/«([^»]+)»/g, '<b>$1</b>')}</p>`).join('')}
+      ${m.mastery ? `<p><b>${esc(m.mastery.n)}</b> <span class="gm-bp-ty">I</span> ${esc(m.mastery.x)}</p>` : ''}${B.note ? `<p class="muted"><i>${esc(B.note)}</i></p>` : ''}`;
+  }
+  function sheetText(m, N) {
+    const tr = (dice, store) => dice.map((d, i) => `${d} ${store[i] ? tName(store[i]) : '?'}`).join(', ');
+    const L = [`${B.name || 'Vilão sem nome'}${B.concept ? ' · ' + B.concept : ''}`, `${m.ap.n} (${m.ap.hp}) + ${m.ar.n} (${m.ar.hp})${m.ups.length ? ' + ' + m.ups.map(u => u.n).join(', ') : ''}${m.mastery ? ' · ' + m.mastery.n : ''}`,
+      `Poderes: ${tr(m.pDice, B.P)}`, `Qualidades: ${tr(m.qDice, B.Q)}, d8 ${B.rp || 'qualidade de interpretação'}`,
+      `Status: ${m.ar.status.map(s => s[0] + ' ' + s[1]).join(' | ')}`, `Vida para ${N} campeões: ${m.ap.hp} + ${m.ar.hp} + 5×${N}${m.upH ? ' + ' + m.upH : ''} = ${m.hp}`];
+    for (const l of abLines(m)) L.push(`${l[0].replace(/\s*\(.*$/, '')} [${l[1]}]: ${l[2].replace(/«|»/g, '')}`);
+    if (m.mastery) L.push(`${m.mastery.n} [I]: ${m.mastery.x}`);
+    if (B.note) L.push(B.note);
+    return L.join('\n');
+  }
+
   // ------------------------------------------------------------------ rendering
   const table = (cols, rows) => `<table class="gm-fl-t gm-bp-t"><thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((v, i) => `<td${i === 0 ? ' class="fl-sc"' : ''}>${dt(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
   const ol = items => `<ol class="gm-bp-steps">${items.map(i => `<li>${i}</li>`).join('')}</ol>`;
@@ -225,6 +348,7 @@
       { id: 'tenentes', title: 'Tenentes', body: `
         <p>Tenentes são lacaios mais complexos: <b>um dado maior, uma ou mais habilidades e um papel claro</b> na cena (comandar lacaios, dar apoio, atrapalhar). Um tenente vale por dois lacaios na conta da cena. Crie como um lacaio, com 2 ou 3 habilidades escolhidas da lista acima, e escreva a tática dele em uma linha. Veículos e máquinas de guerra dos vilões também entram aqui.</p>` },
       { id: 'viloes', title: 'Vilões', body: `
+        <p class="muted">Prefere montar direto? Use o <a href="#bp-montador">Montador de vilões</a> logo abaixo: ele traz as listas completas de habilidades de cada abordagem e arquétipo.</p>
         <p>Um vilão fica entre um campeão e todo o resto: tem poderes, qualidades, um status, Vida e habilidades. É <b>menor</b> se usa só os números básicos e <b>maior</b> se tem melhorias. Passos:</p>
         ${ol(['<b>Conceito:</b> quem é, o que quer e como bate de frente com seus campeões.', '<b>Abordagem:</b> dá poderes, qualidades, Vida base e habilidades da forma como ele age.', '<b>Poderes e qualidades:</b> distribua dados da lista de poderes e qualidades; ele também tem uma qualidade de interpretação.', '<b>Arquétipo:</b> como ele luta e do que se importa numa cena (de que depende seu status). Dá Vida e habilidades.', '<b>Melhorias (opcional):</b> cada uma ajuda a enfrentar mais um campeão.', '<b>Maestria (opcional, só com melhorias):</b> uma opção de Superar automática, como os princípios dos campeões.', '<b>Vida:</b> some os valores (abaixo) e finalize com aparência, jeito de falar e motivos.'])}
         <h4>Abordagens</h4>
@@ -282,7 +406,7 @@
       let N = 4;
       const draw = () => {
         const G = guide(N);
-        const nav = [['bp-guia', 'Como criar'], ['bp-sessao', 'Montar uma sessão'], ['bp-lacaios', 'Lacaios'], ['bp-tenentes', 'Tenentes'], ['bp-viloes', 'Vilões'], ['bp-ambientes', 'Ambientes'], ['bp-aventuras', 'Aventuras']];
+        const nav = [['bp-guia', 'Como criar'], ['bp-sessao', 'Montar uma sessão'], ['bp-montador', 'Montador de vilões'], ['bp-lacaios', 'Lacaios'], ['bp-tenentes', 'Tenentes'], ['bp-viloes', 'Vilões'], ['bp-ambientes', 'Ambientes'], ['bp-aventuras', 'Aventuras']];
         root.innerHTML = `<section class="gm-bp" id="bancada">
           <div class="gm-fl-head"><div><div class="eyebrow">Guia do Mestre</div><h2>Bancada do Mestre</h2>
             <p class="muted">Como criar cenas, desafios, lacaios, tenentes, vilões e ambientes, com exemplos prontos de Runeterra. Adapta os capítulos <i>Bullpen</i>, <i>Adventure Issues</i> e <i>The Archives</i> do <em>Sentinel Comics RPG</em>; os exemplos são originais.</p></div>
@@ -293,6 +417,7 @@
             <p>Use este molde como ponto de partida: abra com um gancho, alterne cenas sociais, de montagem e de ação, e termine com uma consequência que alimente a próxima sessão.</p>
             ${ol(['<b>Gancho:</b> um problema que os campeões têm motivo para resolver.', '<b>Cena social ou de montagem:</b> informação, aliados, preparação.', '<b>Ação (fácil ou moderada):</b> aquece e mostra o estilo do vilão ou do ambiente.', '<b>Interlúdio:</b> descanso, escolhas difíceis, uma revelação.', '<b>Ação (difícil):</b> o confronto com o vilão no ambiente, com um desafio central.', '<b>Desfecho:</b> consequências, anotação na Sessões Anteriores e ganchos para a próxima.'])}
           </div>
+          <div id="bp-montador"><h3>Montador de vilões</h3><p class="muted">Monte um vilão passo a passo: abordagem, arquétipo, dados, habilidades, melhorias e maestria. A Vida usa o número de campeões (N) escolhido acima. Suas escolhas ficam salvas neste navegador.</p><div id="bp-mont">${builderHtml(N)}</div></div>
           <div id="bp-lacaios"><h3>Exemplos: lacaios</h3><div class="gm-bp-grid">${MINIONS.map(m => minionCard(m, 'minion', N)).join('')}</div></div>
           <div id="bp-tenentes"><h3>Exemplos: tenentes</h3><div class="gm-bp-grid">${LIEUTENANTS.map(m => minionCard(m, 'lieutenant', N)).join('')}</div></div>
           <div id="bp-viloes"><h3>Exemplos: vilões</h3><div class="gm-bp-grid">${VILLAINS.map(v => villainCard(v, N)).join('')}</div></div>
@@ -308,6 +433,36 @@
         N = +ev.target.value; draw();
         open.forEach(id => { const d = root.querySelector('#' + id); if (d) d.open = true; });
         scrollTo(0, y);
+      });
+      // villain builder: it redraws only its own block, so typing is never interrupted
+      const redrawB = () => { const el = root.querySelector('#bp-mont'); if (el) { const y = scrollY; el.innerHTML = builderHtml(N); scrollTo(0, y); } };
+      const dropAb = prefix => { for (const k of Object.keys(B.ab)) if (k.startsWith(prefix)) delete B.ab[k]; for (const k of Object.keys(B.tk)) if (k.startsWith(prefix)) delete B.tk[k]; };
+      root.addEventListener('input', ev => {
+        const f = ev.target.dataset && ev.target.dataset.bpb;
+        if (!['name', 'concept', 'rp', 'note'].includes(f)) return;
+        B[f] = ev.target.value; saveB();
+      });
+      root.addEventListener('change', ev => {
+        const t = ev.target, f = t.dataset && t.dataset.bpb;
+        if (!f || ['name', 'concept', 'rp', 'note'].includes(f)) return;
+        if (f === 'ap') { B.ap = t.value; B.P = {}; B.Q = {}; dropAb('a:'); }
+        else if (f === 'arch') { B.arch = t.value; dropAb('r:'); dropAb('g:'); }
+        else if (f === 'P' || f === 'Q') { const o = B[f]; if (t.value) o[t.dataset.i] = t.value; else delete o[t.dataset.i]; }
+        else if (f === 'tk') { const k = t.dataset.id + '|' + t.dataset.t; if (t.value) B.tk[k] = t.value; else delete B.tk[k]; }
+        else if (f === 'ab') { if (t.checked) B.ab[t.dataset.id] = true; else { delete B.ab[t.dataset.id]; dropAb(t.dataset.id + '|'); } }
+        else if (f === 'up') { if (t.checked) B.up[t.dataset.id] = true; else { delete B.up[t.dataset.id]; dropAb('u:' + t.dataset.id + ':'); if (!Object.keys(B.up).length) B.mastery = ''; } }
+        else if (f === 'mastery') B.mastery = t.value;
+        saveB(); redrawB();
+      });
+      root.addEventListener('click', ev => {
+        const bb = ev.target.closest('[data-bpb="toTable"], [data-bpb="copy"], [data-bpb="clear"]');
+        if (!bb) return;
+        const m = model(N), f = bb.dataset.bpb;
+        if (f === 'clear') { if (confirm('Limpar o vilão em construção?')) { B = blankB(); saveB(); redrawB(); } return; }
+        if (m.hp == null) return;
+        if (f === 'toTable') { if (window.GM_TOOLS) window.GM_TOOLS.addVillain(B.name || 'Vilão sem nome', m.hp); }
+        else if (navigator.clipboard) navigator.clipboard.writeText(sheetText(m, N)).catch(() => {});
+        const old = bb.textContent; bb.textContent = f === 'toTable' ? 'Adicionado na Mesa do Mestre' : 'Copiado'; setTimeout(() => { bb.textContent = old; }, 1600);
       });
       root.addEventListener('click', ev => {
         const b = ev.target.closest('[data-bp="foe"], [data-bp="villain"]');

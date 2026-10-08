@@ -1718,3 +1718,27 @@ body.ro-lock { overflow: hidden; }
 .gm-bp-zone.z-y { border-left: 3px solid var(--zone-y); }
 .gm-bp-zone.z-r { border-left: 3px solid var(--zone-r); }
 .gm-bp-scenes { margin: 0.2rem 0; padding-left: 1.2rem; line-height: 1.5; }
+
+/* villain builder */
+.gm-bp-mont { display: grid; gap: 0.6rem; border: 1px solid var(--line); background: var(--ink-1); padding: 1rem; }
+.gm-bp-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
+.gm-bp-f { display: grid; gap: 0.3rem; font: 600 .74rem var(--font-ui); letter-spacing: .1em; text-transform: uppercase; color: var(--text-2); flex: 1 1 14rem; }
+.gm-bp-wide { flex: 2 1 24rem; }
+.gm-bp-mont input[type=text], .gm-bp-mont select, .gm-bp-mont textarea { font: 500 .95rem var(--font-ui); padding: 0.45rem 0.6rem; background: var(--ink-0); color: var(--text); border: 1px solid var(--line-2); text-transform: none; letter-spacing: 0; width: 100%; box-sizing: border-box; }
+.gm-bp-slots { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+.gm-bp-slot { display: flex; gap: 0.4rem; align-items: center; flex: 1 1 14rem; }
+.gm-bp-count { font: 600 .75rem var(--font-mono); padding: 0.1rem 0.5rem; border: 1px solid var(--line-2); color: var(--text-2); }
+.gm-bp-count.ok { color: var(--zone-g); border-color: var(--zone-g); }
+.gm-bp-count.bad { color: var(--zone-r); border-color: var(--zone-r); }
+.gm-bp-abs { display: grid; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); gap: 0.6rem; }
+.gm-bp-ab { border: 1px solid var(--line); background: var(--ink-0); padding: 0.6rem 0.8rem; }
+.gm-bp-ab.on { border-color: var(--gold-lo); }
+.gm-bp-ab p { margin: 0.3rem 0 0; line-height: 1.5; }
+.gm-bp-ab label { cursor: pointer; }
+.gm-bp-tok { display: inline-flex; gap: 0.4rem; align-items: center; margin: 0.4rem 0.6rem 0 0; font-size: .82rem; color: var(--text-2); }
+.gm-bp-tok select { width: auto !important; }
+.gm-bp-ups { display: grid; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); gap: 0.5rem; }
+.gm-bp-up { display: grid; gap: 0.15rem; border: 1px solid var(--line); background: var(--ink-0); padding: 0.5rem 0.8rem; cursor: pointer; }
+.gm-bp-sheet { border-top: 1px solid var(--gold-lo); margin-top: 0.6rem; padding-top: 0.6rem; }
+.gm-bp-sheet p { margin: 0.35rem 0; line-height: 1.5; }
+.gm-bp-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.6rem; }
