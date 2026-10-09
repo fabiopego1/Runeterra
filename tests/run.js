@@ -490,16 +490,25 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     for (const [i, k] of ['fire', 'water', 'cosmic', 'vitality'].entries()) await pick('P.' + i, k);
     for (const [i, k] of ['history', 'science', 'leadership'].entries()) await pick('Q.' + i, k);
     ok(await p.$eval('.sock-slot[data-bind="P.0"] .sock-name', e => !!e.dataset.tip && /Fogo|Fire/.test(e.textContent)), 'a chosen trait has its hover');
-    await p.fill('[data-b=rp]', 'Sorriso Calculado');
+    // a trait already on another die is traded for with one click: the two dice swap places
+    await p.click('.sock-slot[data-bind="P.1"]'); await p.click('.rune[data-bind="P.1"][data-val="fire"]');
+    ok(await p.$eval('.sock-slot[data-bind="P.1"] .sock-name', e => /Fogo|Fire/.test(e.textContent)) && await p.$eval('.sock-slot[data-bind="P.0"] .sock-name', e => /Água|Water/.test(e.textContent)), 'clicking a trait that is on another die swaps the two dice, like in the Champion Forge');
+    await p.fill('[data-b=rp]', 'Sorriso Calculado'); await p.fill('[data-b=rpDesc]', 'Sempre sorri antes de cobrar o preço.');
+    ok(await p.$eval('[data-a=rpok]', e => !e.disabled) && /\d+\/100/.test(await p.$eval('.qdesc-n', e => e.textContent)), 'the interpretation quality has a name, a short description with a counter and a Confirm button, like the Signature Quality');
+    await p.click('[data-a=rpok]');
+    ok(await p.$eval('#stage .flow-todo', e => false).catch(() => true), 'confirming the quality clears its pending notes');
     const chip = async (id, t, val) => p.click(`.tchip[data-id="${id}"][data-t="${t}"][data-val="${val}"]`);
     const fillChips = async () => { for (let n = 0; n < 12; n++) { const t = await p.evaluate(() => { const e = [...document.querySelectorAll('.ab.picked .ab-cfg, .ab.picked.ant')].map(c => (c.querySelector('.tchip.on') ? null : c.querySelector('.tchip:not([disabled])'))).find(Boolean); return e ? { id: e.dataset.id, t: e.dataset.t, v: e.dataset.val } : null; }); if (!t) return; await chip(t.id, t.t, t.v); } };
     await p.click('[data-a=next]');
     for (const id of ['a:0', 'a:1']) await p.click(`.ab[data-id="${id}"] .ab-name`);
-    ok(await p.$eval('.ab[data-id="a:2"]', e => !e.classList.contains('picked') && e.classList.contains('disabled')), 'the forge stops at the number of abilities the approach gives');
+    await p.click('.ab[data-id="a:2"] .ab-name', { force: true });
+    ok(await p.$eval('.ab[data-id="a:2"]', e => !e.classList.contains('picked') && e.classList.contains('disabled')) && await p.$$eval('.ab.picked', e => e.length) === 2, 'the forge stops at the number of abilities the approach gives, even when the blocked card is clicked');
     ok(await p.$$eval('.ab[data-id="a:0"] .tchip', e => e.some(x => /Sorriso Calculado/.test(x.textContent))), 'the named interpretation quality is one of the options of a quality ability');
     await chip('a:0', 'qualidade', 'rp-quality'); await fillChips();
     await p.click('[data-a=next]'); await p.click('.card[data-v=squad]'); await p.click('[data-a=next]');
-    await p.click('.ab[data-id^="r:"] .ab-name >> nth=0'); await p.click('.ab[data-id^="r:"] .ab-name >> nth=1'); await fillChips();
+    await p.click('.ab[data-id^="r:"] .ab-name >> nth=0'); await p.click('.ab[data-id^="r:"] .ab-name >> nth=1'); await p.click('.ab[data-id^="r:"] .ab-name >> nth=2', { force: true });
+    ok(await p.$$eval('.ab.picked', e => e.length) === 2 && /2\/2/.test(await p.$eval('.count-line', e => e.textContent)), 'the archetype step does not take more abilities than the archetype gives');
+    await fillChips();
     await p.click('[data-a=next]'); await p.click('.card[data-id=mook]'); await p.click('[data-a=next]'); await p.click('[data-a=next]');
     ok(await p.$$eval('.rename-card', e => e.length) >= 6, 'powers, qualities and abilities can be renamed');
     await p.fill('[data-b="traitNames.fire"]', 'Chamas de Sentina');
