@@ -2834,6 +2834,19 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     } else if (tipTarget) hideTip();
   }, { passive: true });
 
+  // The Oficina de Antagonista (antagonista.html) borrows this file's tooltips, dice, rules text and trait cards,
+  // then stops: no champion is drawn, saved or changed on that page.
+  if (document.body.classList.contains('ant-page')) {
+    st = blank();
+    window.ForgeKit = {
+      PT, tr, esc, tip, die, ico, sigil, rulesText, ICONS, TRAIT, CATS, catName, kindWord, catPhrase, traitTip, traitName, baseTraitName, renamedTrait, origTag,
+      tipReset: () => tipHooks.reset(), showTipFor, hideTip,
+      // the names the antagonist gave things, so every tooltip and chip shows them
+      sync: o => { st.traitNames = o.traitNames || {}; st.pers = Object.assign({}, st.pers, { qok: !!(o.rp || '').trim(), qname: o.rp || '', qdesc: o.rpDesc || '' }); }
+    };
+    return;
+  }
+
   // Lore and Regras are their own pages. Links in the texts use data-act="lore" (with an optional
   // data-section="lore-<id>") and data-act="rules"; "?" opens the rules from anywhere in the Forge.
   window.LORE_FOR_REGION = Object.fromEntries((window.LORE_SECTIONS_PT || []).filter(s => s.region).map(s => [s.region, 'lore-' + s.id]));

@@ -1765,38 +1765,7 @@ body.ro-lock { overflow: hidden; }
 
 .assign-opts { margin: 0 0 0.6rem; color: var(--text-2); }
 
-/* The Antagonist Forge (antagonista.html): same chapters, cards and sheet as the Champion Forge */
-.vf-hpbox { display: grid; justify-items: center; line-height: 1.1; }
-.vf-hpbox small, .vf-hpbox b { font: 400 1.8rem var(--font-display); color: var(--gold-hi); }
-.vf-dot { flex: 1 0 auto; display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.7rem; background: transparent; border: 1px solid var(--line); color: var(--text-2); cursor: pointer; font: 600 .78rem var(--font-ui); letter-spacing: .06em; }
-.vf-dot span { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; border: 1px solid var(--gold-lo); font: 600 .78rem var(--font-mono); color: var(--gold); }
-.vf-dot em { font-style: normal; white-space: nowrap; }
-.vf-dot.on { border-color: var(--gold); color: var(--gold-hi); background: rgba(200, 164, 94, .1); }
-.vf-dot.on span { background: var(--gold); color: #17130b; }
-.vf-dot.done span { background: var(--zone-g); border-color: var(--zone-g); color: #0c1409; }
-.vf-count { margin: 0 0 0.6rem; }
-.vf-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); gap: 0.8rem; align-items: start; }
-.vf-cards.wide { grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr)); }
-.vf-card { display: grid; gap: 0.35rem; align-content: start; border: 1px solid var(--line); background: var(--ink-1); padding: 0.8rem 0.95rem 0.9rem; cursor: pointer; text-align: left; transition: border-color .15s, background .15s; }
-.vf-card:hover { border-color: var(--gold-lo); }
-.vf-card:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
-.vf-card.on { border-color: var(--gold); background: rgba(200, 164, 94, .09); box-shadow: inset 3px 0 0 var(--gold); }
-.vf-card.dis { opacity: .45; cursor: not-allowed; }
-.vf-card.fixed { cursor: default; }
-.vf-card header { display: flex; justify-content: space-between; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
-.vf-card h4 { margin: 0; font-family: var(--font-display); font-size: 1.2rem; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--gold-hi); }
-.vf-card p, .vf-card ul { margin: 0; line-height: 1.45; }
-.vf-card .vf-d { color: var(--text-2); }
-.vf-hp { font: 600 .74rem var(--font-mono); color: var(--gold); white-space: nowrap; }
-.vf-stat b { font: 600 .68rem var(--font-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); margin-right: 0.3rem; }
-.vf-list, .vf-note { font-size: .84rem; color: var(--text-3); }
-.vf-note { padding-left: 0; }
-ul.vf-note, .vf-ablist { padding-left: 1.1rem; }
-.vf-ablist { font-size: .88rem; color: var(--text-2); }
-.vf-fit { justify-self: start; font: 600 .68rem var(--font-ui); letter-spacing: .1em; text-transform: uppercase; color: #0c1409; background: var(--zone-g); padding: 0.1rem 0.45rem; }
-.vf-mini { border-collapse: collapse; font-size: .88rem; width: 100%; }
-.vf-mini td { padding: 0.15rem 0.3rem; border-top: 1px solid var(--line); }
-.vf-mini td:last-child { text-align: right; white-space: nowrap; }
+/* The Antagonist Workshop (antagonista.html): the Champion Forge's own chapters, cards, sockets and sheet */
 .ant-gate[hidden] { display: none; }
 .ant-guide { margin: 0 0 1rem; padding: 0.7rem 1rem; border-left: 3px solid var(--gold); background: var(--ink-1); color: var(--text-2); line-height: 1.5; }
 .ant-guide > b { display: block; font: 600 .72rem var(--font-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.3rem; }
@@ -1808,3 +1777,16 @@ ul.vf-note, .vf-ablist { padding-left: 1.1rem; }
 .ant-page .hs-hr .burst small { letter-spacing: 0; }
 @media (max-width: 700px) { .vf-cards, .vf-cards.wide { grid-template-columns: minmax(0, 1fr); } .chapter-tools .gm-bp-n { margin-right: 0; } }
 @media (max-width: 1100px) { .ant-long { display: none; } }
+
+.rune[hidden] { display: none; }
+.card .cdice { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin-top: 0.45rem; }
+.card .cdice b { font: 600 .6rem var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); margin-right: 0.2rem; }
+.ab.ant { --ac: var(--gold); cursor: pointer; }
+.ab.ant.disabled { cursor: not-allowed; }
+.ab.ant .ab-top input[type=checkbox] { pointer-events: none; }
+.pill.src { border-color: var(--gold-lo); color: var(--gold); }
+.rp-slot { display: flex; align-items: center; gap: 0.7rem; cursor: text; }
+.rp-input { flex: 1 1 auto; min-width: 0; background: transparent; border: 0; border-bottom: 1px dotted var(--line-2); color: var(--text); font: 400 1.15rem var(--font-display); padding: 0.2rem 0.3rem; }
+.rp-input:focus { outline: none; border-bottom-color: var(--gold); }
+.rn-h5 { margin: 1rem 0 0.4rem; font: 600 .78rem var(--font-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--text-2); }
+.rp-slot { flex-direction: row !important; flex-wrap: nowrap !important; }

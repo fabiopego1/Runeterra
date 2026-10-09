@@ -451,7 +451,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(tableNow.foes.length === foesBefore + 1 && tableNow.villains.length >= 1 && tableNow.villains[tableNow.villains.length - 1].max > 30, 'an example minion and an example villain go to the table with one click');
     // the Bancada points to the Antagonist Forge, which lives on its own page
     ok(await p.$eval('#bancada #bp-montador a[href="antagonista.html"]', e => !!e), 'the Bancada links to the Antagonist Forge');
-    ok(await p.evaluate(() => [...document.querySelectorAll('[data-gm-only]')].every(e => !e.hidden)), 'the "Forja do Antagonista" header button shows once the GM Screen is unlocked');
+    ok(await p.evaluate(() => [...document.querySelectorAll('[data-gm-only]')].every(e => !e.hidden)), 'the "Oficina de Antagonista" header button shows once the GM Screen is unlocked');
     await p.context().close();
   } else console.log('skip GM Screen unlock (GM_PASSWORD not set)');
 
@@ -466,7 +466,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await q.goto(`${BASE}/antagonista.html`); await q.waitForSelector('#gate .sp-empty');
     ok(await q.$eval('#app', e => e.hidden) && /Somente para o Mestre/.test(await q.$eval('#gate', e => e.textContent)), 'the Antagonist Forge asks for the GM Screen when it is locked');
     await q.goto(`${BASE}/index.html`);
-    ok(await q.$eval('[data-gm-only]', e => e.hidden), 'the Forja do Antagonista header button is hidden while the GM Screen is locked');
+    ok(await q.$eval('[data-gm-only]', e => e.hidden), 'the Oficina de Antagonista header button is hidden while the GM Screen is locked');
     await q.context().close();
     // unlocked
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 }, acceptDownloads: true });
@@ -476,29 +476,36 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     p.on('pageerror', e => errors.push(`${p.url()}: ${e.message}`));
     p.on('response', r => { if (r.url().startsWith(BASE) && r.status() >= 400) errors.push(`${r.status()}: ${r.url()}`); });
     await p.goto(`${BASE}/index.html`);
-    ok(await p.$eval('[data-gm-only]', e => !e.hidden), 'the Forja do Antagonista header button shows when the GM Screen is unlocked');
+    ok(await p.$eval('[data-gm-only]', e => !e.hidden), 'the Oficina de Antagonista header button shows when the GM Screen is unlocked');
     await p.goto(`${BASE}/antagonista.html`); await p.waitForSelector('#stage .panel');
     ok(await p.$$eval('#nav .rail-item', e => e.length) === 10 && await p.$eval('#gate', e => e.hidden), 'the Antagonist Forge opens with ten chapters, like the Champion Forge');
     ok(await p.$eval('[data-a=next]', e => e.classList.contains('is-disabled')), 'Continue waits for the name');
     await p.fill('[data-b=name]', 'Capitã Sylva'); await p.fill('[data-b=alias]', 'a Dama da Maré'); await p.fill('[data-b=concept]', 'Contrabandista de Bilgewater');
     await p.click('[data-a=next]');
-    ok(await p.$$eval('.vf-card[data-a=ap]', e => e.length) >= 15 && await p.$eval('.vf-card[data-v=tactician]', e => /coordena planos|escolha 2 de 6/.test(e.textContent)), 'approaches are cards that show what each one does before it is chosen');
-    await p.click('.vf-card[data-v=tactician]'); await p.click('[data-a=next]');
-    for (const [i, k] of ['fire', 'water', 'cosmic', 'vitality'].entries()) await p.selectOption(`[data-b=P][data-i="${i}"]`, k);
-    for (const [i, k] of ['history', 'science', 'leadership'].entries()) await p.selectOption(`[data-b=Q][data-i="${i}"]`, k);
+    ok(await p.$$eval('.card[data-a=ap]', e => e.length) >= 15 && await p.$eval('.card[data-v=tactician]', e => /escolha 2 de 6/.test(e.textContent) && !!e.dataset.tip && /Juntar Forças/.test(e.dataset.tip)), 'approaches are cards that show what each one does, and the hover lists its abilities');
+    await p.click('.card[data-v=tactician]'); await p.click('[data-a=next]');
+    // dice go into sockets, exactly as in the Champion Forge
+    const pick = async (bind, val) => { if (!(await p.$(`.tray [data-bind="${bind}"]`))) await p.click(`.sock-slot[data-bind="${bind}"]`); await p.click(`.rune[data-bind="${bind}"][data-val="${val}"]`); };
+    ok(await p.$$eval('.socket', e => e.length) >= 7 && await p.$eval('.tray', e => !!e), 'the dice step uses the Forge sockets, with the first empty one already open');
+    for (const [i, k] of ['fire', 'water', 'cosmic', 'vitality'].entries()) await pick('P.' + i, k);
+    for (const [i, k] of ['history', 'science', 'leadership'].entries()) await pick('Q.' + i, k);
+    ok(await p.$eval('.sock-slot[data-bind="P.0"] .sock-name', e => !!e.dataset.tip && /Fogo|Fire/.test(e.textContent)), 'a chosen trait has its hover');
     await p.fill('[data-b=rp]', 'Sorriso Calculado');
-    const fillTokens = async () => { for (let n = 0; n < 12; n++) { const t = await p.evaluate(() => { const e = [...document.querySelectorAll('[data-b=tk]')].find(x => !x.value); return e ? { id: e.dataset.id, t: e.dataset.t, v: [...e.options].map(o => o.value).filter(Boolean)[0] } : null; }); if (!t) return; await p.selectOption(`[data-b=tk][data-id="${t.id}"][data-t="${t.t}"]`, t.v); } };
+    const chip = async (id, t, val) => p.click(`.tchip[data-id="${id}"][data-t="${t}"][data-val="${val}"]`);
+    const fillChips = async () => { for (let n = 0; n < 12; n++) { const t = await p.evaluate(() => { const e = [...document.querySelectorAll('.ab.picked .ab-cfg, .ab.picked.ant')].map(c => (c.querySelector('.tchip.on') ? null : c.querySelector('.tchip:not([disabled])'))).find(Boolean); return e ? { id: e.dataset.id, t: e.dataset.t, v: e.dataset.val } : null; }); if (!t) return; await chip(t.id, t.t, t.v); } };
     await p.click('[data-a=next]');
-    for (const id of ['a:0', 'a:1']) await p.click(`.vf-card[data-id="${id}"]`);
-    ok(await p.$eval('.vf-card[data-id="a:2"]', e => !e.classList.contains('on') && e.classList.contains('dis')), 'the forge stops at the number of abilities the approach gives');
-    await fillTokens(); await p.click('[data-a=next]');
-    await p.click('.vf-card[data-v=squad]'); await p.click('[data-a=next]');
-    await p.click('.vf-card[data-a=ab] >> nth=0'); await p.click('.vf-card[data-a=ab] >> nth=1'); await fillTokens();
-    await p.click('[data-a=next]'); await p.click('.vf-card[data-id=mook]'); await p.click('[data-a=next]'); await p.click('[data-a=next]');
+    for (const id of ['a:0', 'a:1']) await p.click(`.ab[data-id="${id}"] .ab-name`);
+    ok(await p.$eval('.ab[data-id="a:2"]', e => !e.classList.contains('picked') && e.classList.contains('disabled')), 'the forge stops at the number of abilities the approach gives');
+    ok(await p.$$eval('.ab[data-id="a:0"] .tchip', e => e.some(x => /Sorriso Calculado/.test(x.textContent))), 'the named interpretation quality is one of the options of a quality ability');
+    await chip('a:0', 'qualidade', 'rp-quality'); await fillChips();
+    await p.click('[data-a=next]'); await p.click('.card[data-v=squad]'); await p.click('[data-a=next]');
+    await p.click('.ab[data-id^="r:"] .ab-name >> nth=0'); await p.click('.ab[data-id^="r:"] .ab-name >> nth=1'); await fillChips();
+    await p.click('[data-a=next]'); await p.click('.card[data-id=mook]'); await p.click('[data-a=next]'); await p.click('[data-a=next]');
     ok(await p.$$eval('.rename-card', e => e.length) >= 6, 'powers, qualities and abilities can be renamed');
     await p.fill('[data-b="traitNames.fire"]', 'Chamas de Sentina');
     await p.click('[data-a=next]'); await p.waitForSelector('#sheet-preview .hs-page');
     ok(await p.$eval('#sheet-preview', e => /Chamas de Sentina/.test(e.textContent) && /Capitã Sylva/.test(e.textContent) && /20 \+ 5 \+ 5×4/.test(e.textContent) && /45/.test(e.textContent)), 'the sheet shows the new names and Health = approach + archetype + 5 x heroes + upgrades');
+    ok(await p.$$eval('#sheet-preview [data-tip]', e => e.length) > 30 && await p.$$eval('#hs-p2 .hs-ab-t .term', e => e.length) > 3 && await p.$$eval('#sheet-preview .die[data-tip]', e => e.length) > 8, 'the sheet explains terms, traits, dice and ability types on hover');
     const [dl] = await Promise.all([p.waitForEvent('download'), p.click('.export-row [data-a=export]')]);
     const json = JSON.parse(fs.readFileSync(await dl.path(), 'utf8'));
     ok(json.app === 'runeterra-antagonist' && json.name === 'Capitã Sylva' && json.traitNames.fire === 'Chamas de Sentina', 'the antagonist exports to .json');
@@ -508,15 +515,16 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.click('.export-row [data-a=toTable]'); await p.waitForTimeout(150);
     ok(await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')).villains.some(v => v.name === 'Capitã Sylva' && v.max === 45)), 'the antagonist goes to the table');
     // the approach's own rule: Focused wants two abilities on one power and one on another
-    await p.click('#nav [data-i="1"]'); await p.click('.vf-card[data-v=focused]'); await p.click('[data-a=next]');
-    const nP = await p.$$eval('[data-b=P]', e => e.length), nQ = await p.$$eval('[data-b=Q]', e => e.length);
-    for (let i = 0; i < nP; i++) await p.selectOption(`[data-b=P][data-i="${i}"]`, ['fire', 'water', 'cosmic', 'vitality', 'speed'][i]);
-    for (let i = 0; i < nQ; i++) await p.selectOption(`[data-b=Q][data-i="${i}"]`, ['history', 'science', 'leadership', 'banter'][i]);
+    await p.click('#nav [data-i="1"]'); await p.click('.card[data-v=focused]'); await p.click('[data-a=next]');
+    const nP = await p.$$eval('.socket .sock-slot[data-bind^="P."]', e => e.length), nQ = await p.$$eval('.socket .sock-slot[data-bind^="Q."]', e => e.length);
+    for (let i = 0; i < nP; i++) await pick('P.' + i, ['fire', 'water', 'cosmic', 'vitality', 'speed'][i]);
+    for (let i = 0; i < nQ; i++) await pick('Q.' + i, ['history', 'science', 'leadership', 'banter'][i]);
     await p.click('[data-a=next]');
-    for (const id of ['a:1', 'a:3', 'a:5']) { await p.click(`.vf-card[data-id="${id}"]`); await p.selectOption(`[data-b=tk][data-id="${id}"][data-t="poder"]`, 'fire'); }
-    ok(await p.$eval('#stage .flow-todo', e => /Focado/.test(e.textContent)), 'the forge warns when the three Focused abilities use the same power');
-    await p.selectOption('[data-b=tk][data-id="a:5"][data-t="poder"]', 'water');
-    ok(!(await p.$$eval('#stage .flow-todo li', e => e.some(x => /Focado/.test(x.textContent)))), 'the warning goes away with two abilities on one power and one on another');
+    for (const [id, k] of [['a:1', 'fire'], ['a:3', 'fire']]) { await p.click(`.ab[data-id="${id}"] .ab-name`); await chip(id, 'poder', k); }
+    await p.click('.ab[data-id="a:5"] .ab-name');
+    ok(await p.$eval('.tchip[data-id="a:5"][data-val="fire"]', e => e.disabled), 'Focused: a power already used by two abilities cannot be taken by the third');
+    await chip('a:5', 'poder', 'water');
+    ok(!(await p.$$eval('#stage .flow-todo li', e => e.some(x => /Focado/.test(x.textContent)))), 'two abilities on one power and one on another satisfy the Focused rule');
     await p.click('[data-a=roster]');
     ok(await p.$$eval('#roster .ro-item', e => e.length) === 1, 'the antagonist is in the roster');
     await ctx.close();
