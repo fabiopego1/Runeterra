@@ -33,7 +33,7 @@
     ['Risky Action', 'Ação Arriscada', ''],
     ['Hit The Deck!', 'Todo Mundo no Chão!', ''],
     ['Hero Point', 'Ponto de Inspiração', ''],
-    ['Minion / Lieutenant / Villain', 'Lacaio / Tenente / Vilão', ''],
+    ['Minion / Lieutenant / Villain', 'Lacaio / Tenente / Antagonista', ''],
     ['Out ability', 'Habilidade de Nocaute', ''],
     ['Signature Weaponry', 'Arma Emblemática', ''],
     ['Signature Vehicle', 'Montaria Emblemática', ''],

@@ -14,7 +14,7 @@
     { name: BASICO, lede: 'Como o jogo se organiza, como os dados funcionam e o que acontece quando você se machuca.' },
     { name: ACAO, lede: 'Turnos, ações, mods e reviravoltas: tudo o que você usa durante uma luta, perseguição ou resgate.' },
     { name: ENTRE, lede: 'Recuperação, conversas, pontos de inspiração e memórias: o que acontece entre uma cena de ação e outra.' },
-    { name: MESTRE, lede: 'Como montar e conduzir uma cena de ação: marcador, ambiente, desafios, lacaios, tenentes e vilões. Termina com um exemplo de jogo completo.' }
+    { name: MESTRE, lede: 'Como montar e conduzir uma cena de ação: marcador, ambiente, desafios, lacaios, tenentes e antagonistas. Termina com um exemplo de jogo completo.' }
   ];
 
   window.CHEAT_SECTIONS_PT = [
@@ -62,7 +62,7 @@
     // ------------------------------------------------------------------ II · Na cena de ação
     { id: 'turn-pc', group: ACAO, title: 'Seu turno, passo a passo', nav: 'Seu turno', body: `
       <ol class="cs-steps">
-        <li><b>Descreva o que quer fazer</b> e qual é o seu objetivo: ferir o vilão, distraí-lo, tirá-lo de perto do painel de controle?</li>
+        <li><b>Descreva o que quer fazer</b> e qual é o seu objetivo: ferir o antagonista, distraí-lo, tirá-lo de perto do painel de controle?</li>
         <li>Escolha a <b>ação</b> que combina com esse objetivo (Atacar, Defender, Superar, Fortalecer, Atrapalhar).</li>
         <li>Decida se vai usar uma <b>habilidade</b> ou fazer uma ${see('basic-risky', 'ação básica')} (que pode ser uma ${see('basic-risky', 'Ação Arriscada')}).</li>
         <li>Monte a ${see('dice', 'reserva')}: o <b>Poder</b> e a <b>Qualidade</b> que mais combinam com a ação, mais o seu <b>dado de status</b>. Se a habilidade pede um poder ou qualidade específico, use esse.</li>
@@ -73,13 +73,13 @@
     { id: 'turn-order', group: ACAO, title: 'Ordem dos turnos', body: `
       <p>Não existe iniciativa fixa. O Mestre apresenta a cena e decide quem começa. Depois disso:</p>
       <ul class="cs-list">
-        <li>Quem termina o turno <b>escolhe quem joga em seguida</b>: qualquer campeão, vilão ou o ambiente que ainda não agiu nesta rodada. Avise antes ("quer ir depois de mim?") para a pessoa já ir pensando; você pode mudar de ideia até passar a vez.</li>
-        <li>Uma <b>rodada</b> termina quando todos os campeões, vilões e o ambiente agiram uma vez.</li>
+        <li>Quem termina o turno <b>escolhe quem joga em seguida</b>: qualquer campeão, antagonista ou o ambiente que ainda não agiu nesta rodada. Avise antes ("quer ir depois de mim?") para a pessoa já ir pensando; você pode mudar de ideia até passar a vez.</li>
+        <li>Uma <b>rodada</b> termina quando todos os campeões, antagonistas e o ambiente agiram uma vez.</li>
         <li>Quem joga por último escolhe quem abre a próxima rodada, <b>menos a si mesmo</b>: ninguém joga dois turnos seguidos.</li></ul>
       <div class="cs-callout"><b>Cuidado:</b> se todos os campeões jogarem de uma vez antes dos inimigos, o último campeão passa a vez a um inimigo, e os inimigos podem terminar esta rodada e abrir a próxima, agindo várias vezes em sequência.</div>` },
 
     { id: 'movement', group: ACAO, title: 'Movimento', body: `
-      <p>O jogo é de <b>teatro da mente</b>: distância e posições não são marcadas num mapa. A narrativa decide se um personagem está perto o bastante para agir. Numa batalha espalhada por Piltover, quem protege o conselheiro no Salão do Conselho está longe demais para lidar com o vilão que ataca as docas.</p>
+      <p>O jogo é de <b>teatro da mente</b>: distância e posições não são marcadas num mapa. A narrativa decide se um personagem está perto o bastante para agir. Numa batalha espalhada por Piltover, quem protege o conselheiro no Salão do Conselho está longe demais para lidar com o antagonista que ataca as docas.</p>
       <p>Em vez de uma ação, você pode <b>se mover de um local para outro</b> dentro da cena. Normalmente isso ocupa o turno, mas o Mestre pode permitir Fortalecer, Atrapalhar ou Defender no caminho, se você descrever como. Poderes de velocidade, voo ou conhecer um atalho justificam chegar rápido.</p>` },
 
     { id: 'actions', group: ACAO, title: 'Ações', body: `
@@ -170,8 +170,8 @@
         <li>Ficar muito longe do grupo, ou atrair um esquadrão de lacaios (um por campeão).</li>
         <li>Perder várias habilidades, ou o acesso a poderes e qualidades.</li></ul>` },
 
-    { id: 'enemies', group: ACAO, title: 'Inimigos: vilões, tenentes e lacaios', nav: 'Inimigos', body: `
-      <p>O turno dos vilões funciona como o dos campeões. A diferença é o <b>dado de status</b>, que no vilão pode ser definido de várias formas, indicadas na ficha dele.</p>
+    { id: 'enemies', group: ACAO, title: 'Inimigos: antagonistas, tenentes e lacaios', nav: 'Inimigos', body: `
+      <p>O turno dos antagonistas funciona como o dos campeões. A diferença é o <b>dado de status</b>, que no antagonista pode ser definido de várias formas, indicadas na ficha dele.</p>
       <p><b>Tenentes e lacaios</b> têm um único dado, usado em todas as rolagens e igual ao tamanho atual deles. Quando vários lacaios fazem a mesma ação, agem num único turno e rolam todos os dados de uma vez. Eles não têm Vida: quando atacados, rolam o próprio dado contra o dano (é a "defesa" deles).</p>
       <table class="cs-table"><thead><tr><th>Resultado</th><th>Lacaio</th><th>Tenente</th></tr></thead><tbody>
         <tr><td>A defesa falha (rolou menos que o dano)</td><td>Derrotado na hora</td><td>O dado diminui um tamanho; um tenente em d4 é derrotado</td></tr>
@@ -221,11 +221,11 @@
 
     // ------------------------------------------------------------------ IV · Para o Mestre
     { id: 'gm-scene', group: MESTRE, title: 'Montando uma cena de ação', nav: 'Montando a cena', body: `
-      <p>Uma cena de ação é montada com <b>elementos</b>: desafios, lacaios, tenentes, vilões e o ambiente, mais o ${see('gm-tracker', 'marcador de cena')}. A regra de bolso: uma cena tem cerca de <b>H elementos</b>, em que <b>H</b> é o número de campeões. Assim todo mundo tem algo para fazer no próprio turno.</p>
-      <div class="cs-scroll"><table class="cs-table cs-wide"><thead><tr><th>Dificuldade</th><th>Desafios</th><th>Lacaios</th><th>Tenentes</th><th>Vilões</th><th>Ambiente</th></tr></thead><tbody>
+      <p>Uma cena de ação é montada com <b>elementos</b>: desafios, lacaios, tenentes, antagonistas e o ambiente, mais o ${see('gm-tracker', 'marcador de cena')}. A regra de bolso: uma cena tem cerca de <b>H elementos</b>, em que <b>H</b> é o número de campeões. Assim todo mundo tem algo para fazer no próprio turno.</p>
+      <div class="cs-scroll"><table class="cs-table cs-wide"><thead><tr><th>Dificuldade</th><th>Desafios</th><th>Lacaios</th><th>Tenentes</th><th>Antagonistas</th><th>Ambiente</th></tr></thead><tbody>
         <tr><td><b>Fácil</b></td><td>1 a 2 sucessos, ou 1 com dificuldade extra (como um contador)</td><td>H lacaios d6</td><td>½H tenentes d8</td><td>Nenhum</td><td>Nenhum</td></tr>
-        <tr><td><b>Moderada</b></td><td>3 a 4 sucessos, ou 1 a 2 com dificuldade extra</td><td>H lacaios d8</td><td>½H tenentes d10</td><td>Vilão menor (sem aprimoramentos)</td><td>Ambiente comum</td></tr>
-        <tr><td><b>Difícil</b></td><td>5 ou mais sucessos, ou 3 a 4 com dificuldade extra</td><td>H lacaios d10</td><td>½H tenentes d12</td><td>Vilão maior (com aprimoramentos)</td><td>Ambiente hostil</td></tr></tbody></table></div>
+        <tr><td><b>Moderada</b></td><td>3 a 4 sucessos, ou 1 a 2 com dificuldade extra</td><td>H lacaios d8</td><td>½H tenentes d10</td><td>Antagonista menor (sem aprimoramentos)</td><td>Ambiente comum</td></tr>
+        <tr><td><b>Difícil</b></td><td>5 ou mais sucessos, ou 3 a 4 com dificuldade extra</td><td>H lacaios d10</td><td>½H tenentes d12</td><td>Antagonista maior (com aprimoramentos)</td><td>Ambiente hostil</td></tr></tbody></table></div>
       <p class="cs-note">½H = metade do número de campeões, arredondada para cima. Cada linha é <b>um</b> elemento: "H lacaios d8" conta como um elemento moderado.</p>
       <ul class="cs-list">
         <li><b>Cena fácil:</b> quase só elementos fáceis, nenhum difícil. Serve de aquecimento ou de passagem na história.</li>
@@ -237,7 +237,7 @@
         <li>Dois moderados podem virar um fácil e um difícil.</li>
         <li>Num grupo de lacaios, <b>dois lacaios</b> podem virar <b>um tenente</b> de um tamanho de dado acima.</li>
         <li>Tire um elemento moderado para deixar a cena fácil; some um moderado ou difícil para deixá-la difícil.</li></ul>
-      <div class="cs-callout"><b>Use cartões.</b> Um cartão para o marcador de cena, um para cada grupo de lacaios, tenente, vilão, desafio e local, e um para cada Mod. Deixe todos no meio da mesa. Vire o cartão de lado quando aquele elemento já agiu na rodada e retire-o quando for resolvido: a mesa vendo os cartões sumirem é a melhor sensação de progresso.</div>` },
+      <div class="cs-callout"><b>Use cartões.</b> Um cartão para o marcador de cena, um para cada grupo de lacaios, tenente, antagonista, desafio e local, e um para cada Mod. Deixe todos no meio da mesa. Vire o cartão de lado quando aquele elemento já agiu na rodada e retire-o quando for resolvido: a mesa vendo os cartões sumirem é a melhor sensação de progresso.</div>` },
 
     { id: 'gm-tracker', group: MESTRE, title: 'Marcador de cena e ambiente', nav: 'Marcador e ambiente', body: `
       <p>O marcador de cena mede o perigo e a urgência. Ele precisa de pelo menos um espaço de cada cor; comece por um destes e ajuste:</p>
@@ -256,7 +256,7 @@
         <li>Sem ambiente, o turno do marcador é só o passo 1.</li>
         <li>O ambiente nunca faz Defender nem Superar. Cada reviravolta maior do ambiente acontece no máximo uma vez por cena.</li>
         <li>Quando um campeão consegue um Superar com reviravolta, você pode sugerir uma reviravolta do ambiente da cor atual.</li></ul>
-      <div class="cs-callout"><b>Fim do marcador:</b> quando o último espaço Vermelho é marcado, algo ruim acontece e a cena termina. O plano do vilão avança, alguém não é salvo, a fenda do Vazio se abre de vez. A história segue para uma nova cena, provavelmente com muito mais em jogo.</div>` },
+      <div class="cs-callout"><b>Fim do marcador:</b> quando o último espaço Vermelho é marcado, algo ruim acontece e a cena termina. O plano do antagonista avança, alguém não é salvo, a fenda do Vazio se abre de vez. A história segue para uma nova cena, provavelmente com muito mais em jogo.</div>` },
 
     { id: 'gm-challenges', group: MESTRE, title: 'Desafios', body: `
       <p>Desafios são obstáculos, perigos para inocentes e complicações que precisam ser resolvidos durante a cena: um prédio desabando em Piltover, um vazamento de química em Zaun, um navio pegando fogo em Águas de Sentina. São resolvidos com ações de <b>Superar</b>, e dão aos campeões que não brilham no combate a chance de salvar o dia.</p>
@@ -285,22 +285,22 @@
       <ul class="cs-list">
         <li><b>Em grupo:</b> lacaios iguais agem juntos. Role todos os dados de uma vez e distribua o resultado entre os alvos.</li>
         <li><b>Um dado só</b> para qualquer ação básica. Se tiverem habilidade, ela é a jogada preferida deles.</li>
-        <li><b>Não concentre</b> todos os ataques no mesmo campeão, principalmente no que está quase em Nocaute, a não ser que o vilão deixe isso claro antes ("Acabem com a Demaciana!").</li>
-        <li><b>Superar:</b> lacaios e tenentes nunca aceitam reviravolta maior; com 1 a 3, apenas falham. Com 4 a 7, conseguem com um custo: o lacaio sai de cena, o tenente perde um tamanho de dado. Eles <b>não podem avançar o marcador</b>; isso só os vilões fazem.</li>
+        <li><b>Não concentre</b> todos os ataques no mesmo campeão, principalmente no que está quase em Nocaute, a não ser que o antagonista deixe isso claro antes ("Acabem com a Demaciana!").</li>
+        <li><b>Superar:</b> lacaios e tenentes nunca aceitam reviravolta maior; com 1 a 3, apenas falham. Com 4 a 7, conseguem com um custo: o lacaio sai de cena, o tenente perde um tamanho de dado. Eles <b>não podem avançar o marcador</b>; isso só os antagonistas fazem.</li>
         <li>Para lacaios mais perigosos sem aumentar o dado, dê bônus em ações específicas ("+1 para Atacar em bando").</li></ul>
       <h4>Ideias de habilidade para tenentes</h4>
       <ul class="cs-list">
         <li>Bônus em Fortalecer, Atrapalhar ou Defender, ou afetar vários alvos no mesmo local com essas ações.</li>
         <li>Atacar e Fortalecer um aliado (ou Atrapalhar um inimigo) com a mesma rolagem.</li>
-        <li>Ação especial: criar lacaios, curar o vilão, trazer uma ameaça do ambiente, levar um campeão para outro local.</li>
-        <li>Sacrificar-se para o vilão fugir, agir fora de hora ou avançar o marcador um espaço.</li></ul>` },
+        <li>Ação especial: criar lacaios, curar o antagonista, trazer uma ameaça do ambiente, levar um campeão para outro local.</li>
+        <li>Sacrificar-se para o antagonista fugir, agir fora de hora ou avançar o marcador um espaço.</li></ul>` },
 
-    { id: 'gm-villains', group: MESTRE, title: 'Vilões, ameaças e reviravoltas', nav: 'Vilões e ameaças', body: `
+    { id: 'gm-villains', group: MESTRE, title: 'Antagonistas, ameaças e reviravoltas', nav: 'Antagonistas e ameaças', body: `
       <ul class="cs-list">
-        <li><b>Vilões</b> agem como campeões: poderes, qualidades, habilidades, Vida e um dado de status próprio, descrito na ficha deles. Cada vilão tem o próprio turno.</li>
-        <li>Só vilões podem usar <b>Superar para avançar o marcador de cena</b>, e podem pagar Ações Arriscadas com reviravoltas, como os campeões.</li>
-        <li><b>Aprimoramentos</b> tornam o vilão mais forte e dão aos campeões outra forma de vencê-lo, como uma armadura hextec que cai depois de alguns Superar.</li>
-        <li><b>Ameaças</b> são lacaios, tenentes ou vilões que entram no meio da cena, trazidos por outro personagem, pelo ambiente ou por uma reviravolta. Começam a agir no turno seguinte ao da entrada.</li>
+        <li><b>Antagonistas</b> agem como campeões: poderes, qualidades, habilidades, Vida e um dado de status próprio, descrito na ficha deles. Cada antagonista tem o próprio turno.</li>
+        <li>Só antagonistas podem usar <b>Superar para avançar o marcador de cena</b>, e podem pagar Ações Arriscadas com reviravoltas, como os campeões.</li>
+        <li><b>Aprimoramentos</b> tornam o antagonista mais forte e dão aos campeões outra forma de vencê-lo, como uma armadura hextec que cai depois de alguns Superar.</li>
+        <li><b>Ameaças</b> são lacaios, tenentes ou antagonistas que entram no meio da cena, trazidos por outro personagem, pelo ambiente ou por uma reviravolta. Começam a agir no turno seguinte ao da entrada.</li>
         <li><b>Personagens da trama</b> aliados podem ser lacaios (civis frágeis) ou tenentes (um guarda de elite amigo). Você pode deixar os jogadores controlarem esses aliados.</li></ul>
       <h4>De onde tirar reviravoltas</h4>
       <ol class="cs-steps">

@@ -3,7 +3,7 @@
 window.GM_TWISTS = {
   any: {
     minor: ['Um inocente entra na linha de fogo e precisa ser tirado dali.', 'Uma arma, ferramenta ou foco quebra: o campeão perde um bônus ou sofre −2 na próxima ação.', 'Chega mais um lacaio, do tamanho do dado Médio de quem pagou a reviravolta.', 'O campeão fica separado do grupo, num local diferente da cena.', 'Um segredo pequeno escapa na frente de alguém que não devia ouvir.', 'O marcador de cena avança um espaço.'],
-    major: ['Um aliado importante é capturado ou gravemente ferido.', 'O vilão descobre algo pessoal sobre um campeão e vai usar isso.', 'A estrutura desaba: a cena muda de lugar e todos sofrem dano igual ao Mín.', 'Um esquadrão de reforços chega: um lacaio por campeão.', 'O objetivo da cena muda: o que precisava ser protegido já foi perdido, e agora é preciso recuperar.']
+    major: ['Um aliado importante é capturado ou gravemente ferido.', 'O antagonista descobre algo pessoal sobre um campeão e vai usar isso.', 'A estrutura desaba: a cena muda de lugar e todos sofrem dano igual ao Mín.', 'Um esquadrão de reforços chega: um lacaio por campeão.', 'O objetivo da cena muda: o que precisava ser protegido já foi perdido, e agora é preciso recuperar.']
   },
   bilgewater: {
     minor: ['Um bando de piratas decide que a briga é deles também e ataca quem estiver mais perto.', 'O píer cede e alguém cai na água suja do porto.', 'Um credor reconhece o campeão e cobra uma dívida bem na hora errada.', 'Serpentes marinhas se agitam perto do cais: −2 para quem estiver na beira da água.'],
