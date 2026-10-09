@@ -1765,29 +1765,15 @@ body.ro-lock { overflow: hidden; }
 
 .assign-opts { margin: 0 0 0.6rem; color: var(--text-2); }
 
-/* GM Screen: the villain forge, a full-screen builder with one step per screen */
-body.vf-open { overflow: hidden; }
-.vf { position: fixed; inset: 0; z-index: 90; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; background: var(--ink-0); }
-.vf-top { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; padding: 0.7rem 1.4rem; border-bottom: 1px solid var(--gold-lo); background: var(--ink-1); }
-.vf-title { margin-right: auto; }
-.vf-title h3 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.6rem; color: var(--gold-hi); }
+/* The Antagonist Forge (antagonista.html): same chapters, cards and sheet as the Champion Forge */
 .vf-hpbox { display: grid; justify-items: center; line-height: 1.1; }
-.vf-hpbox small, .vf-hpn small, .vf-st small { font: 600 .66rem var(--font-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); }
-.vf-hpbox b { font: 400 1.8rem var(--font-display); color: var(--gold-hi); }
-.vf-steps { display: flex; gap: 0.3rem; overflow-x: auto; padding: 0.6rem 1.4rem; border-bottom: 1px solid var(--line); scrollbar-width: thin; }
+.vf-hpbox small, .vf-hpbox b { font: 400 1.8rem var(--font-display); color: var(--gold-hi); }
 .vf-dot { flex: 1 0 auto; display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.7rem; background: transparent; border: 1px solid var(--line); color: var(--text-2); cursor: pointer; font: 600 .78rem var(--font-ui); letter-spacing: .06em; }
 .vf-dot span { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; border: 1px solid var(--gold-lo); font: 600 .78rem var(--font-mono); color: var(--gold); }
 .vf-dot em { font-style: normal; white-space: nowrap; }
 .vf-dot.on { border-color: var(--gold); color: var(--gold-hi); background: rgba(200, 164, 94, .1); }
 .vf-dot.on span { background: var(--gold); color: #17130b; }
 .vf-dot.done span { background: var(--zone-g); border-color: var(--zone-g); color: #0c1409; }
-.vf-body { overflow-y: auto; padding: 1.2rem 1.4rem 2rem; max-width: 86rem; width: 100%; margin: 0 auto; box-sizing: border-box; }
-.vf-body h2 { margin: 0 0 0.8rem; font-family: var(--font-display); font-weight: 400; font-size: 1.9rem; color: var(--gold-hi); outline: none; }
-.vf-body h5 { margin: 1rem 0 0.4rem; font: 600 .78rem var(--font-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--text-2); }
-.vf-body .gm-bp-guide { margin-bottom: 0.8rem; }
-.vf-body .gm-bp-warn { margin-bottom: 0.8rem; }
-.vf-foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.7rem 1.4rem; border-top: 1px solid var(--gold-lo); background: var(--ink-1); }
-.vf-pos { color: var(--text-3); font: 600 .78rem var(--font-mono); letter-spacing: .1em; text-transform: uppercase; }
 .vf-count { margin: 0 0 0.6rem; }
 .vf-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); gap: 0.8rem; align-items: start; }
 .vf-cards.wide { grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr)); }
@@ -1811,34 +1797,14 @@ ul.vf-note, .vf-ablist { padding-left: 1.1rem; }
 .vf-mini { border-collapse: collapse; font-size: .88rem; width: 100%; }
 .vf-mini td { padding: 0.15rem 0.3rem; border-top: 1px solid var(--line); }
 .vf-mini td:last-child { text-align: right; white-space: nowrap; }
-.vf-mini-box { max-width: 46rem; }
-/* the sheet at the end: one column, like a monster card */
-.vf-sheet { max-width: 44rem; margin: 1rem 0; border: 1px solid var(--gold-lo); background: var(--ink-1); padding: 1rem 1.2rem; display: grid; gap: 0.7rem; }
-.vf-sheet h3 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.6rem; color: var(--gold-hi); }
-.vf-sheet p { margin: 0; line-height: 1.5; }
-.vf-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.4rem; }
-.vf-tags span { font: 600 .7rem var(--font-ui); letter-spacing: .1em; text-transform: uppercase; padding: 0.1rem 0.5rem; border: 1px solid var(--gold-lo); color: var(--gold); }
-.vf-nums { display: flex; gap: 1.4rem; flex-wrap: wrap; align-items: stretch; padding: 0.6rem 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.vf-hpn { display: grid; gap: 0.1rem; }
-.vf-hpn b { font: 400 2.2rem/1 var(--font-display); color: var(--gold-hi); }
-.vf-st { display: grid; gap: 0.2rem; align-content: start; }
-.vf-st span { font-size: .92rem; }
-.vf-tr .vf-chip { display: inline-flex; gap: 0.3rem; align-items: center; margin: 0 0.8rem 0.2rem 0; }
-.vf-ab { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
-.vf-ab li { line-height: 1.4; padding-left: 0.6rem; border-left: 2px solid var(--line-2); }
-@media (max-width: 700px) {
-  .vf-top, .vf-steps, .vf-foot { padding-left: 0.8rem; padding-right: 0.8rem; }
-  .vf-body { padding: 1rem 0.8rem 2rem; }
-  .vf-dot em { display: none; }
-  .vf-dot.on em { display: inline; }
-  .vf-cards, .vf-cards.wide { grid-template-columns: minmax(0, 1fr); }
-}
-@media print { .vf { display: none !important; } }
-.vf-warn ul { columns: 2 22rem; column-gap: 2rem; }
-.vf-warn li { break-inside: avoid; }
-.vf-note-f textarea { min-height: 0 !important; height: 4rem; }
-@media (max-width: 700px) {
-  .vf-body h2 { font-size: 1.45rem; }
-  .vf-pos { display: none; }
-  .vf-foot { justify-content: space-between; }
-}
+.ant-gate[hidden] { display: none; }
+.ant-guide { margin: 0 0 1rem; padding: 0.7rem 1rem; border-left: 3px solid var(--gold); background: var(--ink-1); color: var(--text-2); line-height: 1.5; }
+.ant-guide > b { display: block; font: 600 .72rem var(--font-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.3rem; }
+.ant-guide p { margin: 0.35rem 0; } .ant-guide ul { margin: 0.35rem 0; padding-left: 1.2rem; } .ant-guide b { color: #fff; font-weight: 600; }
+.chapter-tools .gm-bp-n { margin-right: 0.8rem; }
+.ant-traits { align-items: start; }
+.hs-zone.src { border-top-color: var(--gold-lo); }
+.hs-zone.src .zlbl { color: var(--gold); background: rgba(200, 164, 94, .08); }
+.ant-page .hs-hr .burst small { letter-spacing: 0; }
+@media (max-width: 700px) { .vf-cards, .vf-cards.wide { grid-template-columns: minmax(0, 1fr); } .chapter-tools .gm-bp-n { margin-right: 0; } }
+@media (max-width: 1100px) { .ant-long { display: none; } }

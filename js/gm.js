@@ -54,6 +54,7 @@
     if (window.GM_BULLPEN) window.GM_BULLPEN.render(document.getElementById('gm-bullpen'));
     if (window.GM_FLAVOUR) window.GM_FLAVOUR.render(document.getElementById('gm-flavour'));
     gate.hidden = true; room.hidden = false; lockBtn.hidden = false;
+    if (window.GM_LINK) window.GM_LINK.refresh();
   };
 
   lockBtn.addEventListener('click', () => { store.clear(); location.reload(); });

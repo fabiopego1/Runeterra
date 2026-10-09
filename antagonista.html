@@ -3,40 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ficha do Campeão · Forja de Campeões</title>
-  <meta name="description" content="A ficha do seu campeão em tela cheia, com controle de Vida para a mesa.">
+  <title>Forja do Antagonista · Forja de Campeões</title>
+  <meta name="description" content="Monte um antagonista passo a passo e leve a ficha dele para a mesa. Somente para o Mestre.">
+  <meta name="robots" content="noindex">
   <meta name="theme-color" content="#0c0d10">
   <link rel="preload" href="assets/fonts/BarlowSemiCondensed-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/Marcellus-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css?v=dev">
 </head>
-<body class="page-sheet">
+<body class="ant-page">
   <header class="site-header">
     <a class="brand" href="index.html">
       <span class="brand-mark" data-sigil="compass"></span>
-      <span class="brand-text"><span class="brand-kicker">Runeterra · Criador de Ficha</span><span class="brand-title">Forja de Campeões</span></span>
+      <span class="brand-text"><span class="brand-kicker">Runeterra · Criador de Ficha</span><span class="brand-title">Forja do Antagonista</span></span>
     </a>
     <nav class="header-actions site-nav" aria-label="Páginas">
       <a class="hbtn" href="index.html"><span data-ico="prev"></span><span>Forja</span></a>
-      <button type="button" class="hbtn key" data-act="roster" title="Seus campeões guardados neste navegador"><span data-ico="compass"></span><span>Campeões</span><span class="hcount" id="roster-count"></span></button>
-      <a class="hbtn key" href="ficha.html" aria-current="page"><span data-ico="file"></span><span>Ficha</span></a>
+      <button type="button" class="hbtn key" data-a="roster" title="Seus antagonistas guardados neste navegador"><span data-ico="compass"></span><span>Antagonistas</span><span class="hcount" id="roster-count"></span></button>
+      <a class="hbtn key" href="gm.html"><span data-ico="lock"></span><span>Escudo</span></a>
       <a class="hbtn key" href="lore.html"><span data-ico="map"></span><span>Lore</span></a>
       <a class="hbtn key" href="regras.html"><span data-ico="codex"></span><span>Regras</span></a>
-      <a class="hbtn key" href="antagonista.html" data-gm-only hidden title="Forja do Antagonista (só atrás do Escudo do Mestre)"><span data-ico="lock"></span><span class="ant-long">Forja do </span><span>Antagonista</span></a>
       <span class="hsep" aria-hidden="true"></span>
       <div class="file-menu">
         <button class="hbtn" id="file-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="file-pop"><span data-ico="file"></span><span>Arquivo</span><span class="chev" data-ico="chevron"></span></button>
         <div class="file-pop" id="file-pop" role="menu" hidden>
-          <button role="menuitem" data-act="export"><span data-ico="download"></span><span>Exportar campeão<small>Salva um arquivo .json de backup</small></span></button>
-          <label role="menuitem" for="import-file" tabindex="0"><span data-ico="upload"></span><span>Importar campeão<small>Abre um arquivo .json salvo antes</small></span></label>
-          <button role="menuitem" data-act="print"><span data-ico="print"></span><span>Imprimir ficha</span></button>
+          <button role="menuitem" data-a="export"><span data-ico="download"></span><span>Exportar antagonista<small>Salva um arquivo .json de backup</small></span></button>
+          <label role="menuitem" for="import-file" tabindex="0"><span data-ico="upload"></span><span>Importar antagonista<small>Abre um arquivo .json salvo antes</small></span></label>
+          <button role="menuitem" data-a="pdf"><span data-ico="download"></span><span>Exportar PDF da ficha</span></button>
+          <button role="menuitem" data-a="print"><span data-ico="print"></span><span>Imprimir ficha</span></button>
+          <hr>
+          <button role="menuitem" class="danger" data-a="reset"><span data-ico="reset"></span><span>Recomeçar do zero<small>Apaga o antagonista aberto neste navegador</small></span></button>
         </div>
       </div>
       <input id="import-file" type="file" accept="application/json,.json" hidden>
     </nav>
   </header>
 
-  <div id="sheet-app"></div>
+  <div id="gate" class="ant-gate" hidden></div>
+  <div class="layout" id="app" hidden>
+    <nav class="steps-nav" id="nav" aria-label="Capítulos"></nav>
+    <main class="stage" id="stage"></main>
+  </div>
 
   <footer class="foot">
     <span class="foot-rule" aria-hidden="true"></span>
@@ -44,9 +51,6 @@
     <a class="foot-gm" href="gm.html"><span data-ico="lock"></span><span>Escudo do Mestre</span></a>
   </footer>
 
-  <div id="tip" role="tooltip"></div>
-
-  <script src="js/gm-link.js?v=dev"></script>
   <script src="js/i18n.js?v=dev"></script>
   <script src="js/icons.js?v=dev"></script>
   <script src="js/sheet-pdf.js?v=dev"></script>
@@ -54,6 +58,8 @@
   <script src="js/data-tables.js?v=dev"></script>
   <script src="js/data-lore.js?v=dev"></script>
   <script src="js/pt/load.js?v=dev"></script>
-  <script src="js/app.js?v=dev"></script>
+  <script src="js/gm-villain-data.js?v=dev"></script>
+  <script src="js/gm-vault.js?v=dev"></script>
+  <script src="js/antagonist.js?v=dev"></script>
 </body>
 </html>

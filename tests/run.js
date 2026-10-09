@@ -449,36 +449,78 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.click('#bp-viloes [data-bp=villain]'); await p.waitForTimeout(200);
     const tableNow = await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')));
     ok(tableNow.foes.length === foesBefore + 1 && tableNow.villains.length >= 1 && tableNow.villains[tableNow.villains.length - 1].max > 30, 'an example minion and an example villain go to the table with one click');
-    // villain forge: a full-screen builder, one step per screen, options as cards
-    await p.click('#bancada [data-vf=open]'); await p.waitForSelector('.vf .vf-steps');
-    ok(await p.$$eval('.vf .vf-steps .vf-dot', e => e.length) === 9 && await p.$$eval('.vf .gm-bp-guide', e => e.length) === 1, 'the villain forge opens full screen with nine steps and a guide for the current one');
-    await p.fill('.vf [data-bpb=name]', 'Capitã Sylva'); await p.click('.vf [data-vf=next]');
-    ok(await p.$$eval('.vf .vf-card', e => e.length) >= 15 && await p.$eval('.vf .vf-card[data-v=tactician]', e => /coordena planos|escolha 2 de 6/.test(e.textContent)), 'the approaches are cards that show what each one does before it is chosen');
-    await p.click('.vf .vf-card[data-v=tactician]');
-    await p.click('.vf [data-vf=next]'); await p.click('.vf [data-vf=next]');
-    for (const id of ['a:0', 'a:1']) await p.click(`.vf .vf-card[data-id="${id}"]`);
-    ok(await p.$eval('.vf .vf-card[data-id="a:2"]', e => !e.classList.contains('on') && e.classList.contains('dis')), 'the villain forge stops at the number of abilities the approach gives');
-    await p.click('.vf [data-vf=next]'); await p.click('.vf .vf-card[data-v=squad]');
-    await p.click('.vf [data-vf=next]'); await p.click('.vf [data-vf=next]'); await p.click('.vf .vf-card[data-id=mook]');
-    await p.click('.vf [data-vf=go][data-i="8"]');
-    ok(await p.$eval('.vf .vf-sheet', e => /20 \+ 5 \+ 5×4/.test(e.textContent) && /45/.test(e.textContent)), 'the compact sheet computes Health: approach + archetype + 5 x heroes + upgrades');
-    await p.click('.vf [data-bpb=toTable]'); await p.waitForTimeout(200);
-    ok(await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')).villains.some(v => v.name === 'Capitã Sylva' && v.max === 45)), 'a villain built in the forge goes to the table');
-    // the forge warns when an approach's own rule is broken (Focused: two abilities on one power, one on another)
-    await p.click('.vf [data-vf=go][data-i="1"]'); await p.click('.vf .vf-card[data-v=focused]');
-    await p.click('.vf [data-vf=next]');
-    await p.selectOption('.vf [data-bpb=P][data-i="0"]', 'fire'); await p.selectOption('.vf [data-bpb=P][data-i="1"]', 'water');
-    await p.click('.vf [data-vf=next]');
-    for (const id of ['a:1', 'a:3', 'a:5']) { await p.click(`.vf .vf-card[data-id="${id}"]`); await p.selectOption(`.vf [data-bpb=tk][data-id="${id}"][data-t="poder"]`, 'fire'); }
-    ok(await p.$eval('.vf .gm-bp-warn', e => /Focado/.test(e.textContent)), 'the villain forge warns when the three Focused abilities use the same power');
-    await p.selectOption('.vf [data-bpb=tk][data-id="a:5"][data-t="poder"]', 'water');
-    ok(!(await p.$$eval('.vf .gm-bp-warn li', e => e.some(x => /Focado/.test(x.textContent)))), 'the warning goes away with two abilities on one power and one on another');
-    await p.click('.vf [data-vf=go][data-i="7"]'); await p.click('.vf .gm-bp-guide summary');
-    ok(/sucesso automático/.test(await p.$eval('.vf .gm-bp-guide', e => e.textContent)), 'the masteries are explained in the guide of their step');
-    await p.click('.vf [data-vf=close]');
-    ok(!(await p.$('.vf')) && await p.$eval('#bancada', e => !!e), 'the forge closes back to the Bancada');
+    // the Bancada points to the Antagonist Forge, which lives on its own page
+    ok(await p.$eval('#bancada #bp-montador a[href="antagonista.html"]', e => !!e), 'the Bancada links to the Antagonist Forge');
+    ok(await p.evaluate(() => [...document.querySelectorAll('[data-gm-only]')].every(e => !e.hidden)), 'the "Forja do Antagonista" header button shows once the GM Screen is unlocked');
     await p.context().close();
   } else console.log('skip GM Screen unlock (GM_PASSWORD not set)');
+
+  // The Antagonist Forge: its own page behind the GM Screen. A made-up vault and key stand in for the real password.
+  {
+    const crypto = require('crypto');
+    const key = crypto.randomBytes(32), iv = crypto.randomBytes(12);
+    const ci = crypto.createCipheriv('aes-256-gcm', key, iv); const ct = Buffer.concat([ci.update('x'), ci.final(), ci.getAuthTag()]);
+    const vault = `window.GM_VAULT=${JSON.stringify({ v: 1, iv: iv.toString('base64'), ct: ct.toString('base64'), salt: 'AA==', iter: 1 })};`;
+    // locked: the page asks for the GM Screen and the header button stays hidden
+    const q = await newPage();
+    await q.goto(`${BASE}/antagonista.html`); await q.waitForSelector('#gate .sp-empty');
+    ok(await q.$eval('#app', e => e.hidden) && /Somente para o Mestre/.test(await q.$eval('#gate', e => e.textContent)), 'the Antagonist Forge asks for the GM Screen when it is locked');
+    await q.goto(`${BASE}/index.html`);
+    ok(await q.$eval('[data-gm-only]', e => e.hidden), 'the Forja do Antagonista header button is hidden while the GM Screen is locked');
+    await q.context().close();
+    // unlocked
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 }, acceptDownloads: true });
+    await ctx.route('**/js/gm-vault.js*', r => r.fulfill({ contentType: 'application/javascript', body: vault }));
+    await ctx.addInitScript(k => { if (!sessionStorage.getItem('x-init')) { sessionStorage.setItem('runeterra-gm-key', k); sessionStorage.setItem('x-init', '1'); } }, key.toString('base64'));
+    const p = await ctx.newPage();
+    p.on('pageerror', e => errors.push(`${p.url()}: ${e.message}`));
+    p.on('response', r => { if (r.url().startsWith(BASE) && r.status() >= 400) errors.push(`${r.status()}: ${r.url()}`); });
+    await p.goto(`${BASE}/index.html`);
+    ok(await p.$eval('[data-gm-only]', e => !e.hidden), 'the Forja do Antagonista header button shows when the GM Screen is unlocked');
+    await p.goto(`${BASE}/antagonista.html`); await p.waitForSelector('#stage .panel');
+    ok(await p.$$eval('#nav .rail-item', e => e.length) === 10 && await p.$eval('#gate', e => e.hidden), 'the Antagonist Forge opens with ten chapters, like the Champion Forge');
+    ok(await p.$eval('[data-a=next]', e => e.classList.contains('is-disabled')), 'Continue waits for the name');
+    await p.fill('[data-b=name]', 'Capitã Sylva'); await p.fill('[data-b=alias]', 'a Dama da Maré'); await p.fill('[data-b=concept]', 'Contrabandista de Bilgewater');
+    await p.click('[data-a=next]');
+    ok(await p.$$eval('.vf-card[data-a=ap]', e => e.length) >= 15 && await p.$eval('.vf-card[data-v=tactician]', e => /coordena planos|escolha 2 de 6/.test(e.textContent)), 'approaches are cards that show what each one does before it is chosen');
+    await p.click('.vf-card[data-v=tactician]'); await p.click('[data-a=next]');
+    for (const [i, k] of ['fire', 'water', 'cosmic', 'vitality'].entries()) await p.selectOption(`[data-b=P][data-i="${i}"]`, k);
+    for (const [i, k] of ['history', 'science', 'leadership'].entries()) await p.selectOption(`[data-b=Q][data-i="${i}"]`, k);
+    await p.fill('[data-b=rp]', 'Sorriso Calculado');
+    const fillTokens = async () => { for (let n = 0; n < 12; n++) { const t = await p.evaluate(() => { const e = [...document.querySelectorAll('[data-b=tk]')].find(x => !x.value); return e ? { id: e.dataset.id, t: e.dataset.t, v: [...e.options].map(o => o.value).filter(Boolean)[0] } : null; }); if (!t) return; await p.selectOption(`[data-b=tk][data-id="${t.id}"][data-t="${t.t}"]`, t.v); } };
+    await p.click('[data-a=next]');
+    for (const id of ['a:0', 'a:1']) await p.click(`.vf-card[data-id="${id}"]`);
+    ok(await p.$eval('.vf-card[data-id="a:2"]', e => !e.classList.contains('on') && e.classList.contains('dis')), 'the forge stops at the number of abilities the approach gives');
+    await fillTokens(); await p.click('[data-a=next]');
+    await p.click('.vf-card[data-v=squad]'); await p.click('[data-a=next]');
+    await p.click('.vf-card[data-a=ab] >> nth=0'); await p.click('.vf-card[data-a=ab] >> nth=1'); await fillTokens();
+    await p.click('[data-a=next]'); await p.click('.vf-card[data-id=mook]'); await p.click('[data-a=next]'); await p.click('[data-a=next]');
+    ok(await p.$$eval('.rename-card', e => e.length) >= 6, 'powers, qualities and abilities can be renamed');
+    await p.fill('[data-b="traitNames.fire"]', 'Chamas de Sentina');
+    await p.click('[data-a=next]'); await p.waitForSelector('#sheet-preview .hs-page');
+    ok(await p.$eval('#sheet-preview', e => /Chamas de Sentina/.test(e.textContent) && /Capitã Sylva/.test(e.textContent) && /20 \+ 5 \+ 5×4/.test(e.textContent) && /45/.test(e.textContent)), 'the sheet shows the new names and Health = approach + archetype + 5 x heroes + upgrades');
+    const [dl] = await Promise.all([p.waitForEvent('download'), p.click('.export-row [data-a=export]')]);
+    const json = JSON.parse(fs.readFileSync(await dl.path(), 'utf8'));
+    ok(json.app === 'runeterra-antagonist' && json.name === 'Capitã Sylva' && json.traitNames.fire === 'Chamas de Sentina', 'the antagonist exports to .json');
+    const [pdf] = await Promise.all([p.waitForEvent('download', { timeout: 60000 }), p.click('.export-row [data-a=pdf]')]);
+    const buf = fs.readFileSync(await pdf.path());
+    ok(buf.slice(0, 4).toString() === '%PDF' && buf.length > 20000, 'the antagonist sheet exports to PDF');
+    await p.click('.export-row [data-a=toTable]'); await p.waitForTimeout(150);
+    ok(await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')).villains.some(v => v.name === 'Capitã Sylva' && v.max === 45)), 'the antagonist goes to the table');
+    // the approach's own rule: Focused wants two abilities on one power and one on another
+    await p.click('#nav [data-i="1"]'); await p.click('.vf-card[data-v=focused]'); await p.click('[data-a=next]');
+    const nP = await p.$$eval('[data-b=P]', e => e.length), nQ = await p.$$eval('[data-b=Q]', e => e.length);
+    for (let i = 0; i < nP; i++) await p.selectOption(`[data-b=P][data-i="${i}"]`, ['fire', 'water', 'cosmic', 'vitality', 'speed'][i]);
+    for (let i = 0; i < nQ; i++) await p.selectOption(`[data-b=Q][data-i="${i}"]`, ['history', 'science', 'leadership', 'banter'][i]);
+    await p.click('[data-a=next]');
+    for (const id of ['a:1', 'a:3', 'a:5']) { await p.click(`.vf-card[data-id="${id}"]`); await p.selectOption(`[data-b=tk][data-id="${id}"][data-t="poder"]`, 'fire'); }
+    ok(await p.$eval('#stage .flow-todo', e => /Focado/.test(e.textContent)), 'the forge warns when the three Focused abilities use the same power');
+    await p.selectOption('[data-b=tk][data-id="a:5"][data-t="poder"]', 'water');
+    ok(!(await p.$$eval('#stage .flow-todo li', e => e.some(x => /Focado/.test(x.textContent)))), 'the warning goes away with two abilities on one power and one on another');
+    await p.click('[data-a=roster]');
+    ok(await p.$$eval('#roster .ro-item', e => e.length) === 1, 'the antagonist is in the roster');
+    await ctx.close();
+  }
 
   // Everything under assets/ must reach GitHub Pages (the tooltip art once went missing there).
   {
