@@ -20,3 +20,11 @@ node tests/run.js
 ```
 
 Não deixe `node_modules/` no repositório.
+
+## Material do Mestre (cofre)
+
+Tudo que é só do Mestre (os módulos `gm-flavour`, `gm-twists`, `gm-tools`, `gm-villain-data` e `gm-bullpen`) fica cifrado em `js/gm-vault.js`; não existe arquivo em texto puro em `js/`. Os originais ficam em `gm/src/` (ignorado pelo git; nunca faça commit de `gm/`).
+
+- Para editar: `GM_PASSWORD='…' node tools/gm-unseal.js` (escreve `gm/src/*.js`), edite e rode `GM_PASSWORD='…' node tools/gm-seal.js`. Faça commit só do `js/gm-vault.js` novo.
+- A senha nunca vai para arquivos, commits ou PRs. Peça ao usuário se precisar dela.
+- Os testes do Escudo e da Oficina de Antagonista rodam com `GM_PASSWORD` definido (o CI usa o segredo do repositório).

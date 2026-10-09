@@ -452,31 +452,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     // the Bancada points to the Antagonist Forge, which lives on its own page
     ok(await p.$eval('#bancada #bp-montador a[href="antagonista.html"]', e => !!e), 'the Bancada links to the Antagonist Forge');
     ok(await p.evaluate(() => [...document.querySelectorAll('[data-gm-only]')].every(e => !e.hidden)), 'the "Oficina de Antagonista" header button shows once the GM Screen is unlocked');
-    await p.context().close();
-  } else console.log('skip GM Screen unlock (GM_PASSWORD not set)');
-
-  // The Antagonist Forge: its own page behind the GM Screen. A made-up vault and key stand in for the real password.
-  {
-    const crypto = require('crypto');
-    const key = crypto.randomBytes(32), iv = crypto.randomBytes(12);
-    const ci = crypto.createCipheriv('aes-256-gcm', key, iv); const ct = Buffer.concat([ci.update('x'), ci.final(), ci.getAuthTag()]);
-    const vault = `window.GM_VAULT=${JSON.stringify({ v: 1, iv: iv.toString('base64'), ct: ct.toString('base64'), salt: 'AA==', iter: 1 })};`;
-    // locked: the page asks for the GM Screen and the header button stays hidden
-    const q = await newPage();
-    await q.goto(`${BASE}/antagonista.html`); await q.waitForSelector('#gate .sp-empty');
-    ok(await q.$eval('#app', e => e.hidden) && /Somente para o Mestre/.test(await q.$eval('#gate', e => e.textContent)), 'the Antagonist Forge asks for the GM Screen when it is locked');
-    await q.goto(`${BASE}/index.html`);
-    ok(await q.$eval('[data-gm-only]', e => e.hidden), 'the Oficina de Antagonista header button is hidden while the GM Screen is locked');
-    await q.context().close();
-    // unlocked
-    const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 }, acceptDownloads: true });
-    await ctx.route('**/js/gm-vault.js*', r => r.fulfill({ contentType: 'application/javascript', body: vault }));
-    await ctx.addInitScript(k => { if (!sessionStorage.getItem('x-init')) { sessionStorage.setItem('runeterra-gm-key', k); sessionStorage.setItem('x-init', '1'); } }, key.toString('base64'));
-    const p = await ctx.newPage();
-    p.on('pageerror', e => errors.push(`${p.url()}: ${e.message}`));
-    p.on('response', r => { if (r.url().startsWith(BASE) && r.status() >= 400) errors.push(`${r.status()}: ${r.url()}`); });
-    await p.goto(`${BASE}/index.html`);
-    ok(await p.$eval('[data-gm-only]', e => !e.hidden), 'the Oficina de Antagonista header button shows when the GM Screen is unlocked');
+    // the Antagonist Workshop, opened with the key the Screen kept for this tab
     await p.goto(`${BASE}/antagonista.html`); await p.waitForSelector('#stage .panel');
     ok(await p.$$eval('#nav .rail-item', e => e.length) === 10 && await p.$eval('#gate', e => e.hidden), 'the Antagonist Forge opens with ten chapters, like the Champion Forge');
     ok(await p.$eval('[data-a=next]', e => e.classList.contains('is-disabled')), 'Continue waits for the name');
@@ -536,7 +512,20 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(!(await p.$$eval('#stage .flow-todo li', e => e.some(x => /Focado/.test(x.textContent)))), 'two abilities on one power and one on another satisfy the Focused rule');
     await p.click('[data-a=roster]');
     ok(await p.$$eval('#roster .ro-item', e => e.length) === 1, 'the antagonist is in the roster');
-    await ctx.close();
+    await p.context().close();
+  } else console.log('skip GM Screen unlock (GM_PASSWORD not set)');
+
+  // The Antagonist Workshop: its own page behind the GM Screen. Locked, it asks for the Screen and stays out of the header.
+  {
+    const q = await newPage();
+    await q.goto(`${BASE}/antagonista.html`); await q.waitForSelector('#gate .sp-empty');
+    ok(await q.$eval('#app', e => e.hidden) && /Somente para o Mestre/.test(await q.$eval('#gate', e => e.textContent)), 'the Antagonist Workshop asks for the GM Screen when it is locked');
+    ok(!(await q.evaluate(() => !!window.GM_VDATA)), 'the villain data is not on the page while it is locked (it lives in the vault)');
+    const vaultText = await (await fetch(`${BASE}/js/gm-vault.js`)).text();
+    ok(!/Tático|Adaptável|Esquadrão|Sentinel/.test(vaultText) && (await fetch(`${BASE}/js/gm-villain-data.js`)).status === 404 && (await fetch(`${BASE}/js/gm-bullpen.js`)).status === 404, 'the GM material is only in the sealed vault: no plain file is published');
+    await q.goto(`${BASE}/index.html`);
+    ok(await q.$eval('[data-gm-only]', e => e.hidden), 'the Oficina de Antagonista header button is hidden while the GM Screen is locked');
+    await q.context().close();
   }
 
   // Everything under assets/ must reach GitHub Pages (the tooltip art once went missing there).
