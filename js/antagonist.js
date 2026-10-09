@@ -13,7 +13,7 @@
   const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const $ = s => document.querySelector(s);
   const ico = (n, c) => (window.ICO ? window.ICO(n, c) : '');
-  const die = (d, c = '') => `<span class="die ${d} ${c}">${d.slice(1)}</span>`;
+  const die = (d, c = '') => window.ForgeKit.die(d, c);
   const dt = t => esc(t).replace(/\bd(4|6|8|10|12)\b/g, (m, n) => die('d' + n));   // "d8" in running text becomes a die
   const uid = () => Math.random().toString(36).slice(2, 10);
   const sgn = n => (n >= 0 ? '+' : '') + n;
@@ -46,7 +46,7 @@
     concept: '<p>Responda em uma frase: <b>quem é</b> o antagonista, <b>o que quer</b> e <b>como bate de frente</b> com os campeões do seu grupo. Ligue-o a algo que os jogadores já se importam: uma região, um rival, uma promessa não cumprida.</p><p>Não precisa estar fechado: o conceito pode mudar enquanto você monta. Abordagem e arquétipo são guias, não correntes.</p><p class="muted">Exemplo: “A Dra. Kaelor cobra a cidade de Zaun por um antídoto contra uma doença que ela mesma espalhou.”</p>',
     ap: '<p>Escolha pelo estilo, não pelo número:</p><ul class="gm-bp-list"><li><b>Ninja, Implacável, Parasita:</b> combate pessoal, caça um alvo.</li><li><b>Mente Mestra, Criador, Tático:</b> planos, lacaios e aliados.</li><li><b>Sobrepoderoso, Ancestral:</b> ameaça enorme, vence-se com esperteza.</li><li><b>Valentão, Orgulhoso, Generalista:</b> briga direta.</li><li><b>Subpoderoso, Habilidoso:</b> ameaças menores, boas para começar.</li></ul><p class="muted">Quanto maior a Vida base, mais tempo o antagonista dura na cena.</p>',
     dice: '<p>Use as sugestões como ponto de partida e troque à vontade para combinar com o conceito (Sombras para um antagonista das Ilhas das Sombras, Tóxico para um alquimista de Zaun).</p><p>A <b>qualidade de interpretação</b> (d8) é uma frase que define como o antagonista age na história, como a Qualidade Marcante do campeão: “Luto Eterno”, “Fé no Fim”, “Sorriso Calculado”.</p>',
-    abap: '<p>Dê o dado mais alto às habilidades principais. Algumas abordagens têm uma regra extra (por exemplo, usar poderes diferentes em cada habilidade). A Forja avisa quando ela não é cumprida.</p>',
+    abap: '<p>Dê o dado mais alto às habilidades principais. Algumas abordagens têm uma regra extra (por exemplo, usar poderes diferentes em cada habilidade). A Oficina avisa quando ela não é cumprida.</p>',
     arch: '<ul class="gm-bp-list"><li><b>Brutamontes, Frágil:</b> status pela própria Vida, como os campeões.</li><li><b>Legião, Senhor da Horda:</b> contam lacaios (Legião: quanto mais, mais fraco).</li><li><b>Predador, Guerrilheiro:</b> contam oponentes engajados.</li><li><b>Solitário, Esquadrão:</b> contam outros antagonistas.</li><li><b>Indomável:</b> status fixo. <b>Titã:</b> começa em d12 e tem um desafio para reduzir o status.</li></ul>',
     abar: '<p>Escolha o número de habilidades do arquétipo. A etiqueta “Combina com a abordagem” mostra os arquétipos que a combinam bem com a que você escolheu.</p>',
     up: '<p>Um antagonista sem melhorias é <b>menor</b> (conta como um elemento moderado na cena); com uma melhoria, vira <b>maior</b> (elemento difícil).</p><p class="muted">Dicas: use “Esquadrão de capangas” para um antagonista no próprio covil; “Aprimoramento de poder” e “de qualidade” para quem fez um ritual ou treino; “Veículo antagonista” para um navio ou máquina de guerra.</p>',
@@ -66,7 +66,6 @@
     if (old && (old.name || old.ap || old.arch)) return normalize(Object.assign({}, old, { step: 'concept' }));
     return blank();
   })();
-  const ui = { guide: {}, sheetUpdate: null };
   let storageWarned = false;
   function save() {
     S.updated = Date.now();
@@ -83,11 +82,10 @@
   const traitKinds = k => (k.startsWith('P:') ? 'power' : 'quality');
   const allTraits = () => cats().flatMap(([ck, v]) => (v.items || []).map(i => ({ key: i[0], name: i[2] || i[1], desc: i[3] || '', kind: traitKinds(ck), cat: ck, catName: v.rt || ck })));
   const tName = key => { const t = allTraits().find(x => x.key === key); return t ? t.name : ''; };
-  const tShow = key => (S.traitNames[key] && S.traitNames[key].trim()) || tName(key);   // the name the GM gave it, else the book's
-  const tRenamed = key => !!(S.traitNames[key] && S.traitNames[key].trim() && S.traitNames[key].trim() !== tName(key));
+  const RPKEY = 'rp-quality';
+  const tShow = key => (key === RPKEY ? (S.rp.trim() || 'Qualidade de interpretação') : (S.traitNames[key] && S.traitNames[key].trim()) || tName(key));   // the name the GM gave it, else the book's
+  const tRenamed = key => key !== RPKEY && !!(S.traitNames[key] && S.traitNames[key].trim() && S.traitNames[key].trim() !== tName(key));
   const origTag = name => `<small class="hs-orig">${esc(name)}</small>`;
-  const traitOptions = (kind, sel) => cats().filter(([ck]) => traitKinds(ck) === kind)
-    .map(([ck, v]) => `<optgroup label="${esc(v.rt || ck)}">${(v.items || []).map(i => `<option value="${esc(i[0])}"${sel === i[0] ? ' selected' : ''}>${esc(i[2] || i[1])}</option>`).join('')}</optgroup>`).join('');
   const TOKEN_RE = /\[(poder\/qualidade|energia\/elemento|poder|qualidade)\]/g;
   const tokensOf = text => [...new Set([...text.matchAll(TOKEN_RE)].map(m => m[1]))];
 
@@ -112,13 +110,19 @@
   }
   // an ability's text with the traits the GM picked, in the names the GM gave them
   const fill = (x, id) => x.x.replace(TOKEN_RE, (m, t) => { const k = S.tk[id + '|' + t]; return k ? `«${tShow(k)}»` : m; });
-  const mine = kind => (VD.approaches.find(x => x.id === S.ap) ? Object.values(kind === 'power' ? S.P : S.Q).filter(Boolean) : []);
-  function tokenPick(id, text) {
-    return tokensOf(text).map(t => {
-      const keys = t === 'poder' ? mine('power') : t === 'qualidade' ? mine('quality') : t === 'energia/elemento' ? mine('power').filter(k => (window.TRAIT_CATEGORIES['P:elemental'] || { items: [] }).items.some(i => i[0] === k)) : mine('power').concat(mine('quality'));
-      const cur = S.tk[id + '|' + t] || '';
-      return `<label class="gm-bp-tok">[${esc(t)}] <select data-b="tk" data-id="${esc(id)}" data-t="${esc(t)}"><option value="">escolher…</option>${[...new Set(keys)].map(k => `<option value="${esc(k)}"${cur === k ? ' selected' : ''}>${esc(tShow(k))}</option>`).join('')}</select></label>`;
-    }).join('');
+  // the traits the GM can pick for a bracket: its own powers and qualities, the named interpretation quality included
+  const assigned = kind => (VD.approaches.find(x => x.id === S.ap) ? Object.values(kind === 'power' ? S.P : S.Q).filter(Boolean) : []);
+  function tokenKeys(t) {
+    const rp = S.rp.trim() ? [RPKEY] : [];
+    const P = assigned('power'), Q = assigned('quality').concat(rp);
+    const keys = t === 'poder' ? P : t === 'qualidade' ? Q : t === 'energia/elemento' ? P.filter(k => (window.TRAIT_CATEGORIES['P:elemental'] || { items: [] }).items.some(i => i[0] === k)) : P.concat(Q);
+    return [...new Set(keys)];
+  }
+  // the die a trait was given: the power and quality dice by slot, the interpretation quality is a d8
+  function dieOf(key, m) {
+    if (key === RPKEY) return 'd8';
+    const p = Object.entries(S.P).find(([, k]) => k === key), q = Object.entries(S.Q).find(([, k]) => k === key);
+    return p ? m.pDice[+p[0]] : q ? m.qDice[+q[0]] : '';
   }
   const openTokens = x => tokensOf(x.a.x).filter(t => !S.tk[x.id + '|' + t]);
   // what the builder still lacks or breaks, in plain words
@@ -177,56 +181,158 @@
   // chapters open up to the first unfinished one
   function reach(m) { for (let i = 0; i < STEPS.length - 1; i++) if (stepIssues(STEPS[i].id, m).length) return i; return STEPS.length - 1; }
 
-  // ------------------------------------------------------------------ chapter bodies
-  const vcard = (data, on, dis, inner) => `<div class="vf-card${on ? ' on' : ''}${dis ? ' dis' : ''}" role="button" tabindex="${dis ? -1 : 0}" aria-pressed="${on ? 'true' : 'false'}"${dis ? ' aria-disabled="true"' : ''} ${data}>${inner}</div>`;
-  const typeName = t => (t === 'A' ? 'Ação' : t === 'R' ? 'Reação' : 'Passiva');
-  const abCard = (id, a, on, dis) => vcard(`data-a="ab" data-id="${esc(id)}"`, on, dis, `<header><h4>${esc(S.renames[id] && S.renames[id].trim() ? S.renames[id].trim() : a.n)}</h4><span class="gm-bp-ty">${typeName(a.t)}</span></header><p>${dt(a.x)}</p>${on ? tokenPick(id, a.x) : ''}`);
-  const fixedCard = (id, a, src) => `<div class="vf-card on fixed"><header><h4>${esc(S.renames[id] && S.renames[id].trim() ? S.renames[id].trim() : a.n)}</h4><span class="gm-bp-ty">${typeName(a.t)}</span></header><p>${dt(a.x)}</p>${tokenPick(id, a.x)}<small class="muted">Sempre inclusa (${esc(src)})</small></div>`;
-  const counter = (list, need) => `<span class="gm-bp-count${list.length === need ? ' ok' : list.length > need ? ' bad' : ''}">${list.length}/${need}</span>`;
-  const diceRow = arr => arr.map(d => die(d)).join(' ');
-  const field = (path, label, ph, v) => `<label class="field"><span>${label}</span><input type="text" data-b="${path}" value="${esc(v)}" placeholder="${esc(ph || '')}"></label>`;
+  // ------------------------------------------------------------------ the Champion Forge's pieces: tooltips, dice, rules text, sockets
+  const K = window.ForgeKit;
+  const tr = (s, v) => K.tr(s, v);
+  const tipA = K.tip;
+  const kitSync = () => K.sync({ traitNames: S.traitNames, rp: S.rp, rpDesc: 'Qualidade de interpretação (d8): resume como o antagonista age na história.' });
+  const typeName = t => (t === 'A' ? 'Ação' : t === 'R' ? 'Reação' : 'Inerente');
+  const typeTip = t => `<h5>Tipo: ${typeName(t)}</h5>${esc((window.ABILITY_TYPES || {})[t] || '')}`;
+  const typeChip = t => `<span class="ab-type"${tipA(typeTip(t))}>${t}</span>`;
+  const BR = /\[(poder\/qualidade|energia\/elemento|poder|qualidade)\]/g;
+  const dieWords = t => t.replace(/\bd(4|6|8|10|12)\b/g, '[d$1]');
+  const slotTip = t => `<h5>[${esc(t)}]</h5>Marcador: ao escolher esta habilidade, você indica qual ${t === 'poder' ? 'poder' : t === 'qualidade' ? 'qualidade' : t === 'energia/elemento' ? 'elemento ou energia (de um poder seu)' : 'poder ou qualidade'} do antagonista ela usa. A escolha fica fixa na ficha.`;
+  // an ability's text, with its terms, dice and chosen traits all hoverable like on the champion sheet
+  function ruleHtml(text, id) {
+    let out = '', last = 0;
+    text.replace(BR, (m, t, idx) => {
+      out += K.rulesText(dieWords(text.slice(last, idx)));
+      const k = id && S.tk[id + '|' + t];
+      out += k ? `<span class="slot-chip"${tipA(K.traitTip(k))}>${esc(tShow(k))}</span>` : `<span class="slot-chip unset"${tipA(slotTip(t))}>[${esc(t)}]</span>`;
+      last = idx + m.length; return m;
+    });
+    return out + K.rulesText(dieWords(text.slice(last)));
+  }
+  const ICON_RE = [['Attack', /\bAta[cq]\w*/], ['Defend', /\bDefe[ns]\w*/], ['Overcome', /\bSuper\w*/], ['Boost', /\bFortale\w*/], ['Hinder', /\bAtrapalh\w*/], ['Recover', /\bRecuper\w*/]];
+  const iconsFor = text => ICON_RE.filter(([, re]) => re.test(text)).map(([a]) => `<span class="act-ic act-${a.toLowerCase()}"${tipA(`<h5>Ícone de ${K.ICONS[a][1]}</h5>${window.GLOSSARY[a]}<hr><small>A coluna de ícones mostra quais ações básicas a habilidade usa.</small>`)}>${K.ICONS[a][0]}</span>`).join('');
+  const term = (label, html) => `<span class="term"${tipA(html)}>${esc(label)}</span>`;
+  const gloss = (key, label) => (window.GLOSSARY && window.GLOSSARY[key] ? term(label, `<h5>${esc(label)}</h5>${window.GLOSSARY[key]}`) : esc(label));
+  // what an approach, archetype, upgrade or mastery is, for hovers
+  const abList = list => `<ul>${list.map(a => `<li><b>${esc(a.n)}</b> [${a.t}]: ${esc(firstSentence(a.x))}</li>`).join('')}</ul>`;
+  const apTip = a => `<h5>${esc(a.n)}</h5><div class="sc-line">Abordagem · Vida base ${a.hp} · escolha ${a.pick} de ${a.ab.length}</div>${esc(a.d)}<hr><b>Poderes:</b> ${a.P.join(', ')} · <b>Qualidades:</b> ${a.Q.join(', ')}<hr>${abList(a.ab)}${a.note ? `<small>${esc(a.note)}</small>` : ''}`;
+  const arTip = a => `<h5>${esc(a.n)}</h5><div class="sc-line">Arquétipo · Vida ${sgn(a.hp)} · escolha ${a.pick}${a.gain ? ' (+ ' + esc(a.gain) + ')' : ''}</div>${esc(a.d)}<hr>${a.status.map(s => `${esc(s[0])}: <b>${s[1]}</b>`).join('<br>')}<hr>${abList(a.ab)}<small>Combina bem com: ${esc(a.pairs)}.</small>`;
+  const upTip = u => `<h5>${esc(u.n)}</h5><div class="sc-line">Melhoria · Vida ${sgn(u.hp)}</div>${esc(u.when)}${u.ab.length ? '<hr>' + abList(u.ab) : ''}${u.note ? `<small>${esc(u.note)}</small>` : ''}`;
+  const maTip = x => `<h5>${esc(x.n)}</h5><div class="sc-line">Maestria · passiva</div><b>Quando vale:</b> ${esc(x.cond)}<br><b>O que faz:</b> ${esc(x.x)}<hr><small>Exemplo: ${esc(x.ex)}</small>`;
 
+  // sockets: one die waiting for a trait, exactly as in the Champion Forge
+  const ui = { socket: null, auto: false, guide: {} };
+  const catOrder = () => Object.keys(window.TRAIT_CATEGORIES || {});
+  const keysOfKind = kind => Object.keys(K.TRAIT).filter(k => K.TRAIT[k].kind === kind && k !== RPKEY);
+  const traitGroups = keys => {
+    const G = {};
+    for (const k of keys) { const c = K.TRAIT[k].cat; (G[c] = G[c] || []).push({ k, name: tShow(k) }); }
+    return Object.entries(G).sort((a, b) => catOrder().indexOf(a[0]) - catOrder().indexOf(b[0])).map(([c, items]) => ({ label: K.catName(c), items }));
+  };
+  const norm = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+  // the approach's suggested powers and qualities (a list of names in the data)
+  const suggestion = (text, k) => {
+    const set = String(text || '').split(',').map(norm).filter(Boolean), n = norm(tName(k)), t = K.TRAIT[k];
+    return set.some(x => x === n || (x.length > 3 && (n.includes(x) || x.includes(n))) || (x === 'elemental/energia' && t.cat === 'P:elemental') || x === norm(K.catName(t.cat)));
+  };
+  function socket({ bind, d, kind, cur, groups, fitText }) {
+    const all = groups.flatMap(g => g.items);
+    const curItem = all.find(i => i.k === cur);
+    let open = ui.socket === bind;
+    if (!open && !cur && ui.socket == null && !ui.auto) { open = ui.auto = true; }
+    const ask = tr(kind === 'power' ? 'Which power does this {die} become?' : 'Which quality does this {die} become?', { die: d });
+    const kindTag = `<span class="sock-kind k-${kind}">${tr(kind)}</span>`;
+    const face = curItem
+      ? `${kindTag}<span class="sock-name"${tipA(K.traitTip(cur))}>${esc(curItem.name)}</span>${die(d, 'sm')}<span class="sock-cat">${esc(K.catName(K.TRAIT[cur].cat))}</span>`
+      : `<span class="sock-empty">${esc(ask)}</span>`;
+    const filter = all.length > 12 ? `<label class="tray-filter">${K.ico('mark')}<input type="search" data-filter="1" placeholder="${tr('Filter {n} options…', { n: all.length })}" aria-label="${tr('Filter options')}"></label>` : '';
+    const groupHtml = g => `<div class="tray-group"><div class="tray-label">${esc(g.label)}</div><div class="tray-grid">${g.items.map(i => {
+      const on = i.k === cur, off = !!i.taken && !on, fit = fitText && suggestion(fitText, i.k);
+      return `<button class="rune k-${kind}${on ? ' on' : ''}${off ? ' off' : ''}${fit ? ' fits' : ''}" data-a="socket" data-bind="${bind}" data-val="${i.k}" data-q="${esc((i.name + ' ' + g.label).toLowerCase())}"${off ? ' aria-disabled="true"' : ''}${on ? ' aria-pressed="true"' : ''}${tipA(K.traitTip(i.k) + (off ? `<hr><small>${esc(i.taken)}</small>` : '') + (fit ? `<hr>✦ <b>${tr('Suggestion')}</b>: ${esc(fit === true ? 'sugerido pela abordagem' : fit)}. ${tr('Only a suggestion: you can pick any option.')}` : ''))}>
+        <span class="rune-name">${esc(i.name)}</span>${fit ? `<span class="rune-sugg">${K.ico('mark')} ${tr('Suggestion')}</span>` : ''}${off ? `<span class="rune-badge taken">${esc(i.taken)}</span>` : ''}</button>`;
+    }).join('')}</div></div>`;
+    const tray = open ? `<div class="tray" role="group" aria-label="${esc(ask)}">${filter}${groups.map(groupHtml).join('')}${cur ? `<button class="linkbtn tray-clear" data-a="socket" data-bind="${bind}" data-val="">${tr('Unbind this die')}</button>` : ''}</div>` : '';
+    return `<div class="socket${cur ? ' filled' : ''}${open ? ' open' : ''}">
+      <div class="sock-row">${die(d)}<span class="sock-arrow" aria-hidden="true"><i>${tr('becomes')}</i></span>
+      <button class="sock-slot" data-a="socketOpen" data-bind="${bind}" aria-expanded="${open}">${face}${open || !cur ? `<span class="sock-cta">${tr(open ? 'Close' : 'Choose')}</span>` : ''}</button></div>${tray}</div>`;
+  }
+
+  // the "Uses power" chips of an ability: the antagonist's own traits, each with the die it was given
+  const tchip = (attrs, on, disabled, k, m, why) => `<button type="button" class="tchip${on ? ' on' : ''}" role="radio" aria-checked="${on}" ${attrs}${disabled ? ' disabled' : ''}${tipA(K.traitTip(k) + (disabled && why ? `<hr><small>${esc(why)}</small>` : ''))}>${die(dieOf(k, m), 'sm')}<span>${esc(tShow(k))}</span><small>${tr(K.TRAIT[k].kind)}</small></button>`;
+  // which traits a pick may not take, because of the approach's own rule
+  function blockFor(m, id) {
+    const block = {};
+    if (!m.ap || !m.ap.rule || !id.startsWith('a:')) return block;
+    const others = m.chosenA.filter(x => x.id !== id).map(x => ({ x, k: tokensOf(x.a.x).map(t => S.tk[x.id + '|' + t]).filter(Boolean)[0] })).filter(o => o.k);
+    if (m.ap.rule === 'all-diff') others.forEach(o => { block[o.k] = `usado por “${o.x.a.n}”`; });
+    if (m.ap.rule === 'two-one') {
+      const counts = {}; others.forEach(o => { counts[o.k] = (counts[o.k] || 0) + 1; });
+      const distinct = Object.keys(counts);
+      for (const k of distinct) if (counts[k] >= 2) block[k] = `já usado por duas habilidades (${m.ap.n}: duas numa, uma noutra)`;
+    }
+    return block;
+  }
+  function abilityCard(id, a, picked, dis, src, m) {
+    let cfg = '';
+    if (picked) {
+      cfg = tokensOf(a.x).map(t => {
+        const cur = S.tk[id + '|' + t] || '', block = blockFor(m, id), keys = tokenKeys(t);
+        const what = t === 'poder' ? 'poder' : t === 'qualidade' ? 'qualidade' : t === 'energia/elemento' ? 'elemento ou energia' : 'poder ou qualidade';
+        const chips = keys.map(k => tchip(`data-a="tk" data-id="${esc(id)}" data-t="${esc(t)}" data-val="${esc(k)}"`, k === cur, !!block[k] && k !== cur, k, m, block[k])).join('');
+        const named = (t === 'qualidade' || t === 'poder/qualidade') && !S.rp.trim() ? `<small class="muted">A qualidade de interpretação aparece aqui quando você der um nome a ela, no capítulo Dados.</small>` : '';
+        return `<div class="cfg-l">Usa ${what}</div>${keys.length ? `<div class="tchips" role="radiogroup">${chips}</div>` : '<small class="muted">Ainda não há um traço desse tipo: ligue os dados no capítulo Dados.</small>'}${named}`;
+      }).join('');
+    }
+    const shown = S.renames[id] && S.renames[id].trim() ? S.renames[id].trim() : a.n;
+    return `<div class="ab ant${picked ? ' picked' : ''}${dis ? ' disabled' : ''}" data-a="ab" data-id="${esc(id)}">
+      <div class="ab-top"><input type="checkbox" tabindex="-1"${picked ? ' checked' : ''}${dis ? ' disabled' : ''} aria-label="Escolher ${esc(shown)}"><span class="ab-name">${esc(shown)}</span><span class="pill src">${esc(src)}</span>${typeChip(a.t)}</div>
+      <div class="ab-text">${ruleHtml(a.x, picked ? id : null)}</div>${cfg ? `<div class="ab-cfg" data-stop="1">${cfg}</div>` : ''}</div>`;
+  }
+  const fixedAbility = (id, a, src, m) => `<div class="ab ant picked"><div class="ab-top"><span class="ab-name">${esc(S.renames[id] && S.renames[id].trim() ? S.renames[id].trim() : a.n)}</span><span class="pill src">${esc(src)}</span>${typeChip(a.t)}</div><div class="ab-text">${ruleHtml(a.x, id)}</div>${tokensOf(a.x).length ? `<div class="ab-cfg" data-stop="1">${tokensOf(a.x).map(t => {
+    const cur = S.tk[id + '|' + t] || '', keys = tokenKeys(t);
+    return `<div class="cfg-l">Usa ${t === 'poder' ? 'poder' : t === 'qualidade' ? 'qualidade' : t === 'energia/elemento' ? 'elemento ou energia' : 'poder ou qualidade'}</div><div class="tchips" role="radiogroup">${keys.map(k => tchip(`data-a="tk" data-id="${esc(id)}" data-t="${esc(t)}" data-val="${esc(k)}"`, k === cur, false, k, m)).join('')}</div>`;
+  }).join('')}</div>` : ''}<small class="muted">Sempre inclusa</small></div>`;
+  const countLine = (list, need) => `<p class="count-line"><b>${list.length}/${need}</b> escolhidas</p>`;
+
+  // choice cards, like the Origin and Archetype cards of the Champion Forge
+  const card = (attrs, on, tipHtml, inner) => `<button type="button" class="card region-card${on ? ' selected' : ''}" style="--rc:var(--gold)" ${attrs}${tipA(tipHtml)}>${inner}</button>`;
+  const diceChips = (label, arr) => `<div class="cdice"><b>${label}</b>${arr.map(d => die(d, 'sm')).join('')}</div>`;
+
+  // ------------------------------------------------------------------ chapter bodies
+  const field = (path, label, ph, v) => `<label class="field"><span>${label}</span><input type="text" data-b="${path}" value="${esc(v)}" placeholder="${esc(ph || '')}"></label>`;
   function body(id, m) {
     const ap = m.ap, ar = m.ar;
+    ui.auto = false;
     if (id === 'concept') return `<div class="grid3">${field('name', 'Nome', 'Ex.: Capitão Dorrick Maré-Negra', S.name)}${field('alias', 'Título ou alcunha', 'Ex.: o Terror das Marés', S.alias)}${field('concept', 'Conceito', 'Quem é, o que quer, como enfrenta os campeões', S.concept)}</div>
       <label class="field"><span>Aparência, jeito de falar e motivos</span><textarea data-b="note" rows="3" placeholder="Como ele se parece, como fala, o que o move…">${esc(S.note)}</textarea></label>
       <div class="portrait-row"><div class="hs-portrait small">${S.portrait ? `<img src="${S.portrait}" alt="Retrato">` : '<span class="muted">Sem retrato</span>'}</div>
         <div><label class="btn small" for="portrait-file">${S.portrait ? 'Trocar retrato' : 'Adicionar retrato'}</label> ${S.portrait ? '<button class="btn small ghost" data-a="clearPortrait">Remover</button>' : ''}<input id="portrait-file" type="file" accept="image/*" hidden>
           <p class="portrait-hint">Melhor formato: imagem em pé, 3:4 (por exemplo 900 × 1200 px). Outros formatos são cortados para caber na moldura da ficha. A imagem fica só neste navegador e dentro do arquivo .json e do PDF.</p></div></div>`;
-    if (id === 'ap') return `<div class="vf-cards">${VD.approaches.map(a => vcard(`data-a="ap" data-v="${a.id}"`, S.ap === a.id, false, `<header><h4>${esc(a.n)}</h4><span class="vf-hp">Vida base ${a.hp}</span></header><p class="vf-d">${esc(a.d)}</p>
-        <p class="vf-stat"><b>Poderes</b> ${diceRow(a.P)}</p><p class="vf-stat"><b>Qualidades</b> ${diceRow(a.Q)} ${die('d8')}</p>
-        <p class="vf-stat"><b>Habilidades</b> escolha ${a.pick} de ${a.ab.length}</p><p class="vf-list">${a.ab.map(x => esc(x.n)).join(' · ')}</p>${a.note ? `<p class="vf-note">${esc(a.note)}</p>` : ''}`)).join('')}</div>`;
+    if (id === 'ap') return `<div class="cards regions">${VD.approaches.map(a => card(`data-a="ap" data-v="${a.id}"`, S.ap === a.id, apTip(a), `<div class="t">${esc(a.n)}</div><div class="s">Vida base ${a.hp} · escolha ${a.pick} de ${a.ab.length}</div><div class="d">${esc(firstSentence(a.d))}</div>${diceChips('Poderes', a.P)}${diceChips('Qualidades', a.Q)}`)).join('')}</div>`;
     if (id === 'dice') {
       if (!ap) return '<p class="muted">Escolha primeiro a abordagem.</p>';
-      const slots = (kind, dice, store) => dice.map((d, i) => `<label class="gm-bp-slot">${die(d)} <select data-b="${kind}" data-i="${i}"><option value="">—</option>${traitOptions(kind === 'P' ? 'power' : 'quality', store[i])}</select></label>`).join('');
-      return `<h5>Poderes <small>sugestão: ${esc(ap.sp)}</small></h5><div class="gm-bp-slots">${slots('P', m.pDice, S.P)}</div>
-        <h5>Qualidades <small>sugestão: ${esc(ap.sq)}</small></h5><div class="gm-bp-slots">${slots('Q', m.qDice, S.Q)}
-          <label class="gm-bp-slot">${die('d8')} <input type="text" data-b="rp" value="${esc(S.rp)}" placeholder="Qualidade de interpretação"></label></div>
+      const sockets = (kind, dice, store, sug) => dice.map((d, i) => {
+        const taken = Object.fromEntries(Object.entries(store).filter(([j]) => +j !== i).map(([, k]) => [k, 'Você já usou este traço em outro dado: este dado seria desperdiçado. Escolha outro, ou desligue o outro dado antes.']));
+        const groups = traitGroups(keysOfKind(kind)).map(g => ({ ...g, items: g.items.map(it => ({ ...it, taken: taken[it.k] })) }));
+        return socket({ bind: `${kind === 'power' ? 'P' : 'Q'}.${i}`, d, kind, cur: store[i] || '', groups, fitText: sug });
+      }).join('');
+      return `<div class="assign"><p class="assign-opts">Sugestões da abordagem: ${esc(ap.sp)}.</p><div class="muted">Atribua cada dado a um poder:</div>${sockets('power', m.pDice, S.P, ap.sp)}</div>
+        <div class="assign"><p class="assign-opts">Sugestões da abordagem: ${esc(ap.sq)}.</p><div class="muted">Atribua cada dado a uma qualidade:</div>${sockets('quality', m.qDice, S.Q, ap.sq)}
+          <div class="socket filled"><div class="sock-row">${die('d8')}<span class="sock-arrow" aria-hidden="true"><i>${tr('becomes')}</i></span><label class="sock-slot rp-slot"><span class="sock-kind k-quality">${tr('quality')}</span><input type="text" data-b="rp" class="rp-input" value="${esc(S.rp)}" placeholder="Qualidade de interpretação: uma frase, como “Sorriso Calculado”" aria-label="Qualidade de interpretação"></label></div></div></div>
         ${m.pOver || m.qOver ? '<p class="muted">Um dado já era d12 e o aprimoramento não o sobe mais: em troca, você ganha uma habilidade extra.</p>' : ''}`;
     }
-    if (id === 'abap') return !ap ? '<p class="muted">Escolha primeiro a abordagem.</p>' : `<p class="vf-count">Escolha ${m.needA} ${counter(m.chosenA, m.needA)}</p><div class="vf-cards wide">${ap.ab.map((a, i) => abCard('a:' + i, a, !!S.ab['a:' + i], !S.ab['a:' + i] && m.chosenA.length >= m.needA)).join('')}</div>`;
-    if (id === 'arch') return `<div class="vf-cards">${VD.archetypes.map(a => vcard(`data-a="arch" data-v="${a.id}"`, S.arch === a.id, false, `<header><h4>${esc(a.n)}</h4><span class="vf-hp">Vida ${sgn(a.hp)}</span></header>${ap && a.pairs && a.pairs.toLowerCase().includes(ap.n.toLowerCase()) ? '<span class="vf-fit">Combina com a abordagem escolhida</span>' : ''}<p class="vf-d">${esc(a.d)}</p>
-        <table class="vf-mini">${a.status.map(s => `<tr><td>${dt(s[0])}</td><td>${die(s[1])}</td></tr>`).join('')}</table>
-        <p class="vf-stat"><b>Habilidades</b> escolha ${a.pick} de ${a.ab.length - (a.gain ? 1 : 0)}${a.gain ? ' (+ ' + esc(a.gain) + ')' : ''}</p>
-        ${a.challenge ? `<ul class="vf-note">${a.challenge.map(c => '<li>' + esc(c) + '</li>').join('')}</ul>` : ''}<p class="vf-note">Combina bem com: ${esc(a.pairs)}.</p>`)).join('')}</div>`;
-    if (id === 'abar') return !ar ? '<p class="muted">Escolha primeiro o arquétipo.</p>' : `<p class="vf-count">Escolha ${m.needR} ${counter(m.chosenR, m.needR)}</p><div class="vf-cards wide">${m.arPool.map(a => abCard('r:' + ar.ab.indexOf(a), a, !!S.ab['r:' + ar.ab.indexOf(a)], !S.ab['r:' + ar.ab.indexOf(a)] && m.chosenR.length >= m.needR)).join('')}${m.gain.map(g => fixedCard(g.id, g.a, ar.n)).join('')}</div>`;
+    if (id === 'abap') return !ap ? '<p class="muted">Escolha primeiro a abordagem.</p>' : `<div class="subsec">${ap.note ? `<p class="muted">${esc(ap.note)}</p>` : ''}${countLine(m.chosenA, m.needA)}<div class="ab-list">${ap.ab.map((a, i) => abilityCard('a:' + i, a, !!S.ab['a:' + i], !S.ab['a:' + i] && m.chosenA.length >= m.needA, ap.n, m)).join('')}</div></div>`;
+    if (id === 'arch') return `<div class="cards regions">${VD.archetypes.map(a => card(`data-a="arch" data-v="${a.id}"`, S.arch === a.id, arTip(a), `${ap && a.pairs && a.pairs.toLowerCase().includes(ap.n.toLowerCase()) ? `<div class="fit">${K.ico('mark')} Combina com a abordagem</div>` : ''}<div class="t">${esc(a.n)}</div><div class="s">Vida ${sgn(a.hp)} · escolha ${a.pick}${a.gain ? ' (+ ' + esc(a.gain) + ')' : ''}</div><div class="d">${esc(firstSentence(a.d))}</div><div class="cdice"><b>Status</b>${a.status.map(s => die(s[1], 'sm')).join('')}</div>`)).join('')}</div>`;
+    if (id === 'abar') return !ar ? '<p class="muted">Escolha primeiro o arquétipo.</p>' : `<div class="subsec">${countLine(m.chosenR, m.needR)}<div class="ab-list">${m.arPool.map(a => abilityCard('r:' + ar.ab.indexOf(a), a, !!S.ab['r:' + ar.ab.indexOf(a)], !S.ab['r:' + ar.ab.indexOf(a)] && m.chosenR.length >= m.needR, ar.n, m)).join('')}${m.gain.map(g => fixedAbility(g.id, g.a, ar.n, m)).join('')}</div></div>`;
     if (id === 'up') {
       const upList = m.ups.filter(u => u.ab.length);
-      return `<div class="vf-cards">${VD.upgrades.map(u => vcard(`data-a="up" data-id="${u.id}"`, !!S.up[u.id], false, `<header><h4>${esc(u.n)}</h4><span class="vf-hp">Vida ${sgn(u.hp)}</span></header><p class="vf-d">${esc(u.when)}</p>
-          ${u.ab.length ? `<ul class="vf-ablist">${u.ab.map(a => `<li><b>${esc(a.n)}</b> <span class="gm-bp-ty">${a.t}</span> ${dt(firstSentence(a.x))}</li>`).join('')}</ul>` : '<p class="vf-note">Sem habilidades extras: só soma Vida.</p>'}${u.note ? `<p class="vf-note">${esc(u.note)}</p>` : ''}`)).join('')}</div>
-        ${upList.length ? `<h5>Habilidades das melhorias</h5><div class="vf-cards wide">${upList.map(u => u.ab.map((a, i) => u.id === 'vehicle' ? abCard('u:vehicle:' + i, a, !!S.ab['u:vehicle:' + i], false) : fixedCard('u:' + u.id + ':' + i, a, u.n)).join('')).join('')}</div>${m.ups.some(u => u.id === 'vehicle') ? '<p class="muted">Veículo antagonista: monte um tenente com 2 a 4 destas habilidades (mais habilidades para mais campeões).</p>' : ''}` : ''}`;
+      return `<div class="cards regions">${VD.upgrades.map(u => card(`data-a="up" data-id="${u.id}"`, !!S.up[u.id], upTip(u), `<div class="t">${esc(u.n)}</div><div class="s">Vida ${sgn(u.hp)}${u.ab.length ? ' · ' + u.ab.length + ' habilidade' + (u.ab.length > 1 ? 's' : '') : ''}</div><div class="d">${esc(u.when)}</div>`)).join('')}</div>
+        ${upList.length ? `<div class="subsec"><h4>Habilidades das melhorias</h4><div class="ab-list">${upList.map(u => u.ab.map((a, i) => u.id === 'vehicle' ? abilityCard('u:vehicle:' + i, a, !!S.ab['u:vehicle:' + i], false, u.n, m) : fixedAbility('u:' + u.id + ':' + i, a, u.n, m)).join('')).join('')}</div>${m.ups.some(u => u.id === 'vehicle') ? '<p class="muted">Veículo antagonista: monte um tenente com 2 a 4 destas habilidades (mais habilidades para mais campeões).</p>' : ''}</div>` : ''}`;
     }
     if (id === 'mast') {
       if (!m.ups.length) return '<p class="muted">A maestria só existe para antagonistas com pelo menos uma melhoria. Volte ao capítulo anterior se quiser um antagonista maior.</p>';
-      return `<div class="vf-cards">${vcard('data-a="mast" data-v=""', !S.mastery, false, '<header><h4>Sem maestria</h4></header><p class="vf-d">O antagonista fica só com as habilidades e as melhorias.</p>')}${VD.masteries.map(x => vcard(`data-a="mast" data-v="${esc(x.n)}"`, S.mastery === x.n, false, `<header><h4>${esc(x.n)}</h4><span class="gm-bp-ty">Passiva</span></header>
-        <p class="vf-stat"><b>Quando vale</b> ${esc(x.cond)}</p><p class="vf-stat"><b>O que faz</b> ${esc(x.x)}</p><p class="vf-note">Exemplo: ${esc(x.ex)}</p>`)).join('')}</div>`;
+      return `<div class="cards regions">${card('data-a="mast" data-v=""', !S.mastery, '<h5>Sem maestria</h5>O antagonista fica só com as habilidades e as melhorias.', '<div class="t">Sem maestria</div><div class="d">O antagonista fica só com as habilidades e as melhorias.</div>')}${VD.masteries.map(x => card(`data-a="mast" data-v="${esc(x.n)}"`, S.mastery === x.n, maTip(x), `<div class="t">${esc(x.n)}</div><div class="s">Passiva</div><div class="d"><b>Quando vale:</b> ${esc(x.cond)}</div><div class="d">${esc(x.x)}</div>`)).join('')}</div>`;
     }
     if (id === 'names') return namesBody(m);
     return '';
   }
 
-  // rename powers, qualities and abilities: the Forge's "your name for it" cards
-  function chosenKeys(m) { return [...new Set(Object.values(S.P).concat(Object.values(S.Q)).filter(Boolean))]; }
+  // rename powers, qualities and abilities: the Champion Forge's "your name for it" cards
+  function chosenKeys() { return [...new Set(Object.values(S.P).concat(Object.values(S.Q)).filter(Boolean))]; }
   function allAbilityList(m) {
     const L = [];
     for (const x of m.chosenA) L.push({ id: x.id, a: x.a, src: m.ap.n });
@@ -236,11 +342,11 @@
   }
   function namesBody(m) {
     if (!m.ap || !m.ar) return '<p class="muted">Escolha a abordagem e o arquétipo para dar nomes aos traços e às habilidades.</p>';
-    const tr = chosenKeys(m).map(k => allTraits().find(t => t.key === k)).filter(Boolean);
-    const traits = tr.length ? `<h5>Poderes e qualidades</h5><div class="rename-grid">${tr.map(t => `<label class="rename-card"><span class="rn-h"><b>${esc(t.name)}</b><span class="rn-type">${t.kind === 'power' ? 'poder' : 'qualidade'} · ${esc(t.catName)}</span></span><input type="text" data-b="traitNames.${esc(t.key)}" value="${esc(S.traitNames[t.key] || '')}" placeholder="Seu nome para ele (opcional)"><span class="rn-d">${esc(t.desc)}</span></label>`).join('')}</div>` : '';
+    const tr2 = chosenKeys().map(k => allTraits().find(t => t.key === k)).filter(Boolean);
+    const traits = tr2.length ? `<h5 class="rn-h5">Poderes e qualidades</h5><div class="rename-grid">${tr2.map(t => `<label class="rename-card"><span class="rn-h"><b>${esc(t.name)}</b> ${die(dieOf(t.key, m), 'sm')}<span class="rn-type">${t.kind === 'power' ? 'poder' : 'qualidade'} · ${esc(t.catName)}</span></span><input type="text" data-b="traitNames.${esc(t.key)}" value="${esc(S.traitNames[t.key] || '')}" placeholder="Seu nome para ele (opcional)"><span class="rn-d">${esc(t.desc)}</span></label>`).join('')}</div>` : '';
     const abs = allAbilityList(m);
-    const abil = abs.length ? `<h5>Habilidades</h5><div class="rename-grid">${abs.map(x => `<label class="rename-card"><span class="rn-h"><b>${esc(x.a.n)}</b><span class="rn-type">${typeName(x.a.t)} · ${esc(x.src)}</span></span><input type="text" data-b="renames.${esc(x.id)}" value="${esc(S.renames[x.id] || '')}" placeholder="Seu nome para ela (opcional)"><span class="rn-d">${dt(x.a.x)}</span></label>`).join('')}</div>` : '';
-    const mast = m.mastery ? `<h5>Maestria</h5><div class="rename-grid"><label class="rename-card"><span class="rn-h"><b>${esc(m.mastery.n)}</b><span class="rn-type">Passiva</span></span><input type="text" data-b="renames.mastery" value="${esc(S.renames.mastery || '')}" placeholder="Seu nome para ela (opcional)"><span class="rn-d">${esc(m.mastery.x)}</span></label></div>` : '';
+    const abil = abs.length ? `<h5 class="rn-h5">Habilidades</h5><div class="rename-grid">${abs.map(x => `<label class="rename-card"><span class="rn-h"><b>${esc(x.a.n)}</b><span class="pill src">${esc(x.src)}</span><span class="rn-type">${typeName(x.a.t)}</span></span><input type="text" data-b="renames.${esc(x.id)}" value="${esc(S.renames[x.id] || '')}" placeholder="Seu nome para ela (opcional)"><span class="rn-d">${ruleHtml(x.a.x, x.id)}</span></label>`).join('')}</div>` : '';
+    const mast = m.mastery ? `<h5 class="rn-h5">Maestria</h5><div class="rename-grid"><label class="rename-card"><span class="rn-h"><b>${esc(m.mastery.n)}</b><span class="rn-type">Inerente</span></span><input type="text" data-b="renames.mastery" value="${esc(S.renames.mastery || '')}" placeholder="Seu nome para ela (opcional)"><span class="rn-d">${esc(m.mastery.x)}</span></label></div>` : '';
     return traits + abil + mast;
   }
 
@@ -249,47 +355,50 @@
   const abNameHtml = (id, base) => esc(abName(id, base)) + (S.renames[id] && S.renames[id].trim() && S.renames[id].trim() !== base ? origTag(base) : '');
   function abLines(m) {
     const L = [];
-    for (const x of m.chosenA) L.push({ id: x.id, n: x.a.n, t: x.a.t, x: fill(x.a, x.id), src: m.ap.n });
-    for (const x of m.chosenR) L.push({ id: x.id, n: x.a.n, t: x.a.t, x: fill(x.a, x.id), src: m.ar.n });
-    for (const x of m.gain) L.push({ id: x.id, n: x.a.n, t: x.a.t, x: fill(x.a, x.id), src: m.ar.n });
-    for (const x of m.upAb) L.push({ id: x.id, n: x.a.n, t: x.a.t, x: fill(x.a, x.id), src: x.src });
+    for (const x of m.chosenA) L.push({ id: x.id, n: x.a.n, t: x.a.t, x: fill(x.a, x.id), raw: x.a.x, src: m.ap.n });
+    for (const x of m.chosenR) L.push({ id: x.id, n: x.a.n, t: x.a.t, x: fill(x.a, x.id), raw: x.a.x, src: m.ar.n });
+    for (const x of m.gain) L.push({ id: x.id, n: x.a.n, t: x.a.t, x: fill(x.a, x.id), raw: x.a.x, src: m.ar.n });
+    for (const x of m.upAb) L.push({ id: x.id, n: x.a.n, t: x.a.t, x: fill(x.a, x.id), raw: x.a.x, src: x.src });
     return L;
   }
   const lines = (path, list, n, label) => Array.from({ length: n }, (_, i) => `<input class="hs-line" type="text" data-b="${path}.${i}" value="${esc(list[i] || '')}" aria-label="${label} ${i + 1}">`).join('');
-  const attr = (label, v) => `<div class="hs-f"><span class="hs-l">${label}</span>${esc(v || '')}</div>`;
+  const attr = (label, v, tipHtml) => `<div class="hs-f"><span class="hs-l">${label}</span>${tipHtml ? `<span class="term"${tipA(tipHtml)}>${esc(v || '')}</span>` : esc(v || '')}</div>`;
+  const hdr = (label, glossKey, extra) => `<div class="hs-h"${glossKey && window.GLOSSARY[glossKey] ? tipA(window.GLOSSARY[glossKey]) : extra ? tipA(extra) : ''}>${label}</div>`;
+  const zoneTip = z => `<h5>${esc(z)}</h5>${window.GLOSSARY[z] || ''}`;
   function sheetHtml(m) {
     const ap = m.ap, ar = m.ar;
     if (!ap || !ar) return '<div class="hero-sheet"><div class="hs-page"><p class="muted">Escolha a abordagem e o arquétipo para ver a ficha.</p></div></div>';
     const zoned = ['bruiser', 'fragile'].includes(ar.id);
     const z = zoned ? zonesFor(m.hp) : null;
     const traitRows = (dice, store, n, extra) => {
-      const out = dice.map((d, i) => { const k = store[i]; return `<tr><td>${k ? esc(tShow(k)) + (tRenamed(k) ? origTag(tName(k)) : '') : '<span class="muted">?</span>'}</td><td class="dt">${die(d, 'sm')}</td></tr>`; });
+      const out = dice.map((d, i) => { const k = store[i]; return `<tr><td>${k ? `<span class="term"${tipA(K.traitTip(k))}>${esc(tShow(k))}</span>` + (tRenamed(k) ? origTag(tName(k)) : '') : '<span class="muted">?</span>'}</td><td class="dt">${die(d, 'sm')}</td></tr>`; });
       if (extra) out.push(extra);
       while (out.length < n) out.push('<tr><td>&nbsp;</td><td class="dt"></td></tr>');
       return out.join('');
     };
-    const rpRow = `<tr><td>${esc(S.rp || '?')}</td><td class="dt">${die('d8', 'sm')}</td></tr>`;
+    const rpRow = `<tr><td><span class="term"${tipA(K.traitTip(RPKEY))}>${esc(S.rp || '?')}</span></td><td class="dt">${die('d8', 'sm')}</td></tr>`;
     const groups = [];   // abilities by where they come from
-    for (const l of abLines(m)) { let g = groups.find(x => x.src === l.src); if (!g) groups.push(g = { src: l.src, rows: [] }); g.rows.push(l); }
-    if (m.mastery) groups.push({ src: 'Maestria', rows: [{ id: 'mastery', n: m.mastery.n, t: 'I', x: m.mastery.x, src: 'Maestria' }] });
-    const abRow = r => `<tr><td class="nm">${abNameHtml(r.id, r.n)}</td><td class="ty">${r.t === 'A' ? 'Ação' : r.t === 'R' ? 'Reação' : 'Passiva'}</td><td class="gt">${dt(r.x).replace(/«([^»]+)»/g, '<b>$1</b>')}</td></tr>`;
+    for (const l of abLines(m)) { let g = groups.find(x => x.src === l.src); if (!g) groups.push(g = { src: l.src, tip: l.src === ap.n ? apTip(ap) : l.src === ar.n ? arTip(ar) : upTip(m.ups.find(u => u.n === l.src) || { n: l.src, hp: 0, when: '', ab: [] }), rows: [] }); g.rows.push(l); }
+    if (m.mastery) groups.push({ src: 'Maestria', tip: maTip(m.mastery), rows: [{ id: 'mastery', n: m.mastery.n, t: 'I', x: m.mastery.x, raw: m.mastery.x, src: 'Maestria' }] });
+    const abRow = r => `<tr><td class="ic">${iconsFor(r.raw)}</td><td class="nm">${abNameHtml(r.id, r.n)}</td><td class="ty"${tipA(typeTip(r.t))}>${r.t}</td><td class="gt">${ruleHtml(r.raw, r.id === 'mastery' ? null : r.id)}</td></tr>`;
     const title = esc(S.name || 'Antagonista sem nome');
+    const upTxt = m.ups.length ? m.ups.map(u => term(u.n, upTip(u))).join(', ') : `<span class="term"${tipA('<h5>Antagonista menor</h5>Sem melhorias: conta como um elemento moderado na cena. Com uma melhoria, vira maior (elemento difícil).')}>nenhuma (antagonista menor)</span>`;
     return `<div class="hero-sheet">
       <div class="hs-page" id="hs-p1">
         <div class="hs-top">
           <div class="hs-left"><div class="hs-portrait">${S.portrait ? `<img src="${S.portrait}" alt="Retrato de ${title}">` : '<span class="muted">Retrato</span>'}</div>
-            <div class="hs-card hs-hpcard"><div class="hs-hr"><div class="hs-h">Vida</div>
-              <div class="burst c">Máxima<b>${m.hp}</b></div>
-              ${z ? `<div class="burst g">Verde<b>${zoneRange(z[0], m.hp)}</b></div><div class="burst y">Amarela<b>${zoneRange(z[1], m.hp)}</b></div><div class="burst r">Vermelha<b>${zoneRange(z[2], m.hp)}</b></div>` : ''}
+            <div class="hs-card hs-hpcard"><div class="hs-hr">${hdr('Vida', 'Health')}
+              <div class="burst c"${tipA(`<h5>Vida máxima</h5>Vida = abordagem + arquétipo + 5 × campeões + melhorias: ${ap.hp} ${ar.hp >= 0 ? '+ ' + ar.hp : '− ' + -ar.hp} + 5×${m.N}${m.upH ? ' + ' + m.upH : ''} = ${m.hp}.`)}>Máxima<b>${m.hp}</b></div>
+              ${z ? `<div class="burst g"${tipA(zoneTip('Green zone'))}>Verde<b>${zoneRange(z[0], m.hp)}</b></div><div class="burst y"${tipA(zoneTip('Yellow zone'))}>Amarela<b>${zoneRange(z[1], m.hp)}</b></div><div class="burst r"${tipA(zoneTip('Red zone'))}>Vermelha<b>${zoneRange(z[2], m.hp)}</b></div>` : ''}
               <div class="burst c">Atual<input type="text" inputmode="numeric" data-b="play.cur" value="${esc(S.play.cur === '' || S.play.cur == null ? m.hp : S.play.cur)}" aria-label="Vida atual"></div>
-              <div class="hs-track hs-noexport" role="group" aria-label="Ajustar a Vida"><button type="button" data-a="hp" data-d="-1" aria-label="Perder 1 de Vida">−</button><button type="button" data-a="hp" data-d="1" aria-label="Recuperar 1 de Vida">+</button><button type="button" data-a="hp" data-d="max" aria-label="Vida cheia">${ico('reset')}</button></div>
+              <div class="hs-track hs-noexport" role="group" aria-label="Ajustar a Vida"><button type="button" data-a="hp" data-d="-1" aria-label="Perder 1 de Vida"${tipA('Perder 1 de Vida')}>−</button><button type="button" data-a="hp" data-d="1" aria-label="Recuperar 1 de Vida"${tipA('Recuperar 1 de Vida')}>+</button><button type="button" data-a="hp" data-d="max" aria-label="Vida cheia"${tipA('Voltar à Vida cheia')}>${K.ico('reset')}</button></div>
               <small class="muted">Vida para ${m.N} campeões: ${ap.hp} ${ar.hp >= 0 ? '+ ' + ar.hp : '− ' + -ar.hp} + 5×${m.N}${m.upH ? ' + ' + m.upH : ''}</small></div></div></div>
           <div class="hs-idblock">
             <div class="hs-card hs-2"><div><div class="hs-h">Título</div><div class="hs-name">${esc(S.alias || '')}&nbsp;</div></div><div><div class="hs-h">Nome</div><div class="hs-name hs-title">${esc(S.name || 'Antagonista sem nome')}</div></div></div>
             <div class="hs-card"><div class="hs-h">Conceito</div><div class="hs-ml">${esc(S.concept || '')}&nbsp;</div></div>
             <div class="hs-card"><div class="hs-h">Características</div>
-              <div class="hs-2">${attr('Abordagem', ap.n)}${attr('Arquétipo', ar.n)}</div>
-              <div class="hs-2">${attr('Melhorias', m.ups.length ? m.ups.map(u => u.n).join(', ') : 'nenhuma (antagonista menor)')}${attr('Maestria', m.mastery ? m.mastery.n : '')}</div></div>
+              <div class="hs-2">${attr('Abordagem', ap.n, apTip(ap))}${attr('Arquétipo', ar.n, arTip(ar))}</div>
+              <div class="hs-2"><div class="hs-f"><span class="hs-l">Melhorias</span>${upTxt}</div>${attr('Maestria', m.mastery ? m.mastery.n : '', m.mastery ? maTip(m.mastery) : '')}</div></div>
             <div class="hs-card"><div class="hs-h">Aparência, jeito de falar e motivos</div><div class="hs-ml">${esc((S.note || '').trim())}&nbsp;</div></div>
           </div>
         </div>
@@ -299,24 +408,24 @@
         </div>
       </div>
       <div class="hs-page" id="hs-p2">
-        <div class="hs-card hs-3"><div><div class="hs-h">Título</div>${esc(S.alias || '')}&nbsp;</div><div><div class="hs-h">Nome</div>${esc(S.name || '')}</div><div><div class="hs-h">Abordagem · Arquétipo</div>${esc(ap.n)} · ${esc(ar.n)}</div></div>
+        <div class="hs-card hs-3"><div><div class="hs-h">Título</div>${esc(S.alias || '')}&nbsp;</div><div><div class="hs-h">Nome</div>${esc(S.name || '')}</div><div><div class="hs-h">Abordagem · Arquétipo</div>${term(ap.n, apTip(ap))} · ${term(ar.n, arTip(ar))}</div></div>
         <div class="hs-2 ant-traits">
-          <table class="hs-traits"><thead><tr><th>Poderes</th><th>Dado</th></tr></thead><tbody>${traitRows(m.pDice, S.P, 5)}</tbody></table>
-          <table class="hs-traits"><thead><tr><th>Qualidades</th><th>Dado</th></tr></thead><tbody>${traitRows(m.qDice, S.Q, 5, rpRow)}</tbody></table>
+          <table class="hs-traits"><thead><tr><th>${gloss('power', 'Poderes')}</th><th>Dado</th></tr></thead><tbody>${traitRows(m.pDice, S.P, 5)}</tbody></table>
+          <table class="hs-traits"><thead><tr><th>${gloss('quality', 'Qualidades')}</th><th>Dado</th></tr></thead><tbody>${traitRows(m.qDice, S.Q, 5, rpRow)}</tbody></table>
         </div>
         <div class="hs-2 ant-traits">
-          <table class="hs-traits"><thead><tr><th>Status: ${esc(ar.n)}</th><th>Dado</th></tr></thead><tbody>${ar.status.map(s => `<tr><td>${dt(s[0])}</td><td class="dt">${die(s[1], 'sm')}</td></tr>`).join('')}</tbody></table>
+          <table class="hs-traits"><thead><tr><th>${gloss('status die', 'Dado de status')}: ${esc(ar.n)}</th><th>Dado</th></tr></thead><tbody>${ar.status.map(s => `<tr><td>${dt(s[0])}</td><td class="dt">${die(s[1], 'sm')}</td></tr>`).join('')}</tbody></table>
           ${ar.challenge ? `<div class="hs-card"><div class="hs-h">Desafio do arquétipo</div>${ar.challenge.map(c => `<div class="hs-f">${esc(c)}</div>`).join('')}</div>` : '<div></div>'}
         </div>
         <div class="hs-h" style="margin-top:12px">Habilidades</div>
-        ${groups.map(g => `<div class="hs-zone src"><div class="zlbl">${esc(g.src)}</div><table class="hs-ab-t"><tbody>${g.rows.map(abRow).join('')}</tbody></table></div>`).join('')}
+        ${groups.map(g => `<div class="hs-zone src"><div class="zlbl"${tipA(g.tip)}>${esc(g.src)}</div><table class="hs-ab-t"><tbody>${g.rows.map(abRow).join('')}</tbody></table></div>`).join('')}
       </div>
     </div>`;
   }
   function sheetText(m) {
-    const tr = (dice, store) => dice.map((d, i) => `${d} ${store[i] ? tShow(store[i]) : '?'}`).join(', ');
+    const tr3 = (dice, store) => dice.map((d, i) => `${d} ${store[i] ? tShow(store[i]) : '?'}`).join(', ');
     const L = [`${S.name || 'Antagonista sem nome'}${S.alias ? ', ' + S.alias : ''}${S.concept ? ' · ' + S.concept : ''}`, `${m.ap.n} (${m.ap.hp}) + ${m.ar.n} (${m.ar.hp})${m.ups.length ? ' + ' + m.ups.map(u => u.n).join(', ') : ''}${m.mastery ? ' · ' + m.mastery.n : ''}`,
-      `Poderes: ${tr(m.pDice, S.P)}`, `Qualidades: ${tr(m.qDice, S.Q)}, d8 ${S.rp || 'qualidade de interpretação'}`,
+      `Poderes: ${tr3(m.pDice, S.P)}`, `Qualidades: ${tr3(m.qDice, S.Q)}, d8 ${S.rp || 'qualidade de interpretação'}`,
       `Status: ${m.ar.status.map(s => s[0] + ' ' + s[1]).join(' | ')}`, `Vida para ${m.N} campeões: ${m.ap.hp} + ${m.ar.hp} + 5×${m.N}${m.upH ? ' + ' + m.upH : ''} = ${m.hp}`];
     for (const l of abLines(m)) L.push(`${abName(l.id, l.n).replace(/\s*\(.*$/, '')} [${l.t}]: ${l.x.replace(/«|»/g, '')}`);
     if (m.mastery) L.push(`${abName('mastery', m.mastery.n)} [I]: ${m.mastery.x}`);
@@ -339,7 +448,7 @@
   }
   function navHtml(m) {
     const r = reach(m), cur = stepIdx(S.step);
-    return `<div class="rail-title">Forja do Antagonista</div><ol class="rail">${STEPS.map((s, i) => {
+    return `<div class="rail-title">Oficina de Antagonista</div><ol class="rail">${STEPS.map((s, i) => {
       const locked = i > r, I = locked ? [] : stepIssues(s.id, m);
       const cls = ['rail-item', i === cur ? 'active' : '', locked ? 'locked' : I.length ? 'open' : (s.id === 'up' || s.id === 'mast' || s.id === 'names') && i > r - 1 ? '' : 'done'].join(' ');
       const status = locked ? 'Fechado' : i === cur ? 'Você está aqui' : I.length ? 'Falta algo' : s.sub;
@@ -370,6 +479,7 @@
       ${footer(i, m)}</div>`;
   }
   function render(opts = {}) {
+    kitSync(); K.tipReset();
     const m = model();
     $('#nav').innerHTML = navHtml(m);
     const focus = document.activeElement && document.activeElement.closest && document.activeElement.closest('#stage') ? ['data-a', 'data-b', 'data-id', 'data-v', 'data-i'].filter(k => document.activeElement.getAttribute(k) != null).map(k => `[${k}="${CSS.escape(document.activeElement.getAttribute(k))}"]`).join('') : '';
@@ -381,6 +491,7 @@
   }
   // typing never redraws the page; only the little things that depend on it: the rail, the "falta" list and the Continue button
   function light() {
+    kitSync();
     const m = model(), i = stepIdx(S.step);
     $('#nav').innerHTML = navHtml(m);
     const slot = $('#stage .todo-slot'); if (slot) slot.innerHTML = todoHtml(stepIssues(S.step, m));
@@ -408,7 +519,7 @@
   function importJson(text) {
     let o;
     try { o = JSON.parse(text); } catch (e) { alert('Este arquivo não é um .json válido.'); return; }
-    if (!o || o.app !== 'runeterra-antagonist') { alert('Este arquivo não é de um antagonista da Forja. Para campeões, use a Forja de Campeões.'); return; }
+    if (!o || o.app !== 'runeterra-antagonist') { alert('Este arquivo não é de um antagonista da Oficina. Para campeões, use a Forja de Campeões.'); return; }
     save();
     delete o.app; delete o.v;
     S = normalize(o);
@@ -444,7 +555,7 @@
       const bytes = await window.SheetPDF.render({
         html: sheetHtml(m), cssHref: document.querySelector('link[href*="style.css"]').href, fontBase: new URL('assets/fonts/', location.href).href,
         fontkitSrc: 'js/vendor/fontkit.umd.min.js', pageBg: getComputedStyle(document.body).backgroundColor, onStatus: x => say(esc(x)),
-        title: `Ficha de Antagonista de ${S.name || 'antagonista sem nome'}`, creator: 'Forja do Antagonista · Runeterra'
+        title: `Ficha de Antagonista de ${S.name || 'antagonista sem nome'}`, creator: 'Oficina de Antagonista · Runeterra'
       });
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })); a.download = fileBase() + '_ficha_antagonista.pdf';
       document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
@@ -485,13 +596,17 @@
   }
   function onClick(ev) {
     const t = ev.target;
-    if (t.closest('select, input, textarea, label')) return;
+    if (t.closest('select, textarea, label, input:not([type=checkbox])')) return;
+    if (t.closest('[data-stop]') && !t.closest('[data-a="tk"]')) return;
     const el = t.closest('[data-a]');
     if (!el) return;
     const a = el.dataset.a;
     if (el.classList.contains('dis')) return;
     if (el.classList.contains('is-disabled')) { const f = $('#stage .flow-todo'); if (f) { f.scrollIntoView({ block: 'center', behavior: 'smooth' }); f.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }], { duration: 240 }); } return; }
     const m = model();
+    if (a === 'socketOpen') { ui.socket = el.getAttribute('aria-expanded') === 'true' ? '' : el.dataset.bind; render(); return; }
+    if (a === 'socket') { if (el.getAttribute('aria-disabled') === 'true') return; const [f, i] = el.dataset.bind.split('.'); ui.socket = null; return applyChange(f, { i, value: el.dataset.val }); }
+    if (a === 'tk') return applyChange('tk', { id: el.dataset.id, t: el.dataset.t, value: el.dataset.val });
     if (a === 'ap' || a === 'arch') return applyChange(a, { value: el.dataset.v });
     if (a === 'ab') return applyChange('ab', { id: el.dataset.id, checked: !S.ab[el.dataset.id] });
     if (a === 'up') return applyChange('up', { id: el.dataset.id, checked: !S.up[el.dataset.id] });
@@ -545,11 +660,13 @@
       if (ev.key === 'Escape') { const r = $('#roster'); if (r && !r.hidden) hideRoster(); }
     });
     document.addEventListener('input', ev => {
+      const flt = ev.target.closest && ev.target.closest('[data-filter]');
+      if (flt) { const q = flt.value.trim().toLowerCase(); flt.closest('.tray').querySelectorAll('.rune').forEach(r => { r.hidden = !!q && !r.dataset.q.includes(q); }); return; }
       const el = ev.target, b = el.dataset && el.dataset.b;
       if (!b || el.tagName === 'SELECT') return;
       if (b.startsWith('traitNames.') || b.startsWith('renames.')) setPath(S, b, el.value);
       else setPath(S, b, el.value);
-      save(); if (b === 'name' || b === 'rp') light();
+      save(); if (b === 'name' || b === 'rp' || b.startsWith('traitNames.')) light();
     });
     document.addEventListener('change', ev => {
       const el = ev.target;
@@ -590,7 +707,7 @@
     if (!(await unlocked())) {
       gate.hidden = false;
       gate.innerHTML = `<div class="sp-empty"><span class="gm-seal" aria-hidden="true">${ico('lock')}</span><h1>Somente para o Mestre</h1>
-        <p class="muted">A Forja do Antagonista fica atrás do Escudo do Mestre. Abra o Escudo, digite a senha e volte por aqui: o botão “Forja do Antagonista” aparece no cabeçalho quando você está dentro.</p>
+        <p class="muted">A Oficina de Antagonista fica atrás do Escudo do Mestre. Abra o Escudo, digite a senha e volte por aqui: o botão “Oficina de Antagonista” aparece no cabeçalho quando você está dentro.</p>
         <a class="btn primary" href="gm.html">${ico('lock')} Abrir o Escudo do Mestre</a></div>`;
       return;
     }

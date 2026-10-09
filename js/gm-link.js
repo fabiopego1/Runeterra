@@ -1,4 +1,4 @@
-/* Shows the "Forja do Antagonista" button in the site header, but only while the GM Screen is unlocked in this tab
+/* Shows the "Oficina de Antagonista" button in the site header, but only while the GM Screen is unlocked in this tab
    (the Screen keeps its key in sessionStorage). Buttons marked data-gm-only start hidden. */
 (() => {
   'use strict';

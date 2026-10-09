@@ -213,7 +213,7 @@
       { id: 'tenentes', title: 'Tenentes', body: `
         <p>Tenentes são lacaios mais complexos: <b>um dado maior, uma ou mais habilidades e um papel claro</b> na cena (comandar lacaios, dar apoio, atrapalhar). Um tenente vale por dois lacaios na conta da cena. Crie como um lacaio, com 2 ou 3 habilidades escolhidas da lista acima, e escreva a tática dele em uma linha. Veículos e máquinas de guerra dos antagonistas também entram aqui.</p>` },
       { id: 'viloes', title: 'Antagonistas', body: `
-        <p class="muted">Prefere montar direto? Use o <a href="#bp-montador">Forja do Antagonista</a> logo abaixo: ele traz as listas completas de habilidades de cada abordagem e arquétipo.</p>
+        <p class="muted">Prefere montar direto? Use a <a href="#bp-montador">Oficina de Antagonista</a> logo abaixo: ela traz as listas completas de habilidades de cada abordagem e arquétipo.</p>
         <p>Um antagonista fica entre um campeão e todo o resto: tem poderes, qualidades, um status, Vida e habilidades. É <b>menor</b> se usa só os números básicos e <b>maior</b> se tem melhorias. Passos:</p>
         ${ol(['<b>Conceito:</b> quem é, o que quer e como bate de frente com seus campeões.', '<b>Abordagem:</b> dá poderes, qualidades, Vida base e habilidades da forma como ele age.', '<b>Poderes e qualidades:</b> distribua dados da lista de poderes e qualidades; ele também tem uma qualidade de interpretação.', '<b>Arquétipo:</b> como ele luta e do que se importa numa cena (de que depende seu status). Dá Vida e habilidades.', '<b>Melhorias (opcional):</b> cada uma ajuda a enfrentar mais um campeão.', '<b>Maestria (opcional, só com melhorias):</b> uma opção de Superar automática, como os princípios dos campeões.', '<b>Vida:</b> some os valores (abaixo) e finalize com aparência, jeito de falar e motivos.'])}
         <h4>Abordagens</h4>
@@ -273,7 +273,7 @@
       let N = 4;
       const draw = () => {
         const G = guide(N);
-        const nav = [['bp-guia', 'Como criar'], ['bp-sessao', 'Montar uma sessão'], ['bp-montador', 'Forja do Antagonista'], ['bp-lacaios', 'Lacaios'], ['bp-tenentes', 'Tenentes'], ['bp-viloes', 'Antagonistas'], ['bp-ambientes', 'Ambientes'], ['bp-aventuras', 'Aventuras']];
+        const nav = [['bp-guia', 'Como criar'], ['bp-sessao', 'Montar uma sessão'], ['bp-montador', 'Oficina de Antagonista'], ['bp-lacaios', 'Lacaios'], ['bp-tenentes', 'Tenentes'], ['bp-viloes', 'Antagonistas'], ['bp-ambientes', 'Ambientes'], ['bp-aventuras', 'Aventuras']];
         root.innerHTML = `<section class="gm-bp" id="bancada">
           <div class="gm-fl-head"><div><div class="eyebrow">Guia do Mestre</div><h2>Bancada do Mestre</h2>
             <p class="muted">Como criar cenas, desafios, lacaios, tenentes, antagonistas e ambientes, com exemplos prontos de Runeterra. Adapta os capítulos <i>Bullpen</i>, <i>Adventure Issues</i> e <i>The Archives</i> do <em>Sentinel Comics RPG</em>; os exemplos são originais.</p></div>
@@ -284,8 +284,8 @@
             <p>Use este molde como ponto de partida: abra com um gancho, alterne cenas sociais, de montagem e de ação, e termine com uma consequência que alimente a próxima sessão.</p>
             ${ol(['<b>Gancho:</b> um problema que os campeões têm motivo para resolver.', '<b>Cena social ou de montagem:</b> informação, aliados, preparação.', '<b>Ação (fácil ou moderada):</b> aquece e mostra o estilo do antagonista ou do ambiente.', '<b>Interlúdio:</b> descanso, escolhas difíceis, uma revelação.', '<b>Ação (difícil):</b> o confronto com o antagonista no ambiente, com um desafio central.', '<b>Desfecho:</b> consequências, anotação na Sessões Anteriores e ganchos para a próxima.'])}
           </div>
-          <div id="bp-montador"><h3>Forja do Antagonista</h3><p class="muted">Monte um antagonista passo a passo, como na Forja de Campeões: abordagem, dados, habilidades, arquétipo, melhorias e maestria, com cartas que mostram tudo antes de você escolher. No fim sai uma ficha para imprimir, exportar em PDF ou salvar em .json, com retrato e nomes só seus para poderes, qualidades e habilidades.</p>
-            <div class="gm-bp-btns"><a class="btn primary" href="antagonista.html">${(window.ICO ? window.ICO('codex') : '')} Abrir a Forja do Antagonista</a></div></div>
+          <div id="bp-montador"><h3>Oficina de Antagonista</h3><p class="muted">Monte um antagonista passo a passo, como na Forja de Campeões: abordagem, dados, habilidades, arquétipo, melhorias e maestria, com cartas que mostram tudo antes de você escolher. No fim sai uma ficha para imprimir, exportar em PDF ou salvar em .json, com retrato e nomes só seus para poderes, qualidades e habilidades.</p>
+            <div class="gm-bp-btns"><a class="btn primary" href="antagonista.html">${(window.ICO ? window.ICO('codex') : '')} Abrir a Oficina de Antagonista</a></div></div>
           <div id="bp-lacaios"><h3>Exemplos: lacaios</h3><div class="gm-bp-grid">${MINIONS.map(m => minionCard(m, 'minion', N)).join('')}</div></div>
           <div id="bp-tenentes"><h3>Exemplos: tenentes</h3><div class="gm-bp-grid">${LIEUTENANTS.map(m => minionCard(m, 'lieutenant', N)).join('')}</div></div>
           <div id="bp-viloes"><h3>Exemplos: antagonistas</h3><div class="gm-bp-grid">${VILLAINS.map(v => villainCard(v, N)).join('')}</div></div>
