@@ -7,7 +7,7 @@ window.GM_VDATA = (() => {
   const A = (n, t, x) => ({ n, t, x });
 
   const approaches = [
-    { id: 'adaptive', n: 'Adaptável', d: 'Vilões adaptáveis se reconfiguram conforme a situação, para nunca serem pegos desprevenidos pelos campeões.',
+    { id: 'adaptive', n: 'Adaptável', d: 'Antagonistas adaptáveis se reconfiguram conforme a situação, para nunca serem pegos desprevenidos pelos campeões.',
       P: ['d10', 'd8', 'd8', 'd6'], Q: ['d10', 'd8', 'd8'], sp: 'Traje de Poder, Robótica, Metamorfose, Mudança de Tamanho', sq: 'Criatividade, Ciência, Autodisciplina, Tecnologia', hp: 15, pick: 3,
       ab: [
         A('Adaptar-se e Prosperar', 'R', 'Quando for Atacado, Defenda-se rolando só o seu dado de [poder]. Também Fortaleça a si mesmo com o resultado desse dado.'),
@@ -17,7 +17,7 @@ window.GM_VDATA = (() => {
         A('Imitação Poderosa', 'A', 'Use uma habilidade de ação de um dos seus aliados.'),
         A('A Dor da Perfeição', 'A', 'Role um d6 e sofra esse dano irredutível. Suba todos os seus poderes em um tamanho de dado até o fim da cena.')
       ] },
-    { id: 'ancient', n: 'Ancestral', d: 'Vilões ancestrais vêm de muito, muito tempo atrás. Muitos são imortais por causa dos seus poderes; outros são criaturas de além, que não sentem o tempo como nós.',
+    { id: 'ancient', n: 'Ancestral', d: 'Antagonistas ancestrais vêm de muito, muito tempo atrás. Muitos são imortais por causa dos seus poderes; outros são criaturas de além, que não sentem o tempo como nós.',
       P: ['d12', 'd10', 'd10', 'd8'], Q: ['d12', 'd12', 'd10', 'd8'], sp: 'Cósmico, Sombras, Presença, Vitalidade', sq: 'História, Perspicácia, Saber Mágico, Saber Esotérico', hp: 30, pick: 2,
       ab: [
         A('Contemplem Minha Glória Imortal', 'A', 'Atrapalhe vários alvos usando [poder] e o dado Máx. Ataque cada um com os dados Médio+Mín.'),
@@ -47,7 +47,7 @@ window.GM_VDATA = (() => {
         A('Convocar Horda', 'A', 'Use [poder/qualidade] para criar uma quantidade de lacaios igual ao valor do seu dado Máx. O dado inicial desses lacaios é do tamanho do seu dado Mín.'),
         A('Ataque de Enxame', 'A', 'Ataque usando [poder] e o dado Máx, com um bônus igual ao número de lacaios que você controla.')
       ] },
-    { id: 'dampening', n: 'Enfraquecedor', d: 'Vilões enfraquecedores não só atrapalham os campeões: reduzem ativamente a força e a capacidade deles de funcionar.',
+    { id: 'dampening', n: 'Enfraquecedor', d: 'Antagonistas enfraquecedores não só atrapalham os campeões: reduzem ativamente a força e a capacidade deles de funcionar.',
       P: ['d10', 'd8', 'd8'], Q: ['d10', 'd8', 'd8'], sp: 'Cósmico, Sugestão, Transmutação', sq: 'Gracejos, Medicina, Ciência, Autodisciplina', hp: 25, pick: 2,
       ab: [
         A('Aproveitar o Fracasso', 'R', 'Quando um campeão próximo que você enxerga invocar uma reviravolta, role seu dado de [poder] como Atrapalhar contra ele.'),
@@ -57,7 +57,7 @@ window.GM_VDATA = (() => {
         A('Golpe Embaralhador', 'A', 'Ataque usando [poder]. Reduza em um tamanho todas as qualidades do alvo até o seu próximo turno.'),
         A('Terror da Insuficiência', 'A', 'Ataque usando [qualidade] e o dado Máx. Atrapalhe cada oponente que enxergue ou ouça o alvo do seu Ataque usando o dado Mín.')
       ] },
-    { id: 'disruptive', n: 'Disruptivo', d: 'Um vilão disruptivo causa caos entre grupos e aproveita o caos para atacar. Costuma causar todo tipo de dano colateral ao perseguir seu objetivo.',
+    { id: 'disruptive', n: 'Disruptivo', d: 'Um antagonista disruptivo causa caos entre grupos e aproveita o caos para atacar. Costuma causar todo tipo de dano colateral ao perseguir seu objetivo.',
       P: ['d10', 'd10', 'd8', 'd8'], Q: ['d10', 'd8', 'd8'], sp: 'Elemental/Energia, Ilusões, Sugestão, Transmutação', sq: 'Prontidão, Perspicácia, Persuasão, Combate à Distância', hp: 20, pick: 2,
       ab: [
         A('Caos Benéfico', 'A', 'Atrapalhe usando [poder] e o dado Máx. Recupere Vida usando os dados Mín+Médio.'),
@@ -67,7 +67,7 @@ window.GM_VDATA = (() => {
         A('Interrupção Dolorosa', 'R', 'Quando for Atacado por um campeão com uma penalidade, esse campeão sofre dano igual ao tamanho da penalidade.'),
         A('Provar a Loucura', 'R', 'Sempre que um alvo fizer uma ação de Atrapalhar contra você, você pode antes rolar seu dado de [poder] como Atrapalhar contra ele.')
       ] },
-    { id: 'focused', n: 'Focado', d: 'Um vilão focado tem um poder principal forte, que usa de várias maneiras.',
+    { id: 'focused', n: 'Focado', d: 'Um antagonista focado tem um poder principal forte, que usa de várias maneiras.',
       P: ['d12', 'd8'], Q: ['d10', 'd8'], sp: 'Elemental/Energia, Materiais', sq: 'Criatividade, Combate à Distância, Autodisciplina', hp: 15, pick: 3, rule: 'two-one', kind: 'poder', note: 'Escolha três habilidades: duas usando o mesmo poder e uma terceira usando um poder diferente.',
       ab: [
         A('Absorção Elemental', 'R', 'Quando for Atacado com [energia/elemento], Recupere essa quantidade de Vida em vez de sofrer dano. Quando for Atrapalhado com [energia/elemento], Fortaleça a si mesmo em vez disso.'),
@@ -87,7 +87,7 @@ window.GM_VDATA = (() => {
         A('Cliente Casca-Grossa', 'I', 'Reduza o dano físico e de energia que você sofre em 1 se a cena estiver na Zona Verde, 2 na Amarela ou 3 na Vermelha.'),
         A('Aura Devastadora', 'A', 'Atrapalhe vários alvos próximos usando [poder]. Fortaleça a si mesmo usando o dado Máx.')
       ] },
-    { id: 'leech', n: 'Parasita', d: 'Vilões parasitas drenam a força das vítimas para se fortalecer.',
+    { id: 'leech', n: 'Parasita', d: 'Antagonistas parasitas drenam a força das vítimas para se fortalecer.',
       P: ['d10', 'd8', 'd6'], Q: ['d8', 'd8', 'd8'], sp: 'Elemental/Energia, Metamorfose, Tóxico', sq: 'Combate Corpo a Corpo, Medicina, Persuasão, Furtividade', hp: 15, pick: 2,
       ab: [
         A('Olhar Hipnótico', 'R', 'Quando for Atacado, Defenda-se rolando só o seu dado de [poder]. Se isso anular o Ataque por completo, Atrapalhe o atacante e Fortaleça a si mesmo com o mesmo resultado.'),
@@ -105,9 +105,9 @@ window.GM_VDATA = (() => {
         A('Explorar a Fraqueza', 'A', 'Ataque um campeão usando [qualidade]. Atrapalhe todos os campeões usando o dado Máx.'),
         A('Reviravolta da Sorte', 'R', 'Quando for Atacado, Fortaleça a si mesmo usando o dado Máx do atacante.'),
         A('Preparado para Tudo', 'R', 'No início do seu turno, se não tiver bônus em jogo, role só o seu dado de [qualidade] como Fortalecer em si mesmo.'),
-        A('Monólogo Vilanesco', 'A', 'Atrapalhe todos os oponentes que o vejam ou ouçam usando [qualidade]. Fortaleça a si mesmo usando o dado Máx.')
+        A('Monólogo de Antagonista', 'A', 'Atrapalhe todos os oponentes que o vejam ou ouçam usando [qualidade]. Fortaleça a si mesmo usando o dado Máx.')
       ] },
-    { id: 'ninja', n: 'Ninja', d: 'Vilões ninja focam em ataques furtivos e proezas marciais. E em espadas incríveis.',
+    { id: 'ninja', n: 'Ninja', d: 'Antagonistas ninja focam em ataques furtivos e proezas marciais. E em espadas incríveis.',
       P: ['d10', 'd10', 'd8', 'd8', 'd6'], Q: ['d10', 'd10', 'd8', 'd8'], sp: 'Agilidade, Arma Emblemática, Força, Escalar Paredes', sq: 'Prontidão, Combate Corpo a Corpo, Informações do Submundo, Furtividade', hp: 20, pick: 2,
       ab: [
         A('Piscada Mortal', 'A', 'Ataque vários alvos próximos usando [qualidade]. Depois, vá parar onde quiser na cena.'),
@@ -117,7 +117,7 @@ window.GM_VDATA = (() => {
         A('Cortar os Tendões', 'A', 'Ataque usando [qualidade]. Atrapalhe esse alvo usando Máx+Mín.'),
         A('Lâmina da Sombra', 'A', 'Ataque usando [qualidade] e o dado Máx. Defenda-se de todos os Ataques contra você com o dado Médio até o início do seu próximo turno.')
       ] },
-    { id: 'overpowered', n: 'Sobrepoderoso', d: 'Vilões sobrepoderosos têm poderes enormes e são um grande desafio sempre que entram em cena. Em geral, a chave para vencê-los é enganá-los, não lutar de frente.',
+    { id: 'overpowered', n: 'Sobrepoderoso', d: 'Antagonistas sobrepoderosos têm poderes enormes e são um grande desafio sempre que entram em cena. Em geral, a chave para vencê-los é enganá-los, não lutar de frente.',
       P: ['d12', 'd10', 'd10'], Q: ['d8', 'd6'], sp: 'Elemental/Energia, Presença, Psíquicos', sq: 'Convicção, Delicadeza, Imponente, Autodisciplina', hp: 35, pick: 2,
       ab: [
         A('Não Ouse Me Tocar', 'R', 'Quando for Atacado, Defenda-se rolando só o seu dado de [poder]. Cause esse dano a outro alvo próximo.'),
@@ -127,7 +127,7 @@ window.GM_VDATA = (() => {
         A('Alegrem-se, Meus Seguidores', 'A', 'Fortaleça usando [poder]. Recupere Vida igual ao seu dado Máx. Cada aliado próximo Recupera Vida igual ao seu dado Mín. Cada lacaio e tenente próximo que tenha perdido tamanho de dado sobe um tamanho.'),
         A('Vocês Não São Dignos do Meu Poder', 'A', 'Ataque vários alvos usando [poder] e o dado Máx. Atrapalhe cada alvo com o dado Médio.')
       ] },
-    { id: 'prideful', n: 'Orgulhoso', d: 'O vilão orgulhoso luta para provar a própria superioridade, em geral enfrentando um a um os campeões mais poderosos.',
+    { id: 'prideful', n: 'Orgulhoso', d: 'O antagonista orgulhoso luta para provar a própria superioridade, em geral enfrentando um a um os campeões mais poderosos.',
       P: ['d10', 'd10', 'd10', 'd8'], Q: ['d10', 'd10', 'd8', 'd8'], sp: 'Percepção, Engenhocas, Traje de Poder, Força', sq: 'Combate Corpo a Corpo, Convicção, Imponente, Autodisciplina', hp: 25, pick: 2, rule: 'all-diff', note: 'Escolha duas habilidades, usando poderes ou qualidades diferentes.',
       ab: [
         A('Eu Conheço a Sua Fraqueza', 'R', 'Quando um campeão próximo tirar 1 em um dos dados no turno dele, role só o seu dado de [poder/qualidade] como Ataque contra ele.'),
@@ -137,7 +137,7 @@ window.GM_VDATA = (() => {
         A('Poder Inquestionável', 'I', 'Reduza em 2 todo o dano que você sofre.'),
         A('Vocês Não Vão Sobreviver', 'R', 'Se um oponente terminar o turno perto de você, role só o seu dado de [poder] como Atrapalhar contra ele.')
       ] },
-    { id: 'relentless', n: 'Implacável', d: 'Vilões implacáveis focam em um alvo e o caçam repetidas vezes, trocando de alvo só quando o atual está acabado.',
+    { id: 'relentless', n: 'Implacável', d: 'Antagonistas implacáveis focam em um alvo e o caçam repetidas vezes, trocando de alvo só quando o atual está acabado.',
       P: ['d10', 'd8', 'd6'], Q: ['d10', 'd8', 'd6'], sp: 'Intuição, Mobilidade, Arma Emblemática, Velocidade', sq: 'Prontidão, Convicção, Investigação, Combate à Distância', hp: 20, pick: 2,
       ab: [
         A('Perseguição Obstinada', 'R', 'Quando um oponente se afastar de você, você pode segui-lo e rolar só o seu dado de status como Atrapalhar contra ele.'),
@@ -147,7 +147,7 @@ window.GM_VDATA = (() => {
         A('Girar a Faca', 'R', 'Quando um aliado seu Atacar um oponente, role só o seu dado de [qualidade] e some esse dano ao Ataque.'),
         A('Na Sua Cara', 'A', 'Ataque usando [qualidade] e o dado Máx. Se o alvo não Atacar você no turno seguinte, Atrapalhe-o usando o dado Médio.')
       ] },
-    { id: 'skilled', n: 'Habilidoso', d: 'Vilões habilidosos têm um conjunto particular de perícias que lhes dá muitas opções para concluir seus planos sinistros.',
+    { id: 'skilled', n: 'Habilidoso', d: 'Antagonistas habilidosos têm um conjunto particular de perícias que lhes dá muitas opções para concluir seus planos sinistros.',
       P: ['d10', 'd8', 'd6'], Q: ['d10', 'd10', 'd8', 'd8', 'd8'], sp: 'Poderes Intelectuais, Poderes Tecnológicos', sq: 'Qualidades Mentais, Qualidades Físicas', hp: 15, pick: 2,
       ab: [
         A('O Melhor do Ramo', 'A', 'Atrapalhe usando [poder] e o dado Mín. Fortaleça a si mesmo usando o dado Máx.'),
@@ -157,7 +157,7 @@ window.GM_VDATA = (() => {
         A('Desigualdade Incomparável', 'A', 'Atrapalhe usando [qualidade] e os dados Máx+Mín. Essa penalidade é persistente e exclusiva.'),
         A('Despistar', 'A', 'Atrapalhe vários alvos usando [qualidade] e o dado Máx. Se tirar dados iguais, também Ataque cada alvo com o dado Médio.')
       ] },
-    { id: 'specialized', n: 'Especialista', d: 'Um vilão especialista é de nível mundial em uma perícia e a explora ao máximo para cumprir a tarefa.',
+    { id: 'specialized', n: 'Especialista', d: 'Um antagonista especialista é de nível mundial em uma perícia e a explora ao máximo para cumprir a tarefa.',
       P: ['d10', 'd8'], Q: ['d12', 'd8'], sp: 'Poderes Atléticos, Poderes Intelectuais', sq: 'Qualidades Mentais, Qualidades Físicas', hp: 20, pick: 3, rule: 'two-one', kind: 'qualidade', note: 'Escolha três habilidades: duas usando a mesma qualidade e uma terceira usando uma qualidade diferente.',
       ab: [
         A('Cobertura Ativa', 'R', 'Defenda-se de um Ataque em que você seja o único alvo rolando só o seu dado de [qualidade]. Outro alvo próximo sofre dano igual ao dano reduzido.'),
@@ -177,7 +177,7 @@ window.GM_VDATA = (() => {
         A('Tente de Novo', 'R', 'Sofra 1 de dano irredutível para rolar de novo o conjunto de dados de um aliado.'),
         A('Trabalhando Juntos', 'I', 'Enquanto tiver pelo menos 1 aliado próximo, você pode rolar de novo todos os 1 dos seus dados.')
       ] },
-    { id: 'underpowered', n: 'Subpoderoso', d: 'Vilões subpoderosos provavelmente não deveriam estar lutando na primeira divisão… mas não percebem. Seus poderes não estão na escala dos outros, mas ainda podem ser uma ameaça na situação certa.',
+    { id: 'underpowered', n: 'Subpoderoso', d: 'Antagonistas subpoderosos provavelmente não deveriam estar lutando na primeira divisão… mas não percebem. Seus poderes não estão na escala dos outros, mas ainda podem ser uma ameaça na situação certa.',
       P: ['d8', 'd6', 'd6', 'd6'], Q: ['d10', 'd8', 'd6'], sp: 'Elemental/Energia, Poderes Tecnológicos', sq: 'Gracejos, Convicção, Informações do Submundo, Tecnologia', hp: 10, pick: 3, rule: 'all-diff', note: 'Escolha três habilidades, todas usando poderes e qualidades diferentes.',
       ab: [
         A('Evitar o Inevitável', 'I', 'Sempre que sua Vida fosse a 0 ou menos, evite esse dano e reduza todos os seus poderes em um tamanho. Se isso reduzir algum dado para menos que d4, você é nocauteado.'),
@@ -203,7 +203,7 @@ window.GM_VDATA = (() => {
         A('Arremessar Campeão', 'A', 'Ataque usando [poder] e o dado Máx. Atrapalhe esse alvo com o dado Médio, ou Ataque outro alvo próximo com o Médio.')
       ] },
     { id: 'domain', n: 'Domínio', hp: 30, pick: 3, pairs: 'Enfraquecedor, Sobrepoderoso',
-      d: 'Vilões de Domínio estão em sintonia com o entorno ou sabem distorcer o ambiente a seu favor. Vilões ecológicos, ou que alteram a realidade para atacar, são de Domínio. O status vem do ambiente.',
+      d: 'Antagonistas de Domínio estão em sintonia com o entorno ou sabem distorcer o ambiente a seu favor. Antagonistas ecológicos, ou que alteram a realidade para atacar, são de Domínio. O status vem do ambiente.',
       status: [['3 ou mais lacaios, tenentes e/ou desafios do ambiente', 'd10'], ['1 a 2 lacaios, tenentes e/ou desafios do ambiente', 'd8'], ['Nenhum lacaio, tenente ou desafio do ambiente', 'd6']],
       ab: [
         A('Subir do Meu Reino', 'I', 'Ignore o dano de uma fonte do ambiente durante o turno do ambiente.'),
@@ -214,8 +214,8 @@ window.GM_VDATA = (() => {
         A('O Mundo Se Move para Me Defender', 'R', 'Quando for Atacado, redirecione o Ataque para um lacaio do ambiente.')
       ] },
     { id: 'formidable', n: 'Formidável', hp: 25, pick: 2, pairs: 'Ancestral, Disruptivo, Sobrepoderoso',
-      d: 'Vilões formidáveis têm poderes incríveis, difíceis de deter, mas a fonte deles deixa uma fraqueza crítica. Se os campeões explorarem esse calcanhar de Aquiles, levam vantagem. O status vem das penalidades e bônus ligados à fraqueza.',
-      status: [['O vilão tem penalidades ligadas à fraqueza e nenhum bônus', 'd4'], ['Tem penalidades ligadas à fraqueza, mas também bônus que a atenuam', 'd8'], ['Não tem penalidades ligadas à fraqueza', 'd12']],
+      d: 'Antagonistas formidáveis têm poderes incríveis, difíceis de deter, mas a fonte deles deixa uma fraqueza crítica. Se os campeões explorarem esse calcanhar de Aquiles, levam vantagem. O status vem das penalidades e bônus ligados à fraqueza.',
+      status: [['O antagonista tem penalidades ligadas à fraqueza e nenhum bônus', 'd4'], ['Tem penalidades ligadas à fraqueza, mas também bônus que a atenuam', 'd8'], ['Não tem penalidades ligadas à fraqueza', 'd12']],
       ab: [
         A('Canalizar a Grandeza', 'A', 'Fortaleça usando [poder] e o dado Máx. Esse bônus é persistente e exclusivo. Também Ataque com o dado Médio.'),
         A('Elevação Purificadora', 'A', 'Fortaleça usando [poder] e os dados Máx+Mín. Remova todas as penalidades de si mesmo.'),
@@ -225,7 +225,7 @@ window.GM_VDATA = (() => {
         A('Fibra Indomada', 'R', 'Ignore todas as penalidades sobre você para a sua ação. Sofra dano irredutível igual ao total dessas penalidades.')
       ] },
     { id: 'fragile', n: 'Frágil', hp: -5, pick: 2, pairs: 'Focado, Subpoderoso',
-      d: 'Vilões frágeis dão um belo soco, mas, quando entram na confusão e levam alguns golpes, ficam bem menos eficazes. Como os campeões, o status vem da própria Vida (veja a tabela de Vida).',
+      d: 'Antagonistas frágeis dão um belo soco, mas, quando entram na confusão e levam alguns golpes, ficam bem menos eficazes. Como os campeões, o status vem da própria Vida (veja a tabela de Vida).',
       status: [['Zona Verde (Vida)', 'd10'], ['Zona Amarela (Vida)', 'd8'], ['Zona Vermelha (Vida)', 'd6']],
       ab: [
         A('Pancada Descuidada', 'A', 'Ataque usando [poder] e os dados Máx+Médio. Atrapalhe a si mesmo com o dado Mín.'),
@@ -247,7 +247,7 @@ window.GM_VDATA = (() => {
         A('Confusão Emaranhada', 'I', 'Se você estiver em desvantagem numérica contra oponentes próximos, reduza em 2 todo o dano que sofre.')
       ] },
     { id: 'indomitable', n: 'Indomável', hp: 20, pick: 2, pairs: 'Generalista, Implacável',
-      d: 'Vilões indomáveis são sólidos, confiáveis ou simplesmente não se importam com o que acontece. Funcionam do mesmo jeito até terminar o serviço, então não precisam acompanhar o status.',
+      d: 'Antagonistas indomáveis são sólidos, confiáveis ou simplesmente não se importam com o que acontece. Funcionam do mesmo jeito até terminar o serviço, então não precisam acompanhar o status.',
       status: [['Sempre', 'd8']],
       ab: [
         A('Absorver Energia', 'R', 'Defenda rolando só o seu dado de status. Se a Defesa reduzir o dano a 0, Fortaleça usando o dano evitado.'),
@@ -258,7 +258,7 @@ window.GM_VDATA = (() => {
         A('Incansável', 'A', 'Ataque usando [poder] e o dado Máx. Recupere Vida igual ao seu dado Mín.')
       ] },
     { id: 'inhibitor', n: 'Inibidor', hp: 10, pick: 2, pairs: 'Enfraquecedor, Focado',
-      d: 'Vilões inibidores aproveitam as fraquezas dos campeões… e criam fraquezas onde não havia. O status vem do número de campeões com penalidades.',
+      d: 'Antagonistas inibidores aproveitam as fraquezas dos campeões… e criam fraquezas onde não havia. O status vem do número de campeões com penalidades.',
       status: [['3 ou mais campeões com pelo menos uma penalidade', 'd10'], ['1 a 2 campeões com pelo menos uma penalidade', 'd8'], ['Nenhum campeão com penalidade', 'd6']],
       ab: [
         A('Supressão de Área', 'A', 'Atrapalhe vários alvos usando [poder] e o dado Máx. Ataque um desses alvos com o dado Médio.'),
@@ -269,7 +269,7 @@ window.GM_VDATA = (() => {
         A('Golpe de Quem Está por Cima', 'R', 'Quando for Atacado por alguém com uma penalidade criada por você, Defenda-se rolando só o seu dado de status, e o atacante também sofre esse tanto de dano.')
       ] },
     { id: 'inventor', n: 'Inventor', hp: 10, pick: 2, pairs: 'Mente Mestra, Subpoderoso',
-      d: 'Inventores dependem de preparação e invenções sob medida para ficar em pé de igualdade com os campeões. Conte os bônus e penalidades em jogo que o vilão criou com Invenções e/ou Ciência, e as invenções em cena (inclusive as de lacaios, tenentes e reviravoltas).',
+      d: 'Inventores dependem de preparação e invenções sob medida para ficar em pé de igualdade com os campeões. Conte os bônus e penalidades em jogo que o antagonista criou com Invenções e/ou Ciência, e as invenções em cena (inclusive as de lacaios, tenentes e reviravoltas).',
       status: [['4 ou mais invenções e bônus/penalidades', 'd12'], ['2 a 3 invenções e bônus/penalidades', 'd10'], ['1 invenção e bônus/penalidade', 'd8'], ['Nenhuma invenção nem bônus/penalidade', 'd6']],
       ab: [
         A('Criador Capaz', 'I', 'Sempre que criar um bônus, aumente esse bônus em 1.'),
@@ -280,7 +280,7 @@ window.GM_VDATA = (() => {
         A('Criação Variável', 'A', 'Fortaleça usando [poder] e o dado Máx, e também Fortaleça com o dado Médio. Torne um desses bônus persistente e exclusivo, ou Ataque com o dado Mín.')
       ] },
     { id: 'legion', n: 'Legião', hp: -5, pick: 2, pairs: 'Adaptável, Criador (escolha com cuidado para não repetir habilidades), Tático',
-      d: 'Vilões de Legião trabalham como uma multidão desordenada. Aproveitam a vantagem numérica, mas, quanto mais tem, mais fraco é cada um. Um vilão de Legião precisa de um jeito de criar mais vilões (uma habilidade de arquétipo, de abordagem ou uma melhoria). Conte os lacaios aliados da Legião na cena.',
+      d: 'Antagonistas de Legião trabalham como uma multidão desordenada. Aproveitam a vantagem numérica, mas, quanto mais tem, mais fraco é cada um. Um antagonista de Legião precisa de um jeito de criar mais antagonistas (uma habilidade de arquétipo, de abordagem ou uma melhoria). Conte os lacaios aliados da Legião na cena.',
       status: [['9 ou mais lacaios', 'd4'], ['5 a 8 lacaios', 'd6'], ['3 a 4 lacaios', 'd8'], ['1 a 2 lacaios', 'd10'], ['Nenhum lacaio', 'd12']],
       ab: [
         A('Dividir e Conquistar', 'R', 'Quando fosse sofrer dano físico, evite esse dano e crie um lacaio com dado do tamanho do seu dado de status atual (inclusive o lacaio recém-criado). Pode usar esta reação mais de uma vez por rodada, mas a cada uso após o primeiro você sofre 1 de dano irredutível.'),
@@ -292,8 +292,8 @@ window.GM_VDATA = (() => {
         A('Ações Descoordenadas', 'I', 'Sempre que vários lacaios da Legião fizerem a mesma ação contra o mesmo alvo, você deve rolar todos os dados deles ao mesmo tempo e usar o dado de menor resultado entre eles como resultado de cada lacaio nessa ação.')
       ], gain: 'Ações Descoordenadas' },
     { id: 'loner', n: 'Solitário', hp: 10, pick: 2, pairs: 'Parasita, Implacável, Habilidoso',
-      d: 'Um Solitário pode trabalhar com outros vilões, mas não rende o máximo assim. Quando todos os companheiros caem, é a hora dele brilhar. O status vem do número de outros vilões aliados na cena.',
-      status: [['Nenhum outro vilão', 'd10'], ['1 a 2 outros vilões', 'd8'], ['3 ou mais outros vilões', 'd6']],
+      d: 'Um Solitário pode trabalhar com outros antagonistas, mas não rende o máximo assim. Quando todos os companheiros caem, é a hora dele brilhar. O status vem do número de outros antagonistas aliados na cena.',
+      status: [['Nenhum outro antagonista', 'd10'], ['1 a 2 outros antagonistas', 'd8'], ['3 ou mais outros antagonistas', 'd6']],
       ab: [
         A('Comportamento Antissocial', 'A', 'Atrapalhe vários alvos usando [poder/qualidade]. Recupere Vida igual ao número de alvos Atrapalhados assim.'),
         A('Melhor Sozinho', 'A', 'Ataque usando [poder] e o dado Máx. Recupere Vida igual aos dados Médio+Mín.'),
@@ -325,13 +325,13 @@ window.GM_VDATA = (() => {
         A('Seguir Minha Presa', 'A', 'Atrapalhe usando [poder] e o dado Máx. Essa penalidade dura até o seu próximo turno e, enquanto durar, esse campeão não pode usar reações nem se beneficiar de ações de Defender.')
       ] },
     { id: 'squad', n: 'Esquadrão', hp: 5, pick: 2, pairs: 'Valentão, Focado, Especialista',
-      d: 'Um vilão de Esquadrão rende mais em equipe: não é poderoso o bastante para liderar lacaios nem quer trabalhar sozinho, e brilha numa aliança. O status vem do número de vilões na cena.',
-      status: [['Nenhum outro vilão', 'd6'], ['1 a 2 outros vilões', 'd8'], ['3 ou mais outros vilões', 'd10']],
+      d: 'Um antagonista de Esquadrão rende mais em equipe: não é poderoso o bastante para liderar lacaios nem quer trabalhar sozinho, e brilha numa aliança. O status vem do número de antagonistas na cena.',
+      status: [['Nenhum outro antagonista', 'd6'], ['1 a 2 outros antagonistas', 'd8'], ['3 ou mais outros antagonistas', 'd10']],
       ab: [
         A('Na Minha Marca', 'A', 'Um aliado faz agora uma ação básica, usando o dado Máx. Ele rola de novo todos os 1 dessa ação.'),
         A('Meus Aliados São Minha Força', 'I', 'Aumente o dano que causa pelo número de aliados próximos que não sejam lacaios.'),
         A('Aproveitar a Vantagem', 'A', 'Ataque usando [qualidade] e o dado Máx. Se escolher esse alvo para jogar em seguida, ele deve Atacar você no turno dele, se puder.'),
-        A('Proteger os Meus Aliados', 'R', 'Quando outro vilão for Atacado, Defenda contra o Ataque rolando só o seu dado de status. Fortaleça a si mesmo com o dano reduzido.'),
+        A('Proteger os Meus Aliados', 'R', 'Quando outro antagonista for Atacado, Defenda contra o Ataque rolando só o seu dado de status. Fortaleça a si mesmo com o dano reduzido.'),
         A('Mantenham a Formação!', 'A', 'Fortaleça usando [qualidade]. Fortaleça outro alvo usando o dado Máx e use o dado Mín para Defender contra todos os Ataques contra você até o seu próximo turno.'),
         A('Ir na Frente', 'A', 'Ataque usando [qualidade] e o dado Máx. Defenda todos os aliados próximos com os dados Médio+Mín até o início do seu próximo turno.')
       ] },
@@ -349,16 +349,16 @@ window.GM_VDATA = (() => {
   ];
 
   const upgrades = [
-    { id: 'mook', n: 'Esquadrão de capangas', hp: 0, when: 'Um grupo de lacaios característicos, num fluxo sem fim a serviço do vilão. Útil no covil.', ab: [A('Alerta!', 'A', 'Reponha o seu esquadrão de lacaios até o número de campeões.')], note: 'Escolha o grupo de lacaios que aparece na cena com o vilão.' },
-    { id: 'hardier', n: 'Lacaios reforçados', hp: 5, when: 'Capangas conhecidos por serem mortais ou resistentes: o vilão pode melhorá-los quando precisar.', ab: [A('Fortalecer Lacaios', 'A', 'Escolha um grupo de lacaios na cena. Suba todos os dados deles em um tamanho (máximo d12).')] },
+    { id: 'mook', n: 'Esquadrão de capangas', hp: 0, when: 'Um grupo de lacaios característicos, num fluxo sem fim a serviço do antagonista. Útil no covil.', ab: [A('Alerta!', 'A', 'Reponha o seu esquadrão de lacaios até o número de campeões.')], note: 'Escolha o grupo de lacaios que aparece na cena com o antagonista.' },
+    { id: 'hardier', n: 'Lacaios reforçados', hp: 5, when: 'Capangas conhecidos por serem mortais ou resistentes: o antagonista pode melhorá-los quando precisar.', ab: [A('Fortalecer Lacaios', 'A', 'Escolha um grupo de lacaios na cena. Suba todos os dados deles em um tamanho (máximo d12).')] },
     { id: 'group', n: 'Lutador de grupo', hp: 20, when: 'Equipado com uma melhoria para enfrentar vários campeões.', ab: [A('Ataque Extra', 'I', 'Quando fizer uma ação que permita um Ataque, faça também um Ataque usando o dado Médio.')] },
-    { id: 'vehicle', n: 'Veículo vilanesco', hp: 15, when: 'Uma máquina de guerra autônoma. Monte um tenente (com quatro, três ou duas habilidades conforme o número de campeões) e escolha entre estas habilidades.',
-      ab: [A('Ataque à Distância', 'I', 'Para atacar este veículo, o campeão precisa fazer um Superar para chegar perto o bastante.'), A('Reforçado', 'I', 'Ao rolar um salvamento de dano, some 2 ao resultado.'), A('Plano de Fuga', 'R', 'Quando o vilão for Atacado, role o dado do veículo. Se tirar mais que a Vida atual do vilão, o vilão e o veículo escapam da cena.'), A('Bombardear', 'A', 'Ataque todos os campeões com a rolagem do veículo. Só pode usar se o veículo estiver abaixo do dado inicial ou a cena estiver na Zona Vermelha.'), A('Reforço de Lacaios', 'A', 'Adicione a um grupo de lacaios existente uma quantidade igual à metade (arredondada para baixo) do tamanho atual do dado do veículo. Esses lacaios têm o maior tamanho de dado já presente no grupo. Se o veículo tiver bônus ou penalidade, ajuste a quantidade por esse valor e remova a modificação.'), A('Confiável', 'I', 'Quando o veículo fizer uma [ação básica] no turno dele, role duas vezes e use o melhor resultado.'), A('Recuperação', 'A', 'Role o dado do veículo. O vilão Recupera essa quantidade de Vida.')] },
-    { id: 'power', n: 'Aprimoramento de poder', hp: 20, when: 'O vilão usou um processo, ritual ou aparelho para aumentar seus poderes: todos os dados de poder sobem um tamanho. Se um poder passaria de d12, em vez disso adicione outra habilidade do arquétipo.', ab: [] },
+    { id: 'vehicle', n: 'Veículo antagonista', hp: 15, when: 'Uma máquina de guerra autônoma. Monte um tenente (com quatro, três ou duas habilidades conforme o número de campeões) e escolha entre estas habilidades.',
+      ab: [A('Ataque à Distância', 'I', 'Para atacar este veículo, o campeão precisa fazer um Superar para chegar perto o bastante.'), A('Reforçado', 'I', 'Ao rolar um salvamento de dano, some 2 ao resultado.'), A('Plano de Fuga', 'R', 'Quando o antagonista for Atacado, role o dado do veículo. Se tirar mais que a Vida atual do antagonista, o antagonista e o veículo escapam da cena.'), A('Bombardear', 'A', 'Ataque todos os campeões com a rolagem do veículo. Só pode usar se o veículo estiver abaixo do dado inicial ou a cena estiver na Zona Vermelha.'), A('Reforço de Lacaios', 'A', 'Adicione a um grupo de lacaios existente uma quantidade igual à metade (arredondada para baixo) do tamanho atual do dado do veículo. Esses lacaios têm o maior tamanho de dado já presente no grupo. Se o veículo tiver bônus ou penalidade, ajuste a quantidade por esse valor e remova a modificação.'), A('Confiável', 'I', 'Quando o veículo fizer uma [ação básica] no turno dele, role duas vezes e use o melhor resultado.'), A('Recuperação', 'A', 'Role o dado do veículo. O antagonista Recupera essa quantidade de Vida.')] },
+    { id: 'power', n: 'Aprimoramento de poder', hp: 20, when: 'O antagonista usou um processo, ritual ou aparelho para aumentar seus poderes: todos os dados de poder sobem um tamanho. Se um poder passaria de d12, em vez disso adicione outra habilidade do arquétipo.', ab: [] },
     { id: 'quality', n: 'Aprimoramento de qualidade', hp: 20, when: 'Treino especial que lhe dá uma vantagem distinta e novas perícias: todos os dados de qualidade sobem um tamanho, menos a qualidade de interpretação. Se uma qualidade passaria de d12, em vez disso adicione outra habilidade da abordagem.', ab: [] },
     { id: 'shield', n: 'Escudo de defesa', hp: 0, when: 'Imune a dano enquanto a fonte do escudo estiver intacta.', ab: [A('Escudo de Defesa', 'I', 'Você não sofre dano de ninguém além de você mesmo até o escudo de defesa ser destruído. O escudo tem 40 de Vida, ou pode ser desativado com três sucessos em Superar. Se um campeão sofrer uma reviravolta menor ao mexer no escudo, você pode fazer um Ataque como reação rolando só o seu dado de [poder].'), A('Restabelecer o Escudo', 'A', 'Supere usando [poder] e o dado Máx. Se passar, remova um sucesso do desafio de desativação. Ou, em vez de Superar, use o dado Máx para Recuperar essa quantidade de Vida do escudo. Não pode usar se o escudo tiver sido removido por completo.')] },
     { id: 'calming', n: 'Aura calmante', hp: 10, when: 'Um jeito de passar despercebido ou deixar os campeões menos alertas.', ab: [A('Aura Calmante', 'I', 'Os campeões agem como se estivessem na Zona Verde quanto ao dado de status, ao acesso a habilidades e a todas as habilidades. Eles podem remover esta habilidade com três sucessos em Superar. Se um campeão sofrer uma reviravolta menor, você pode usar uma reação para Atrapalhá-lo rolando só o seu dado de [poder].')] },
-    { id: 'dampen', n: 'Campo anulador de poderes', hp: 10, when: 'Reduz os poderes dos campeões e preserva os do vilão.', ab: [A('Campo Anulador de Poderes', 'I', 'Com a cena na Zona Verde, os dados de poder dos campeões em d8 ou mais caem um tamanho. Na Amarela, os de d10 ou mais caem dois tamanhos. Na Vermelha, todos os dados de poder dos campeões valem como d4. Eles podem remover esta habilidade com três sucessos em Superar. Se um campeão sofrer uma reviravolta menor, ele perde o acesso a um poder por completo até removerem a habilidade.')] },
+    { id: 'dampen', n: 'Campo anulador de poderes', hp: 10, when: 'Reduz os poderes dos campeões e preserva os do antagonista.', ab: [A('Campo Anulador de Poderes', 'I', 'Com a cena na Zona Verde, os dados de poder dos campeões em d8 ou mais caem um tamanho. Na Amarela, os de d10 ou mais caem dois tamanhos. Na Vermelha, todos os dados de poder dos campeões valem como d4. Eles podem remover esta habilidade com três sucessos em Superar. Se um campeão sofrer uma reviravolta menor, ele perde o acesso a um poder por completo até removerem a habilidade.')] },
     { id: 'brain', n: 'Zona de lavagem cerebral', hp: 10, when: 'Um jeito de alterar a consciência dos campeões para fins nefastos.', ab: [A('Zona de Lavagem Cerebral', 'I', 'Com a cena na Zona Verde, os dados de qualidade dos campeões em d8 ou mais caem um tamanho. Na Amarela, os de d10 ou mais caem dois tamanhos. Na Vermelha, todos os dados de qualidade dos campeões valem como d4. Eles podem remover esta habilidade com três sucessos em Superar. Se um campeão sofrer uma reviravolta menor, ele perde o acesso a uma qualidade por completo até removerem a habilidade. Se um campeão for nocauteado com a habilidade ativa, você pode criar um lacaio usando o maior dado de poder dele, representando a versão controlada do campeão.')] }
   ];
 
@@ -372,7 +372,7 @@ window.GM_VDATA = (() => {
     { n: 'Maestria do Misticismo', cond: 'Tem os materiais certos para o ritual.', x: 'Se tiver acesso aos materiais certos, passa automaticamente em um Superar numa situação que envolva canalizar forças mágicas.', ex: 'Com as cinzas de um relicário nas mãos, Mareya abre um portal nas Ilhas das Sombras sem erro.' },
     { n: 'Maestria da Lucratividade', cond: 'Tem acesso a muita riqueza e recursos.', x: 'Se tiver acesso a muita riqueza e outros recursos, passa automaticamente em um Superar para usá-los e ficar ainda mais rico, não importa quem pague a conta.', ex: 'Um barão do contrabando compra a guarda do porto e dobra a fortuna com a mesma carga, sem rolar.' },
     { n: 'Maestria da Superioridade', cond: 'Usa um poder que tenha em d12.', x: 'Enquanto manifestar efeitos de um poder que tenha em d12, passa automaticamente em um Superar que envolva o uso desses poderes.', ex: 'Karzul, o Colosso de Areia, tem Força d12: arromba qualquer porta de pedra sem teste.' },
-    { n: 'Maestria do Caos Total', cond: 'Tudo está fora de controle.', x: 'Numa situação em que tudo foge ao controle, passa automaticamente em um Superar para cumprir uma tarefa jogando as regras fora.', ex: 'No meio de um motim no porto, o vilão faz uma proeza impossível na base da sorte e da loucura e sai ileso.' },
+    { n: 'Maestria do Caos Total', cond: 'Tudo está fora de controle.', x: 'Numa situação em que tudo foge ao controle, passa automaticamente em um Superar para cumprir uma tarefa jogando as regras fora.', ex: 'No meio de um motim no porto, o antagonista faz uma proeza impossível na base da sorte e da loucura e sai ileso.' },
     { n: 'Maestria do Inconcebível', cond: 'Está numa situação com forças sombrias e perturbadoras.', x: 'Numa situação que envolva forças sombrias e perturbadoras, passa automaticamente em um Superar para cumprir a vontade de um ser além da compreensão humana.', ex: 'Ykara, a Voz do Abismo, cumpre o desejo de algo que mora do outro lado de uma fenda do Vazio: o pedido é atendido.' }
   ];
 

@@ -14,7 +14,7 @@
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
   const toB64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
   const TRACKERS = { standard: ['Padrão', [2, 4, 2]], prolonged: ['Prolongado', [3, 5, 3]], epic: ['Épico', [1, 3, 4]] };
-  const KINDS = { hero: 'Campeão', villain: 'Vilão', minion: 'Lacaios', lieutenant: 'Tenente', tracker: 'Marcador', challenge: 'Desafio', other: 'Outro' };
+  const KINDS = { hero: 'Campeão', villain: 'Antagonista', minion: 'Lacaios', lieutenant: 'Tenente', tracker: 'Marcador', challenge: 'Desafio', other: 'Outro' };
   const dieBadge = d => `<span class="die ${d}">${d.slice(1)}</span>`;
   const blank = () => ({ tracker: { g: 2, y: 4, r: 2, marked: 0 }, round: 1, turns: [], challenges: [], foes: [], villains: [], region: 'any', twist: null });
 
@@ -101,7 +101,7 @@
   function turnsHtml() {
     const left = S.turns.filter(x => !x.acted).length;
     return `<section class="gmt-panel gmt-turns" id="gmt-turns"><h3>${ico('next')} Ordem de turno <small>Rodada ${S.round}</small></h3>
-      <ol class="gmt-list">${S.turns.map(x => `<li class="${x.acted ? 'done' : ''}"><button type="button" class="gmt-check" data-gm="acted" data-id="${x.id}" aria-pressed="${!!x.acted}" aria-label="${esc(x.name)} já agiu">${x.acted ? ico('mark') : ''}</button><span class="gmt-kind k-${x.kind}">${KINDS[x.kind] || ''}</span><span class="gmt-name">${esc(x.name)}</span><button type="button" class="gmt-x" data-gm="turnDel" data-id="${x.id}" aria-label="Tirar ${esc(x.name)}">×</button></li>`).join('') || '<li class="gmt-empty">Adicione campeões, vilões, grupos de lacaios e o marcador de cena.</li>'}</ol>
+      <ol class="gmt-list">${S.turns.map(x => `<li class="${x.acted ? 'done' : ''}"><button type="button" class="gmt-check" data-gm="acted" data-id="${x.id}" aria-pressed="${!!x.acted}" aria-label="${esc(x.name)} já agiu">${x.acted ? ico('mark') : ''}</button><span class="gmt-kind k-${x.kind}">${KINDS[x.kind] || ''}</span><span class="gmt-name">${esc(x.name)}</span><button type="button" class="gmt-x" data-gm="turnDel" data-id="${x.id}" aria-label="Tirar ${esc(x.name)}">×</button></li>`).join('') || '<li class="gmt-empty">Adicione campeões, antagonistas, grupos de lacaios e o marcador de cena.</li>'}</ol>
       ${S.turns.length ? `<p class="gmt-hint">${left ? `Faltam ${left} para agir nesta rodada. Quem termina o turno escolhe quem joga em seguida.` : 'Todos agiram. Quem jogou por último escolhe quem abre a próxima rodada, menos a si mesmo.'}</p>` : ''}
       <form class="gmt-form" data-gm-form="turn"><input name="name" placeholder="Nome" aria-label="Nome" required maxlength="40"><select name="kind" aria-label="Tipo">${Object.entries(KINDS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select><button class="btn small">Adicionar</button></form>
       <div class="gmt-row"><button type="button" class="btn small primary" data-gm="newRound"${S.turns.length ? '' : ' disabled'}>Nova rodada</button>${S.turns.some(x => x.kind === 'tracker') ? '' : '<button type="button" class="btn small ghost" data-gm="addTracker">+ Marcador de cena</button>'}</div></section>`;
@@ -136,14 +136,14 @@
   }
 
   function villainsHtml() {
-    const card = v => `<div class="gmt-card"><div class="gmt-card-h"><b>${esc(v.name)}</b><button type="button" class="gmt-x" data-gm="vilDel" data-id="${v.id}" aria-label="Remover vilão">×</button></div>
+    const card = v => `<div class="gmt-card"><div class="gmt-card-h"><b>${esc(v.name)}</b><button type="button" class="gmt-x" data-gm="vilDel" data-id="${v.id}" aria-label="Remover antagonista">×</button></div>
       <div class="gmt-hp"><span class="gmt-hp-n"><b>${v.hp}</b> / ${v.max}</span>${[-5, -1, 1, 5].map(d => `<button type="button" class="gmt-chip" data-gm="vilHp" data-id="${v.id}" data-d="${d}">${d > 0 ? '+' + d : '−' + -d}</button>`).join('')}</div>
       <div class="gmt-bar"><i style="width:${Math.max(0, Math.min(100, (v.hp / v.max) * 100))}%"></i></div>
       <div class="gmt-row gmt-status-dice"><span>Status</span>${['Verde', 'Amarelo', 'Vermelho'].map((z, n) => `<label class="z${n}">${z} <select data-gmv="vil" data-id="${v.id}" data-f="st${n}">${DICE.map(d => `<option${v['st' + n] === d ? ' selected' : ''}>${d}</option>`).join('')}</select></label>`).join('')}</div>
-      <textarea data-gmv="vil" data-id="${v.id}" data-f="notes" placeholder="Poderes, qualidades, habilidades, aprimoramentos, plano…" aria-label="Anotações do vilão">${esc(v.notes || '')}</textarea></div>`;
-    return `<section class="gmt-panel gmt-villains" id="gmt-villains"><h3>${ico('codex')} Vilões</h3>
-      <div class="gmt-cards">${S.villains.map(card).join('') || '<p class="gmt-empty">Nenhum vilão em cena.</p>'}</div>
-      <form class="gmt-form" data-gm-form="villain"><input name="name" placeholder="Nome do vilão" aria-label="Nome do vilão" required maxlength="40"><label>Vida <input name="max" type="number" min="1" max="200" value="40"></label><button class="btn small">Adicionar</button></form></section>`;
+      <textarea data-gmv="vil" data-id="${v.id}" data-f="notes" placeholder="Poderes, qualidades, habilidades, aprimoramentos, plano…" aria-label="Anotações do antagonista">${esc(v.notes || '')}</textarea></div>`;
+    return `<section class="gmt-panel gmt-villains" id="gmt-villains"><h3>${ico('codex')} Antagonistas</h3>
+      <div class="gmt-cards">${S.villains.map(card).join('') || '<p class="gmt-empty">Nenhum antagonista em cena.</p>'}</div>
+      <form class="gmt-form" data-gm-form="villain"><input name="name" placeholder="Nome do antagonista" aria-label="Nome do antagonista" required maxlength="40"><label>Vida <input name="max" type="number" min="1" max="200" value="40"></label><button class="btn small">Adicionar</button></form></section>`;
   }
 
   function twistHtml() {
@@ -157,7 +157,7 @@
 
   function notesHtml() {
     return `<section class="gmt-panel gmt-notes" id="gmt-notes-sec"><h3>${ico('lock')} Notas do Mestre</h3>
-      <textarea id="gmt-notes" spellcheck="true" placeholder="Planos, segredos dos vilões, ganchos para as próximas sessões…" aria-label="Notas do Mestre"></textarea>
+      <textarea id="gmt-notes" spellcheck="true" placeholder="Planos, segredos dos antagonistas, ganchos para as próximas sessões…" aria-label="Notas do Mestre"></textarea>
       <p class="gmt-notes-status gmt-hint" aria-live="polite"></p>
       <div class="gmt-row"><button type="button" class="btn small" data-gm="backup">${ico('download')} Exportar backup</button><label class="btn small" for="gmt-import" tabindex="0">${ico('upload')} Importar backup</label><input id="gmt-import" type="file" accept="application/json,.json" hidden><button type="button" class="btn small ghost" data-gm="tableReset">Limpar a mesa</button></div>
       <p class="gmt-hint">As notas e a mesa ficam só neste navegador (nada vai para a internet). O backup sai criptografado e só abre com a senha do Mestre: use-o para levar tudo para outro aparelho.</p></section>`;
@@ -199,7 +199,7 @@
     if (a === 'vilHp') { const v = byId(S.villains, id); if (v) v.hp = Math.max(0, Math.min(v.max, v.hp + +el.dataset.d)); }
     if (a === 'twist') twist(el.dataset.t);
     if (a === 'backup') { exportBackup(); return; }
-    if (a === 'tableReset') { if (!confirm('Limpar a mesa? Marcador, turnos, desafios, lacaios e vilões voltam ao zero. As notas continuam.')) return; S = blank(); }
+    if (a === 'tableReset') { if (!confirm('Limpar a mesa? Marcador, turnos, desafios, lacaios e antagonistas voltam ao zero. As notas continuam.')) return; S = blank(); }
     render();
     const again = root.querySelector(`[data-gm="${a}"]${id ? `[data-id="${id}"]` : ''}${el.dataset.i != null ? `[data-i="${el.dataset.i}"]` : ''}`);
     if (again && !again.disabled) again.focus();   // keep keyboard focus through the re-render
@@ -269,7 +269,7 @@
       root = el;
       root.innerHTML = `<div class="gmt"><div class="gmt-head"><div><div class="eyebrow">Durante a sessão</div><h2>Mesa do Mestre</h2>
         <p>Ferramentas para conduzir a cena. Tudo fica salvo neste navegador enquanto você joga.</p></div>
-        <nav class="gmt-nav" aria-label="Ferramentas">${[['gmt-tracker', 'Marcador'], ['gmt-turns', 'Turnos'], ['gmt-challenges', 'Desafios'], ['gmt-foes', 'Lacaios'], ['gmt-villains', 'Vilões'], ['gmt-twists', 'Reviravoltas'], ['gmt-notes-sec', 'Notas']].map(([h, l]) => `<a href="#${h}">${l}</a>`).join('')}</nav></div>
+        <nav class="gmt-nav" aria-label="Ferramentas">${[['gmt-tracker', 'Marcador'], ['gmt-turns', 'Turnos'], ['gmt-challenges', 'Desafios'], ['gmt-foes', 'Lacaios'], ['gmt-villains', 'Antagonistas'], ['gmt-twists', 'Reviravoltas'], ['gmt-notes-sec', 'Notas']].map(([h, l]) => `<a href="#${h}">${l}</a>`).join('')}</nav></div>
         <div class="gmt-grid"></div>${notesHtml()}</div>`;
       render();
       root.addEventListener('click', ev => { const el2 = ev.target.closest('[data-gm]'); if (el2 && root.contains(el2)) { ev.preventDefault(); act(el2); } });
