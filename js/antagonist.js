@@ -5,7 +5,7 @@
    The page is only reachable behind the GM Screen: it checks the key the screen keeps for this tab. */
 (() => {
   'use strict';
-  const VD = window.GM_VDATA;
+  let VD = null;   // the approaches, archetypes, upgrades and masteries: sealed in the vault, loaded after unlocking
   const KEY = 'runeterra-antagonist-v1', ROSTER = 'runeterra-antagonist-roster-v1', SLOT = id => 'runeterra-antagonist-' + id;
   const OLD = 'runeterra-gm-villain-v1', GMKEY = 'runeterra-gm-key', TABLE = 'runeterra-gm-table-v1';
   const DIES = ['d4', 'd6', 'd8', 'd10', 'd12'];
@@ -19,7 +19,6 @@
   const sgn = n => (n >= 0 ? '+' : '') + n;
   const bump = d => DIES[Math.min(DIES.length - 1, DIES.indexOf(d) + 1)];
   const firstSentence = t => String(t).split(/(?<=[.!?])\s/)[0];
-  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
   const ZONES = [[100, ['Máx−75', '74−26', '25−1']], [95, ['95−70', '69−25', '24−1']], [90, ['90−66', '65−23', '22−1']], [85, ['85−60', '59−22', '21−1']],
     [80, ['80−55', '54−21', '20−1']], [75, ['75−50', '49−20', '19−1']], [70, ['70−50', '49−18', '17−1']], [65, ['65−45', '44−18', '17−1']],
     [60, ['60−41', '40−17', '16−1']], [55, ['55−38', '37−17', '16−1']], [50, ['50−35', '34−16', '15−1']], [45, ['45−32', '31−16', '15−1']],
@@ -719,13 +718,12 @@
 
   // ------------------------------------------------------------------ gate: only behind the GM Screen
   async function unlocked() {
-    const raw = (() => { try { return sessionStorage.getItem(GMKEY); } catch (e) { return null; } })(), v = window.GM_VAULT;
-    if (!raw || !v || !window.crypto || !crypto.subtle) return false;
-    try {
-      const key = await crypto.subtle.importKey('raw', b64(raw), 'AES-GCM', false, ['decrypt']);
-      await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(v.iv) }, key, b64(v.ct));
-      return true;
-    } catch (e) { return false; }
+    const raw = (() => { try { return sessionStorage.getItem(GMKEY); } catch (e) { return null; } })();
+    const payload = await window.GM_UNSEAL.openRaw(raw);
+    if (!payload) return false;
+    window.GM_UNSEAL.run(payload, ['gm-villain-data']);
+    VD = window.GM_VDATA;
+    return !!VD;
   }
   (async () => {
     const gate = $('#gate'), app = $('#app');

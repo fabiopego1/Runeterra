@@ -44,12 +44,11 @@
     return crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: b64(vault.salt), iterations: vault.iter },
       base, { name: 'AES-GCM', length: 256 }, true, ['decrypt']);
   };
-  const open = async key => {
-    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(vault.iv) }, key, b64(vault.ct));
-    return new TextDecoder().decode(plain);
-  };
-  const show = (html, rawKey) => {
-    document.getElementById('gm-content').innerHTML = html;
+  const open = key => window.GM_UNSEAL.decrypt(key);
+  // the vault holds the page's HTML and the GM-only modules: run the modules, then draw the page
+  const show = (payload, rawKey) => {
+    window.GM_UNSEAL.run(payload);
+    document.getElementById('gm-content').innerHTML = payload.html;
     if (window.GM_TOOLS) window.GM_TOOLS.mount(document.getElementById('gm-tools'), rawKey);
     if (window.GM_BULLPEN) window.GM_BULLPEN.render(document.getElementById('gm-bullpen'));
     if (window.GM_FLAVOUR) window.GM_FLAVOUR.render(document.getElementById('gm-flavour'));
