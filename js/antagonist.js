@@ -54,10 +54,10 @@
     names: '<p>Renomear não muda as regras, só como o traço aparece na ficha. Deixe em branco para usar o nome do livro.</p>',
     finish: '<p><b>Vida = abordagem + arquétipo + 5 × número de campeões + melhorias.</b> Com mais campeões na mesa, o antagonista aguenta mais. Confira os avisos: eles mostram o que ainda falta.</p>'
   };
-  const blank = () => ({ cid: uid(), name: '', alias: '', concept: '', note: '', portrait: null, n: 4, ap: '', arch: '', P: {}, Q: {}, rp: '', ab: {}, tk: {}, up: {}, mastery: '',
+  const blank = () => ({ cid: uid(), name: '', alias: '', concept: '', note: '', portrait: null, n: 4, ap: '', arch: '', P: {}, Q: {}, rp: '', rpDesc: '', rpOk: false, ab: {}, tk: {}, up: {}, mastery: '',
     renames: {}, traitNames: {}, play: { cur: '', notes: [], plans: [] }, step: 'concept', maxStep: 0, seen: {}, updated: 0 });
   const read = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
-  const normalize = o => { const b = blank(); const s = Object.assign(b, o || {}); s.play = Object.assign(b.play, s.play || {}); return s; };
+  const normalize = o => { const b = blank(); const s = Object.assign(b, o || {}); s.play = Object.assign(b.play, s.play || {}); if (o && o.rp && o.rpOk === undefined) s.rpOk = true; return s; };   // named before the Confirm button existed
   const rosterIds = () => { const r = read(ROSTER); return Array.isArray(r) ? r : []; };
   let S = (() => {
     const cur = read(KEY);
@@ -83,7 +83,7 @@
   const allTraits = () => cats().flatMap(([ck, v]) => (v.items || []).map(i => ({ key: i[0], name: i[2] || i[1], desc: i[3] || '', kind: traitKinds(ck), cat: ck, catName: v.rt || ck })));
   const tName = key => { const t = allTraits().find(x => x.key === key); return t ? t.name : ''; };
   const RPKEY = 'rp-quality';
-  const tShow = key => (key === RPKEY ? (S.rp.trim() || 'Qualidade de interpretação') : (S.traitNames[key] && S.traitNames[key].trim()) || tName(key));   // the name the GM gave it, else the book's
+  const tShow = key => (key === RPKEY ? (S.rpOk && S.rp.trim() ? S.rp.trim() : 'Qualidade de interpretação') : (S.traitNames[key] && S.traitNames[key].trim()) || tName(key));   // the name the GM gave it, else the book's
   const tRenamed = key => key !== RPKEY && !!(S.traitNames[key] && S.traitNames[key].trim() && S.traitNames[key].trim() !== tName(key));
   const origTag = name => `<small class="hs-orig">${esc(name)}</small>`;
   const TOKEN_RE = /\[(poder\/qualidade|energia\/elemento|poder|qualidade)\]/g;
@@ -113,7 +113,7 @@
   // the traits the GM can pick for a bracket: its own powers and qualities, the named interpretation quality included
   const assigned = kind => (VD.approaches.find(x => x.id === S.ap) ? Object.values(kind === 'power' ? S.P : S.Q).filter(Boolean) : []);
   function tokenKeys(t) {
-    const rp = S.rp.trim() ? [RPKEY] : [];
+    const rp = S.rp.trim() && S.rpOk ? [RPKEY] : [];
     const P = assigned('power'), Q = assigned('quality').concat(rp);
     const keys = t === 'poder' ? P : t === 'qualidade' ? Q : t === 'energia/elemento' ? P.filter(k => (window.TRAIT_CATEGORIES['P:elemental'] || { items: [] }).items.some(i => i[0] === k)) : P.concat(Q);
     return [...new Set(keys)];
@@ -125,6 +125,8 @@
     return p ? m.pDice[+p[0]] : q ? m.qDice[+q[0]] : '';
   }
   const openTokens = x => tokensOf(x.a.x).filter(t => !S.tk[x.id + '|' + t]);
+  const rpReady = () => !!(S.rp.trim() && (S.rpDesc || '').trim());
+  const rpIssues = () => (!S.rp.trim() ? ['Dê um nome à qualidade de interpretação (d8).'] : !(S.rpDesc || '').trim() ? ['Descreva em poucas palavras a qualidade de interpretação.'] : !S.rpOk ? ['Confirme a qualidade de interpretação.'] : []);
   // what the builder still lacks or breaks, in plain words
   function issues(m) {
     const I = [];
@@ -132,7 +134,7 @@
     const lackP = m.pDice.filter((d, i) => !S.P[i]).length, lackQ = m.qDice.filter((d, i) => !S.Q[i]).length;
     if (lackP) I.push(`Faltam ${lackP} dado(s) de poder para atribuir.`);
     if (lackQ) I.push(`Faltam ${lackQ} dado(s) de qualidade para atribuir.`);
-    if (!S.rp.trim()) I.push('Dê um nome à qualidade de interpretação (d8).');
+    I.push(...rpIssues());
     if (m.chosenA.length < m.needA) I.push(`Faltam ${m.needA - m.chosenA.length} habilidade(s) da abordagem.`);
     if (m.chosenR.length < m.needR) I.push(`Faltam ${m.needR - m.chosenR.length} habilidade(s) do arquétipo.`);
     for (const x of m.chosenA.concat(m.chosenR, m.gain, m.upAb)) {
@@ -165,7 +167,7 @@
       const p = m.pDice.filter((d, i) => !S.P[i]).length, q = m.qDice.filter((d, i) => !S.Q[i]).length;
       if (p) N.push(`Faltam ${p} dado(s) de poder.`);
       if (q) N.push(`Faltam ${q} dado(s) de qualidade.`);
-      if (!S.rp.trim()) N.push('Dê um nome à qualidade de interpretação (d8).');
+      N.push(...rpIssues());
     }
     if (id === 'abap' || id === 'abar') {
       const ch = id === 'abap' ? m.chosenA : m.chosenR, need = id === 'abap' ? m.needA : m.needR;
@@ -185,7 +187,8 @@
   const K = window.ForgeKit;
   const tr = (s, v) => K.tr(s, v);
   const tipA = K.tip;
-  const kitSync = () => K.sync({ traitNames: S.traitNames, rp: S.rp, rpDesc: 'Qualidade de interpretação (d8): resume como o antagonista age na história.' });
+  const RPDESC_MAX = 100;
+  const kitSync = () => K.sync({ traitNames: S.traitNames, rp: S.rpOk ? S.rp : '', rpDesc: S.rpOk ? (S.rpDesc || '') : '' });
   const typeName = t => (t === 'A' ? 'Ação' : t === 'R' ? 'Reação' : 'Inerente');
   const typeTip = t => `<h5>Tipo: ${typeName(t)}</h5>${esc((window.ABILITY_TYPES || {})[t] || '')}`;
   const typeChip = t => `<span class="ab-type"${tipA(typeTip(t))}>${t}</span>`;
@@ -241,9 +244,9 @@
       : `<span class="sock-empty">${esc(ask)}</span>`;
     const filter = all.length > 12 ? `<label class="tray-filter">${K.ico('mark')}<input type="search" data-filter="1" placeholder="${tr('Filter {n} options…', { n: all.length })}" aria-label="${tr('Filter options')}"></label>` : '';
     const groupHtml = g => `<div class="tray-group"><div class="tray-label">${esc(g.label)}</div><div class="tray-grid">${g.items.map(i => {
-      const on = i.k === cur, off = !!i.taken && !on, fit = fitText && suggestion(fitText, i.k);
-      return `<button class="rune k-${kind}${on ? ' on' : ''}${off ? ' off' : ''}${fit ? ' fits' : ''}" data-a="socket" data-bind="${bind}" data-val="${i.k}" data-q="${esc((i.name + ' ' + g.label).toLowerCase())}"${off ? ' aria-disabled="true"' : ''}${on ? ' aria-pressed="true"' : ''}${tipA(K.traitTip(i.k) + (off ? `<hr><small>${esc(i.taken)}</small>` : '') + (fit ? `<hr>✦ <b>${tr('Suggestion')}</b>: ${esc(fit === true ? 'sugerido pela abordagem' : fit)}. ${tr('Only a suggestion: you can pick any option.')}` : ''))}>
-        <span class="rune-name">${esc(i.name)}</span>${fit ? `<span class="rune-sugg">${K.ico('mark')} ${tr('Suggestion')}</span>` : ''}${off ? `<span class="rune-badge taken">${esc(i.taken)}</span>` : ''}</button>`;
+      const on = i.k === cur, sw = i.swapWith != null && !on, fit = fitText && suggestion(fitText, i.k);
+      return `<button class="rune k-${kind}${on ? ' on' : ''}${sw ? ' swap' : ''}${fit ? ' fits' : ''}" data-a="socket" data-bind="${bind}" data-val="${i.k}"${sw ? ` data-swap="${i.swapWith}"` : ''} data-q="${esc((i.name + ' ' + g.label).toLowerCase())}"${on ? ' aria-pressed="true"' : ''}${tipA(K.traitTip(i.k) + (sw ? `<hr><small>Este traço já está noutro dado. Clique para ${esc(i.swapLabel)}.</small>` : '') + (fit ? `<hr>✦ <b>${tr('Suggestion')}</b>: ${esc(fit === true ? 'sugerido pela abordagem' : fit)}. ${tr('Only a suggestion: you can pick any option.')}` : ''))}>
+        <span class="rune-name">${esc(i.name)}</span>${fit ? `<span class="rune-sugg">${K.ico('mark')} ${tr('Suggestion')}</span>` : ''}${sw ? `<span class="rune-badge swapb">⇄ ${esc(i.swapLabel)}</span>` : ''}</button>`;
     }).join('')}</div></div>`;
     const tray = open ? `<div class="tray" role="group" aria-label="${esc(ask)}">${filter}${groups.map(groupHtml).join('')}${cur ? `<button class="linkbtn tray-clear" data-a="socket" data-bind="${bind}" data-val="">${tr('Unbind this die')}</button>` : ''}</div>` : '';
     return `<div class="socket${cur ? ' filled' : ''}${open ? ' open' : ''}">
@@ -306,13 +309,16 @@
     if (id === 'dice') {
       if (!ap) return '<p class="muted">Escolha primeiro a abordagem.</p>';
       const sockets = (kind, dice, store, sug) => dice.map((d, i) => {
-        const taken = Object.fromEntries(Object.entries(store).filter(([j]) => +j !== i).map(([, k]) => [k, 'Você já usou este traço em outro dado: este dado seria desperdiçado. Escolha outro, ou desligue o outro dado antes.']));
-        const groups = traitGroups(keysOfKind(kind)).map(g => ({ ...g, items: g.items.map(it => ({ ...it, taken: taken[it.k] })) }));
+        // a trait sitting on another die can be traded for: the two dice swap places (or the trait moves here)
+        const holder = Object.fromEntries(Object.entries(store).filter(([j]) => +j !== i).map(([j, k]) => [k, +j]));
+        const groups = traitGroups(keysOfKind(kind)).map(g => ({ ...g, items: g.items.map(it => (holder[it.k] != null ? { ...it, swapWith: holder[it.k], swapLabel: tr(store[i] ? 'swap with your {die}' : 'take it from your {die}', { die: dice[holder[it.k]] }) } : it)) }));
         return socket({ bind: `${kind === 'power' ? 'P' : 'Q'}.${i}`, d, kind, cur: store[i] || '', groups, fitText: sug });
       }).join('');
       return `<div class="assign"><p class="assign-opts">Sugestões da abordagem: ${esc(ap.sp)}.</p><div class="muted">Atribua cada dado a um poder:</div>${sockets('power', m.pDice, S.P, ap.sp)}</div>
         <div class="assign"><p class="assign-opts">Sugestões da abordagem: ${esc(ap.sq)}.</p><div class="muted">Atribua cada dado a uma qualidade:</div>${sockets('quality', m.qDice, S.Q, ap.sq)}
-          <div class="socket filled"><div class="sock-row">${die('d8')}<span class="sock-arrow" aria-hidden="true"><i>${tr('becomes')}</i></span><label class="sock-slot rp-slot"><span class="sock-kind k-quality">${tr('quality')}</span><input type="text" data-b="rp" class="rp-input" value="${esc(S.rp)}" placeholder="Qualidade de interpretação: uma frase, como “Sorriso Calculado”" aria-label="Qualidade de interpretação"></label></div></div></div>
+          <div class="socket filled"><div class="sock-row">${die('d8')}<span class="sock-arrow" aria-hidden="true"><i>${tr('becomes')}</i></span><label class="sock-slot rp-slot"><span class="sock-kind k-quality">${tr('quality')}</span><input type="text" data-b="rp" class="rp-input" value="${esc(S.rp)}" placeholder="Qualidade de interpretação: uma frase, como “Sorriso Calculado”" aria-label="Qualidade de interpretação"></label></div>
+            <div class="qname-row rp-desc-row"><label class="qdesc"><input type="text" data-b="rpDesc" maxlength="${RPDESC_MAX}" value="${esc(S.rpDesc || '')}" placeholder="Do que se trata? Uma descrição curta (até ${RPDESC_MAX} caracteres)"><span class="qdesc-n">${(S.rpDesc || '').length}/${RPDESC_MAX}</span></label>
+              <button type="button" class="btn primary" data-a="rpok"${rpReady() ? '' : ' disabled'}>${K.ico('check')} ${S.rpOk ? 'Confirmada' : 'Confirmar'}</button></div></div></div></div></div>
         ${m.pOver || m.qOver ? '<p class="muted">Um dado já era d12 e o aprimoramento não o sobe mais: em troca, você ganha uma habilidade extra.</p>' : ''}`;
     }
     if (id === 'abap') return !ap ? '<p class="muted">Escolha primeiro a abordagem.</p>' : `<div class="subsec">${ap.note ? `<p class="muted">${esc(ap.note)}</p>` : ''}${countLine(m.chosenA, m.needA)}<div class="ab-list">${ap.ab.map((a, i) => abilityCard('a:' + i, a, !!S.ab['a:' + i], !S.ab['a:' + i] && m.chosenA.length >= m.needA, ap.n, m)).join('')}</div></div>`;
@@ -601,11 +607,19 @@
     const el = t.closest('[data-a]');
     if (!el) return;
     const a = el.dataset.a;
-    if (el.classList.contains('dis')) return;
+    if (el.classList.contains('dis') || el.classList.contains('disabled')) return;   // the limit of abilities (or a blocked card) is a real limit
     if (el.classList.contains('is-disabled')) { const f = $('#stage .flow-todo'); if (f) { f.scrollIntoView({ block: 'center', behavior: 'smooth' }); f.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }], { duration: 240 }); } return; }
     const m = model();
     if (a === 'socketOpen') { ui.socket = el.getAttribute('aria-expanded') === 'true' ? '' : el.dataset.bind; render(); return; }
-    if (a === 'socket') { if (el.getAttribute('aria-disabled') === 'true') return; const [f, i] = el.dataset.bind.split('.'); ui.socket = null; return applyChange(f, { i, value: el.dataset.val }); }
+    if (a === 'socket') {
+      const [f, i] = el.dataset.bind.split('.'); ui.socket = null;
+      if (el.dataset.swap != null && el.dataset.swap !== '') {   // the trait sits on another die: the two dice trade places
+        const mine = S[f][i];
+        if (mine) S[f][el.dataset.swap] = mine; else delete S[f][el.dataset.swap];
+      }
+      return applyChange(f, { i, value: el.dataset.val });
+    }
+    if (a === 'rpok') { if (rpReady()) { S.rpOk = true; save(); render(); } return; }
     if (a === 'tk') return applyChange('tk', { id: el.dataset.id, t: el.dataset.t, value: el.dataset.val });
     if (a === 'ap' || a === 'arch') return applyChange(a, { value: el.dataset.v });
     if (a === 'ab') return applyChange('ab', { id: el.dataset.id, checked: !S.ab[el.dataset.id] });
@@ -658,6 +672,12 @@
       const c = ev.target.closest && ev.target.closest('.vf-card[role=button]');
       if (c && ev.target === c && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); c.click(); }
       if (ev.key === 'Escape') { const r = $('#roster'); if (r && !r.hidden) hideRoster(); }
+      if (ev.key === 'Enter' && ev.target.dataset && (ev.target.dataset.b === 'rp' || ev.target.dataset.b === 'rpDesc')) {
+        ev.preventDefault();
+        const d = $('[data-b="rpDesc"]');
+        if (ev.target.dataset.b === 'rp' && d && !d.value.trim()) { d.focus(); return; }
+        if (rpReady()) { S.rpOk = true; save(); render(); }
+      }
     });
     document.addEventListener('input', ev => {
       const flt = ev.target.closest && ev.target.closest('[data-filter]');
@@ -666,7 +686,12 @@
       if (!b || el.tagName === 'SELECT') return;
       if (b.startsWith('traitNames.') || b.startsWith('renames.')) setPath(S, b, el.value);
       else setPath(S, b, el.value);
-      save(); if (b === 'name' || b === 'rp' || b.startsWith('traitNames.')) light();
+      if (b === 'rp' || b === 'rpDesc') {   // a new name or description needs confirming again
+        S.rpOk = false;
+        const btn = $('[data-a="rpok"]'); if (btn) { btn.disabled = !rpReady(); btn.lastChild.textContent = ' Confirmar'; }
+        const n = $('.qdesc-n'); if (n) n.textContent = `${(S.rpDesc || '').length}/${RPDESC_MAX}`;
+      }
+      save(); if (b === 'name' || b === 'rp' || b === 'rpDesc' || b.startsWith('traitNames.')) light();
     });
     document.addEventListener('change', ev => {
       const el = ev.target;
