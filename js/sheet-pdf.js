@@ -71,7 +71,7 @@
     document.head.appendChild(el);
   });
 
-  async function render({ html, cssHref, fontBase, fontkitSrc, pageBg, onStatus }) {
+  async function render({ html, cssHref, fontBase, fontkitSrc, pageBg, onStatus, title, creator }) {
     const L = window.PDFLib;
     const { PDFDocument, rgb, degrees } = L;
     const say = onStatus || (() => {});
@@ -106,8 +106,8 @@
       const doc = await PDFDocument.create();
       const T = window.T || (x => x);
       const heroName = [...fdoc.querySelectorAll('.hs-name')].map(e => e.textContent.trim()).filter(Boolean).join(', ');
-      doc.setTitle(heroName ? `Ficha de Campeão de ${heroName}` : T('Hero Sheet'));
-      doc.setCreator('Forja de Campeões · Runeterra');
+      doc.setTitle(title || (heroName ? `Ficha de Campeão de ${heroName}` : T('Hero Sheet')));
+      doc.setCreator(creator || 'Forja de Campeões · Runeterra');
       let fonts = {}, fieldFont, fallback;
       if (!window.fontkit && fontkitSrc) await loadScript(fontkitSrc).catch(() => {});   // big: fetched only when exporting
       if (window.fontkit) doc.registerFontkit(window.fontkit);

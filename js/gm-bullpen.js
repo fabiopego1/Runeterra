@@ -6,6 +6,7 @@
 (() => {
   'use strict';
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const VD = window.GM_VDATA;
   const die = d => `<span class="die ${d}">${d.slice(1)}</span>`;
   const dt = t => esc(t).replace(/\bd(4|6|8|10|12)\b/g, (m, n) => die('d' + n));   // "d8" in running text becomes a die
 
@@ -177,261 +178,6 @@
       end: 'Se a Rainha fugir, a Névoa recua mas deixa uma marca: o vilarejo vira ponto de partida para a próxima história.' }
   ];
 
-  // ------------------------------------------------------------------ villain builder
-  const VD = window.GM_VDATA;
-  const BKEY = 'runeterra-gm-villain-v1';
-  const DIES = ['d4', 'd6', 'd8', 'd10', 'd12'];
-  const bump = d => DIES[Math.min(DIES.length - 1, DIES.indexOf(d) + 1)];
-  const ZONES = [[100, ['Máx−75', '74−26', '25−1']], [95, ['95−70', '69−25', '24−1']], [90, ['90−66', '65−23', '22−1']], [85, ['85−60', '59−22', '21−1']],
-    [80, ['80−55', '54−21', '20−1']], [75, ['75−50', '49−20', '19−1']], [70, ['70−50', '49−18', '17−1']], [65, ['65−45', '44−18', '17−1']],
-    [60, ['60−41', '40−17', '16−1']], [55, ['55−38', '37−17', '16−1']], [50, ['50−35', '34−16', '15−1']], [45, ['45−32', '31−16', '15−1']],
-    [40, ['40−30', '29−15', '14−1']], [35, ['35−27', '26−13', '12−1']], [30, ['30−23', '22−12', '11−1']], [25, ['25−20', '19−10', '9−1']],
-    [20, ['20−16', '15−8', '7−1']], [15, ['15−11', '10−6', '5−1']], [10, ['10', '9−5', '4−1']]];
-  const zonesFor = max => { const r = ZONES.find(z => max >= z[0]) || ZONES[ZONES.length - 1]; return r[1]; };
-  const blankB = () => ({ name: '', concept: '', ap: '', arch: '', P: {}, Q: {}, rp: '', ab: {}, tk: {}, up: {}, mastery: '', note: '', vstep: 0 });
-  let B = (() => { try { return Object.assign(blankB(), JSON.parse(localStorage.getItem(BKEY))); } catch (e) { return blankB(); } })();
-  const saveB = () => { try { localStorage.setItem(BKEY, JSON.stringify(B)); } catch (e) { /* ignore */ } };
-  const cats = () => Object.entries(window.TRAIT_CATEGORIES || {});
-  const traitKinds = k => (k.startsWith('P:') ? 'power' : 'quality');
-  const allTraits = () => cats().flatMap(([ck, v]) => (v.items || []).map(i => ({ key: i[0], name: i[2] || i[1], kind: traitKinds(ck), cat: ck })));
-  const tName = key => { const t = allTraits().find(x => x.key === key); return t ? t.name : ''; };
-  const traitOptions = (kind, sel) => cats().filter(([ck]) => traitKinds(ck) === kind)
-    .map(([ck, v]) => `<optgroup label="${esc(v.rt || ck)}">${(v.items || []).map(i => `<option value="${esc(i[0])}"${sel === i[0] ? ' selected' : ''}>${esc(i[2] || i[1])}</option>`).join('')}</optgroup>`).join('');
-  const TOKEN_RE = /\[(poder\/qualidade|energia\/elemento|poder|qualidade)\]/g;
-  const tokensOf = text => [...new Set([...text.matchAll(TOKEN_RE)].map(m => m[1]))];
-
-  // everything the sheet shows, computed from the choices
-  function model(N) {
-    const ap = VD.approaches.find(x => x.id === B.ap), ar = VD.archetypes.find(x => x.id === B.arch);
-    const ups = VD.upgrades.filter(u => B.up[u.id]);
-    const pUp = ups.some(u => u.id === 'power'), qUp = ups.some(u => u.id === 'quality');
-    const pDice = ap ? ap.P.map(d => (pUp ? bump(d) : d)) : [], qDice = ap ? ap.Q.map(d => (qUp ? bump(d) : d)) : [];
-    const pOver = ap && pUp && ap.P.some(d => d === 'd12'), qOver = ap && qUp && ap.Q.some(d => d === 'd12');
-    const needA = ap ? ap.pick + (qOver ? 1 : 0) : 0;
-    const arPool = ar ? ar.ab.filter(a => a.n !== ar.gain) : [];
-    const needR = ar ? ar.pick + (pOver ? 1 : 0) : 0;
-    const chosenA = ap ? ap.ab.map((a, i) => ({ a, id: 'a:' + i })).filter(x => B.ab[x.id]) : [];
-    const chosenR = ar ? arPool.map(a => ({ a, id: 'r:' + ar.ab.indexOf(a) })).filter(x => B.ab[x.id]) : [];
-    const gain = ar && ar.gain ? ar.ab.filter(a => a.n === ar.gain).map(a => ({ a, id: 'g:' + a.n })) : [];
-    const upAb = [];
-    for (const u of ups) u.ab.forEach((a, i) => { if (u.id !== 'vehicle' || B.ab['u:vehicle:' + i]) upAb.push({ a, id: `u:${u.id}:${i}`, src: u.n }); });
-    const upH = ups.reduce((n, u) => n + u.hp, 0);
-    const hp = ap && ar ? ap.hp + ar.hp + 5 * N + upH : null;
-    const mastery = ups.length ? VD.masteries.find(m => m.n === B.mastery) : null;
-    return { ap, ar, ups, pDice, qDice, pOver, qOver, needA, needR, arPool, chosenA, chosenR, gain, upAb, upH, hp, mastery };
-  }
-  // an ability's text with the traits the Game Master picked
-  function fill(x, id) {
-    return x.x.replace(TOKEN_RE, (m, t) => { const k = B.tk[id + '|' + t]; const n = k ? tName(k) : ''; return n ? `«${n}»` : m; });
-  }
-  const mine = kind => { const ap = VD.approaches.find(x => x.id === B.ap); return ap ? Object.values(kind === 'power' ? B.P : B.Q).filter(Boolean) : []; };
-  function tokenPick(id, text) {
-    return tokensOf(text).map(t => {
-      const keys = t === 'poder' ? mine('power') : t === 'qualidade' ? mine('quality') : t === 'energia/elemento' ? mine('power').filter(k => (window.TRAIT_CATEGORIES['P:elemental'] || { items: [] }).items.some(i => i[0] === k)) : mine('power').concat(mine('quality'));
-      const cur = B.tk[id + '|' + t] || '';
-      return `<label class="gm-bp-tok">[${esc(t)}] <select data-bpb="tk" data-id="${esc(id)}" data-t="${esc(t)}"><option value="">escolher…</option>${[...new Set(keys)].map(k => `<option value="${esc(k)}"${cur === k ? ' selected' : ''}>${esc(tName(k))}</option>`).join('')}</select></label>`;
-    }).join('');
-  }
-  const abBox = (id, a, on, dis, extra) => `<div class="gm-bp-ab${on ? ' on' : ''}"><label><input type="checkbox" data-bpb="ab" data-id="${esc(id)}"${on ? ' checked' : ''}${dis ? ' disabled' : ''}> <b>${esc(a.n)}</b> <span class="gm-bp-ty">${a.t}</span></label><p>${dt(a.x)}</p>${on ? tokenPick(id, a.x) : ''}${extra || ''}</div>`;
-
-  // what the builder still lacks or breaks, in plain words
-  function issues(m, N) {
-    const I = [];
-    if (!m.ap || !m.ar) { if (!m.ap) I.push('Escolha uma abordagem.'); if (!m.ar) I.push('Escolha um arquétipo.'); return I; }
-    const lackP = m.pDice.filter((d, i) => !B.P[i]).length, lackQ = m.qDice.filter((d, i) => !B.Q[i]).length;
-    if (lackP) I.push(`Faltam ${lackP} dado(s) de poder para atribuir.`);
-    if (lackQ) I.push(`Faltam ${lackQ} dado(s) de qualidade para atribuir.`);
-    if (!B.rp.trim()) I.push('Dê um nome à qualidade de interpretação (d8).');
-    if (m.chosenA.length < m.needA) I.push(`Faltam ${m.needA - m.chosenA.length} habilidade(s) da abordagem.`);
-    if (m.chosenR.length < m.needR) I.push(`Faltam ${m.needR - m.chosenR.length} habilidade(s) do arquétipo.`);
-    for (const x of m.chosenA.concat(m.chosenR, m.gain, m.upAb)) {
-      const open = tokensOf(x.a.x).filter(t => !B.tk[x.id + '|' + t]);
-      if (open.length) I.push(`Escolha o ${open.map(t => '[' + t + ']').join(' e ')} usado em “${x.a.n}”.`);
-    }
-    // the rule some approaches add on top of the number of abilities
-    const used = m.chosenA.map(x => tokensOf(x.a.x).map(t => B.tk[x.id + '|' + t]).filter(Boolean)[0]);
-    if (m.ap.rule && used.length === m.ap.pick && used.every(Boolean)) {
-      const uniq = new Set(used);
-      if (m.ap.rule === 'all-diff' && uniq.size !== used.length) I.push(`${m.ap.n}: ${m.ap.note.charAt(0).toLowerCase() + m.ap.note.slice(1)} Hoje há ${used.length - uniq.size} repetição(ões).`);
-      if (m.ap.rule === 'two-one') {
-        const counts = [...uniq].map(k => used.filter(u => u === k).length).sort();
-        if (!(counts.length === 2 && counts[0] === 1 && counts[1] === 2)) I.push(`${m.ap.n}: ${m.ap.note.charAt(0).toLowerCase() + m.ap.note.slice(1)}`);
-        const bad = used.filter(k => { const t = allTraits().find(x => x.key === k); return t && t.kind !== (m.ap.kind === 'poder' ? 'power' : 'quality'); });
-        if (bad.length) I.push(`${m.ap.n}: aqui as habilidades usam ${m.ap.kind === 'poder' ? 'poderes' : 'qualidades'}, mas ${bad.length} usa(m) o outro tipo.`);
-      }
-    }
-    return I;
-  }
-  const GUIDE = {
-    concept: '<p>Responda em uma frase: <b>quem é</b> o antagonista, <b>o que quer</b> e <b>como bate de frente</b> com os campeões do seu grupo. Ligue-o a algo que os jogadores já se importam: uma região, um rival, uma promessa não cumprida.</p><p>Não precisa estar fechado: o conceito pode mudar enquanto você monta. Abordagem e arquétipo são guias, não correntes.</p><p class="muted">Exemplo: “A Dra. Kaelor cobra a cidade de Zaun por um antídoto contra uma doença que ela mesma espalhou.”</p>',
-    ap: '<p>A <b>abordagem</b> diz <b>como o antagonista age</b>: dá os dados de poder e qualidade, a Vida base e as habilidades de ação dele. Escolha pelo estilo, não pelo número:</p><ul class="gm-bp-list"><li><b>Ninja, Implacável, Parasita:</b> combate pessoal, caça um alvo.</li><li><b>Mente Mestra, Criador, Tático:</b> planos, lacaios e aliados.</li><li><b>Sobrepoderoso, Ancestral:</b> ameaça enorme, vence-se com esperteza.</li><li><b>Valentão, Orgulhoso, Generalista:</b> briga direta.</li><li><b>Subpoderoso, Habilidoso:</b> ameaças menores, boas para começar.</li></ul><p class="muted">Quanto maior a Vida base, mais tempo o antagonista dura na cena.</p>',
-    dice: '<p>Cada dado que a abordagem dá precisa de um <b>poder</b> ou de uma <b>qualidade</b>. Use as sugestões como ponto de partida e troque à vontade para combinar com o conceito (Sombras para um antagonista das Ilhas das Sombras, Tóxico para um alquimista de Zaun).</p><p>A <b>qualidade de interpretação</b> (d8) é uma frase que define como o antagonista age na história, como a Qualidade Marcante do campeão: “Luto Eterno”, “Fé no Fim”, “Sorriso Calculado”.</p>',
-    abap: '<p>Escolha o número de habilidades indicado. A maioria tem um espaço <b>[poder]</b> ou <b>[qualidade]</b>: indique qual dos <b>seus</b> traços a habilidade usa. Dê o dado mais alto às habilidades principais.</p><p>Algumas abordagens têm uma regra extra (por exemplo, usar poderes diferentes em cada habilidade). O Montador avisa quando ela não é cumprida.</p>',
-    arch: '<p>O <b>arquétipo</b> diz <b>do que o antagonista se importa na cena</b> e define o dado de <b>status</b>: ele muda conforme a Vida, o número de lacaios, de campeões ou de invenções.</p><ul class="gm-bp-list"><li><b>Brutamontes, Frágil:</b> status pela própria Vida, como os campeões.</li><li><b>Legião, Senhor da Horda:</b> contam lacaios (Legião: quanto mais, mais fraco).</li><li><b>Predador, Guerrilheiro:</b> contam oponentes engajados.</li><li><b>Solitário, Esquadrão:</b> contam outros antagonistas.</li><li><b>Indomável:</b> status fixo. <b>Titã:</b> começa em d12 e tem um desafio para reduzir o status.</li></ul>',
-    abar: '<p>Escolha o número de habilidades do arquétipo. Elas costumam girar em torno do status: o que o antagonista faz melhor quando o status está alto ou baixo. A abordagem sugerida na lista “combina bem com” ajuda a evitar habilidades que se anulam.</p>',
-    up: '<p>Cada <b>melhoria</b> deixa o antagonista perigoso o bastante para encarar <b>mais um campeão</b>: soma Vida e dá habilidades. Um antagonista sem melhorias é <b>menor</b> (conta como um elemento moderado na cena); com uma melhoria, vira <b>maior</b> (elemento difícil).</p><p class="muted">Dicas: use “Esquadrão de capangas” para um antagonista no próprio covil; “Aprimoramento de poder” e “de qualidade” para quem fez um ritual ou treino; “Veículo antagonista” para um navio ou máquina de guerra.</p>',
-    mast: '<p>A <b>maestria</b> é uma habilidade passiva que só antagonistas com melhorias ganham. Ela dá um <b>sucesso automático em um Superar</b> (resolver problemas fora de combate: convencer, tomar, construir, abrir) <b>sempre que a condição for cumprida</b>. Não rola dado e não vale para ataques.</p><p>Escolha uma que combine com o que o antagonista faz fora da luta. Os campeões enfrentam a maestria <b>quebrando a condição</b>: cortar o contrato, destruir o laboratório, tirá-lo do comando.</p>',
-    done: '<p><b>Vida = abordagem + arquétipo + 5 × número de campeões + melhorias.</b> Com mais campeões na mesa, o antagonista aguenta mais. Confira os avisos: eles mostram o que ainda falta.</p><p>Por fim, anote a <b>aparência, o jeito de falar e os motivos</b>: um bom antagonista é lembrado por isso tanto quanto pelas habilidades.</p>'
-  };
-  // ------------------------------------------------------------------ the villain forge: a full-screen builder, one step at a time
-  const STEPS = [['concept', 'Conceito'], ['ap', 'Abordagem'], ['dice', 'Dados'], ['abap', 'Hab. da abordagem'], ['arch', 'Arquétipo'], ['abar', 'Hab. do arquétipo'], ['up', 'Melhorias'], ['mast', 'Maestria'], ['done', 'Ficha']];
-  const STEP_TITLE = { concept: 'Dê vida ao antagonista', ap: 'Escolha a abordagem', dice: 'Ligue os dados a poderes e qualidades', abap: 'Escolha as habilidades da abordagem', arch: 'Escolha o arquétipo', abar: 'Escolha as habilidades do arquétipo', up: 'Melhorias (opcional)', mast: 'Maestria (opcional)', done: 'A ficha do antagonista' };
-  const VF = { open: false, step: 0, el: null, N: 4, onClose: null };
-  const sgn = n => (n >= 0 ? '+' : '') + n;
-  const diceRow = arr => arr.map(d => die(d)).join(' ');
-  const firstSentence = t => String(t).split(/(?<=[.!?])\s/)[0];
-  const pairsHit = (ar, ap) => !!(ap && ar.pairs && ar.pairs.toLowerCase().includes(ap.n.toLowerCase()));
-  const tokensOk = list => list.every(x => tokensOf(x.a.x).every(t => B.tk[x.id + '|' + t]));
-  const lackDice = m => !!m.ap && (m.pDice.some((d, i) => !B.P[i]) || m.qDice.some((d, i) => !B.Q[i]) || !B.rp.trim());
-
-  // what is still missing in one step, in plain words
-  function needs(id, m, I) {
-    const N = [];
-    if (id === 'ap' && !m.ap) N.push('Escolha uma abordagem.');
-    if (id === 'arch' && !m.ar) N.push('Escolha um arquétipo.');
-    if (['dice', 'abap'].includes(id) && !m.ap) return ['Escolha primeiro a abordagem.'];
-    if (['abar'].includes(id) && !m.ar) return ['Escolha primeiro o arquétipo.'];
-    if (id === 'dice') {
-      const p = m.pDice.filter((d, i) => !B.P[i]).length, q = m.qDice.filter((d, i) => !B.Q[i]).length;
-      if (p) N.push(`Faltam ${p} dado(s) de poder.`);
-      if (q) N.push(`Faltam ${q} dado(s) de qualidade.`);
-      if (!B.rp.trim()) N.push('Dê um nome à qualidade de interpretação (d8).');
-    }
-    if (id === 'abap' || id === 'abar') {
-      const ch = id === 'abap' ? m.chosenA : m.chosenR, need = id === 'abap' ? m.needA : m.needR;
-      if (ch.length < need) N.push(`Faltam ${need - ch.length} habilidade(s).`);
-      for (const x of (id === 'abap' ? ch : ch.concat(m.gain))) { const open = tokensOf(x.a.x).filter(t => !B.tk[x.id + '|' + t]); if (open.length) N.push(`Escolha o ${open.map(t => '[' + t + ']').join(' e ')} usado em “${x.a.n}”.`); }
-      if (id === 'abap' && m.ap) for (const t of I) if (t.startsWith(m.ap.n + ':')) N.push(t);
-    }
-    if (id === 'up') for (const x of m.upAb) { const open = tokensOf(x.a.x).filter(t => !B.tk[x.id + '|' + t]); if (open.length) N.push(`Escolha o ${open.map(t => '[' + t + ']').join(' e ')} usado em “${x.a.n}”.`); }
-    return N;
-  }
-  const stepDone = (id, m, I) => ({
-    concept: !!B.name.trim(), ap: !!m.ap, dice: !!m.ap && !lackDice(m), abap: !!m.ap && !needs('abap', m, I).length,
-    arch: !!m.ar, abar: !!m.ar && !needs('abar', m, I).length, up: m.ups.length > 0 && !needs('up', m, I).length, mast: !!B.mastery && m.ups.length > 0, done: m.hp != null && !I.length
-  })[id];
-
-  const vcard = (data, on, dis, inner) => `<div class="vf-card${on ? ' on' : ''}${dis ? ' dis' : ''}" role="button" tabindex="${dis ? -1 : 0}" aria-pressed="${on ? 'true' : 'false'}"${dis ? ' aria-disabled="true"' : ''} ${data}>${inner}</div>`;
-  const abCard = (id, a, on, dis, extra) => vcard(`data-vf="ab" data-id="${esc(id)}"`, on, dis, `<header><h4>${esc(a.n)}</h4><span class="gm-bp-ty">${a.t === 'A' ? 'Ação' : a.t === 'R' ? 'Reação' : 'Passiva'}</span></header><p>${dt(a.x)}</p>${on ? tokenPick(id, a.x) : ''}${extra || ''}`);
-  const fixedCard = (id, a, src) => `<div class="vf-card on fixed"><header><h4>${esc(a.n)}</h4><span class="gm-bp-ty">${a.t === 'A' ? 'Ação' : a.t === 'R' ? 'Reação' : 'Passiva'}</span></header><p>${dt(a.x)}</p>${tokenPick(id, a.x)}<small class="muted">Sempre inclusa (${esc(src)})</small></div>`;
-  const counter = (list, need) => `<span class="gm-bp-count${list.length === need ? ' ok' : list.length > need ? ' bad' : ''}">${list.length}/${need}</span>`;
-
-  function stepBody(id, m, N) {
-    const ap = m.ap, ar = m.ar;
-    if (id === 'concept') return `<div class="gm-bp-row"><label class="gm-bp-f">Nome do antagonista<input type="text" data-bpb="name" value="${esc(B.name)}" placeholder="Ex.: Capitão Dorrick Maré-Negra"></label>
-      <label class="gm-bp-f gm-bp-wide">Conceito<input type="text" data-bpb="concept" value="${esc(B.concept)}" placeholder="Quem é, o que quer, como enfrenta seus campeões"></label></div>`;
-    if (id === 'ap') return `<div class="vf-cards">${VD.approaches.map(a => vcard(`data-vf="ap" data-v="${a.id}"`, B.ap === a.id, false, `<header><h4>${esc(a.n)}</h4><span class="vf-hp">Vida base ${a.hp}</span></header><p class="vf-d">${esc(a.d)}</p>
-        <p class="vf-stat"><b>Poderes</b> ${diceRow(a.P)}</p><p class="vf-stat"><b>Qualidades</b> ${diceRow(a.Q)} ${die('d8')}</p>
-        <p class="vf-stat"><b>Habilidades</b> escolha ${a.pick} de ${a.ab.length}</p><p class="vf-list">${a.ab.map(x => esc(x.n)).join(' · ')}</p>${a.note ? `<p class="vf-note">${esc(a.note)}</p>` : ''}`)).join('')}</div>`;
-    if (id === 'dice') {
-      const slots = (kind, dice, store) => dice.map((d, i) => `<label class="gm-bp-slot">${die(d)} <select data-bpb="${kind}" data-i="${i}"><option value="">—</option>${traitOptions(kind === 'P' ? 'power' : 'quality', store[i])}</select></label>`).join('');
-      return `<h5>Poderes <small>sugestão: ${esc(ap.sp)}</small></h5><div class="gm-bp-slots">${slots('P', m.pDice, B.P)}</div>
-        <h5>Qualidades <small>sugestão: ${esc(ap.sq)}</small></h5><div class="gm-bp-slots">${slots('Q', m.qDice, B.Q)}
-          <label class="gm-bp-slot">${die('d8')} <input type="text" data-bpb="rp" value="${esc(B.rp)}" placeholder="Qualidade de interpretação"></label></div>
-        ${m.pOver || m.qOver ? '<p class="muted">Um dado já era d12 e o aprimoramento não o sobe mais: em troca, você ganha uma habilidade extra.</p>' : ''}`;
-    }
-    if (id === 'abap') return `<p class="vf-count">Escolha ${m.needA} ${counter(m.chosenA, m.needA)}</p><div class="vf-cards wide">${ap.ab.map((a, i) => abCard('a:' + i, a, !!B.ab['a:' + i], !B.ab['a:' + i] && m.chosenA.length >= m.needA)).join('')}</div>`;
-    if (id === 'arch') return `<div class="vf-cards">${VD.archetypes.map(a => vcard(`data-vf="arch" data-v="${a.id}"`, B.arch === a.id, false, `<header><h4>${esc(a.n)}</h4><span class="vf-hp">Vida ${sgn(a.hp)}</span></header>${pairsHit(a, ap) ? '<span class="vf-fit">Combina com a abordagem escolhida</span>' : ''}<p class="vf-d">${esc(a.d)}</p>
-        <table class="vf-mini">${a.status.map(s => `<tr><td>${dt(s[0])}</td><td>${die(s[1])}</td></tr>`).join('')}</table>
-        <p class="vf-stat"><b>Habilidades</b> escolha ${a.pick} de ${a.ab.length - (a.gain ? 1 : 0)}${a.gain ? ' (+ ' + esc(a.gain) + ')' : ''}</p>
-        ${a.challenge ? `<ul class="vf-note">${a.challenge.map(c => '<li>' + esc(c) + '</li>').join('')}</ul>` : ''}<p class="vf-note">Combina bem com: ${esc(a.pairs)}.</p>`)).join('')}</div>`;
-    if (id === 'abar') return `<p class="vf-count">Escolha ${m.needR} ${counter(m.chosenR, m.needR)}</p><div class="vf-cards wide">${m.arPool.map(a => abCard('r:' + ar.ab.indexOf(a), a, !!B.ab['r:' + ar.ab.indexOf(a)], !B.ab['r:' + ar.ab.indexOf(a)] && m.chosenR.length >= m.needR)).join('')}${m.gain.map(g => fixedCard(g.id, g.a, ar.n)).join('')}</div>`;
-    if (id === 'up') {
-      const upList = m.ups.filter(u => u.ab.length);
-      return `<div class="vf-cards">${VD.upgrades.map(u => vcard(`data-vf="up" data-id="${u.id}"`, !!B.up[u.id], false, `<header><h4>${esc(u.n)}</h4><span class="vf-hp">Vida ${sgn(u.hp)}</span></header><p class="vf-d">${esc(u.when)}</p>
-          ${u.ab.length ? `<ul class="vf-ablist">${u.ab.map(a => `<li><b>${esc(a.n)}</b> <span class="gm-bp-ty">${a.t}</span> ${dt(firstSentence(a.x))}</li>`).join('')}</ul>` : '<p class="vf-note">Sem habilidades extras: só soma Vida.</p>'}${u.note ? `<p class="vf-note">${esc(u.note)}</p>` : ''}`)).join('')}</div>
-        ${upList.length ? `<h5>Habilidades das melhorias</h5><div class="vf-cards wide">${upList.map(u => u.ab.map((a, i) => u.id === 'vehicle' ? abCard('u:vehicle:' + i, a, !!B.ab['u:vehicle:' + i], false) : fixedCard('u:' + u.id + ':' + i, a, u.n)).join('')).join('')}</div>${m.ups.some(u => u.id === 'vehicle') ? '<p class="muted">Veículo antagonista: monte um tenente com 2 a 4 destas habilidades (mais habilidades para mais campeões).</p>' : ''}` : ''}`;
-    }
-    if (id === 'mast') {
-      if (!m.ups.length) return '<p class="muted">A maestria só existe para antagonistas com pelo menos uma melhoria. Volte ao passo anterior se quiser um antagonista maior.</p>';
-      return `<div class="vf-cards">${vcard('data-vf="mast" data-v=""', !B.mastery, false, '<header><h4>Sem maestria</h4></header><p class="vf-d">O antagonista fica só com as habilidades e as melhorias.</p>')}${VD.masteries.map(x => vcard(`data-vf="mast" data-v="${esc(x.n)}"`, B.mastery === x.n, false, `<header><h4>${esc(x.n)}</h4><span class="gm-bp-ty">Passiva</span></header>
-        <p class="vf-stat"><b>Quando vale</b> ${esc(x.cond)}</p><p class="vf-stat"><b>O que faz</b> ${esc(x.x)}</p><p class="vf-note">Exemplo: ${esc(x.ex)}</p>`)).join('')}</div>`;
-    }
-    // done: warnings and the compact sheet
-    const I = issues(m, N);
-    return `${I.length ? `<div class="gm-bp-warn vf-warn"><b>Ainda falta ou está fora da regra:</b><ul>${I.map(t => '<li>' + esc(t) + '</li>').join('')}</ul></div>` : (m.hp != null ? '<p class="gm-bp-ready">Antagonista completo, pronto para a mesa.</p>' : '')}
-      ${m.hp != null ? `${compactSheet(m, N)}<div class="gm-bp-btns"><button type="button" class="btn small" data-bpb="toTable">Adicionar à mesa (Vida ${m.hp})</button><button type="button" class="btn small" data-bpb="copy">Copiar ficha</button><button type="button" class="btn small" data-bpb="clear">Recomeçar</button></div>` : '<p class="muted">Escolha a abordagem e o arquétipo para ver a ficha.</p>'}
-      <label class="gm-bp-f gm-bp-wide vf-note-f">Aparência, jeito de falar e motivos<textarea data-bpb="note" rows="2">${esc(B.note)}</textarea></label>`;
-  }
-
-  // the sheet, small: one column, one line per ability (the full text is in the tooltip)
-  function compactSheet(m, N) {
-    const chips = (dice, store) => dice.map((d, i) => `<span class="vf-chip">${die(d)} ${esc(store[i] ? tName(store[i]) : '?')}</span>`).join('');
-    const z = ['bruiser', 'fragile'].includes(m.ar.id) ? zonesFor(m.hp) : null;
-    return `<article class="vf-sheet"><header><h3>${esc(B.name || 'Antagonista sem nome')}</h3>${B.concept ? `<p class="muted">${esc(B.concept)}</p>` : ''}
-        <div class="vf-tags"><span>${esc(m.ap.n)}</span><span>${esc(m.ar.n)}</span>${m.ups.map(u => `<span>${esc(u.n)}</span>`).join('')}${m.ups.length ? '' : '<span>antagonista menor</span>'}</div></header>
-      <div class="vf-nums"><div class="vf-hpn"><small>Vida (${N} campeões)</small><b>${m.hp}</b><small>${m.ap.hp}${m.ar.hp >= 0 ? ' + ' + m.ar.hp : ' − ' + -m.ar.hp} + 5×${N}${m.upH ? ' + ' + m.upH : ''}</small>${z ? `<small>Verde ${z[0]} · Amarela ${z[1]} · Vermelha ${z[2]}</small>` : ''}</div>
-        <div class="vf-st"><small>Status</small>${m.ar.status.map(s => `<span>${dt(s[0])} ${die(s[1])}</span>`).join('')}</div></div>
-      <div class="vf-tr"><p><b>Poderes</b> ${chips(m.pDice, B.P)}</p><p><b>Qualidades</b> ${chips(m.qDice, B.Q)}<span class="vf-chip">${die('d8')} ${esc(B.rp || '?')}</span></p></div>
-      <ul class="vf-ab">${abLines(m).map(l => `<li title="${esc(l[2].replace(/«|»/g, ''))}"><b>${esc(l[0])}</b> <span class="gm-bp-ty">${l[1]}</span> ${dt(firstSentence(l[2])).replace(/«([^»]+)»/g, '<b>$1</b>')}</li>`).join('')}
-        ${m.mastery ? `<li title="${esc(m.mastery.x)}"><b>${esc(m.mastery.n)}</b> <span class="gm-bp-ty">I</span> ${esc(firstSentence(m.mastery.x))}</li>` : ''}</ul>${B.note ? `<p class="muted"><i>${esc(B.note)}</i></p>` : ''}</article>`;
-  }
-
-  let GOPEN = {};
-  function vfHtml() {
-    const N = VF.N, m = model(N), I = issues(m, N), id = STEPS[VF.step][0], n = needs(id, m, I), last = VF.step === STEPS.length - 1;
-    return `<header class="vf-top"><div class="vf-title"><span class="eyebrow">Escudo do Mestre</span><h3>Forja do Antagonista</h3></div>
-        <label class="gm-bp-n">Campeões (N)<select data-vf="n">${[2, 3, 4, 5, 6].map(k => `<option${k === N ? ' selected' : ''}>${k}</option>`).join('')}</select></label>
-        <div class="vf-hpbox"><small>Vida</small><b>${m.hp != null ? m.hp : '–'}</b></div><button type="button" class="btn small" data-vf="close">Fechar</button></header>
-      <nav class="vf-steps" aria-label="Passos">${STEPS.map((s, i) => `<button type="button" class="vf-dot${i === VF.step ? ' on' : ''}${stepDone(s[0], m, I) && i !== VF.step ? ' done' : ''}" data-vf="go" data-i="${i}"${i === VF.step ? ' aria-current="step"' : ''}><span>${stepDone(s[0], m, I) && i !== VF.step ? '✓' : i + 1}</span><em>${esc(s[1])}</em></button>`).join('')}</nav>
-      <main class="vf-body"><h2>${esc(STEP_TITLE[id])}</h2>
-        <details class="gm-bp-guide" data-g="${id}"${GOPEN[id] ? ' open' : ''}><summary>Guia deste passo</summary><div>${GUIDE[id]}</div></details>
-        ${n.length && !last ? `<div class="gm-bp-warn"><b>Ainda falta:</b><ul>${n.map(t => '<li>' + esc(t) + '</li>').join('')}</ul></div>` : ''}
-        <div class="vf-step">${stepBody(id, m, N)}</div></main>
-      <footer class="vf-foot"><button type="button" class="btn" data-vf="prev"${VF.step === 0 ? ' disabled' : ''}>Voltar</button><span class="vf-pos">Passo ${VF.step + 1} de ${STEPS.length}</span>
-        ${last ? '<button type="button" class="btn primary" data-vf="close">Concluir</button>' : '<button type="button" class="btn primary" data-vf="next">Continuar</button>'}</footer>`;
-  }
-  function vfDraw(top) {
-    if (!VF.open || !VF.el) return;
-    const body = VF.el.querySelector('.vf-body'), y = body ? body.scrollTop : 0, a = document.activeElement;
-    const key = a && VF.el.contains(a) && a.dataset ? ['data-vf', 'data-bpb', 'data-id', 'data-v', 'data-i', 't'].map(k => (a.getAttribute && a.getAttribute(k)) || '').join('|') : '';
-    const sel = a && a.getAttribute ? ['data-vf', 'data-bpb', 'data-id', 'data-v', 'data-i'].filter(k => a.getAttribute(k) != null).map(k => `[${k}="${CSS.escape(a.getAttribute(k))}"]`).join('') : '';
-    VF.el.innerHTML = vfHtml();
-    const nb = VF.el.querySelector('.vf-body'); if (nb) nb.scrollTop = top ? 0 : y;
-    if (key && sel && !['INPUT', 'TEXTAREA'].includes(a.tagName)) { const e = VF.el.querySelector(sel); if (e) e.focus({ preventScroll: true }); }
-  }
-  function vfOpen(root, N, onClose) {
-    if (VF.open) return;
-    VF.N = N; VF.onClose = onClose; VF.open = true;
-    VF.step = Math.min(Math.max(+B.vstep || 0, 0), STEPS.length - 1);
-    VF.el = document.createElement('div'); VF.el.className = 'vf'; VF.el.setAttribute('role', 'dialog'); VF.el.setAttribute('aria-modal', 'true'); VF.el.setAttribute('aria-label', 'Forja do Antagonista');
-    root.appendChild(VF.el); document.body.classList.add('vf-open');
-    vfDraw(true);
-    const f = VF.el.querySelector('.vf-body h2'); if (f) { f.tabIndex = -1; f.focus({ preventScroll: true }); }
-  }
-  function vfClose() {
-    if (!VF.open) return;
-    VF.open = false; document.body.classList.remove('vf-open');
-    if (VF.el) VF.el.remove(); VF.el = null;
-    if (VF.onClose) VF.onClose(VF.N);
-  }
-  function vfGo(i) { VF.step = Math.min(Math.max(i, 0), STEPS.length - 1); B.vstep = VF.step; saveB(); vfDraw(true); const f = VF.el.querySelector('.vf-body h2'); if (f) { f.tabIndex = -1; f.focus({ preventScroll: true }); } }
-
-  // the little summary shown in the page, where the forge opens from
-  function miniHtml(N) {
-    const m = model(N), started = B.name.trim() || B.ap || B.arch;
-    return `<div class="gm-bp-mont vf-mini-box">${started ? `<p><b>${esc(B.name || 'Antagonista sem nome')}</b>${m.ap ? ` <span class="muted">· ${esc(m.ap.n)}${m.ar ? ' + ' + esc(m.ar.n) : ''}${m.hp != null ? ' · Vida ' + m.hp : ''}</span>` : ''}</p><p class="muted">Seu antagonista em construção está salvo neste navegador.</p>` : '<p class="muted">Nove passos, cada um numa tela, com todas as opções à vista em cartas.</p>'}
-      <div class="gm-bp-btns"><button type="button" class="btn primary" data-vf="open">${started ? 'Continuar a Forja do Antagonista' : 'Abrir a Forja do Antagonista'}</button></div></div>`;
-  }
-  function abLines(m) {
-    const L = [];
-    for (const x of m.chosenA) L.push([x.a.n, x.a.t, fill(x.a, x.id), 'abordagem']);
-    for (const x of m.chosenR) L.push([x.a.n, x.a.t, fill(x.a, x.id), 'arquétipo']);
-    for (const x of m.gain) L.push([x.a.n, x.a.t, fill(x.a, x.id), 'arquétipo']);
-    for (const x of m.upAb) L.push([x.a.n, x.a.t, fill(x.a, x.id), x.src]);
-    return L;
-  }
-  function sheetText(m, N) {
-    const tr = (dice, store) => dice.map((d, i) => `${d} ${store[i] ? tName(store[i]) : '?'}`).join(', ');
-    const L = [`${B.name || 'Antagonista sem nome'}${B.concept ? ' · ' + B.concept : ''}`, `${m.ap.n} (${m.ap.hp}) + ${m.ar.n} (${m.ar.hp})${m.ups.length ? ' + ' + m.ups.map(u => u.n).join(', ') : ''}${m.mastery ? ' · ' + m.mastery.n : ''}`,
-      `Poderes: ${tr(m.pDice, B.P)}`, `Qualidades: ${tr(m.qDice, B.Q)}, d8 ${B.rp || 'qualidade de interpretação'}`,
-      `Status: ${m.ar.status.map(s => s[0] + ' ' + s[1]).join(' | ')}`, `Vida para ${N} campeões: ${m.ap.hp} + ${m.ar.hp} + 5×${N}${m.upH ? ' + ' + m.upH : ''} = ${m.hp}`];
-    for (const l of abLines(m)) L.push(`${l[0].replace(/\s*\(.*$/, '')} [${l[1]}]: ${l[2].replace(/«|»/g, '')}`);
-    if (m.mastery) L.push(`${m.mastery.n} [I]: ${m.mastery.x}`);
-    if (B.note) L.push(B.note);
-    return L.join('\n');
-  }
-
   // ------------------------------------------------------------------ rendering
   const table = (cols, rows) => `<table class="gm-fl-t gm-bp-t"><thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((v, i) => `<td${i === 0 ? ' class="fl-sc"' : ''}>${dt(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
   const ol = items => `<ol class="gm-bp-steps">${items.map(i => `<li>${i}</li>`).join('')}</ol>`;
@@ -467,7 +213,7 @@
       { id: 'tenentes', title: 'Tenentes', body: `
         <p>Tenentes são lacaios mais complexos: <b>um dado maior, uma ou mais habilidades e um papel claro</b> na cena (comandar lacaios, dar apoio, atrapalhar). Um tenente vale por dois lacaios na conta da cena. Crie como um lacaio, com 2 ou 3 habilidades escolhidas da lista acima, e escreva a tática dele em uma linha. Veículos e máquinas de guerra dos antagonistas também entram aqui.</p>` },
       { id: 'viloes', title: 'Antagonistas', body: `
-        <p class="muted">Prefere montar direto? Use o <a href="#bp-montador">Montador de antagonistas</a> logo abaixo: ele traz as listas completas de habilidades de cada abordagem e arquétipo.</p>
+        <p class="muted">Prefere montar direto? Use o <a href="#bp-montador">Forja do Antagonista</a> logo abaixo: ele traz as listas completas de habilidades de cada abordagem e arquétipo.</p>
         <p>Um antagonista fica entre um campeão e todo o resto: tem poderes, qualidades, um status, Vida e habilidades. É <b>menor</b> se usa só os números básicos e <b>maior</b> se tem melhorias. Passos:</p>
         ${ol(['<b>Conceito:</b> quem é, o que quer e como bate de frente com seus campeões.', '<b>Abordagem:</b> dá poderes, qualidades, Vida base e habilidades da forma como ele age.', '<b>Poderes e qualidades:</b> distribua dados da lista de poderes e qualidades; ele também tem uma qualidade de interpretação.', '<b>Arquétipo:</b> como ele luta e do que se importa numa cena (de que depende seu status). Dá Vida e habilidades.', '<b>Melhorias (opcional):</b> cada uma ajuda a enfrentar mais um campeão.', '<b>Maestria (opcional, só com melhorias):</b> uma opção de Superar automática, como os princípios dos campeões.', '<b>Vida:</b> some os valores (abaixo) e finalize com aparência, jeito de falar e motivos.'])}
         <h4>Abordagens</h4>
@@ -527,7 +273,7 @@
       let N = 4;
       const draw = () => {
         const G = guide(N);
-        const nav = [['bp-guia', 'Como criar'], ['bp-sessao', 'Montar uma sessão'], ['bp-montador', 'Montador de antagonistas'], ['bp-lacaios', 'Lacaios'], ['bp-tenentes', 'Tenentes'], ['bp-viloes', 'Antagonistas'], ['bp-ambientes', 'Ambientes'], ['bp-aventuras', 'Aventuras']];
+        const nav = [['bp-guia', 'Como criar'], ['bp-sessao', 'Montar uma sessão'], ['bp-montador', 'Forja do Antagonista'], ['bp-lacaios', 'Lacaios'], ['bp-tenentes', 'Tenentes'], ['bp-viloes', 'Antagonistas'], ['bp-ambientes', 'Ambientes'], ['bp-aventuras', 'Aventuras']];
         root.innerHTML = `<section class="gm-bp" id="bancada">
           <div class="gm-fl-head"><div><div class="eyebrow">Guia do Mestre</div><h2>Bancada do Mestre</h2>
             <p class="muted">Como criar cenas, desafios, lacaios, tenentes, antagonistas e ambientes, com exemplos prontos de Runeterra. Adapta os capítulos <i>Bullpen</i>, <i>Adventure Issues</i> e <i>The Archives</i> do <em>Sentinel Comics RPG</em>; os exemplos são originais.</p></div>
@@ -538,7 +284,8 @@
             <p>Use este molde como ponto de partida: abra com um gancho, alterne cenas sociais, de montagem e de ação, e termine com uma consequência que alimente a próxima sessão.</p>
             ${ol(['<b>Gancho:</b> um problema que os campeões têm motivo para resolver.', '<b>Cena social ou de montagem:</b> informação, aliados, preparação.', '<b>Ação (fácil ou moderada):</b> aquece e mostra o estilo do antagonista ou do ambiente.', '<b>Interlúdio:</b> descanso, escolhas difíceis, uma revelação.', '<b>Ação (difícil):</b> o confronto com o antagonista no ambiente, com um desafio central.', '<b>Desfecho:</b> consequências, anotação na Sessões Anteriores e ganchos para a próxima.'])}
           </div>
-          <div id="bp-montador"><h3>Forja do Antagonista</h3><p class="muted">Monte um antagonista passo a passo, numa tela cheia: abordagem, dados, habilidades, arquétipo, melhorias e maestria, com todas as opções em cartas e uma ficha no final. A Vida usa o número de campeões (N). Suas escolhas ficam salvas neste navegador.</p><div id="bp-mont">${miniHtml(N)}</div></div>
+          <div id="bp-montador"><h3>Forja do Antagonista</h3><p class="muted">Monte um antagonista passo a passo, como na Forja de Campeões: abordagem, dados, habilidades, arquétipo, melhorias e maestria, com cartas que mostram tudo antes de você escolher. No fim sai uma ficha para imprimir, exportar em PDF ou salvar em .json, com retrato e nomes só seus para poderes, qualidades e habilidades.</p>
+            <div class="gm-bp-btns"><a class="btn primary" href="antagonista.html">${(window.ICO ? window.ICO('codex') : '')} Abrir a Forja do Antagonista</a></div></div>
           <div id="bp-lacaios"><h3>Exemplos: lacaios</h3><div class="gm-bp-grid">${MINIONS.map(m => minionCard(m, 'minion', N)).join('')}</div></div>
           <div id="bp-tenentes"><h3>Exemplos: tenentes</h3><div class="gm-bp-grid">${LIEUTENANTS.map(m => minionCard(m, 'lieutenant', N)).join('')}</div></div>
           <div id="bp-viloes"><h3>Exemplos: antagonistas</h3><div class="gm-bp-grid">${VILLAINS.map(v => villainCard(v, N)).join('')}</div></div>
@@ -554,67 +301,6 @@
         N = +ev.target.value; draw();
         open.forEach(id => { const d = root.querySelector('#' + id); if (d) d.open = true; });
         scrollTo(0, y);
-      });
-      // villain forge: it redraws only its own screen, so typing is never interrupted
-      const redrawB = () => { if (VF.open) vfDraw(); else { const el = root.querySelector('#bp-mont'); if (el) el.innerHTML = miniHtml(N); } };
-      const dropAb = prefix => { for (const k of Object.keys(B.ab)) if (k.startsWith(prefix)) delete B.ab[k]; for (const k of Object.keys(B.tk)) if (k.startsWith(prefix)) delete B.tk[k]; };
-      const applyB = (f, o) => {
-        if (f === 'ap') { B.ap = o.value; B.P = {}; B.Q = {}; dropAb('a:'); }
-        else if (f === 'arch') { B.arch = o.value; dropAb('r:'); dropAb('g:'); }
-        else if (f === 'P' || f === 'Q') { const s = B[f]; if (o.value) s[o.i] = o.value; else delete s[o.i]; }
-        else if (f === 'tk') { const k = o.id + '|' + o.t; if (o.value) B.tk[k] = o.value; else delete B.tk[k]; }
-        else if (f === 'ab') { if (o.checked) B.ab[o.id] = true; else { delete B.ab[o.id]; dropAb(o.id + '|'); } }
-        else if (f === 'up') { if (o.checked) B.up[o.id] = true; else { delete B.up[o.id]; dropAb('u:' + o.id + ':'); if (!Object.keys(B.up).length) B.mastery = ''; } }
-        else if (f === 'mastery') B.mastery = o.value;
-        saveB(); redrawB();
-      };
-      document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && VF.open) vfClose(); });
-      root.addEventListener('toggle', ev => { const d = ev.target; if (d.matches && d.matches('details.gm-bp-guide')) GOPEN[d.dataset.g] = d.open; }, true);
-      root.addEventListener('input', ev => {
-        const f = ev.target.dataset && ev.target.dataset.bpb;
-        if (!['name', 'concept', 'rp', 'note'].includes(f)) return;
-        B[f] = ev.target.value; saveB();
-      });
-      root.addEventListener('change', ev => {
-        const t = ev.target;
-        if (t.dataset && t.dataset.vf === 'n') { VF.N = +t.value; vfDraw(); return; }
-        const f = t.dataset && t.dataset.bpb;
-        if (!f || ['name', 'concept', 'rp', 'note'].includes(f)) return;
-        applyB(f, { value: t.value, checked: t.checked, id: t.dataset.id, t: t.dataset.t, i: t.dataset.i });
-        if (f === 'P' || f === 'Q') vfDraw();   // dice picked: refresh the "falta" strip and the steps
-      });
-      // cards and navigation
-      const cardAct = c => {
-        const k = c.dataset.vf;
-        if (c.classList.contains('dis')) return;
-        if (k === 'ap' || k === 'arch') applyB(k, { value: c.dataset.v });
-        else if (k === 'ab') applyB('ab', { id: c.dataset.id, checked: !B.ab[c.dataset.id] });
-        else if (k === 'up') applyB('up', { id: c.dataset.id, checked: !B.up[c.dataset.id] });
-        else if (k === 'mast') applyB('mastery', { value: c.dataset.v });
-      };
-      root.addEventListener('keydown', ev => {
-        const c = ev.target.closest && ev.target.closest('.vf-card[role=button]');
-        if (c && ev.target === c && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); cardAct(c); }
-      });
-      root.addEventListener('click', ev => {
-        const v = ev.target.closest('[data-vf]');
-        if (v && !ev.target.closest('select, input, textarea, label')) {
-          const k = v.dataset.vf;
-          if (k === 'open') { vfOpen(root, N, n => { if (n !== N) { N = n; const y = scrollY; draw(); scrollTo(0, y); } else redrawB(); }); return; }
-          if (k === 'close') { vfClose(); return; }
-          if (k === 'next') { vfGo(VF.step + 1); return; }
-          if (k === 'prev') { vfGo(VF.step - 1); return; }
-          if (k === 'go') { vfGo(+v.dataset.i); return; }
-          if (['ap', 'arch', 'ab', 'up', 'mast'].includes(k)) { cardAct(v); return; }
-        }
-        const bb = ev.target.closest('[data-bpb="toTable"], [data-bpb="copy"], [data-bpb="clear"]');
-        if (!bb) return;
-        const m = model(VF.open ? VF.N : N), f = bb.dataset.bpb;
-        if (f === 'clear') { if (confirm('Recomeçar o antagonista? Isso apaga o que você montou.')) { B = blankB(); saveB(); VF.step = 0; redrawB(); vfDraw(true); } return; }
-        if (m.hp == null) return;
-        if (f === 'toTable') { if (window.GM_TOOLS) window.GM_TOOLS.addVillain(B.name || 'Antagonista sem nome', m.hp); }
-        else if (navigator.clipboard) navigator.clipboard.writeText(sheetText(m, VF.open ? VF.N : N)).catch(() => {});
-        const old = bb.textContent; bb.textContent = f === 'toTable' ? 'Adicionado na Mesa do Mestre' : 'Copiado'; setTimeout(() => { bb.textContent = old; }, 1600);
       });
       root.addEventListener('click', ev => {
         const b = ev.target.closest('[data-bp="foe"], [data-bp="villain"]');
