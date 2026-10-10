@@ -1837,7 +1837,13 @@ body.ro-lock { overflow: hidden; }
 .env-thc-s, .env-thc-t { color: var(--text-2); }
 
 /* Oficina de Ameaças: o banco */
-.th-folders .rail-item button { width: 100%; }
+.th-folders::before { display: none; }
+.th-folders .rail-item button { display: block; width: 100%; text-align: left; padding: 0.5rem 0.7rem; border-left: 2px solid transparent; }
+.th-folders .rail-item.active button { border-left-color: var(--hex); }
+.th-folders .rail-item.drop button { background: rgba(215, 169, 80, .18); border-left-color: var(--gold); }
+.th-drop-hint { margin: 0.8rem 0 0; font-size: .8rem; line-height: 1.4; color: var(--text-3); }
+.th-move { max-width: 11rem; }
+.th-card[draggable=true] { cursor: grab; }
 .th-folder-acts { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.8rem; align-items: center; }
 .th-bar { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin: 1rem 0 0.4rem; }
 .th-search { flex: 1 1 12rem; min-width: 10rem; }
@@ -1853,3 +1859,4 @@ body.ro-lock { overflow: hidden; }
 .th-acts { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: auto; }
 .th-tip-img { display: block; max-width: 8rem; max-height: 8rem; margin: 0.3rem 0; }
 .env-thc-img { float: right; width: 3.4rem; height: 3.4rem; object-fit: cover; margin: 0 0 0.2rem 0.4rem; }
+.th-bar .th-move { max-width: none; min-width: 15rem; }
