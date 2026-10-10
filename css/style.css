@@ -1776,7 +1776,7 @@ body.ro-lock { overflow: hidden; }
 .hs-zone.src .zlbl { color: var(--gold); background: rgba(200, 164, 94, .08); }
 .ant-page .hs-hr .burst small { letter-spacing: 0; }
 @media (max-width: 700px) { .vf-cards, .vf-cards.wide { grid-template-columns: minmax(0, 1fr); } .chapter-tools .gm-bp-n { margin-right: 0; } }
-@media (max-width: 1100px) { .ant-long { display: none; } }
+@media (max-width: 1320px) { .ant-long { display: none; } }
 
 .rune[hidden] { display: none; }
 .card .cdice { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin-top: 0.45rem; }
@@ -1793,3 +1793,27 @@ body.ro-lock { overflow: hidden; }
 
 .rp-desc-row { margin: 0.463rem 0 0.2rem 0; padding: 0 0 0.2rem; }
 .rp-desc-row .btn[disabled] { opacity: .45; cursor: not-allowed; }
+
+/* The Environment Workshop (ambiente.html) */
+.env-tw { cursor: default; }
+.env-tw .ab-top { align-items: center; }
+.env-del { margin-left: auto; }
+.env-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 0.8rem; margin: 0.5rem 0; }
+.env-fx { margin: 0.6rem 0; padding: 0.7rem 0.8rem; border: 1px solid var(--line); background: var(--ink-0); display: grid; gap: 0.5rem; }
+.env-fxh { display: flex; justify-content: space-between; align-items: center; }
+.env-opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr)); gap: 0.4rem; }
+.env-opts .ab { padding: 0.4rem 0.6rem 0.4rem 1rem; border: 1px solid var(--line); cursor: pointer; }
+.env-opts .ab.picked { border-color: var(--gold); }
+.env-opts .ab .ab-name { font-size: .95rem; }
+.env-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: end; }
+.env-row .field { flex: 1 1 14rem; }
+.env-prev { margin-top: 0.5rem; padding: 0.5rem 0.8rem; border-left: 3px solid var(--gold-lo); background: var(--ink-1); }
+.env-prev > b { display: block; font: 600 .66rem var(--font-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.2rem; }
+.env-dice { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-top: 0.8rem; }
+.env-story { margin-top: 0.25rem; font-style: italic; color: var(--text-3); font-size: .86rem; }
+.env-turn { margin: 0.2rem 0 0; padding-left: 1.2rem; font-size: .88rem; line-height: 1.4; color: var(--text-2); }
+.env-traits { grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); }
+.hs-ab-t .nm small { font-style: normal; }
+@media (max-width: 700px) { .env-fields { grid-template-columns: minmax(0, 1fr); } .env-opts { grid-template-columns: minmax(0, 1fr); } }
+.env-opts { align-items: stretch; }
+.env-opts .ab { display: flex; align-items: center; }

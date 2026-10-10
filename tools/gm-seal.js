@@ -10,7 +10,7 @@
    What goes in the vault (version 2):
      gm/content.html     optional HTML for the Screen's own notes page;
      gm/src/<name>.js    the GM-only modules, run in the browser after unlocking, in this order:
-                         gm-flavour, gm-twists, gm-tools, gm-villain-data, gm-bullpen.
+                         gm-flavour, gm-twists, gm-tools, gm-villain-data, gm-env-data, gm-bullpen.
 
    Usage:  GM_PASSWORD='…' node tools/gm-seal.js
            (without GM_PASSWORD it asks for it on the terminal)
@@ -23,7 +23,7 @@ const crypto = require('crypto');
 const ROOT = path.join(__dirname, '..');
 const GM = path.join(ROOT, 'gm');
 const OUT = path.join(ROOT, 'js', 'gm-vault.js');
-const ORDER = ['gm-flavour', 'gm-twists', 'gm-tools', 'gm-villain-data', 'gm-bullpen'];
+const ORDER = ['gm-flavour', 'gm-twists', 'gm-tools', 'gm-villain-data', 'gm-env-data', 'gm-bullpen'];
 const ITER = 310000;
 
 const ask = q => new Promise(res => {
