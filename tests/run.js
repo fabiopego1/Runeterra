@@ -526,6 +526,9 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.waitForSelector('.hs-portrait.small img');
     ok(/ambiente\.html/.test(p.url()) && await p.$eval('#stage', e => /Dê um lugar à cena/.test(e.textContent)), 'adding an image keeps the Environment Workshop on screen');
     ok(JSON.stringify(await p.evaluate(() => [localStorage.getItem('runeterra-forge-v1'), localStorage.getItem('runeterra-forge-roster-v1')])) === JSON.stringify(forgeBefore), 'and the champion saved in the Forge, and its roster, are left untouched');
+    await p.click('[data-a=plAdd]'); await p.fill('input[data-pl]', 'Ponte da Torre');
+    await p.click('[data-a=plAdd]'); await p.fill('input[data-pl] >> nth=1', 'Porão do Estádio');
+    ok(await p.$$eval('input[data-pl]', e => e.length) === 2, 'the concept chapter lists the places of the scene');
     await p.click('[data-a=next]');
     for (let i = 0; i < 3; i++) await p.fill(`[data-b="traits.${i}.name"]`, ['Fendas Dimensionais', 'Distorções Horrendas', 'Caos Malévolo'][i]);
     for (const [i, d] of ['d6', 'd6', 'd10'].entries()) await p.click(`.tchip[data-a=tdie][data-i="${i}"][data-val="${d}"]`);
@@ -580,6 +583,11 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
       ok(await p.$eval(`${lastTw} >> .tchip[data-a=fxThreat]`, e => /\+2 em Atacar inimigos voadores/.test(e.dataset.tip) && /Salvamento/.test(e.dataset.tip)), 'the threat chip shows the little sheet on hover');
       await p.click(`${lastTw} >> .tchip[data-a=fxThreat]`); });
     ok(/Adicione um lacaio: Diabretes da Tempestade \(d?6\)/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'a threat effect picks the minion from the library');
+    await buildTw('green', 'minor', 'Campo de Pacifismo', async () => { await p.click(`${lastTw} >> .env-opts .ab >> nth=-1`); });
+    ok(await p.$eval(`${lastTw} >> .env-warn`, e => /fora das tabelas/.test(e.textContent)) && /descreva o efeito personalizado/.test(await p.$eval('.flow-todo', e => e.textContent)), 'a custom recipe warns that it is outside the book\'s tables and asks for its text');
+    await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Defenda quem não Atacou no último turno e Atrapalhe os demais');
+    await p.click(`${lastTw} >> .tchip[data-a=fxCdice][data-val=mid]`); await p.click(`${lastTw} >> .tchip[data-a=fxCdice][data-val=min]`);
+    ok(/Defenda quem não Atacou[\s\S]*Use dado Mín do ambiente/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'a custom basic recipe writes the GM\'s text and the environment die it uses');
     await buildTw('green', 'major', 'Socorro, Ele Me Pegou!');
     await p.click(`${lastTw} >> .env-opts .ab >> nth=2`);
     ok(await p.evaluate(() => { const c = [...document.querySelectorAll('[data-twcard]')].pop(); return c.querySelectorAll('.tchip[data-val=overcome]').length === 0 && c.querySelectorAll('.tchip[data-val=hinder]').length === 1; }), 'Overcome is not offered for an action on all targets');
@@ -596,15 +604,21 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(/persistente e exclusivo/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'persistent and exclusive actions are written out');
     await p.click('[data-a=next]');
     await buildTw('red', 'minor', 'A Bandeira Pega Fogo'); await buildTw('red', 'minor', 'Mãos do Abismo');
+    await buildTw('red', 'minor', 'A Ponte Cede', async () => {
+      await p.click(`${lastTw} >> .tchip[data-val=challenge]`); await p.click(`${lastTw} >> .env-opts .ab >> nth=-1`);
+      await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Atravessar a ponte antes que ela caia'); await p.selectOption(`${lastTw} >> select[data-f=cwhere]`, { label: 'Ponte da Torre' }); await p.selectOption(`${lastTw} >> select[data-f=cblocks]`, { label: 'Porão do Estádio' }); await p.click(`${lastTw} >> .tchip[data-a=fxCtimer][data-val=true]`); await p.fill(`${lastTw} >> input[data-f=tcons]`, 'a ponte cai'); });
+    ok(/desafio personalizado[\s\S]*cronômetro|desafio personalizado[\s\S]*caixinha[\s\S]*a ponte cai/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'a custom challenge can have a timer');
+    ok(/O desafio fica em Ponte da Torre\. Enquanto ninguém o superar, ninguém passa para Porão do Estádio/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'a challenge says where it is and which place it blocks');
     await buildTw('red', 'major', 'Está Quase Aqui', async () => {
       await p.click(`${lastTw} >> .tchip[data-val=challenge]`); await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
       await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Fendas gigantes se abrem por toda a cidade'); });
     await p.click('[data-a=next]'); await p.waitForSelector('#sheet-preview .hs-page');
+    ok(await p.$eval('#sheet-preview', e => /Locais da cena/.test(e.textContent) && /Porão do Estádio/.test(e.textContent)), 'the sheet lists the places');
     ok(await p.$eval('#sheet-preview', e => /Tempestade sobre a Cidade da Torre/.test(e.textContent) && /Diabretes da Tempestade/.test(e.textContent) && /Fendas gigantes/.test(e.textContent) && /Cria Tentacular/.test(e.textContent) && /cronômetro: 3 caixinhas/.test(e.textContent)), 'the sheet lists the twists, the threat library, the timed challenge and the doomsday device');
     ok(await p.$$eval('#sheet-preview [data-tip]', e => e.length) > 20, 'the environment sheet explains terms, dice and zones on hover');
     const [dlE] = await Promise.all([p.waitForEvent('download'), p.click('.export-row [data-a=export]')]);
     const jsonE = JSON.parse(fs.readFileSync(await dlE.path(), 'utf8'));
-    ok(jsonE.app === 'runeterra-environment' && jsonE.tw.green.minor.length === 2 && jsonE.tw.red.major.length === 1, 'the environment exports to .json');
+    ok(jsonE.app === 'runeterra-environment' && jsonE.tw.green.minor.length === 3 && jsonE.tw.red.major.length === 1, 'the environment exports to .json');
     const [pdfE] = await Promise.all([p.waitForEvent('download', { timeout: 60000 }), p.click('.export-row [data-a=pdf]')]);
     ok(fs.readFileSync(await pdfE.path()).slice(0, 4).toString() === '%PDF', 'the environment sheet exports to PDF');
     await p.click('[data-a=roster]');
