@@ -529,10 +529,17 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('[data-a=next]', e => e.classList.contains('is-disabled')), 'a zone needs its twists before Continue');
     await buildTw('green', 'minor', 'Uma Fenda se Abre');
     ok(/Role os dados do ambiente\. Atrapalhe um alvo com o dado Médio\./.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'a recipe from the rulebook becomes the twist\'s game text');
+    // Overcome works on challenges, not on targets: it reads as a challenge and is not offered for "everyone"
+    await p.click(`${lastTw} >> .tchip[data-a=fxVerb][data-val=overcome]`);
+    ok(/Supere um dos desafios restantes da cena/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'an environment that Overcomes overcomes a challenge, never a target');
+    await p.click(`${lastTw} >> .tchip[data-a=fxVerb][data-val=hinder]`);
     await buildTw('green', 'minor', 'Ataque dos Diabretes', async () => {
       await p.click(`${lastTw} >> .tchip[data-val=threat]`); await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
       await p.fill(`${lastTw} >> input[data-f=tname]`, 'Diabretes da Tempestade'); });
     await buildTw('green', 'major', 'Socorro, Ele Me Pegou!');
+    await p.click(`${lastTw} >> .env-opts .ab >> nth=2`);
+    ok(await p.evaluate(() => { const c = [...document.querySelectorAll('[data-twcard]')].pop(); return c.querySelectorAll('.tchip[data-val=overcome]').length === 0 && c.querySelectorAll('.tchip[data-val=hinder]').length === 1; }), 'Overcome is not offered for an action on all targets');
+    await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
     ok(await p.$$eval('[data-a=twAdd][data-s=major]', e => e.length) === 0, 'only one major twist per zone');
     await p.click('[data-a=next]');
     await buildTw('yellow', 'minor', 'O Toque da Vidente'); await buildTw('yellow', 'minor', 'Visão Turva');

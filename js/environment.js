@@ -80,6 +80,14 @@
   const catsFor = (z, s) => CATS.filter(c => c[0] !== 'advance' || s === 'major');
   const isPersist = (o, fx, i) => !!(o.acts[i].persist || (o.persistOne && (fx.persistIdx || 0) === i));
   const dieWord = d => DIENAME[d] || d;
+  // Overcome works on challenges, not on targets: it cannot hit "everyone", and it never creates a persistent modifier
+  const OVERCOME_OK = a => !['all', 'two', 'others'].includes(a.who) && !a.persist;
+  const verbsFor = (o, fx, k) => Object.keys(VERBS).filter(key => {
+    const pers = isPersist(o, fx, k);
+    if (pers) return key === 'hinder' || key === 'boost';
+    if (key === 'overcome') return OVERCOME_OK(o.acts[k]);
+    return true;
+  });
   const withDie = d => `com ${/^dados/.test(dieWord(d)) ? 'os' : 'o'} ${dieWord(d)}`;
   const thCount = n => (n === 'one' ? '' : `dado ${n === 'min' ? 'Mín' : n === 'mid' ? 'Médio' : 'Máx'}`);
 
@@ -114,7 +122,7 @@
       dice = true;
       const parts = o.acts.map((a, i) => {
         const v = fx.verbs[i] || 'hinder', pers = isPersist(o, fx, i);
-        return `${VERBS[v][1]} ${WHO_TXT[a.who]} ${withDie(a.die)}${pers ? ', criando um modificador persistente e exclusivo' : ''}`;
+        return `${VERBS[v][1]} ${v === 'overcome' ? 'um dos desafios restantes da cena' : WHO_TXT[a.who]} ${withDie(a.die)}${pers ? ', criando um modificador persistente e exclusivo' : ''}`;
       });
       text = parts.join(', e depois ') + '.';
       if (o.other) {
@@ -231,8 +239,8 @@
     if (o && fx.cat === 'basic') {
       cfg += o.acts.map((a, k) => {
         const pers = isPersist(o, fx, k), v = fx.verbs[k] || 'hinder';
-        const verbs = Object.entries(VERBS).filter(([key]) => !pers || key === 'hinder' || key === 'boost');
-        return `<div class="cfg-l">Ação ${o.acts.length > 1 ? k + 1 + ': ' : ''}${esc(WHO_TXT[a.who])} ${esc(withDie(a.die))}${pers ? ' (persistente e exclusiva)' : ''}</div><div class="tchips" role="radiogroup">${verbs.map(([key, l]) => tchipB(`data-a="fxVerb" ${A} data-k="${k}" data-val="${key}"`, v === key, `<span>${l[0]}</span>`, `<h5>${l[0]}</h5>${window.GLOSSARY[{ attack: 'Attack', hinder: 'Hinder', boost: 'Boost', defend: 'Defend', overcome: 'Overcome' }[key]] || ''}`)).join('')}</div>`;
+        const verbs = verbsFor(o, fx, k).map(key => [key, VERBS[key]]);
+        return `<div class="cfg-l">Ação ${o.acts.length > 1 ? k + 1 + ': ' : ''}${v === 'overcome' ? 'um dos desafios restantes da cena' : esc(WHO_TXT[a.who])} ${esc(withDie(a.die))}${pers ? ' (persistente e exclusiva)' : ''}</div><div class="tchips" role="radiogroup">${verbs.map(([key, l]) => tchipB(`data-a="fxVerb" ${A} data-k="${k}" data-val="${key}"`, v === key, `<span>${l[0]}</span>`, `<h5>${l[0]}</h5>${window.GLOSSARY[{ attack: 'Attack', hinder: 'Hinder', boost: 'Boost', defend: 'Defend', overcome: 'Overcome' }[key]] || ''}${key === 'overcome' ? '<hr><small>Superar resolve um <b>desafio</b> da cena (um obstáculo), não atinge alvos. Serve para o ambiente resolver algo, como “os socorristas chegam”.</small>' : key === 'defend' ? '<hr><small>O livro recomenda Atrapalhar no lugar de Defender para os ambientes.</small>' : ''}`)).join('')}</div>`;
       }).join('');
       if (o.persistOne) cfg += `<div class="cfg-l">Qual das ações é persistente e exclusiva?</div><div class="tchips" role="radiogroup">${o.acts.map((a, k) => tchipB(`data-a="fxPers" ${A} data-val="${k}"`, (fx.persistIdx || 0) === k, `<span>Ação ${k + 1}</span>`)).join('')}</div>`;
     }
@@ -457,7 +465,7 @@
   function pickOpt(fx, z, s, optId) {
     fx.opt = optId; fx.persistIdx = 0;
     const o = getOpt(fx, z, s);
-    if (o && fx.cat === 'basic') fx.verbs = o.acts.map((a, i) => (fx.verbs[i] && (!isPersist(o, fx, i) || ['hinder', 'boost'].includes(fx.verbs[i]))) ? fx.verbs[i] : 'hinder');
+    if (o && fx.cat === 'basic') fx.verbs = o.acts.map((a, i) => (fx.verbs[i] && verbsFor(o, fx, i).includes(fx.verbs[i])) ? fx.verbs[i] : 'hinder');
     if (o && fx.cat === 'threat' && o.lt && DIES.indexOf(fx.tdie) < 1) fx.tdie = 'd8';
   }
   function onClick(ev) {
@@ -476,7 +484,7 @@
     if (a === 'fxCat' && fx) { fx.cat = el.dataset.val; fx.opt = ''; fx.verbs = []; save(); render(); return; }
     if (a === 'fxOpt' && fx) { pickOpt(fx, hit.z, hit.s, el.dataset.val); save(); render(); return; }
     if (a === 'fxVerb' && fx) { fx.verbs[+el.dataset.k] = el.dataset.val; save(); render(); return; }
-    if (a === 'fxPers' && fx) { fx.persistIdx = +el.dataset.val; const o = getOpt(fx, hit.z, hit.s); if (o) o.acts.forEach((x, i) => { if (isPersist(o, fx, i) && !['hinder', 'boost'].includes(fx.verbs[i])) fx.verbs[i] = 'hinder'; }); save(); render(); return; }
+    if (a === 'fxPers' && fx) { fx.persistIdx = +el.dataset.val; const o = getOpt(fx, hit.z, hit.s); if (o) o.acts.forEach((x, i) => { if (!verbsFor(o, fx, i).includes(fx.verbs[i])) fx.verbs[i] = 'hinder'; }); save(); render(); return; }
     if (a === 'fxTdie' && fx) { fx.tdie = el.dataset.val; save(); render(); return; }
     if (a === 'go') return go(+el.dataset.i);
     if (a === 'next') return go(stepIdx(S.step) + 1);
