@@ -553,6 +553,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.click('[data-thcard] >> nth=1 >> .tchip[data-a=thKind][data-val=lieutenant]');
     ok(await p.$eval('.flow-todo', e => /pelo menos uma habilidade/.test(e.textContent)), 'a lieutenant needs at least one ability');
     await p.selectOption('[data-thcard] >> nth=1 >> [data-thadd]', 's-heal');
+    ok(await p.$$eval('[data-thcard] >> nth=1 >> .env-ab .tchips', e => e.length) === 0, 'an ability with no number has no value picker');
     ok(!(await p.$('.flow-todo')), 'with an ability the lieutenant is complete');
     await p.fill('[data-b=heroes]', '4');
     await p.click('[data-thcard] >> nth=0 >> [data-a=thMesa]');
