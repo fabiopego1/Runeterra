@@ -30,7 +30,7 @@
     { id: 'threats', name: 'Ameaças', sub: 'Lacaios e tenentes', title: 'A biblioteca de ameaças', lede: 'Monte aqui os <b>lacaios</b> e <b>tenentes</b> deste ambiente. Cada reviravolta que “adiciona uma ameaça” escolhe uma delas, e a ficha mostra todas. Você pode pular este capítulo se o ambiente não vai ter ameaças.' },
     { id: 'green', name: 'Zona Verde', sub: 'Estável', title: 'Reviravoltas da zona Verde', lede: 'A catástrofe do ambiente tem três fases: <b>Estável</b> (Verde), <b>em decadência</b> (Amarela) e <b>colapso</b> (Vermelha). Na Verde, o ambiente reúne forças: incômodos e estranhezas. Crie <b>duas ou três reviravoltas menores</b> e <b>uma maior</b>.' },
     { id: 'yellow', name: 'Zona Amarela', sub: 'Em decadência', title: 'Reviravoltas da zona Amarela', lede: 'Na Amarela, o ambiente fica sob tanto estresse quanto os campeões: os efeitos ficam mais fortes. Crie <b>duas ou três reviravoltas menores</b> e <b>uma maior</b>.' },
-    { id: 'red', name: 'Zona Vermelha', sub: 'Colapso', title: 'Reviravoltas da zona Vermelha', lede: 'Na Vermelha, o ambiente colapsa e algo perigoso emerge. É aqui que entra o <b>dispositivo do fim do mundo</b>, se você quiser um. Crie <b>duas ou três reviravoltas menores</b> e <b>uma maior</b>.' },
+    { id: 'red', name: 'Zona Vermelha', sub: 'Colapso', title: 'Reviravoltas da zona Vermelha', lede: 'Na Vermelha, o ambiente colapsa e algo perigoso emerge. É aqui que entra o <b>dispositivo do fim do mundo</b>, se você quiser um: crie-o como desafio <b>personalizado</b> na reviravolta maior. Crie <b>duas ou três reviravoltas menores</b> e <b>uma maior</b>.' },
     { id: 'finish', name: 'A ficha', sub: 'Pronta para a mesa', title: 'A ficha do ambiente', lede: 'Confira a ficha, copie como texto, imprima, exporte em PDF ou salve em .json.' }
   ];
   const GUIDE = {
@@ -47,7 +47,7 @@
   const DIENAME = { min: 'dado Mín', mid: 'dado Médio', max: 'dado Máx', 'mid+min': 'dados Médio+Mín', 'max+min': 'dados Máx+Mín' };
 
   // ------------------------------------------------------------------ state
-  const newFx = () => ({ cat: 'basic', opt: '', verbs: [], persistIdx: 0, other: '', tid: '', ctext: '', cwhere: '', cblocks: '', cdice: ['mid'], ctimer: false, tm: '2', tneed: 2, tcons: '' });
+  const newFx = () => ({ cat: 'basic', opt: '', verbs: [], persistIdx: 0, other: '', tid: '', ctext: '', cwhere: '', cblocks: '', cdice: ['mid'], ctimer: false, tm: '2', tneed: 3, tcons: '' });
   const newTh = () => ({ id: uid(), name: '', kind: 'minion', die: 'd6', desc: '', tactics: '', abs: [] });
   const newTw = () => ({ id: uid(), name: '', desc: '', fx: [newFx()] });
   const blankZones = () => ({ green: { minor: [], major: [] }, yellow: { minor: [], major: [] }, red: { minor: [], major: [] } });
@@ -74,6 +74,7 @@
         if (!th) { th = Object.assign(newTh(), { name: fx.tname.trim(), kind, die }); s.threats.push(th); }
         fx.tid = th.id;
       }
+      if (z === 'red' && sv === 'major' && fx.cat === 'challenge' && fx.opt === 'r-m1') fx.opt = 'custom';   // the ready-made doomsday recipe is gone: the text stays as a custom challenge
       delete fx.tname; delete fx.tdie;
     }
     return s;
@@ -370,9 +371,9 @@
     if (o && o.custom && fx.cat === 'challenge') cfg += `<div class="cfg-l">Tem cronômetro?</div><div class="tchips" role="radiogroup">${[[false, 'Sem cronômetro'], [true, 'Com cronômetro']].map(([v, l]) => tchipB(`data-a="fxCtimer" ${A} data-val="${v}"`, fx.ctimer === v, `<span>${l}</span>`)).join('')}</div>`;
     if (timedOn(o, fx) && fx.cat === 'challenge') {
       cfg += `<div class="cfg-l">Cronômetro <small class="muted">(uma caixinha marcada por rodada, no turno do próprio desafio)</small></div><div class="tchips" role="radiogroup">${ED.timers.map(t => tchipB(`data-a="fxTm" ${A} data-val="${t[0]}"`, fx.tm === t[0], `<span>${esc(t[1])}</span>`, `<h5>${esc(t[1])}</h5>${esc(t[2])}`)).join('')}</div>
-        <div class="cfg-l">Sucessos em Superar para resolver</div><div class="tchips" role="radiogroup">${[1, 2, 3, 4].map(n => tchipB(`data-a="fxNeed" ${A} data-val="${n}"`, fx.tneed === n, `<span>${n}</span>`)).join('')}</div>
+        <div class="cfg-l">Sucessos em Superar para resolver</div><div class="tchips" role="radiogroup">${[1, 2, 3, 4, 5].map(n => tchipB(`data-a="fxNeed" ${A} data-val="${n}"`, fx.tneed === n, `<span>${n}</span>`)).join('')}</div><p class="muted env-note">O livro não impõe um limite, mas recomenda cerca de <b>3 sucessos, no máximo 5</b>, para variar as ameaças da cena.</p>
         <label class="field"><span>Se o tempo acabar…</span><input type="text" data-tw="${tw.id}" data-i="${i}" data-f="tcons" value="${esc(fx.tcons)}" placeholder="Ex.: o prédio desaba e todos na zona sofrem um Ataque com o dado Máx"></label>
-        <p class="muted env-note">Se a consequência for o fim do cenário, use o dispositivo do fim do mundo na reviravolta maior da zona Vermelha em vez de um cronômetro comum.</p>`;
+        <p class="muted env-note">Se a consequência for o fim do cenário, descreva-o como desafio personalizado na reviravolta maior da zona Vermelha, em vez de usar um cronômetro comum.</p>`;
     }
     if (o && o.other) cfg += `<label class="field"><span>O outro efeito${o.other === 'any' || fx.cat !== 'basic' ? '' : ` (${esc(withDie(o.other))})`}</span><input type="text" data-tw="${tw.id}" data-i="${i}" data-f="other" value="${esc(fx.other)}" placeholder="Descreva o outro efeito"></label>`;
     return `<div class="env-fx"><div class="cfg-l env-fxh">Efeito ${i + 1}${tw.fx.length > 1 ? ` <button type="button" class="linkbtn danger" data-a="fxDel" ${A}>Remover efeito</button>` : ''}</div>${catChips}${opts}${cfg}</div>`;
