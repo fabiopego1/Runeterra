@@ -601,6 +601,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
       await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Tirar os civis do porão'); await p.click(`${lastTw} >> .tchip[data-a=fxTm][data-val="3"]`); await p.click(`${lastTw} >> .tchip[data-a=fxNeed][data-val="2"]`);
       ok(/diga o que acontece/.test(await p.$eval('.flow-todo', e => e.textContent)), 'a timed challenge needs its consequence'); await p.fill(`${lastTw} >> input[data-f=tcons]`, 'o porão inunda'); });
     ok(/cronômetro \(3 caixinhas\)[\s\S]*Marque uma caixinha por rodada[\s\S]*2 sucessos em Superar[\s\S]*Se o tempo acabar: o porão inunda/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'a timed challenge writes its timer, the successes needed and the consequence');
+    ok(await p.$$eval(`${lastTw} >> .tchip[data-a=fxNeed]`, e => e.length) === 5, 'successes needed go from 1 to 5, the book\'s maximum');
     await buildTw('yellow', 'major', 'Portal da Tempestade', async () => { await p.click(`${lastTw} >> .env-opts .ab >> nth=4`); });
     ok(/persistente e exclusivo/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'persistent and exclusive actions are written out');
     await p.click('[data-a=next]');
