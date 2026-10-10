@@ -591,7 +591,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok((await p.$$eval('.th-folders .rail-name', e => e.map(x => x.textContent))).includes('Templo'), 'importing a master file brings its folders');
     // rebuild the two threats the environment test needs
     await p.evaluate(() => localStorage.removeItem('runeterra-threat-lib-v1'));
-    await p.evaluate(({ a, b }) => { localStorage.setItem('runeterra-threat-lib-v1', JSON.stringify({ folders: [], items: [a, b] })); }, { a: Object.assign({}, one, { app: undefined, id: 'tha1', name: 'Diabretes da Tempestade', kind: 'minion', die: 'd6', desc: 'Pequenas criaturas elétricas', tactics: '', abs: [{ t: 'bonus', v: 2, x: 'Atacar inimigos voadores' }], portrait: null, folder: '' }), b: Object.assign({}, one, { app: undefined, id: 'thb1', name: 'Cria Tentacular', kind: 'lieutenant', die: 'd8', desc: '', tactics: '', abs: [{ t: 's-heal', v: 2, x: '' }], portrait: null, folder: '' }) });
+    await p.evaluate(({ a, b }) => { localStorage.setItem('runeterra-threat-lib-v1', JSON.stringify({ folders: [], items: [a, b, { id: 'thc1', name: 'Saqueador Atirador', kind: 'minion', die: 'd6', desc: 'À distância', tactics: '', abs: [{ t: 's-twist', v: 2, x: '' }], portrait: null, folder: '' }] })); }, { a: Object.assign({}, one, { app: undefined, id: 'tha1', name: 'Diabretes da Tempestade', kind: 'minion', die: 'd6', desc: 'Pequenas criaturas elétricas', tactics: '', abs: [{ t: 'bonus', v: 2, x: 'Atacar inimigos voadores' }], portrait: null, folder: '' }), b: Object.assign({}, one, { app: undefined, id: 'thb1', name: 'Cria Tentacular', kind: 'lieutenant', die: 'd8', desc: '', tactics: '', abs: [{ t: 's-heal', v: 2, x: '' }], portrait: null, folder: '' }) });
     // the Environment Workshop: traits, one die each, and the twists of each zone built from the rulebook's recipes
     await p.goto(`${BASE}/ambiente.html`); await p.waitForSelector('#stage .panel');
     ok(await p.$$eval('#nav .rail-item', e => e.length) === 7 && await p.$eval('#gate', e => e.hidden), 'the Environment Workshop opens with seven chapters');
@@ -655,6 +655,10 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Defenda quem não Atacou no último turno e Atrapalhe os demais');
     await p.click(`${lastTw} >> .tchip[data-a=fxCdice][data-val=mid]`); await p.click(`${lastTw} >> .tchip[data-a=fxCdice][data-val=min]`);
     ok(/Defenda quem não Atacou[\s\S]*Use dado Mín do ambiente/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'a custom basic recipe writes the GM\'s text and the environment die it uses');
+    // a threat named in a twist's text is linked to its little sheet, and counts as used by the environment (its copy comes from the bank)
+    await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Defenda quem não Atacou no último turno e Atrapalhe os demais. Saqueador Atirador observa de longe');
+    ok(await p.$eval(`${lastTw} >> .env-prev`, e => !!e.querySelector('.th-ref') && /Saqueador Atirador/.test(e.querySelector('.th-ref').textContent)), 'a threat named in a custom text is linked to its sheet');
+    ok(await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-environment-v1')).threats.some(t => t.name === 'Saqueador Atirador')), 'and its copy comes into the environment');
     await buildTw('green', 'major', 'Socorro, Ele Me Pegou!');
     await p.click(`${lastTw} >> .env-opts .ab >> nth=2`);
     ok(await p.evaluate(() => { const c = [...document.querySelectorAll('[data-twcard]')].pop(); return c.querySelectorAll('.tchip[data-val=overcome]').length === 0 && c.querySelectorAll('.tchip[data-val=hinder]').length === 1; }), 'Overcome is not offered for an action on all targets');
@@ -681,6 +685,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
       await p.click(`${lastTw} >> .tchip[data-val=challenge]`); await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
       await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Fendas gigantes se abrem por toda a cidade'); });
     await p.click('[data-a=next]'); await p.waitForSelector('#sheet-preview .hs-page');
+    ok(await p.$$eval('#sheet-preview .env-thr-chip', e => e.some(x => /Saqueador Atirador/.test(x.textContent))) && await p.$$eval('#sheet-preview .env-thc-h', e => e.some(x => /Saqueador Atirador/.test(x.textContent))), 'a threat named in a twist\'s text shows up under that twist and in the sheet\'s threat list');
     ok(await p.$eval('#sheet-preview', e => /Locais da cena/.test(e.textContent) && /Porão do Estádio/.test(e.textContent)), 'the sheet lists the places');
     ok(await p.$eval('#sheet-preview', e => /Tempestade sobre a Cidade da Torre/.test(e.textContent) && /Diabretes da Tempestade/.test(e.textContent) && /Fendas gigantes/.test(e.textContent) && /Cria Tentacular/.test(e.textContent) && /cronômetro: 3 caixinhas/.test(e.textContent)), 'the sheet lists the twists, the threat library, the timed challenge and the doomsday device');
     ok(await p.$$eval('#sheet-preview [data-tip]', e => e.length) > 20, 'the environment sheet explains terms, dice and zones on hover');

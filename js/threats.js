@@ -71,7 +71,7 @@
       <p class="muted env-note"><b>Salvamento.</b> ${esc(k.save)}</p>${warn}
       <div class="cfg-l">Habilidades <small class="muted">(${th.kind === 'minion' ? '0 a 2' : '1 a 3'}; bônus de 1 a 3, o mais comum é 2)</small></div>
       ${th.abs.map((a, i) => { const t = U.abTpl(a.t); return `<div class="env-ab"><div class="env-ab-h"><b>${esc(U.abName(a))}</b>${U.abUsesV(t) ? `<span class="tchips" role="radiogroup" aria-label="Valor do bônus ou da penalidade"${tipA('<h5>Valor</h5>O número do bônus ou da penalidade desta habilidade. O livro usa de 1 a 3, e o mais comum é 2.')}>${[1, 2, 3].map(v => tchipB(`data-a="thAbV" data-i="${i}" data-val="${v}"`, a.v === v, `<span>${v}</span>`)).join('')}</span>` : ''}<button type="button" class="linkbtn danger" data-a="thAbDel" data-i="${i}">Remover</button></div>
-        ${t && t.ph ? `<input type="text" ${A} data-ab="${i}" data-f="x" value="${esc(a.x)}" placeholder="${esc(t.ph)}" aria-label="Detalhe da habilidade">` : ''}<div class="ab-text">${esc(U.abText(a))}</div></div>`; }).join('')}
+        ${t && t.ph ? `<input type="text" ${A} data-ab="${i}" data-f="x" value="${esc(a.x)}" placeholder="${esc(t.ph)}" aria-label="Detalhe da habilidade">` : ''}<div class="ab-text">${U.rich(U.abText(a), th.id)}</div></div>`; }).join('')}
       ${left > 0 ? `<label class="field"><span>Adicionar habilidade</span><select data-thadd="${th.id}"><option value="">Escolha…</option>${ED.abilities.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></label>` : ''}
       <label class="field"><span>Tática (opcional)</span><input type="text" ${A} data-f="tactics" value="${esc(th.tactics)}" placeholder="Como age na cena, em uma frase"></label>
       <div class="todo-slot">${iss.length ? `<div class="flow-todo"><span class="flow-todo-l">Ainda falta</span><ul>${iss.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}</div></div>`;
@@ -185,7 +185,7 @@
         const th = L.get(el.dataset.th); if (!th) return;
         if (el.dataset.ab != null) th.abs[+el.dataset.ab][el.dataset.f] = el.value; else th[el.dataset.f] = el.value;
         L.put(th); light(th);
-        if (el.dataset.ab != null) { const t = el.closest('.env-ab').querySelector('.ab-text'); if (t) t.textContent = U.abText(th.abs[+el.dataset.ab]); }
+        if (el.dataset.ab != null) { const t = el.closest('.env-ab').querySelector('.ab-text'); if (t) t.innerHTML = U.rich(U.abText(th.abs[+el.dataset.ab]), th.id); }
       }
     });
     document.addEventListener('change', ev => {
@@ -231,7 +231,7 @@
         <a class="btn primary" href="gm.html">${ico('lock')} Abrir o Escudo do Mestre</a></div>`;
       return;
     }
-    U = L.ui(ED, { esc, die, tipA });
+    U = L.ui(ED, { esc, die, tipA, rules: t => K().rulesText(t.replace(/\bd(4|6|8|10|12)\b/g, '[d$1]')), pool: () => L.all() });
     app.hidden = false;
     wire();
     render();

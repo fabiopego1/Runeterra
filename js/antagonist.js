@@ -204,7 +204,7 @@
       out += k ? `<span class="slot-chip"${tipA(K.traitTip(k))}>${esc(tShow(k))}</span>` : `<span class="slot-chip unset"${tipA(slotTip(t))}>[${esc(t)}]</span>`;
       last = idx + m.length; return m;
     });
-    return out + K.rulesText(dieWords(text.slice(last)));
+    return U ? U.link(out + K.rulesText(dieWords(text.slice(last)))) : out + K.rulesText(dieWords(text.slice(last)));
   }
   const ICON_RE = [['Attack', /\bAta[cq]\w*/], ['Defend', /\bDefe[ns]\w*/], ['Overcome', /\bSuper\w*/], ['Boost', /\bFortale\w*/], ['Hinder', /\bAtrapalh\w*/], ['Recover', /\bRecuper\w*/]];
   const iconsFor = text => ICON_RE.filter(([, re]) => re.test(text)).map(([a]) => `<span class="act-ic act-${a.toLowerCase()}"${tipA(`<h5>Ícone de ${K.ICONS[a][1]}</h5>${window.GLOSSARY[a]}<hr><small>A coluna de ícones mostra quais ações básicas a habilidade usa.</small>`)}>${K.ICONS[a][0]}</span>`).join('');
@@ -748,7 +748,7 @@
     if (!payload) return false;
     window.GM_UNSEAL.run(payload, ['gm-villain-data', 'gm-env-data']);
     VD = window.GM_VDATA;
-    if (VD && window.GM_ENVDATA) U = window.THREAT_LIB.ui(window.GM_ENVDATA, { esc, die, tipA });
+    if (VD && window.GM_ENVDATA) U = window.THREAT_LIB.ui(window.GM_ENVDATA, { esc, die, tipA, rules: t => K.rulesText(dieWords(t)), pool: () => { const seen = new Set(S.crew.map(t => t.id)); return S.crew.concat(window.THREAT_LIB.all().filter(t => !seen.has(t.id))); } });
     return !!VD && !!U;
   }
   (async () => {
