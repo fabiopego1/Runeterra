@@ -32,7 +32,7 @@
     { id: 'finish', name: 'A ficha', sub: 'Pronta para a mesa', title: 'A ficha do ambiente', lede: 'Confira a ficha, copie como texto, imprima, exporte em PDF ou salve em .json.' }
   ];
   const GUIDE = {
-    concept: '<p>Pense no lugar onde a cena acontece e no que ele faz <b>com todos</b>: um ambiente costuma machucar os campeões mais do que os antagonistas. Na maioria das cenas há um só ambiente; use dois apenas se o grupo foi totalmente separado.</p><p class="muted">Exemplo: “Tempestade Sobrenatural sobre a Cidade da Torre”: rasgos dimensionais abrem e fecham pela cidade como nuvens.</p>',
+    concept: '<p>Pense no lugar onde a cena acontece e no que ele faz <b>com todos</b>: um ambiente costuma machucar os campeões mais do que os antagonistas. Na maioria das cenas há um só ambiente; use dois apenas se o grupo foi totalmente separado.</p><p class="muted">Exemplo: “Tempestade Sobrenatural sobre a Cidade da Torre”: fendas dimensionais abrem e fecham pela cidade como nuvens.</p>',
     traits: '<p>Os traços aparecem sobretudo nas reviravoltas, por isso precisam ser <b>características gerais</b>: isso deixa você livre para descrever o que acontece. Dê o dado mais alto ao traço mais importante para o impacto do ambiente na cena.</p><p>Guia dos dados: <b>d4</b> mínimo, <b>d6</b> médio, <b>d8</b> desafiador, <b>d10</b> perigoso, <b>d12</b> catastrófico. Se estiver em dúvida, use d6 e d8. Não precisa equilibrar: um dado alto não exige um baixo.</p>',
     zone: '<p>Cada reviravolta usa <b>os dados do ambiente</b>: o <b>Mín</b>, o <b>Médio</b> e o <b>Máx</b> da reserva de três dados. Escolha o tipo de efeito, a receita do livro para aquela zona e aquele peso (menor ou maior), e escreva o que acontece na história.</p><p>Como o ambiente rola <b>três dados</b>, você pode combinar até três efeitos numa reviravolta, cada um usando um dado diferente: é um jeito de deixar a Amarela e a Vermelha mais complicadas.</p><p class="muted">Só a reviravolta <b>maior</b> avança o marcador de cena, uma casa. Cada reviravolta maior vale uma vez por cena.</p>',
     finish: '<p>Na hora de jogar, o turno do ambiente é o turno do marcador de cena: <b>avance o marcador</b>, <b>ative as ameaças</b> que já estão em cena e então <b>introduza uma ameaça nova ou acione uma reviravolta</b> da zona atual. Ameaças novas só agem no turno seguinte.</p><p>Ambientes não Defendem nem Superam: use Atrapalhar contra os campeões.</p>'
@@ -80,6 +80,14 @@
   const catsFor = (z, s) => CATS.filter(c => c[0] !== 'advance' || s === 'major');
   const isPersist = (o, fx, i) => !!(o.acts[i].persist || (o.persistOne && (fx.persistIdx || 0) === i));
   const dieWord = d => DIENAME[d] || d;
+  // Overcome works on challenges, not on targets: it cannot hit "everyone", and it never creates a persistent modifier
+  const OVERCOME_OK = a => !['all', 'two', 'others'].includes(a.who) && !a.persist;
+  const verbsFor = (o, fx, k) => Object.keys(VERBS).filter(key => {
+    const pers = isPersist(o, fx, k);
+    if (pers) return key === 'hinder' || key === 'boost';
+    if (key === 'overcome') return OVERCOME_OK(o.acts[k]);
+    return true;
+  });
   const withDie = d => `com ${/^dados/.test(dieWord(d)) ? 'os' : 'o'} ${dieWord(d)}`;
   const thCount = n => (n === 'one' ? '' : `dado ${n === 'min' ? 'Mín' : n === 'mid' ? 'Médio' : 'Máx'}`);
 
@@ -114,7 +122,7 @@
       dice = true;
       const parts = o.acts.map((a, i) => {
         const v = fx.verbs[i] || 'hinder', pers = isPersist(o, fx, i);
-        return `${VERBS[v][1]} ${WHO_TXT[a.who]} ${withDie(a.die)}${pers ? ', criando um modificador persistente e exclusivo' : ''}`;
+        return `${VERBS[v][1]} ${v === 'overcome' ? 'um dos desafios restantes da cena' : WHO_TXT[a.who]} ${withDie(a.die)}${pers ? ', criando um modificador persistente e exclusivo' : ''}`;
       });
       text = parts.join(', e depois ') + '.';
       if (o.other) {
@@ -187,7 +195,7 @@
     if (id === 'traits') {
       const v = DV(), imp = IMPACT();
       return `<div class="rename-grid env-traits">${S.traits.map((t, i) => `<div class="rename-card"><span class="rn-h"><b>Traço ${i + 1}</b>${t.die ? die(t.die, 'sm') : ''}<span class="rn-type">${t.die ? esc(imp[t.die]) : 'sem dado'}</span></span>
-          <input type="text" data-b="traits.${i}.name" value="${esc(t.name)}" placeholder="${['Ex.: Rifts Dimensionais', 'Ex.: Distorções Horrendas', 'Ex.: Caos Malévolo'][i]}" aria-label="Nome do traço ${i + 1}">
+          <input type="text" data-b="traits.${i}.name" value="${esc(t.name)}" placeholder="${['Ex.: Fendas Dimensionais', 'Ex.: Distorções Horrendas', 'Ex.: Caos Malévolo'][i]}" aria-label="Nome do traço ${i + 1}">
           <div class="tchips" role="radiogroup" aria-label="Dado do traço ${i + 1}">${ED.impact.map(([d, w]) => tchipB(`data-a="tdie" data-i="${i}" data-val="${d}"`, t.die === d, `${die(d, 'sm')}<span>${esc(w)}</span>`, `<h5>${d.toUpperCase()}: ${esc(w)}</h5>Impacto do traço na cena.`)).join('')}</div></div>`).join('')}</div>
         <div class="env-dice"><b>Os dados do ambiente</b> ${v ? `<span class="term"${tipA(window.GLOSSARY['Min die'] ? `<h5>Dado Mín</h5>${window.GLOSSARY['Min die']}` : 'O menor dos três dados.')}>Mín</span> ${die(v.min, 'sm')} <span class="term"${tipA(window.GLOSSARY['Mid die'] ? `<h5>Dado Médio</h5>${window.GLOSSARY['Mid die']}` : 'O dado do meio.')}>Médio</span> ${die(v.mid, 'sm')} <span class="term"${tipA(window.GLOSSARY['Max die'] ? `<h5>Dado Máx</h5>${window.GLOSSARY['Max die']}` : 'O maior dos três dados.')}>Máx</span> ${die(v.max, 'sm')}` : '<span class="muted">escolha os três dados</span>'}</div>`;
     }
@@ -209,7 +217,7 @@
     const pl = twPlain(tw, z, s);
     return `<div class="ab ant picked env-tw" data-twcard="${tw.id}">
       <div class="ab-top"><span class="ab-name">${esc(tw.name.trim() || 'Reviravolta sem nome')}</span><span class="pill ${z}">${SEV[s]}</span><button type="button" class="linkbtn danger env-del" data-a="twDel" data-id="${tw.id}">Remover</button></div>
-      <div class="env-fields"><label class="field"><span>Nome</span><input type="text" data-tw="${tw.id}" data-f="name" value="${esc(tw.name)}" placeholder="Ex.: Um Rasgo se Abre"></label>
+      <div class="env-fields"><label class="field"><span>Nome</span><input type="text" data-tw="${tw.id}" data-f="name" value="${esc(tw.name)}" placeholder="Ex.: Uma Fenda se Abre"></label>
         <label class="field"><span>O que acontece na história</span><input type="text" data-tw="${tw.id}" data-f="desc" value="${esc(tw.desc)}" placeholder="Uma frase que descreve a cena"></label></div>
       ${tw.fx.map((fx, i) => fxBlock(z, s, tw, fx, i)).join('')}
       ${tw.fx.length < 3 ? `<button type="button" class="btn small ghost" data-a="fxAdd" data-id="${tw.id}">${ico('mark')} Combinar com outro efeito</button>` : ''}
@@ -231,8 +239,8 @@
     if (o && fx.cat === 'basic') {
       cfg += o.acts.map((a, k) => {
         const pers = isPersist(o, fx, k), v = fx.verbs[k] || 'hinder';
-        const verbs = Object.entries(VERBS).filter(([key]) => !pers || key === 'hinder' || key === 'boost');
-        return `<div class="cfg-l">Ação ${o.acts.length > 1 ? k + 1 + ': ' : ''}${esc(WHO_TXT[a.who])} ${esc(withDie(a.die))}${pers ? ' (persistente e exclusiva)' : ''}</div><div class="tchips" role="radiogroup">${verbs.map(([key, l]) => tchipB(`data-a="fxVerb" ${A} data-k="${k}" data-val="${key}"`, v === key, `<span>${l[0]}</span>`, `<h5>${l[0]}</h5>${window.GLOSSARY[{ attack: 'Attack', hinder: 'Hinder', boost: 'Boost', defend: 'Defend', overcome: 'Overcome' }[key]] || ''}`)).join('')}</div>`;
+        const verbs = verbsFor(o, fx, k).map(key => [key, VERBS[key]]);
+        return `<div class="cfg-l">Ação ${o.acts.length > 1 ? k + 1 + ': ' : ''}${v === 'overcome' ? 'um dos desafios restantes da cena' : esc(WHO_TXT[a.who])} ${esc(withDie(a.die))}${pers ? ' (persistente e exclusiva)' : ''}</div><div class="tchips" role="radiogroup">${verbs.map(([key, l]) => tchipB(`data-a="fxVerb" ${A} data-k="${k}" data-val="${key}"`, v === key, `<span>${l[0]}</span>`, `<h5>${l[0]}</h5>${window.GLOSSARY[{ attack: 'Attack', hinder: 'Hinder', boost: 'Boost', defend: 'Defend', overcome: 'Overcome' }[key]] || ''}${key === 'overcome' ? '<hr><small>Superar resolve um <b>desafio</b> da cena (um obstáculo), não atinge alvos. Serve para o ambiente resolver algo, como “os socorristas chegam”.</small>' : key === 'defend' ? '<hr><small>O livro recomenda Atrapalhar no lugar de Defender para os ambientes.</small>' : ''}`)).join('')}</div>`;
       }).join('');
       if (o.persistOne) cfg += `<div class="cfg-l">Qual das ações é persistente e exclusiva?</div><div class="tchips" role="radiogroup">${o.acts.map((a, k) => tchipB(`data-a="fxPers" ${A} data-val="${k}"`, (fx.persistIdx || 0) === k, `<span>Ação ${k + 1}</span>`)).join('')}</div>`;
     }
@@ -240,7 +248,7 @@
       cfg += `<div class="env-row"><label class="field"><span>${o.lt ? 'Nome do tenente' : 'Nome da ameaça'}</span><input type="text" data-tw="${tw.id}" data-i="${i}" data-f="tname" value="${esc(fx.tname)}" placeholder="${o.lt ? 'Ex.: Cria Tentacular' : 'Ex.: Diabretes da Tempestade'}"></label>
         <div><div class="cfg-l">Dado</div><div class="tchips" role="radiogroup">${DIES.filter(d => !o.lt || DIES.indexOf(d) >= 1).map(d => tchipB(`data-a="fxTdie" ${A} data-val="${d}"`, fx.tdie === d, die(d, 'sm'), `<h5>${d.toUpperCase()}</h5>${o.lt ? 'Tenentes costumam ir de d8 a d12.' : 'Lacaios: d4 a d12, conforme a ameaça.'}`)).join('')}</div></div></div>`;
     }
-    if (o && fx.cat === 'challenge' && o.kind !== 'raise') cfg += `<label class="field"><span>${o.kind === 'doomsday' ? 'O dispositivo do fim do mundo' : 'O desafio'}</span><input type="text" data-tw="${tw.id}" data-i="${i}" data-f="ctext" value="${esc(fx.ctext)}" placeholder="${o.kind === 'doomsday' ? 'Ex.: Rasgos gigantes se abrem por toda a cidade' : 'Ex.: Resgatar os cidadãos antes do próximo turno do ambiente'}"></label>`;
+    if (o && fx.cat === 'challenge' && o.kind !== 'raise') cfg += `<label class="field"><span>${o.kind === 'doomsday' ? 'O dispositivo do fim do mundo' : 'O desafio'}</span><input type="text" data-tw="${tw.id}" data-i="${i}" data-f="ctext" value="${esc(fx.ctext)}" placeholder="${o.kind === 'doomsday' ? 'Ex.: Fendas gigantes se abrem por toda a cidade' : 'Ex.: Resgatar os cidadãos antes do próximo turno do ambiente'}"></label>`;
     if (o && o.other) cfg += `<label class="field"><span>O outro efeito${o.other === 'any' || fx.cat !== 'basic' ? '' : ` (${esc(withDie(o.other))})`}</span><input type="text" data-tw="${tw.id}" data-i="${i}" data-f="other" value="${esc(fx.other)}" placeholder="Descreva o outro efeito"></label>`;
     return `<div class="env-fx"><div class="cfg-l env-fxh">Efeito ${i + 1}${tw.fx.length > 1 ? ` <button type="button" class="linkbtn danger" data-a="fxDel" ${A}>Remover efeito</button>` : ''}</div>${catChips}${opts}${cfg}</div>`;
   }
@@ -457,7 +465,7 @@
   function pickOpt(fx, z, s, optId) {
     fx.opt = optId; fx.persistIdx = 0;
     const o = getOpt(fx, z, s);
-    if (o && fx.cat === 'basic') fx.verbs = o.acts.map((a, i) => (fx.verbs[i] && (!isPersist(o, fx, i) || ['hinder', 'boost'].includes(fx.verbs[i]))) ? fx.verbs[i] : 'hinder');
+    if (o && fx.cat === 'basic') fx.verbs = o.acts.map((a, i) => (fx.verbs[i] && verbsFor(o, fx, i).includes(fx.verbs[i])) ? fx.verbs[i] : 'hinder');
     if (o && fx.cat === 'threat' && o.lt && DIES.indexOf(fx.tdie) < 1) fx.tdie = 'd8';
   }
   function onClick(ev) {
@@ -476,7 +484,7 @@
     if (a === 'fxCat' && fx) { fx.cat = el.dataset.val; fx.opt = ''; fx.verbs = []; save(); render(); return; }
     if (a === 'fxOpt' && fx) { pickOpt(fx, hit.z, hit.s, el.dataset.val); save(); render(); return; }
     if (a === 'fxVerb' && fx) { fx.verbs[+el.dataset.k] = el.dataset.val; save(); render(); return; }
-    if (a === 'fxPers' && fx) { fx.persistIdx = +el.dataset.val; const o = getOpt(fx, hit.z, hit.s); if (o) o.acts.forEach((x, i) => { if (isPersist(o, fx, i) && !['hinder', 'boost'].includes(fx.verbs[i])) fx.verbs[i] = 'hinder'; }); save(); render(); return; }
+    if (a === 'fxPers' && fx) { fx.persistIdx = +el.dataset.val; const o = getOpt(fx, hit.z, hit.s); if (o) o.acts.forEach((x, i) => { if (!verbsFor(o, fx, i).includes(fx.verbs[i])) fx.verbs[i] = 'hinder'; }); save(); render(); return; }
     if (a === 'fxTdie' && fx) { fx.tdie = el.dataset.val; save(); render(); return; }
     if (a === 'go') return go(+el.dataset.i);
     if (a === 'next') return go(stepIdx(S.step) + 1);
