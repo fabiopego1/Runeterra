@@ -75,6 +75,8 @@
     // shared drawing code; ED is the vault's GM_ENVDATA, h = { esc, die, tipA }
     ui(ED, h) {
       const { esc, die, tipA } = h;
+      const pool = () => (h.pool ? h.pool() : []).filter(t => t && t.name && t.name.trim().length >= 3);
+      const rules = t => (h.rules ? h.rules(t) : esc(t));
       const TK = () => ED.threatKinds;
       const abTpl = id => ED.abilities.find(a => a.id === id);
       const abText = a => { const t = abTpl(a.t); return t ? t.t(a.v, (a.x || '').trim()) : ''; };
@@ -94,8 +96,33 @@
         return `<h5>${esc(th.name.trim() || 'Ameaça sem nome')} · ${k.name} ${esc(th.die)}</h5>${th.portrait ? `<img class="th-tip-img" src="${th.portrait}" alt="">` : ''}${th.desc.trim() ? `<p>${esc(th.desc.trim())}</p>` : ''}<p><b>Salvamento.</b> ${esc(k.save)}</p>${th.abs.length ? `<ul>${th.abs.map(a => `<li><b>${esc(abName(a))}.</b> ${esc(abText(a))}</li>`).join('')}</ul>` : '<p class="muted">Sem habilidades: só age e leva dano.</p>'}${th.tactics.trim() ? `<p><i>Tática:</i> ${esc(th.tactics.trim())}</p>` : ''}`;
       };
       const chip = th => `<span class="term env-thr-chip"${tipA(tip(th))}>${esc(th.name.trim() || 'Ameaça sem nome')} ${die(th.die, 'sm')} <small class="muted">${TK()[th.kind].name.toLowerCase()}</small></span>`;
+      // links the threat names found in a piece of HTML (an ability, twist or challenge text) to their little sheets; text inside hovers is left alone
+      const rx = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      function link(html, skipId) {
+        const list = pool().filter(t => t.id !== skipId);
+        if (!list.length || !html) return html;
+        const seen = new Set(), uniq = list.filter(t => { const k = t.name.trim().toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+        const byName = Object.fromEntries(uniq.map(t => [t.name.trim().toLowerCase(), t]));
+        const names = uniq.map(t => t.name.trim()).sort((a, b) => b.length - a.length);
+        const re = new RegExp('(?<![\\p{L}\\p{N}])(' + names.map(rx).join('|') + ')(?![\\p{L}\\p{N}])', 'giu');
+        const box = document.createElement('div'); box.innerHTML = html;
+        const walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT), nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        for (const n of nodes) {
+          if (n.parentElement && n.parentElement.closest('[data-tip]')) continue;
+          re.lastIndex = 0; if (!re.test(n.nodeValue)) continue;
+          const span = document.createElement('span');
+          span.innerHTML = n.nodeValue.split(re).map((part, i) => (i % 2 ? `<span class="term th-ref"${tipA(tip(byName[part.toLowerCase()]))}>${esc(part)}</span>` : esc(part))).join('');
+          n.replaceWith(...span.childNodes);
+        }
+        return box.innerHTML;
+      }
+      // which of these threats are named in a text
+      const find = (text, list) => (list || []).filter(t => t.name && t.name.trim().length >= 3 && new RegExp('(?<![\\p{L}\\p{N}])' + rx(t.name.trim()) + '(?![\\p{L}\\p{N}])', 'iu').test(text || ''));
+      // free text with dice and rule terms hoverable, and threat names linked
+      const rich = (text, skipId) => link(rules(String(text == null ? '' : text)), skipId);
       const sheet = th => `<div class="env-thc">${th.portrait ? `<img class="env-thc-img" src="${th.portrait}" alt="">` : ''}<div class="env-thc-h"><b>${esc(th.name.trim() || 'sem nome')}</b> ${die(th.die, 'sm')} <small class="muted">${TK()[th.kind].name.toLowerCase()}</small></div>
-        ${th.desc.trim() ? `<div class="env-thc-d">${esc(th.desc.trim())}</div>` : ''}${th.abs.map(a => `<div class="env-thc-a"><b>${esc(abName(a))}.</b> ${esc(abText(a))}</div>`).join('')}${th.tactics.trim() ? `<div class="env-thc-t"><i>Tática:</i> ${esc(th.tactics.trim())}</div>` : ''}<div class="env-thc-s"><i>Salvamento:</i> ${esc(TK()[th.kind].save)}</div></div>`;
+        ${th.desc.trim() ? `<div class="env-thc-d">${rich(th.desc.trim(), th.id)}</div>` : ''}${th.abs.map(a => `<div class="env-thc-a"><b>${esc(abName(a))}.</b> ${rich(abText(a), th.id)}</div>`).join('')}${th.tactics.trim() ? `<div class="env-thc-t"><i>Tática:</i> ${rich(th.tactics.trim(), th.id)}</div>` : ''}<div class="env-thc-s"><i>Salvamento:</i> ${esc(TK()[th.kind].save)}</div></div>`;
       const plainLine = t => `${t.name || 'sem nome'} (${TK()[t.kind].name.toLowerCase()} ${t.die})${t.desc ? ': ' + t.desc : ''}${t.abs.length ? ' · ' + t.abs.map(a => `${abName(a)}: ${abText(a)}`).join(' ') : ''}${t.tactics ? ' · Tática: ' + t.tactics : ''}`;
       // one minion per hero, half as many lieutenants (rounded up), on the GM Table
       function toTable(th, heroes) {
@@ -123,7 +150,7 @@
         };
         r.readAsDataURL(file);
       }
-      return { TK, abTpl, abText, abName, abUsesV, dieAtLeast, issues, tip, chip, sheet, plainLine, toTable, readPicture };
+      return { TK, abTpl, abText, abName, abUsesV, dieAtLeast, issues, tip, chip, link, rich, find, sheet, plainLine, toTable, readPicture };
     }
   };
   window.THREAT_LIB = api;

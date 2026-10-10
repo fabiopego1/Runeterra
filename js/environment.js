@@ -316,7 +316,7 @@
   }
   function prevHtml(z, s, tw) {
     const pl = twPlain(tw, z, s);
-    return `<b>Texto do jogo</b><div class="ab-text">${pl.text.trim() ? ruleHtml(pl.text) : '<span class="muted">Escolha uma receita.</span>'}</div>`;
+    return `<b>Texto do jogo</b><div class="ab-text">${pl.text.trim() ? U.link(ruleHtml(pl.text)) : '<span class="muted">Escolha uma receita.</span>'}</div>`;
   }
   function fxBlock(z, s, tw, fx, i) {
     const cats = catsFor(z, s), o = getOpt(fx, z, s);
@@ -375,13 +375,24 @@
     }
     return ch;
   }
-  const usedThreats = tw => tw.fx.map(f => (f.cat === 'threat' ? getTh(f.tid) : null)).filter(Boolean);
+  // every threat the environment can name: its own copies first, then the bank
+  const envPool = () => { const seen = new Set(S.threats.map(t => t.id)); return S.threats.concat(THREAT_LIB.all().filter(t => !seen.has(t.id))); };
+  const fxTexts = tw => tw.fx.map(f => [f.other, f.ctext, f.tcons].join(' ')).join(' ');
+  // a threat named in a twist's own text counts as used by the environment: its copy comes in from the bank
+  function syncMentioned() {
+    if (!U) return false;
+    const have = new Set(S.threats.map(t => t.id)); let added = false;
+    const text = Object.keys(ZN).flatMap(z => ['minor', 'major'].flatMap(sv => S.tw[z][sv].map(fxTexts))).join(' ');
+    for (const t of U.find(text, THREAT_LIB.all())) if (!have.has(t.id)) { S.threats.push(THREAT_LIB.copyOf(t.id)); have.add(t.id); added = true; }
+    return added;
+  }
+  const usedThreats = tw => { const out = tw.fx.map(f => (f.cat === 'threat' ? getTh(f.tid) : null)).filter(Boolean); for (const t of U.find(fxTexts(tw), S.threats)) if (!out.includes(t)) out.push(t); return out; };
   function sheetHtml() {
     const imp = IMPACT(), v = DV(), title = esc(S.name || 'Ambiente sem nome'), ch = challengesOf();
     const zoneBlock = z => {
       const rows = ['minor', 'major'].flatMap(s => S.tw[z][s].map(tw => {
         const pl = twPlain(tw, z, s);
-        return `<tr><td class="ic">${iconsFor(pl.text)}</td><td class="nm">${esc(tw.name || 'sem nome')}<small>${SEV[s]}</small></td><td class="ty">${s === 'major' ? 'M' : 'm'}</td><td class="gt">${ruleHtml(pl.text)}${usedThreats(tw).length ? `<div class="env-thr">${usedThreats(tw).map(thChip).join(' ')}</div>` : ''}${tw.desc.trim() ? `<div class="env-story">${esc(tw.desc.trim())}</div>` : ''}</td></tr>`;
+        return `<tr><td class="ic">${iconsFor(pl.text)}</td><td class="nm">${esc(tw.name || 'sem nome')}<small>${SEV[s]}</small></td><td class="ty">${s === 'major' ? 'M' : 'm'}</td><td class="gt">${U.link(ruleHtml(pl.text))}${usedThreats(tw).length ? `<div class="env-thr">${usedThreats(tw).map(thChip).join(' ')}</div>` : ''}${tw.desc.trim() ? `<div class="env-story">${U.rich(tw.desc.trim())}</div>` : ''}</td></tr>`;
       }));
       return `<div class="hs-zone ${z}"><div class="zlbl"${tipA(zoneTip(z))}>${ZN[z]}</div><table class="hs-ab-t"><tbody>${rows.join('') || '<tr><td class="gt muted">Nenhuma reviravolta ainda.</td></tr>'}</tbody></table></div>`;
     };
@@ -405,7 +416,7 @@
         </div>
         ${S.places.length ? `<div class="hs-card"><div class="hs-h"${tipA('<h5>Locais</h5>Os lugares da cena. Um local não tem ficha de jogo: serve para dizer onde ficam heróis, ameaças e desafios.')}>Locais da cena</div>${S.places.map(x => `<div class="hs-f">${esc(x.name.trim() || 'sem nome')}</div>`).join('')}</div>` : ''}
         ${S.threats.length ? `<div class="hs-card"><div class="hs-h">Ameaças deste ambiente</div><div class="env-thcs">${S.threats.map(U.sheet).join('')}</div></div>` : ''}
-        ${ch.length ? `<div class="hs-card"><div class="hs-h">Desafios deste ambiente</div>${ch.map(c => `<div class="hs-f">${esc(c.t)} <small class="muted">${c.kind === 'doomsday' ? 'fim do mundo' : 'desafio'} · ${ZN[c.z]}</small>${c.timer ? `<div class="env-story">${esc(c.timer)}</div>` : ''}</div>`).join('')}</div>` : ''}
+        ${ch.length ? `<div class="hs-card"><div class="hs-h">Desafios deste ambiente</div>${ch.map(c => `<div class="hs-f">${U.rich(c.t)} <small class="muted">${c.kind === 'doomsday' ? 'fim do mundo' : 'desafio'} · ${ZN[c.z]}</small>${c.timer ? `<div class="env-story">${esc(c.timer)}</div>` : ''}</div>`).join('')}</div>` : ''}
         <div class="hs-card"><div class="hs-h">Notas de mesa</div><div class="hs-notes">${lines('play.notes', S.play.notes, 8, 'Nota')}</div></div>
       </div>
       <div class="hs-page" id="hs-p2">
@@ -669,6 +680,7 @@
       if (el.dataset && el.dataset.tw) {
         const hit = getTw(el.dataset.tw); if (!hit) return;
         if (el.dataset.i != null && el.dataset.i !== '') hit.tw.fx[+el.dataset.i][el.dataset.f] = el.value; else hit.tw[el.dataset.f] = el.value;
+        syncMentioned();
         save(); light(el.dataset.tw); return;
       }
       if (el.dataset && el.dataset.pl) { const x = getPl(el.dataset.pl); if (x) { x.name = el.value; save(); light(); } return; }
@@ -702,7 +714,7 @@
     if (!payload) return false;
     window.GM_UNSEAL.run(payload, ['gm-env-data']);
     ED = window.GM_ENVDATA;
-    if (ED) { U = THREAT_LIB.ui(ED, { esc, die, tipA }); S = migrate(S); }
+    if (ED) { U = THREAT_LIB.ui(ED, { esc, die, tipA, rules: ruleHtml, pool: envPool }); S = migrate(S); syncMentioned(); }
     return !!ED;
   }
   (async () => {
