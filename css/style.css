@@ -1811,6 +1811,7 @@ body.ro-lock { overflow: hidden; }
 .env-prev > b { display: block; font: 600 .66rem var(--font-ui); letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.2rem; }
 .env-dice { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-top: 0.8rem; }
 .env-story { margin-top: 0.25rem; font-style: italic; color: var(--text-3); font-size: .86rem; }
+.env-turn-note { margin: 0.2rem 0 0.3rem; font-size: .85rem; line-height: 1.4; color: var(--text-2); }
 .env-turn { margin: 0.2rem 0 0; padding-left: 1.2rem; font-size: .88rem; line-height: 1.4; color: var(--text-2); }
 .env-traits { grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); }
 .hs-ab-t .nm small { font-style: normal; }
