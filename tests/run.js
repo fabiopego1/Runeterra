@@ -519,7 +519,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$$eval('#roster .ro-item', e => e.length) === 1, 'the antagonist is in the roster');
     // the Environment Workshop: traits, one die each, and the twists of each zone built from the rulebook's recipes
     await p.goto(`${BASE}/ambiente.html`); await p.waitForSelector('#stage .panel');
-    ok(await p.$$eval('#nav .rail-item', e => e.length) === 6 && await p.$eval('#gate', e => e.hidden), 'the Environment Workshop opens with six chapters');
+    ok(await p.$$eval('#nav .rail-item', e => e.length) === 7 && await p.$eval('#gate', e => e.hidden), 'the Environment Workshop opens with seven chapters');
     const forgeBefore = await p.evaluate(() => [localStorage.getItem('runeterra-forge-v1'), localStorage.getItem('runeterra-forge-roster-v1')]);
     await p.fill('[data-b=name]', 'Tempestade sobre a Cidade da Torre'); await p.fill('[data-b=scope]', 'a cidade inteira');
     await p.setInputFiles('#portrait-file', { name: 'lugar.png', mimeType: 'image/png', buffer: PNG_1PX });
@@ -530,6 +530,33 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     for (let i = 0; i < 3; i++) await p.fill(`[data-b="traits.${i}.name"]`, ['Fendas Dimensionais', 'Distorções Horrendas', 'Caos Malévolo'][i]);
     for (const [i, d] of ['d6', 'd6', 'd10'].entries()) await p.click(`.tchip[data-a=tdie][data-i="${i}"][data-val="${d}"]`);
     ok(/Mín/.test(await p.$eval('.env-dice', e => e.textContent)), 'the three trait dice give the environment its Min, Mid and Max dice');
+    await p.click('[data-a=next]');
+    // the threat library: minions and lieutenants with a die, abilities and a hover sheet
+    ok(await p.$eval('.rail-item.active .rail-name', e => e.textContent.trim()) === 'Ameaças' && !(await p.$eval('[data-a=next]', e => e.classList.contains('is-disabled'))), 'the Ameaças chapter comes after the traits and can be skipped');
+    await p.click('[data-a=thAdd]');
+    await p.fill('[data-thcard] input[data-f=name]', 'Diabretes da Tempestade');
+    await p.fill('[data-thcard] input[data-f=desc]', 'Pequenas criaturas elétricas que atacam de perto');
+    await p.click('[data-thcard] .tchip[data-a=thDie][data-val="d10"]');
+    ok(await p.$eval('[data-thcard] .env-warn', e => /dado alto/.test(e.textContent)), 'a minion with a d10 or d12 gets a warning about large numbers');
+    await p.click('[data-thcard] .tchip[data-a=thDie][data-val="d6"]');
+    await p.selectOption('[data-thadd]', 'bonus');
+    await p.fill('[data-thcard] input[data-ab="0"]', 'Atacar inimigos voadores');
+    ok(/\+2 em Atacar inimigos voadores/.test(await p.$eval('[data-thcard] .env-ab .ab-text', e => e.textContent)), 'a minion ability takes the book\'s usual value of 2 and the GM\'s detail');
+    await p.selectOption('[data-thadd]', 'dmg');
+    ok(await p.$$eval('[data-thadd]', e => e.length) === 0, 'a minion has at most two abilities');
+    ok(await p.$eval('[data-thcard] .tchip[data-a=thKind][data-val=minion]', e => /derrotado na hora/.test(e.dataset.tip)), 'the type chips explain how each type takes damage');
+    await p.click('[data-a=thAdd]');
+    await p.fill('[data-thcard] >> nth=1 >> input[data-f=name]', 'Cria Tentacular');
+    await p.click('[data-thcard] >> nth=1 >> .tchip[data-a=thKind][data-val=lieutenant]');
+    ok(await p.$eval('.flow-todo', e => /pelo menos uma habilidade/.test(e.textContent)), 'a lieutenant needs at least one ability');
+    await p.selectOption('[data-thcard] >> nth=1 >> [data-thadd]', 's-heal');
+    ok(!(await p.$('.flow-todo')), 'with an ability the lieutenant is complete');
+    await p.fill('[data-b=heroes]', '4');
+    await p.click('[data-thcard] >> nth=0 >> [data-a=thMesa]');
+    await p.click('[data-thcard] >> nth=1 >> [data-a=thMesa]');
+    const mesa = await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')).foes);
+    const mM = mesa.find(f => f.name === 'Diabretes da Tempestade'), mL = mesa.find(f => f.name === 'Cria Tentacular');
+    ok(mM && mM.kind === 'minion' && mM.dice.length === 4 && mL && mL.kind === 'lieutenant' && mL.dice.length === 2, 'the threats go to the GM Table: one minion per hero, half as many lieutenants');
     await p.click('[data-a=next]');
     const lastTw = '[data-twcard] >> nth=-1';
     const buildTw = async (z, sv, name, pick) => {
@@ -550,7 +577,9 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.click(`${lastTw} >> .tchip[data-a=fxVerb][data-val=hinder]`);
     await buildTw('green', 'minor', 'Ataque dos Diabretes', async () => {
       await p.click(`${lastTw} >> .tchip[data-val=threat]`); await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
-      await p.fill(`${lastTw} >> input[data-f=tname]`, 'Diabretes da Tempestade'); });
+      ok(await p.$eval(`${lastTw} >> .tchip[data-a=fxThreat]`, e => /\+2 em Atacar inimigos voadores/.test(e.dataset.tip) && /Salvamento/.test(e.dataset.tip)), 'the threat chip shows the little sheet on hover');
+      await p.click(`${lastTw} >> .tchip[data-a=fxThreat]`); });
+    ok(/Adicione um lacaio: Diabretes da Tempestade \(d?6\)/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'a threat effect picks the minion from the library');
     await buildTw('green', 'major', 'Socorro, Ele Me Pegou!');
     await p.click(`${lastTw} >> .env-opts .ab >> nth=2`);
     ok(await p.evaluate(() => { const c = [...document.querySelectorAll('[data-twcard]')].pop(); return c.querySelectorAll('.tchip[data-val=overcome]').length === 0 && c.querySelectorAll('.tchip[data-val=hinder]').length === 1; }), 'Overcome is not offered for an action on all targets');
@@ -558,6 +587,11 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$$eval('[data-a=twAdd][data-s=major]', e => e.length) === 0, 'only one major twist per zone');
     await p.click('[data-a=next]');
     await buildTw('yellow', 'minor', 'O Toque da Vidente'); await buildTw('yellow', 'minor', 'Visão Turva');
+    await buildTw('yellow', 'minor', 'A Maré Sobe', async () => {
+      await p.click(`${lastTw} >> .tchip[data-val=challenge]`); await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
+      await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Tirar os civis do porão'); await p.click(`${lastTw} >> .tchip[data-a=fxTm][data-val="3"]`); await p.click(`${lastTw} >> .tchip[data-a=fxNeed][data-val="2"]`);
+      ok(/diga o que acontece/.test(await p.$eval('.flow-todo', e => e.textContent)), 'a timed challenge needs its consequence'); await p.fill(`${lastTw} >> input[data-f=tcons]`, 'o porão inunda'); });
+    ok(/cronômetro \(3 caixinhas\)[\s\S]*Marque uma caixinha por rodada[\s\S]*2 sucessos em Superar[\s\S]*Se o tempo acabar: o porão inunda/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'a timed challenge writes its timer, the successes needed and the consequence');
     await buildTw('yellow', 'major', 'Portal da Tempestade', async () => { await p.click(`${lastTw} >> .env-opts .ab >> nth=4`); });
     ok(/persistente e exclusivo/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'persistent and exclusive actions are written out');
     await p.click('[data-a=next]');
@@ -566,7 +600,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
       await p.click(`${lastTw} >> .tchip[data-val=challenge]`); await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
       await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Fendas gigantes se abrem por toda a cidade'); });
     await p.click('[data-a=next]'); await p.waitForSelector('#sheet-preview .hs-page');
-    ok(await p.$eval('#sheet-preview', e => /Tempestade sobre a Cidade da Torre/.test(e.textContent) && /Diabretes da Tempestade/.test(e.textContent) && /Fendas gigantes/.test(e.textContent)), 'the sheet lists the twists, the threat and the doomsday device');
+    ok(await p.$eval('#sheet-preview', e => /Tempestade sobre a Cidade da Torre/.test(e.textContent) && /Diabretes da Tempestade/.test(e.textContent) && /Fendas gigantes/.test(e.textContent) && /Cria Tentacular/.test(e.textContent) && /cronômetro: 3 caixinhas/.test(e.textContent)), 'the sheet lists the twists, the threat library, the timed challenge and the doomsday device');
     ok(await p.$$eval('#sheet-preview [data-tip]', e => e.length) > 20, 'the environment sheet explains terms, dice and zones on hover');
     const [dlE] = await Promise.all([p.waitForEvent('download'), p.click('.export-row [data-a=export]')]);
     const jsonE = JSON.parse(fs.readFileSync(await dlE.path(), 'utf8'));
