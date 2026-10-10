@@ -10,6 +10,7 @@ try { playwright = require('playwright'); } catch (e) { playwright = require(req
 
 const BASE = (process.env.BASE_URL || 'http://localhost:8765').replace(/\/$/, '');
 const FIXTURE = fs.readFileSync(path.join(__dirname, 'fixtures', 'champion.json'), 'utf8');
+const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
 const STEPS = ['intro', 'people', 'region', 'background', 'powersource', 'archetype', 'personality', 'red', 'retcon', 'health', 'finish'];
 
 let failures = 0;
@@ -457,6 +458,10 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$$eval('#nav .rail-item', e => e.length) === 10 && await p.$eval('#gate', e => e.hidden), 'the Antagonist Forge opens with ten chapters, like the Champion Forge');
     ok(await p.$eval('[data-a=next]', e => e.classList.contains('is-disabled')), 'Continue waits for the name');
     await p.fill('[data-b=name]', 'Capitã Sylva'); await p.fill('[data-b=alias]', 'a Dama da Maré'); await p.fill('[data-b=concept]', 'Contrabandista de Bilgewater');
+    // picking an image must stay on this page (the Champion Forge's own file handlers must not run here)
+    await p.setInputFiles('#portrait-file', { name: 'retrato.png', mimeType: 'image/png', buffer: PNG_1PX });
+    await p.waitForSelector('.hs-portrait.small img');
+    ok(/antagonista\.html/.test(p.url()) && await p.$eval('#stage', e => /Dê vida ao antagonista/.test(e.textContent)), 'adding a portrait keeps the Antagonist Workshop on screen');
     await p.click('[data-a=next]');
     ok(await p.$$eval('.card[data-a=ap]', e => e.length) >= 15 && await p.$eval('.card[data-v=tactician]', e => /escolha 2 de 6/.test(e.textContent) && !!e.dataset.tip && /Juntar Forças/.test(e.dataset.tip)), 'approaches are cards that show what each one does, and the hover lists its abilities');
     await p.click('.card[data-v=tactician]'); await p.click('[data-a=next]');
@@ -515,7 +520,13 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     // the Environment Workshop: traits, one die each, and the twists of each zone built from the rulebook's recipes
     await p.goto(`${BASE}/ambiente.html`); await p.waitForSelector('#stage .panel');
     ok(await p.$$eval('#nav .rail-item', e => e.length) === 6 && await p.$eval('#gate', e => e.hidden), 'the Environment Workshop opens with six chapters');
-    await p.fill('[data-b=name]', 'Tempestade sobre a Cidade da Torre'); await p.fill('[data-b=scope]', 'a cidade inteira'); await p.click('[data-a=next]');
+    const forgeBefore = await p.evaluate(() => [localStorage.getItem('runeterra-forge-v1'), localStorage.getItem('runeterra-forge-roster-v1')]);
+    await p.fill('[data-b=name]', 'Tempestade sobre a Cidade da Torre'); await p.fill('[data-b=scope]', 'a cidade inteira');
+    await p.setInputFiles('#portrait-file', { name: 'lugar.png', mimeType: 'image/png', buffer: PNG_1PX });
+    await p.waitForSelector('.hs-portrait.small img');
+    ok(/ambiente\.html/.test(p.url()) && await p.$eval('#stage', e => /Dê um lugar à cena/.test(e.textContent)), 'adding an image keeps the Environment Workshop on screen');
+    ok(JSON.stringify(await p.evaluate(() => [localStorage.getItem('runeterra-forge-v1'), localStorage.getItem('runeterra-forge-roster-v1')])) === JSON.stringify(forgeBefore), 'and the champion saved in the Forge, and its roster, are left untouched');
+    await p.click('[data-a=next]');
     for (let i = 0; i < 3; i++) await p.fill(`[data-b="traits.${i}.name"]`, ['Fendas Dimensionais', 'Distorções Horrendas', 'Caos Malévolo'][i]);
     for (const [i, d] of ['d6', 'd6', 'd10'].entries()) await p.click(`.tchip[data-a=tdie][data-i="${i}"][data-val="${d}"]`);
     ok(/Mín/.test(await p.$eval('.env-dice', e => e.textContent)), 'the three trait dice give the environment its Min, Mid and Max dice');

@@ -1,6 +1,7 @@
 /* Runeterra Champion Forge — character builder for a Runeterra game on the Sentinels RPG system. */
 (() => {
   'use strict';
+  const KIT = document.body.classList.contains('ant-page');   // see the end of the file
 
   const tr = window.T;
   const PT = window.LANG === 'pt';
@@ -129,6 +130,7 @@
   const rosterIds = () => { try { const r = JSON.parse(localStorage.getItem(ROSTER)); return Array.isArray(r) ? r : []; } catch (e) { return []; } };
   let saveWarned = false;
   function save() {
+    if (KIT) return;   // the workshops never write a champion
     st.updated = Date.now();
     try {
       const json = JSON.stringify(st);
@@ -2361,6 +2363,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     ui.pos = pos;
   }
   addEventListener('popstate', ev => {
+    if (KIT) return;   // the Antagonist and Environment Workshops only borrow this file's tooltips and dice
     if (SHEET_PAGE) return;
     const to = ev.state && typeof ev.state.forja === 'number' ? ev.state.forja : 0, fwd = to > ui.hidx;
     ui.hidx = to;
@@ -2469,6 +2472,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
 
   // Password for a locked homeland or people (see LOCKED_REGIONS, LOCKED_PEOPLES)
   document.addEventListener('submit', ev => {
+    if (KIT) return;   // the Antagonist and Environment Workshops only borrow this file's tooltips and dice
     const f = ev.target.closest && ev.target.closest('form[data-lock]');
     if (!f) return;
     ev.preventDefault();
@@ -2484,6 +2488,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
   });
   document.addEventListener('click', ev => {
+    if (KIT) return;   // the Antagonist and Environment Workshops only borrow this file's tooltips and dice
     const el = ev.target.closest('[data-act]');
     if (!el) return;
     const act = el.dataset.act;
@@ -2645,6 +2650,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     setPath(st, path, v);
   }
   document.addEventListener('change', ev => {
+    if (KIT) return;   // the Antagonist and Environment Workshops only borrow this file's tooltips and dice
     const el = ev.target;
     if (el.id === 'import-file') { importJson(el.files[0]); el.value = ''; return; }
     if (el.id === 'portrait-file') { loadPortrait(el.files[0]); el.value = ''; return; }
@@ -2664,6 +2670,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     render();
   });
   document.addEventListener('keydown', ev => {
+    if (KIT) return;   // the Antagonist and Environment Workshops only borrow this file's tooltips and dice
     if (ev.key === 'Enter' && ev.target.dataset && (ev.target.dataset.bind === 'pers.qname' || ev.target.dataset.bind === 'pers.qdesc')) {
       ev.preventDefault();
       // Enter on the name moves to the description while that is still empty
@@ -2674,6 +2681,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     if (ev.key === 'Enter' && ev.target.dataset && ev.target.dataset.commit) { ev.preventDefault(); ev.target.blur(); }
   });
   document.addEventListener('input', ev => {
+    if (KIT) return;   // the Antagonist and Environment Workshops only borrow this file's tooltips and dice
     const el = ev.target;
     if (el.dataset.filter) {                                   // narrow a socket tray as you type
       const q = el.value.trim().toLowerCase(), tray = el.closest('.tray');
@@ -2836,7 +2844,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
 
   // The Oficina de Antagonista (antagonista.html) borrows this file's tooltips, dice, rules text and trait cards,
   // then stops: no champion is drawn, saved or changed on that page.
-  if (document.body.classList.contains('ant-page')) {
+  if (KIT) {
     st = blank();
     window.ForgeKit = {
       PT, tr, esc, tip, die, ico, sigil, rulesText, ICONS, TRAIT, CATS, catName, kindWord, catPhrase, traitTip, traitName, baseTraitName, renamedTrait, origTag,
