@@ -26,23 +26,32 @@
   const folderName = id => { const f = L.folders().find(x => x.id === id); return f ? f.name : ''; };
   const visible = () => {
     const q = ui.q.trim().toLowerCase();
-    return L.all().filter(t => (ui.folder === 'all' || (ui.folder === 'none' ? !t.folder : t.folder === ui.folder)) && (!q || (t.name + ' ' + t.desc).toLowerCase().includes(q)))
+    return L.all().filter(t => (ui.folder === 'all' || t.folder === ui.folder) && (!q || (t.name + ' ' + t.desc).toLowerCase().includes(q)))
       .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
   };
 
   function navHtml() {
     const items = L.all(), fs = L.folders();
     const row = (id, label, n) => `<li class="rail-item${ui.folder === id ? ' active' : ''}"><button data-a="folder" data-id="${id}"${ui.folder === id ? ' aria-current="true"' : ''}><span class="rail-label"><span class="rail-name">${esc(label)}</span><span class="rail-sub">${n} ${n === 1 ? 'ameaça' : 'ameaças'}</span></span></button></li>`;
-    return `<div class="rail-title">Banco de ameaças</div><ol class="rail th-folders">${row('all', 'Todas', items.length)}${row('none', 'Sem pasta', items.filter(t => !t.folder).length)}${fs.map(f => row(f.id, f.name, items.filter(t => t.folder === f.id).length)).join('')}</ol>
-      <div class="th-folder-acts"><button type="button" class="btn small ghost" data-a="folderNew">${ico('mark')} Nova pasta</button>${fs.some(f => f.id === ui.folder) ? `<button type="button" class="linkbtn" data-a="folderRename">Renomear</button><button type="button" class="linkbtn danger" data-a="folderDel">Apagar pasta</button>` : ''}</div>`;
+    return `<div class="rail-title">Banco de ameaças</div><ol class="rail th-folders">${row('all', 'Todas', items.length)}${fs.map(f => row(f.id, f.name, items.filter(t => t.folder === f.id).length)).join('')}</ol>
+      <p class="th-drop-hint">Arraste um card até uma pasta para movê-lo. Soltar em “Todas” tira da pasta.</p><div class="th-folder-acts"><button type="button" class="btn small ghost" data-a="folderNew">${ico('mark')} Nova pasta</button>${fs.some(f => f.id === ui.folder) ? `<button type="button" class="linkbtn" data-a="folderRename">Renomear</button><button type="button" class="linkbtn danger" data-a="folderDel">Apagar pasta</button>` : ''}</div>`;
   }
 
+  // a destination picker: the folders, plus a way out of any folder
+  const moveSelect = (attr, label, cls) => `<select class="th-move ${cls}" ${attr} aria-label="${esc(label)}"><option value="">${esc(label)}</option><option value="__none">Tirar da pasta</option>${L.folders().map(f => `<option value="${f.id}">${esc(f.name)}</option>`).join('')}</select>`;
+  const moveTo = (ids, dest) => {
+    const to = dest === '__none' ? '' : dest;
+    for (const id of ids) { const t = L.get(id); if (t && t.folder !== to) { t.folder = to; L.put(t); } }
+    say(`${ids.length} ${ids.length === 1 ? 'ameaça movida' : 'ameaças movidas'} para ${to ? '“' + folderName(to) + '”' : 'fora das pastas'}.`);
+    render();
+  };
   function cardHtml(t) {
     const k = U.TK()[t.kind];
-    return `<div class="th-card" data-card="${t.id}"><label class="th-sel"><input type="checkbox" data-sel="${t.id}"${ui.sel.has(t.id) ? ' checked' : ''} aria-label="Selecionar ${esc(t.name || 'ameaça')}"></label>
+    return `<div class="th-card" data-card="${t.id}" draggable="true"><label class="th-sel"><input type="checkbox" data-sel="${t.id}"${ui.sel.has(t.id) ? ' checked' : ''} aria-label="Selecionar ${esc(t.name || 'ameaça')}"></label>
       <div class="th-pic"${tipA(U.tip(t))}>${t.portrait ? `<img src="${t.portrait}" alt="">` : `<span class="muted">${k.name}</span>`}</div>
       <div class="th-main"><div class="th-name"${tipA(U.tip(t))}>${esc(t.name.trim() || 'Ameaça sem nome')}</div><div class="th-line">${die(t.die, 'sm')} <span class="muted">${k.name.toLowerCase()}${t.folder ? ' · ' + esc(folderName(t.folder)) : ''}</span></div>
-        <div class="th-acts"><button type="button" class="btn small" data-a="edit" data-id="${t.id}">Editar</button><button type="button" class="linkbtn" data-a="exportOne" data-id="${t.id}">Exportar</button><button type="button" class="linkbtn" data-a="toTable" data-id="${t.id}">Mesa</button><button type="button" class="linkbtn" data-a="dup" data-id="${t.id}">Duplicar</button><button type="button" class="linkbtn danger" data-a="del" data-id="${t.id}">Excluir</button></div></div></div>`;
+        <div class="th-acts"><button type="button" class="btn small" data-a="edit" data-id="${t.id}">Editar</button><button type="button" class="linkbtn" data-a="exportOne" data-id="${t.id}">Exportar</button><button type="button" class="linkbtn" data-a="toTable" data-id="${t.id}">Mesa</button><button type="button" class="linkbtn" data-a="dup" data-id="${t.id}">Duplicar</button><button type="button" class="linkbtn danger" data-a="del" data-id="${t.id}">Excluir</button></div>
+        ${moveSelect(`data-move="${t.id}"`, 'Mover para…', '')}</div></div>`;
   }
 
   function editorHtml(th) {
@@ -70,7 +79,7 @@
 
   function stageHtml() {
     const list = visible(), th = ui.edit ? L.get(ui.edit) : null, n = ui.sel.size;
-    const here = ui.folder === 'all' ? 'Todas as ameaças' : ui.folder === 'none' ? 'Sem pasta' : folderName(ui.folder);
+    const here = ui.folder === 'all' ? 'Todas as ameaças' : folderName(ui.folder);
     return `<div class="panel"><header class="chapter"><div class="chapter-titles"><div class="chapter-kicker">Banco de ameaças</div><h2 class="chapter-title">${esc(here)}</h2></div></header>
       <p class="chapter-lede">Lacaios e tenentes guardados <b>neste navegador</b>. Os ambientes e os antagonistas escolhem daqui. Cada ameaça é um arquivo próprio: dá para exportar uma, as marcadas ou uma pasta inteira.</p>
       ${th ? editorHtml(th) : ''}
@@ -78,6 +87,7 @@
         <label class="btn" for="import-file">${ico('upload')} Importar</label>
         <button type="button" class="btn${n ? '' : ' is-disabled'}" data-a="exportSel" aria-disabled="${!n}">${ico('download')} Exportar selecionadas${n ? ` (${n})` : ''}</button>
         ${L.folders().some(f => f.id === ui.folder) ? `<button type="button" class="btn" data-a="exportFolder">${ico('download')} Exportar esta pasta</button>` : ''}
+        ${moveSelect(`data-movesel${n ? '' : ' disabled'}`, n ? `Mover as ${n} marcadas para…` : 'Mover as marcadas para…', '')}
         <button type="button" class="linkbtn" data-a="selAll">${list.length && list.every(t => ui.sel.has(t.id)) ? 'Desmarcar as visíveis' : 'Marcar as visíveis'}</button>
         <input type="search" class="th-search" data-q placeholder="Buscar pelo nome" value="${esc(ui.q)}" aria-label="Buscar ameaças"></div>
       <div class="th-note" role="status">${esc(ui.note)}</div>
@@ -151,6 +161,23 @@
   }
   function wire() {
     document.addEventListener('click', onClick);
+    // drag a card (or, if it is checked, all the checked cards) onto a folder in the rail
+    let drag = null;
+    document.addEventListener('dragstart', ev => {
+      const c = ev.target.closest && ev.target.closest('[data-card]'); if (!c) return;
+      const id = c.dataset.card; drag = ui.sel.has(id) ? [...ui.sel] : [id];
+      ev.dataTransfer.setData('text/plain', 'ameaca:' + drag.join(',')); ev.dataTransfer.effectAllowed = 'move';
+    });
+    const target = ev => { const b = ev.target.closest && ev.target.closest('.th-folders [data-a=folder]'); return b ? b.closest('.rail-item') : null; };
+    document.addEventListener('dragover', ev => { const li = target(ev); if (li && drag) { ev.preventDefault(); li.classList.add('drop'); } });
+    document.addEventListener('dragleave', ev => { const li = target(ev); if (li) li.classList.remove('drop'); });
+    document.addEventListener('drop', ev => {
+      const li = target(ev); if (!li || !drag) return;
+      ev.preventDefault();
+      const dest = li.querySelector('[data-a=folder]').dataset.id, ids = drag; drag = null;
+      moveTo(ids, dest === 'all' ? '__none' : dest);
+    });
+    document.addEventListener('dragend', () => { drag = null; document.querySelectorAll('.rail-item.drop').forEach(x => x.classList.remove('drop')); });
     document.addEventListener('input', ev => {
       const el = ev.target;
       if (el.matches && el.matches('[data-q]')) { ui.q = el.value; render(); return; }
@@ -163,6 +190,8 @@
     });
     document.addEventListener('change', ev => {
       const el = ev.target;
+      if (el.dataset && el.dataset.move !== undefined) { if (el.value) moveTo([el.dataset.move], el.value); return; }
+      if (el.dataset && el.dataset.movesel !== undefined) { if (el.value && ui.sel.size) moveTo([...ui.sel], el.value); return; }
       if (el.dataset && el.dataset.sel) { if (el.checked) ui.sel.add(el.dataset.sel); else ui.sel.delete(el.dataset.sel); render(); return; }
       if (el.dataset && el.dataset.thadd) { const th = L.get(el.dataset.thadd); if (th && el.value && th.abs.length < U.TK()[th.kind].maxAb) { th.abs.push({ t: el.value, v: 2, x: '' }); L.put(th); render(); } return; }
       if (el.dataset && el.dataset.th && el.tagName === 'SELECT') { const th = L.get(el.dataset.th); if (th) { th[el.dataset.f] = el.value; L.put(th); render(); } return; }
