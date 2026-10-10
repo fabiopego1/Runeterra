@@ -532,6 +532,10 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     // Overcome works on challenges, not on targets: it reads as a challenge and is not offered for "everyone"
     await p.click(`${lastTw} >> .tchip[data-a=fxVerb][data-val=overcome]`);
     ok(/Supere um dos desafios restantes da cena/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'an environment that Overcomes overcomes a challenge, never a target');
+    ok(await p.$eval(`${lastTw} >> .env-warn`, e => /exceção/.test(e.textContent) && /desafio/.test(e.textContent)), 'choosing Overcome for an environment explains that it is an exception, only for a challenge');
+    await p.click(`${lastTw} >> .tchip[data-a=fxVerb][data-val=defend]`);
+    ok(await p.$eval(`${lastTw} >> .env-warn`, e => /não toma dano/.test(e.textContent) && /Atrapalhar/.test(e.textContent)), 'choosing Defend for an environment explains why the rulebook says to Hinder instead');
+    ok(await p.$eval(`${lastTw} >> .tchip[data-a=fxVerb][data-val=defend]`, e => /exceção/.test(e.dataset.tip)), 'the Defend chip explains the exception on hover too');
     await p.click(`${lastTw} >> .tchip[data-a=fxVerb][data-val=hinder]`);
     await buildTw('green', 'minor', 'Ataque dos Diabretes', async () => {
       await p.click(`${lastTw} >> .tchip[data-val=threat]`); await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
