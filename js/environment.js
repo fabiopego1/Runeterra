@@ -20,6 +20,7 @@
   const die = (d, c) => K().die(d, c);
   const dieWords = t => t.replace(/\bd(4|6|8|10|12)\b/g, '[d$1]');
   const ruleHtml = text => K().rulesText(dieWords(text));
+  let U = null;    // the threat bank's drawing code (needs the vault's ability templates)
   let ED = null;   // the twist tables: sealed in the vault, loaded after unlocking
 
   const ZN = { green: 'Verde', yellow: 'Amarela', red: 'Vermelha' };
@@ -27,7 +28,7 @@
   const STEPS = [
     { id: 'concept', name: 'Conceito', sub: 'O lugar', title: 'Dê um lugar à cena', lede: 'O <b>nome</b> do ambiente já define a escala: um estádio, um quarteirão, uma cidade inteira, uma ilha, outra dimensão. Descreva o lugar e o clima que você quer passar à mesa.' },
     { id: 'traits', name: 'Traços', sub: 'Três características', title: 'Os três traços e seus dados', lede: 'Escolha <b>três traços</b>: características do ambiente, não ameaças (“Armamento Automatizado”, e não “Torreta”). Cada traço recebe um dado, e os três dados formam a reserva que o ambiente rola quando age.' },
-    { id: 'threats', name: 'Ameaças', sub: 'Lacaios e tenentes', title: 'A biblioteca de ameaças', lede: 'Monte aqui os <b>lacaios</b> e <b>tenentes</b> deste ambiente. Cada reviravolta que “adiciona uma ameaça” escolhe uma delas, e a ficha mostra todas. Você pode pular este capítulo se o ambiente não vai ter ameaças.' },
+    { id: 'threats', name: 'Ameaças', sub: 'Lacaios e tenentes', title: 'A biblioteca de ameaças', lede: 'Escolha aqui os <b>lacaios</b> e <b>tenentes</b> deste ambiente, vindos do <b>banco de ameaças</b> (a terceira oficina do Mestre, onde você os cria). Cada reviravolta que “adiciona uma ameaça” usa uma delas, e a ficha mostra todas. Você pode pular este capítulo se o ambiente não vai ter ameaças.' },
     { id: 'green', name: 'Zona Verde', sub: 'Estável', title: 'Reviravoltas da zona Verde', lede: 'A catástrofe do ambiente tem três fases: <b>Estável</b> (Verde), <b>em decadência</b> (Amarela) e <b>colapso</b> (Vermelha). Na Verde, o ambiente reúne forças: incômodos e estranhezas. Crie <b>duas ou três reviravoltas menores</b> e <b>uma maior</b>.' },
     { id: 'yellow', name: 'Zona Amarela', sub: 'Em decadência', title: 'Reviravoltas da zona Amarela', lede: 'Na Amarela, o ambiente fica sob tanto estresse quanto os campeões: os efeitos ficam mais fortes. Crie <b>duas ou três reviravoltas menores</b> e <b>uma maior</b>.' },
     { id: 'red', name: 'Zona Vermelha', sub: 'Colapso', title: 'Reviravoltas da zona Vermelha', lede: 'Na Vermelha, o ambiente colapsa e algo perigoso emerge. É aqui que entra o <b>dispositivo do fim do mundo</b>, se você quiser um: crie-o como desafio <b>personalizado</b> na reviravolta maior. Crie <b>duas ou três reviravoltas menores</b> e <b>uma maior</b>.' },
@@ -77,6 +78,7 @@
       if (z === 'red' && sv === 'major' && fx.cat === 'challenge' && fx.opt === 'r-m1') fx.opt = 'custom';   // the ready-made doomsday recipe is gone: the text stays as a custom challenge
       delete fx.tname; delete fx.tdie;
     }
+    THREAT_LIB.adopt(s.threats);   // threats an older sheet carries that the bank does not know yet go into it
     return s;
   };
   const hydrate = o => migrate(normalize(o));
@@ -123,24 +125,9 @@
   const plName = id => { const x = getPl(id); return x ? (x.name.trim() || 'local sem nome') : ''; };
   const TK = () => ED.threatKinds;
   const getTh = id => S.threats.find(t => t.id === id) || null;
-  const abTpl = id => ED.abilities.find(a => a.id === id);
-  const abText = a => { const t = abTpl(a.t); return t ? t.t(a.v, (a.x || '').trim()) : ''; };
-  const abName = a => { const t = abTpl(a.t); return t ? t.name : ''; };
   const dieAtLeast = (d, m) => DIES.indexOf(d) >= DIES.indexOf(m);
-  function thIssues(th) {
-    const I = [], k = TK()[th.kind], who = `“${th.name.trim() || 'sem nome'}”: `;
-    if (!th.name.trim()) I.push(who + 'dê um nome à ameaça.');
-    if (th.kind === 'lieutenant' && !th.abs.length) I.push(who + 'um tenente precisa de pelo menos uma habilidade.');
-    if (th.abs.length > k.maxAb) I.push(who + `${k.name === 'Lacaio' ? 'lacaios têm' : 'tenentes têm'} no máximo ${k.maxAb} habilidades.`);
-    th.abs.forEach(a => { if (a.t === 'custom' && !(a.x || '').trim()) I.push(who + 'descreva a habilidade própria.'); });
-    return I;
-  }
-  // the little sheet of a threat, shown in hovers
-  function thTip(th) {
-    const k = TK()[th.kind];
-    return `<h5>${esc(th.name.trim() || 'Ameaça sem nome')} · ${k.name} ${esc(th.die)}</h5>${th.desc.trim() ? `<p>${esc(th.desc.trim())}</p>` : ''}<p><b>Salvamento.</b> ${esc(k.save)}</p>${th.abs.length ? `<ul>${th.abs.map(a => `<li><b>${esc(abName(a))}.</b> ${esc(abText(a))}</li>`).join('')}</ul>` : '<p class="muted">Sem habilidades: só age e leva dano.</p>'}${th.tactics.trim() ? `<p><i>Tática:</i> ${esc(th.tactics.trim())}</p>` : ''}`;
-  }
-  const thChip = th => `<span class="term env-thr-chip"${tipA(thTip(th))}>${esc(th.name.trim() || 'Ameaça sem nome')} ${die(th.die, 'sm')} <small class="muted">${TK()[th.kind].name.toLowerCase()}</small></span>`;
+  const thTip = th => U.tip(th);
+  const thChip = th => U.chip(th);
   const timerOf = fx => ED.timers.find(x => x[0] === fx.tm) || ED.timers[1];
   const timerWords = fx => { const t = timerOf(fx); return t[0] === 'zone' ? 'até a cena mudar de zona' : t[0] === '1' ? '1 caixinha' : `${t[0]} caixinhas`; };
   const withDie = d => `com ${/^dados/.test(dieWord(d)) ? 'os' : 'o'} ${dieWord(d)}`;
@@ -241,7 +228,7 @@
       S.traits.forEach((t, i) => { if (!t.name.trim()) N.push(`Dê um nome ao traço ${i + 1}.`); if (!t.die) N.push(`Escolha o dado do traço ${i + 1}.`); });
       return N;
     }
-    if (id === 'threats') return S.threats.flatMap(thIssues);
+    if (id === 'threats') return N;
     if (ZN[id]) {
       const z = S.tw[id];
       if (z.minor.length < 2) N.push(`Crie pelo menos duas reviravoltas menores (hoje há ${z.minor.length}).`);
@@ -286,29 +273,25 @@
   // the threat library: minions and lieutenants, each with a die, a short description, abilities and tactics
   const PERS_TIP = '<h5>Persistente e exclusivo</h5><b>Persistente</b>: o bônus ou a penalidade não some depois de um uso; dura até algo o remover, até alguém Superar para encerrá-lo ou, no máximo, até o fim da cena. <b>Exclusivo</b>: numa mesma rolagem só vale um bônus exclusivo e uma penalidade exclusiva. Isso vale só para bônus e penalidades (Fortalecer e Atrapalhar), não para dano.';
   function threatsBody() {
-    const cards = S.threats.map(thCard).join('');
+    const bank = THREAT_LIB.all(), mine = new Set(S.threats.map(t => t.id)), avail = bank.filter(t => !mine.has(t.id)), fs = THREAT_LIB.folders();
+    const opt = t => `<option value="${t.id}">${esc((t.name.trim() || 'sem nome') + ' · ' + TK()[t.kind].name.toLowerCase() + ' ' + t.die)}</option>`;
+    const groups = [['', avail.filter(t => !t.folder)]].concat(fs.map(f => [f.name, avail.filter(t => t.folder === f.id)])).filter(g => g[1].length);
     return `<div class="env-row"><label class="field"><span>Campeões na mesa</span><input type="number" min="1" max="8" data-b="heroes" value="${esc(S.heroes)}"></label>
         <p class="muted env-note">Usado só no botão “Adicionar à Mesa do Mestre”: um grupo de lacaios tem um por campeão, e tenentes entram na metade (arredondada para cima).</p></div>
-      ${cards || '<p class="muted">Nenhuma ameaça ainda.</p>'}
-      <button type="button" class="btn small" data-a="thAdd">${ico('mark')} Adicionar lacaio ou tenente</button>`;
+      ${S.threats.map(thCard).join('') || '<p class="muted">Nenhuma ameaça neste ambiente ainda.</p>'}
+      <div class="env-row"><label class="field"><span>Adicionar do banco de ameaças</span><select data-thbank><option value="">${avail.length ? 'Escolha uma ameaça…' : bank.length ? 'Todas as ameaças do banco já estão aqui' : 'O banco está vazio'}</option>${groups.map(([n, l]) => n ? `<optgroup label="${esc(n)}">${l.map(opt).join('')}</optgroup>` : l.map(opt).join('')).join('')}</select></label>
+        <a class="btn small ghost" href="ameacas.html">${ico('compass')} Abrir o banco de ameaças</a></div>
+      <p class="muted env-note">As ameaças vêm do banco (a terceira oficina do Mestre). Aqui fica uma <b>cópia</b>: se você editar a ameaça no banco, use “Atualizar do banco” para trazer a versão nova.</p>`;
   }
   function thCard(th) {
-    const k = TK()[th.kind], A = `data-th="${th.id}"`;
-    const left = k.maxAb - th.abs.length;
-    const warn = th.kind === 'minion' && dieAtLeast(th.die, 'd10') ? `<div class="env-warn" role="note">${ico('warn')}<span><b>Lacaio com dado alto.</b> Lacaios d10 e d12 ficam mortais em grupo. O livro sugere manter o dado baixo e dar <b>habilidades</b> (bônus em ações ou salvamentos) para torná-los especiais. Se a ameaça é de verdade perigosa, faça dela um tenente.</span></div>` : th.kind === 'lieutenant' && th.die === 'd6' ? `<div class="env-warn" role="note">${ico('warn')}<span><b>Tenente d6.</b> É raro: tenentes costumam ir de d8 a d12.</span></div>` : '';
+    const bank = THREAT_LIB.get(th.id), A = `data-th="${th.id}"`, k = TK()[th.kind];
+    const stale = bank && JSON.stringify([bank.name, bank.kind, bank.die, bank.desc, bank.tactics, bank.abs, bank.portrait]) !== JSON.stringify([th.name, th.kind, th.die, th.desc, th.tactics, th.abs, th.portrait]);
     return `<div class="ab ant picked env-tw env-th" data-thcard="${th.id}">
-      <div class="ab-top"><span class="ab-name">${esc(th.name.trim() || 'Ameaça sem nome')}</span><span class="pill">${k.name} ${esc(th.die)}</span><button type="button" class="linkbtn danger env-del" data-a="thDel" ${A}>Remover</button></div>
-      <div class="env-fields"><label class="field"><span>Nome</span><input type="text" data-th="${th.id}" data-f="name" value="${esc(th.name)}" placeholder="Ex.: Diabretes da Tempestade"></label>
-        <label class="field"><span>Descrição (o que é e como ataca)</span><input type="text" data-th="${th.id}" data-f="desc" value="${esc(th.desc)}" placeholder="Uma frase: corpo a corpo ou à distância, o que o torna uma ameaça"></label></div>
-      <div class="env-row"><div><div class="cfg-l">Tipo</div><div class="tchips" role="radiogroup">${Object.keys(TK()).map(key => tchipB(`data-a="thKind" ${A} data-val="${key}"`, th.kind === key, `<span>${TK()[key].name}</span>`, `<h5>${TK()[key].name}</h5>${esc(TK()[key].save)}`)).join('')}</div></div>
-        <div><div class="cfg-l">Dado</div><div class="tchips" role="radiogroup">${k.dice.map(d => tchipB(`data-a="thDie" ${A} data-val="${d}"`, th.die === d, die(d, 'sm'))).join('')}</div></div></div>
-      <p class="muted env-note"><b>Salvamento.</b> ${esc(k.save)}</p>${warn}
-      <div class="cfg-l">Habilidades <small class="muted">(${th.kind === 'minion' ? '0 a 2' : '1 a 3'}; bônus de 1 a 3, o mais comum é 2)</small></div>
-      ${th.abs.map((a, i) => { const t = abTpl(a.t); return `<div class="env-ab"><div class="env-ab-h"><b>${esc(abName(a))}</b>${t && t.t(1, 'x') !== t.t(2, 'x') ? `<span class="tchips" role="radiogroup" aria-label="Valor do bônus ou da penalidade"${tipA('<h5>Valor</h5>O número do bônus ou da penalidade desta habilidade. O livro usa de 1 a 3, e o mais comum é 2.')}>${[1, 2, 3].map(v => tchipB(`data-a="thAbV" ${A} data-i="${i}" data-val="${v}"`, a.v === v, `<span>${v}</span>`)).join('')}</span>` : ''}<button type="button" class="linkbtn danger" data-a="thAbDel" ${A} data-i="${i}">Remover</button></div>
-        ${t && t.ph ? `<input type="text" data-th="${th.id}" data-ab="${i}" data-f="x" value="${esc(a.x)}" placeholder="${esc(t.ph)}" aria-label="Detalhe da habilidade">` : ''}<div class="ab-text">${esc(abText(a))}</div></div>`; }).join('')}
-      ${left > 0 ? `<label class="field"><span>Adicionar habilidade</span><select data-thadd="${th.id}"><option value="">Escolha…</option>${ED.abilities.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></label>` : ''}
-      <label class="field"><span>Tática (opcional)</span><input type="text" data-th="${th.id}" data-f="tactics" value="${esc(th.tactics)}" placeholder="Como age na cena, em uma frase"></label>
-      <div class="env-row"><button type="button" class="btn small" data-a="thMesa" ${A}>Adicionar à Mesa do Mestre</button><span class="muted env-note" data-mesa="${th.id}"></span></div></div>`;
+      <div class="ab-top"><span class="ab-name"${tipA(thTip(th))}>${esc(th.name.trim() || 'Ameaça sem nome')}</span><span class="pill">${k.name} ${esc(th.die)}</span><button type="button" class="linkbtn danger env-del" data-a="thDel" ${A}>Remover do ambiente</button></div>
+      ${U.sheet(th)}
+      <div class="env-row"><button type="button" class="btn small" data-a="thMesa" ${A}>Adicionar à Mesa do Mestre</button>
+        ${!bank ? `<button type="button" class="btn small ghost" data-a="thSave" ${A}>Salvar no banco</button>` : stale ? `<button type="button" class="btn small ghost" data-a="thRefresh" ${A}>Atualizar do banco</button>` : ''}
+        <span class="muted env-note" data-mesa="${th.id}">${!bank ? 'Esta ameaça ainda não está no banco.' : stale ? 'O banco tem uma versão diferente desta ameaça.' : ''}</span></div></div>`;
   }
 
   // one zone: the minor twists and the major twist, each built from the rulebook's recipes
@@ -392,8 +375,6 @@
     }
     return ch;
   }
-  const thSheet = th => `<div class="env-thc"><div class="env-thc-h"><b>${esc(th.name.trim() || 'sem nome')}</b> ${die(th.die, 'sm')} <small class="muted">${TK()[th.kind].name.toLowerCase()}</small></div>
-    ${th.desc.trim() ? `<div class="env-thc-d">${esc(th.desc.trim())}</div>` : ''}${th.abs.map(a => `<div class="env-thc-a"><b>${esc(abName(a))}.</b> ${esc(abText(a))}</div>`).join('')}${th.tactics.trim() ? `<div class="env-thc-t"><i>Tática:</i> ${esc(th.tactics.trim())}</div>` : ''}<div class="env-thc-s"><i>Salvamento:</i> ${esc(TK()[th.kind].save)}</div></div>`;
   const usedThreats = tw => tw.fx.map(f => (f.cat === 'threat' ? getTh(f.tid) : null)).filter(Boolean);
   function sheetHtml() {
     const imp = IMPACT(), v = DV(), title = esc(S.name || 'Ambiente sem nome'), ch = challengesOf();
@@ -423,7 +404,7 @@
             <ol class="env-turn"><li><span class="term"${tipA('<h5>1. Avance o marcador de cena</h5>Sempre é a primeira coisa do turno do ambiente: marque a próxima casa do marcador, de Verde para Vermelho. Isso acontece em todo turno, haja ou não reviravolta. Ao marcar a última casa de uma cor, a cena entra na zona seguinte.')}>Avance o marcador de cena.</span></li><li><span class="term"${tipA('<h5>2. Ative as ameaças que já estão em cena</h5>Os lacaios e tenentes que o ambiente colocou em turnos anteriores agem agora, como qualquer outro lacaio ou tenente: uma ação básica (Atacar, Atrapalhar, Fortalecer ou Defender) ou uma habilidade própria. Você decide o que cada um faz, conforme a natureza dele, e eles podem estar do lado dos heróis, do vilão ou contra os dois. Grupos podem agir de uma vez, rolando todos os dados juntos. Ameaças recém-chegadas só agem no turno seguinte.')}>Ative as ameaças que já estão em cena.</span></li><li><span class="term"${tipA('<h5>3. Nova ameaça ou reviravolta</h5>Se <b>não há nenhuma ameaça do ambiente</b> em cena, introduza uma, entre as liberadas pela zona atual: ela só age no turno seguinte. Se já há, <b>acione uma reviravolta</b> da zona atual (cada reviravolta maior vale uma vez por cena). Se nenhuma reviravolta servir, role os dados do ambiente como Atacar, Fortalecer ou Atrapalhar.')}>Introduza uma ameaça nova <b>ou</b> acione uma reviravolta da zona atual.</span></li></ol></div>
         </div>
         ${S.places.length ? `<div class="hs-card"><div class="hs-h"${tipA('<h5>Locais</h5>Os lugares da cena. Um local não tem ficha de jogo: serve para dizer onde ficam heróis, ameaças e desafios.')}>Locais da cena</div>${S.places.map(x => `<div class="hs-f">${esc(x.name.trim() || 'sem nome')}</div>`).join('')}</div>` : ''}
-        ${S.threats.length ? `<div class="hs-card"><div class="hs-h">Ameaças deste ambiente</div><div class="env-thcs">${S.threats.map(thSheet).join('')}</div></div>` : ''}
+        ${S.threats.length ? `<div class="hs-card"><div class="hs-h">Ameaças deste ambiente</div><div class="env-thcs">${S.threats.map(U.sheet).join('')}</div></div>` : ''}
         ${ch.length ? `<div class="hs-card"><div class="hs-h">Desafios deste ambiente</div>${ch.map(c => `<div class="hs-f">${esc(c.t)} <small class="muted">${c.kind === 'doomsday' ? 'fim do mundo' : 'desafio'} · ${ZN[c.z]}</small>${c.timer ? `<div class="env-story">${esc(c.timer)}</div>` : ''}</div>`).join('')}</div>` : ''}
         <div class="hs-card"><div class="hs-h">Notas de mesa</div><div class="hs-notes">${lines('play.notes', S.play.notes, 8, 'Nota')}</div></div>
       </div>
@@ -443,7 +424,7 @@
       for (const s of ['minor', 'major']) for (const tw of S.tw[z][s]) L.push(`${SEV[s]}: ${tw.name || 'sem nome'}${tw.desc ? ' (' + tw.desc + ')' : ''}: ${twPlain(tw, z, s).text}`);
     }
     if (S.places.length) L.push('', 'LOCAIS: ' + S.places.map(x => x.name || 'sem nome').join(', '));
-    if (S.threats.length) { L.push('', 'AMEAÇAS'); for (const t of S.threats) L.push(`${t.name || 'sem nome'} (${TK()[t.kind].name.toLowerCase()} ${t.die})${t.desc ? ': ' + t.desc : ''}${t.abs.length ? ' · ' + t.abs.map(a => `${abName(a)}: ${abText(a)}`).join(' ') : ''}${t.tactics ? ' · Tática: ' + t.tactics : ''}`); }
+    if (S.threats.length) { L.push('', 'AMEAÇAS'); for (const t of S.threats) L.push(U.plainLine(t)); }
     const chs = challengesOf(); if (chs.length) { L.push('', 'DESAFIOS'); for (const c of chs) L.push(`${c.t} (${ZN[c.z]})${c.timer ? ' · ' + c.timer : ''}`); }
     if (S.note) L.push('', S.note);
     return L.join('\n');
@@ -601,16 +582,6 @@
     if (o && fx.cat === 'basic') fx.verbs = o.acts.map((a, i) => (fx.verbs[i] && verbsFor(o, fx, i).includes(fx.verbs[i])) ? fx.verbs[i] : 'hinder');
     if (fx.cat === 'threat') { const th = getTh(fx.tid); if (th && (th.kind === 'lieutenant') !== !!(o && o.lt)) fx.tid = ''; }
   }
-  // sends a threat to the GM Table (Escudo): one minion per hero, half as many lieutenants (rounded up)
-  function sendToTable(th) {
-    const n = Math.max(1, Math.min(8, parseInt(S.heroes, 10) || 4)), count = th.kind === 'minion' ? n : Math.ceil(n / 2);
-    let T; try { T = JSON.parse(localStorage.getItem('runeterra-gm-table-v1')); } catch (e) { T = null; }
-    T = T && typeof T === 'object' ? T : {};
-    if (!Array.isArray(T.foes)) T.foes = [];
-    T.foes.push({ id: uid(), name: th.name.trim() || 'Ameaça', kind: th.kind, dice: Array(count).fill(th.die), sel: 0, out: 0, dmg: '', last: '' });
-    try { localStorage.setItem('runeterra-gm-table-v1', JSON.stringify(T)); } catch (e) { return 'Sem espaço neste navegador.'; }
-    return `Adicionado à Mesa: ${count} × ${th.die} (${count === 1 ? 'um' : count} ${th.kind === 'minion' ? 'lacaio' : 'tenente'}${count === 1 ? '' : 's'}).`;
-  }
   function onClick(ev) {
     const t = ev.target;
     if (t.closest('select, textarea, label, input:not([type=checkbox])')) return;
@@ -630,7 +601,6 @@
       }
       return;
     }
-    if (a === 'thAdd') { const n = newTh(); S.threats.push(n); save(); render(); const inp = $(`[data-thcard="${n.id}"] input[data-f="name"]`); if (inp) inp.focus(); return; }
     if (a === 'thDel') {
       if (th && confirm(`Remover a ameaça “${th.name.trim() || 'sem nome'}” da biblioteca? Ela some das reviravoltas que a usam.`)) {
         S.threats = S.threats.filter(x => x.id !== th.id);
@@ -639,11 +609,9 @@
       }
       return;
     }
-    if (a === 'thKind' && th) { th.kind = el.dataset.val; const k = TK()[th.kind]; if (!k.dice.includes(th.die)) th.die = 'd8'; if (th.abs.length > k.maxAb) th.abs.length = k.maxAb; save(); render(); return; }
-    if (a === 'thDie' && th) { th.die = el.dataset.val; save(); render(); return; }
-    if (a === 'thAbV' && th) { th.abs[+el.dataset.i].v = +el.dataset.val; save(); render(); return; }
-    if (a === 'thAbDel' && th) { th.abs.splice(+el.dataset.i, 1); save(); render(); return; }
-    if (a === 'thMesa' && th) { const r = sendToTable(th); const m = $(`[data-mesa="${th.id}"]`); if (m) m.textContent = r; return; }
+    if (a === 'thSave' && th) { THREAT_LIB.put(th); save(); render(); return; }
+    if (a === 'thRefresh' && th) { const b = THREAT_LIB.get(th.id); if (b) { Object.assign(th, JSON.parse(JSON.stringify(Object.assign({}, b, { folder: undefined })))); save(); render(); } return; }
+    if (a === 'thMesa' && th) { const r = U.toTable(th, S.heroes); const m = $(`[data-mesa="${th.id}"]`); if (m) m.textContent = r; return; }
     if (a === 'fxThreat' && fx) { fx.tid = el.dataset.val; save(); render(); return; }
     if (a === 'fxCdice' && fx) { const d = el.dataset.val; fx.cdice = fx.cdice.includes(d) ? fx.cdice.filter(x => x !== d) : fx.cdice.concat([d]); save(); render(); return; }
     if (a === 'fxCtimer' && fx) { fx.ctimer = el.dataset.val === 'true'; save(); render(); return; }
@@ -704,14 +672,6 @@
         save(); light(el.dataset.tw); return;
       }
       if (el.dataset && el.dataset.pl) { const x = getPl(el.dataset.pl); if (x) { x.name = el.value; save(); light(); } return; }
-      if (el.dataset && el.dataset.th) {
-        const th = getTh(el.dataset.th); if (!th) return;
-        if (el.dataset.ab != null) th.abs[+el.dataset.ab][el.dataset.f] = el.value; else th[el.dataset.f] = el.value;
-        save(); light();
-        const card = $(`[data-thcard="${th.id}"]`);
-        if (card) { const nm = card.querySelector('.ab-top .ab-name'); if (nm) nm.textContent = th.name.trim() || 'Ameaça sem nome'; if (el.dataset.ab != null) { const t = el.closest('.env-ab').querySelector('.ab-text'); if (t) t.textContent = abText(th.abs[+el.dataset.ab]); } }
-        return;
-      }
       const b = el.dataset && el.dataset.b;
       if (!b || el.tagName === 'SELECT') return;
       setPath(S, b, el.value);
@@ -719,7 +679,7 @@
     });
     document.addEventListener('change', ev => {
       const el = ev.target;
-      if (el.dataset && el.dataset.thadd) { const th = getTh(el.dataset.thadd); if (th && el.value && th.abs.length < TK()[th.kind].maxAb) { th.abs.push({ t: el.value, v: 2, x: '' }); save(); render(); } return; }
+      if (el.dataset && el.dataset.thbank !== undefined) { const b = el.value && THREAT_LIB.copyOf(el.value); if (b && !S.threats.some(t => t.id === b.id)) { S.threats.push(b); save(); render(); } return; }
       if (el.id === 'portrait-file') { loadPortrait(el.files[0]); el.value = ''; return; }
       if (el.id === 'import-file') { const f = el.files[0]; el.value = ''; if (!f) return; const r = new FileReader(); r.onload = () => importJson(String(r.result)); r.readAsText(f); }
     });
@@ -742,7 +702,7 @@
     if (!payload) return false;
     window.GM_UNSEAL.run(payload, ['gm-env-data']);
     ED = window.GM_ENVDATA;
-    if (ED) S = migrate(S);
+    if (ED) { U = THREAT_LIB.ui(ED, { esc, die, tipA }); S = migrate(S); }
     return !!ED;
   }
   (async () => {

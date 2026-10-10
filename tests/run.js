@@ -517,6 +517,65 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(!(await p.$$eval('#stage .flow-todo li', e => e.some(x => /Focado/.test(x.textContent)))), 'two abilities on one power and one on another satisfy the Focused rule');
     await p.click('[data-a=roster]');
     ok(await p.$$eval('#roster .ro-item', e => e.length) === 1, 'the antagonist is in the roster');
+    // the Threat Workshop: the bank of minions and lieutenants, with pictures, folders and .json files
+    await p.goto(`${BASE}/ameacas.html`); await p.waitForSelector('#stage .panel');
+    ok(await p.$eval('#gate', e => e.hidden) && /Banco de ameaças/.test(await p.$eval('#stage', e => e.textContent)), 'the Threat Workshop opens behind the GM Screen');
+    await p.click('[data-a=new]');
+    await p.fill('[data-thcard] input[data-f=name]', 'Diabretes da Tempestade');
+    await p.fill('[data-thcard] input[data-f=desc]', 'Pequenas criaturas elétricas que atacam de perto');
+    await p.click('[data-thcard] .tchip[data-a=thDie][data-val="d10"]');
+    ok(await p.$eval('[data-thcard] .env-warn', e => /dado alto/.test(e.textContent)), 'a minion with a d10 or d12 gets a warning about large numbers');
+    await p.click('[data-thcard] .tchip[data-a=thDie][data-val="d6"]');
+    await p.selectOption('[data-thadd]', 'bonus');
+    await p.fill('[data-thcard] input[data-ab="0"]', 'Atacar inimigos voadores');
+    ok(/\+2 em Atacar inimigos voadores/.test(await p.$eval('[data-thcard] .env-ab .ab-text', e => e.textContent)), 'a minion ability takes the book\'s usual value of 2 and the GM\'s detail');
+    await p.selectOption('[data-thadd]', 'dmg');
+    ok(await p.$$eval('[data-thadd]', e => e.length) === 0, 'a minion has at most two abilities');
+    ok(await p.$eval('[data-thcard] .tchip[data-a=thKind][data-val=minion]', e => /derrotado na hora/.test(e.dataset.tip)), 'the type chips explain how each type takes damage');
+    await p.setInputFiles('#portrait-file', { name: 'diabrete.png', mimeType: 'image/png', buffer: PNG_1PX });
+    await p.waitForSelector('[data-thcard] .hs-portrait img');
+    await p.click('[data-a=editDone]');
+    ok(await p.$eval('.th-card .th-pic img', e => !!e.src), 'a threat can have a picture');
+    await p.click('[data-a=new]');
+    await p.fill('[data-thcard] input[data-f=name]', 'Cria Tentacular');
+    await p.click('[data-thcard] .tchip[data-a=thKind][data-val=lieutenant]');
+    ok(await p.$eval('.flow-todo', e => /pelo menos uma habilidade/.test(e.textContent)), 'a lieutenant needs at least one ability');
+    await p.selectOption('[data-thadd]', 's-heal');
+    ok(await p.$$eval('[data-thcard] .env-ab .tchips', e => e.length) === 0, 'an ability with no number has no value picker');
+    ok(!(await p.$('.flow-todo')), 'with an ability the lieutenant is complete');
+    await p.click('[data-a=editDone]');
+    // folders: create, file a threat in it, filter, and export the folder as one master file
+    p.once('dialog', d => d.accept('Templo')); await p.click('[data-a=folderNew]');
+    ok(await p.$eval('.th-folders .active .rail-name', e => e.textContent === 'Templo'), 'a folder can be created and opens');
+    await p.click('[data-a=folder][data-id=all]');
+    await p.click('[data-a=edit][data-id]');
+    await p.selectOption('[data-thcard] select[data-f=folder]', { label: 'Templo' }); await p.click('[data-a=editDone]');
+    await p.click('.th-folders .rail-item >> nth=2 >> button');
+    ok(await p.$$eval('.th-card', e => e.length) === 1, 'the folder lists only its threats');
+    const [dlF] = await Promise.all([p.waitForEvent('download'), p.click('.th-bar [data-a=exportFolder]')]);
+    const mf = JSON.parse(fs.readFileSync(await dlF.path(), 'utf8'));
+    ok(mf.app === 'runeterra-threat-library' && mf.items.length === 1 && mf.folders.length === 1 && mf.folders[0].name === 'Templo', 'a folder exports as a master .json with its threats and the folder');
+    await p.click('[data-a=folder][data-id=all]');
+    ok(await p.$eval('.th-bar [data-a=exportSel]', e => e.classList.contains('is-disabled')), 'exporting a selection is disabled while nothing is checked');
+    await p.check('[data-sel] >> nth=0'); await p.check('[data-sel] >> nth=1');
+    const [dlS] = await Promise.all([p.waitForEvent('download'), p.click('.th-bar [data-a=exportSel]')]);
+    ok(JSON.parse(fs.readFileSync(await dlS.path(), 'utf8')).items.length === 2, 'the checked threats export as one master .json');
+    const [dlO] = await Promise.all([p.waitForEvent('download'), p.click('[data-a=exportOne] >> nth=0')]);
+    const one = JSON.parse(fs.readFileSync(await dlO.path(), 'utf8'));
+    ok(one.app === 'runeterra-threat' && one.name && one.abs, 'one threat exports as its own .json');
+    // import: a single file, a master file, and a repeat that changes nothing
+    await p.evaluate(() => localStorage.removeItem('runeterra-threat-lib-v1')); await p.reload(); await p.waitForSelector('#stage .panel');
+    ok(await p.$$eval('.th-card', e => e.length) === 0, 'the bank starts empty after clearing');
+    const fileOf = o => ({ name: 'a.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(o)) });
+    await p.setInputFiles('#import-file', [fileOf(one), fileOf(mf)]);
+    await p.waitForFunction(() => document.querySelectorAll('.th-card').length >= 1);
+    const nAfter = await p.$$eval('.th-card', e => e.length);
+    await p.setInputFiles('#import-file', [fileOf(one)]); await p.waitForTimeout(300);
+    ok(nAfter >= 1 && await p.$$eval('.th-card', e => e.length) === nAfter, 'importing the same file again changes nothing');
+    ok((await p.$$eval('.th-folders .rail-name', e => e.map(x => x.textContent))).includes('Templo'), 'importing a master file brings its folders');
+    // rebuild the two threats the environment test needs
+    await p.evaluate(() => localStorage.removeItem('runeterra-threat-lib-v1'));
+    await p.evaluate(({ a, b }) => { localStorage.setItem('runeterra-threat-lib-v1', JSON.stringify({ folders: [], items: [a, b] })); }, { a: Object.assign({}, one, { app: undefined, id: 'tha1', name: 'Diabretes da Tempestade', kind: 'minion', die: 'd6', desc: 'Pequenas criaturas elétricas', tactics: '', abs: [{ t: 'bonus', v: 2, x: 'Atacar inimigos voadores' }], portrait: null, folder: '' }), b: Object.assign({}, one, { app: undefined, id: 'thb1', name: 'Cria Tentacular', kind: 'lieutenant', die: 'd8', desc: '', tactics: '', abs: [{ t: 's-heal', v: 2, x: '' }], portrait: null, folder: '' }) });
     // the Environment Workshop: traits, one die each, and the twists of each zone built from the rulebook's recipes
     await p.goto(`${BASE}/ambiente.html`); await p.waitForSelector('#stage .panel');
     ok(await p.$$eval('#nav .rail-item', e => e.length) === 7 && await p.$eval('#gate', e => e.hidden), 'the Environment Workshop opens with seven chapters');
@@ -534,33 +593,24 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     for (const [i, d] of ['d6', 'd6', 'd10'].entries()) await p.click(`.tchip[data-a=tdie][data-i="${i}"][data-val="${d}"]`);
     ok(/Mín/.test(await p.$eval('.env-dice', e => e.textContent)), 'the three trait dice give the environment its Min, Mid and Max dice');
     await p.click('[data-a=next]');
-    // the threat library: minions and lieutenants with a die, abilities and a hover sheet
+    // the threat chapter picks threats from the bank (copies), and the bank can refresh a copy
     ok(await p.$eval('.rail-item.active .rail-name', e => e.textContent.trim()) === 'Ameaças' && !(await p.$eval('[data-a=next]', e => e.classList.contains('is-disabled'))), 'the Ameaças chapter comes after the traits and can be skipped');
-    await p.click('[data-a=thAdd]');
-    await p.fill('[data-thcard] input[data-f=name]', 'Diabretes da Tempestade');
-    await p.fill('[data-thcard] input[data-f=desc]', 'Pequenas criaturas elétricas que atacam de perto');
-    await p.click('[data-thcard] .tchip[data-a=thDie][data-val="d10"]');
-    ok(await p.$eval('[data-thcard] .env-warn', e => /dado alto/.test(e.textContent)), 'a minion with a d10 or d12 gets a warning about large numbers');
-    await p.click('[data-thcard] .tchip[data-a=thDie][data-val="d6"]');
-    await p.selectOption('[data-thadd]', 'bonus');
-    await p.fill('[data-thcard] input[data-ab="0"]', 'Atacar inimigos voadores');
-    ok(/\+2 em Atacar inimigos voadores/.test(await p.$eval('[data-thcard] .env-ab .ab-text', e => e.textContent)), 'a minion ability takes the book\'s usual value of 2 and the GM\'s detail');
-    await p.selectOption('[data-thadd]', 'dmg');
-    ok(await p.$$eval('[data-thadd]', e => e.length) === 0, 'a minion has at most two abilities');
-    ok(await p.$eval('[data-thcard] .tchip[data-a=thKind][data-val=minion]', e => /derrotado na hora/.test(e.dataset.tip)), 'the type chips explain how each type takes damage');
-    await p.click('[data-a=thAdd]');
-    await p.fill('[data-thcard] >> nth=1 >> input[data-f=name]', 'Cria Tentacular');
-    await p.click('[data-thcard] >> nth=1 >> .tchip[data-a=thKind][data-val=lieutenant]');
-    ok(await p.$eval('.flow-todo', e => /pelo menos uma habilidade/.test(e.textContent)), 'a lieutenant needs at least one ability');
-    await p.selectOption('[data-thcard] >> nth=1 >> [data-thadd]', 's-heal');
-    ok(await p.$$eval('[data-thcard] >> nth=1 >> .env-ab .tchips', e => e.length) === 0, 'an ability with no number has no value picker');
-    ok(!(await p.$('.flow-todo')), 'with an ability the lieutenant is complete');
+    const bankVal = name => p.$eval('[data-thbank]', (s, n) => [...s.options].find(o => o.textContent.startsWith(n)).value, name);
+    await p.selectOption('[data-thbank]', await bankVal('Diabretes da Tempestade'));
+    await p.selectOption('[data-thbank]', await bankVal('Cria Tentacular'));
+    ok(await p.$$eval('[data-thcard]', e => e.length) === 2 && !(await p.$('.flow-todo')), 'two threats from the bank are copied into the environment');
+    ok(await p.$eval('[data-thcard] >> nth=0 >> .env-thc', e => /Atacar inimigos voadores/.test(e.textContent) && /Salvamento/.test(e.textContent)), 'the environment shows the threat\'s little sheet');
     await p.fill('[data-b=heroes]', '4');
     await p.click('[data-thcard] >> nth=0 >> [data-a=thMesa]');
     await p.click('[data-thcard] >> nth=1 >> [data-a=thMesa]');
     const mesa = await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')).foes);
     const mM = mesa.find(f => f.name === 'Diabretes da Tempestade'), mL = mesa.find(f => f.name === 'Cria Tentacular');
     ok(mM && mM.kind === 'minion' && mM.dice.length === 4 && mL && mL.kind === 'lieutenant' && mL.dice.length === 2, 'the threats go to the GM Table: one minion per hero, half as many lieutenants');
+    await p.evaluate(() => { const T = JSON.parse(localStorage.getItem('runeterra-threat-lib-v1')); T.items.find(t => t.name === 'Diabretes da Tempestade').desc = 'Versão nova no banco'; localStorage.setItem('runeterra-threat-lib-v1', JSON.stringify(T)); });
+    await p.reload(); await p.waitForSelector('#stage .panel');
+    ok(await p.$eval('[data-thcard] >> nth=0', e => /Atualizar do banco/.test(e.textContent)), 'when the bank has a newer version, the copy offers to refresh');
+    await p.click('[data-thcard] >> nth=0 >> [data-a=thRefresh]');
+    ok(await p.$eval('[data-thcard] >> nth=0 >> .env-thc', e => /Versão nova no banco/.test(e.textContent)), 'refreshing brings the bank\'s version into the environment');
     await p.click('[data-a=next]');
     const lastTw = '[data-twcard] >> nth=-1';
     const buildTw = async (z, sv, name, pick) => {
@@ -625,6 +675,17 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(fs.readFileSync(await pdfE.path()).slice(0, 4).toString() === '%PDF', 'the environment sheet exports to PDF');
     await p.click('[data-a=roster]');
     ok(await p.$$eval('#roster .ro-item', e => e.length) === 1, 'the environment is in its roster');
+    // an older environment that carries its threats inside gets them saved into the bank on opening
+    await p.evaluate(() => { localStorage.setItem('runeterra-threat-lib-v1', JSON.stringify({ folders: [], items: [] })); const E = JSON.parse(localStorage.getItem('runeterra-environment-v1')); E.threats = [{ id: 'old1', name: 'Saqueador Atirador', kind: 'minion', die: 'd6', desc: 'À distância', tactics: '', abs: [{ t: 's-twist', v: 2, x: '' }] }]; localStorage.setItem('runeterra-environment-v1', JSON.stringify(E)); });
+    await p.goto(`${BASE}/ambiente.html`); await p.waitForSelector('#stage .panel');
+    ok(await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-threat-lib-v1')).items.some(t => t.id === 'old1' && t.name === 'Saqueador Atirador')), 'threats an older environment carries inside are saved into the bank');
+    // the antagonist brings its own minions and lieutenants from the bank
+    await p.goto(`${BASE}/antagonista.html`); await p.waitForSelector('#stage .panel');
+    await p.click('#nav [data-i="9"]'); await p.waitForSelector('#crew');
+    await p.selectOption('[data-crewadd]', 'old1');
+    ok(await p.$eval('#crew [data-crew]', e => /Saqueador Atirador/.test(e.textContent)) && await p.$eval('#sheet-preview', e => /Lacaios e tenentes de/.test(e.textContent) && /Saqueador Atirador/.test(e.textContent)), 'the antagonist picks its minions from the bank and the sheet lists them');
+    await p.click('#crew [data-a=crewMesa]');
+    ok(await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-gm-table-v1')).foes.some(f => f.name === 'Saqueador Atirador' && f.dice.length === 4)), 'the antagonist\'s minions go to the table, one per champion');
     await p.context().close();
   } else console.log('skip GM Screen unlock (GM_PASSWORD not set)');
 
@@ -636,6 +697,8 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(!(await q.evaluate(() => !!window.GM_VDATA)), 'the villain data is not on the page while it is locked (it lives in the vault)');
     const vaultText = await (await fetch(`${BASE}/js/gm-vault.js`)).text();
     ok(!/Tático|Adaptável|Esquadrão|Sentinel/.test(vaultText) && (await fetch(`${BASE}/js/gm-villain-data.js`)).status === 404 && (await fetch(`${BASE}/js/gm-bullpen.js`)).status === 404, 'the GM material is only in the sealed vault: no plain file is published');
+    await q.goto(`${BASE}/ameacas.html`); await q.waitForSelector('#gate .sp-empty');
+    ok(await q.$eval('#app', e => e.hidden) && /Somente para o Mestre/.test(await q.$eval('#gate', e => e.textContent)), 'the Threat Workshop asks for the GM Screen when it is locked');
     await q.goto(`${BASE}/index.html`);
     ok(await q.$eval('[data-gm-only]', e => e.hidden), 'the Oficina de Antagonista header button is hidden while the GM Screen is locked');
     await q.context().close();

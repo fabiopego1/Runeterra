@@ -5,6 +5,7 @@
    The page is only reachable behind the GM Screen: it checks the key the screen keeps for this tab. */
 (() => {
   'use strict';
+  let U = null;    // the threat bank's drawing code (the ability templates come from the vault)
   let VD = null;   // the approaches, archetypes, upgrades and masteries: sealed in the vault, loaded after unlocking
   const KEY = 'runeterra-antagonist-v1', ROSTER = 'runeterra-antagonist-roster-v1', SLOT = id => 'runeterra-antagonist-' + id;
   const OLD = 'runeterra-gm-villain-v1', GMKEY = 'runeterra-gm-key', TABLE = 'runeterra-gm-table-v1';
@@ -53,10 +54,10 @@
     names: '<p>Renomear não muda as regras, só como o traço aparece na ficha. Deixe em branco para usar o nome do livro.</p>',
     finish: '<p><b>Vida = abordagem + arquétipo + 5 × número de campeões + melhorias.</b> Com mais campeões na mesa, o antagonista aguenta mais. Confira os avisos: eles mostram o que ainda falta.</p>'
   };
-  const blank = () => ({ cid: uid(), name: '', alias: '', concept: '', note: '', portrait: null, n: 4, ap: '', arch: '', P: {}, Q: {}, rp: '', rpDesc: '', rpOk: false, ab: {}, tk: {}, up: {}, mastery: '',
+  const blank = () => ({ cid: uid(), name: '', alias: '', concept: '', note: '', portrait: null, n: 4, ap: '', arch: '', P: {}, Q: {}, rp: '', rpDesc: '', rpOk: false, crew: [], ab: {}, tk: {}, up: {}, mastery: '',
     renames: {}, traitNames: {}, play: { cur: '', notes: [], plans: [] }, step: 'concept', maxStep: 0, seen: {}, updated: 0 });
   const read = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
-  const normalize = o => { const b = blank(); const s = Object.assign(b, o || {}); s.play = Object.assign(b.play, s.play || {}); if (o && o.rp && o.rpOk === undefined) s.rpOk = true; return s; };   // named before the Confirm button existed
+  const normalize = o => { const b = blank(); const s = Object.assign(b, o || {}); s.play = Object.assign(b.play, s.play || {}); s.crew = (Array.isArray(s.crew) ? s.crew : []).map(t => window.THREAT_LIB.normItem(t)); if (o && o.rp && o.rpOk === undefined) s.rpOk = true; return s; };   // named before the Confirm button existed
   const rosterIds = () => { const r = read(ROSTER); return Array.isArray(r) ? r : []; };
   let S = (() => {
     const cur = read(KEY);
@@ -407,6 +408,7 @@
             <div class="hs-card"><div class="hs-h">Aparência, jeito de falar e motivos</div><div class="hs-ml">${esc((S.note || '').trim())}&nbsp;</div></div>
           </div>
         </div>
+        ${S.crew.length ? `<div class="hs-card"><div class="hs-h">Lacaios e tenentes de ${esc(S.name || 'o antagonista')}</div><div class="env-thcs">${S.crew.map(U.sheet).join('')}</div></div>` : ''}
         <div class="hs-bottom">
           <div class="hs-card"><div class="hs-h">Planos e segredos</div>${lines('play.plans', S.play.plans, 6, 'Plano')}</div>
           <div class="hs-card"><div class="hs-h">Notas de mesa</div>${lines('play.notes', S.play.notes, 6, 'Nota')}</div>
@@ -434,6 +436,7 @@
       `Status: ${m.ar.status.map(s => s[0] + ' ' + s[1]).join(' | ')}`, `Vida para ${m.N} campeões: ${m.ap.hp} + ${m.ar.hp} + 5×${m.N}${m.upH ? ' + ' + m.upH : ''} = ${m.hp}`];
     for (const l of abLines(m)) L.push(`${abName(l.id, l.n).replace(/\s*\(.*$/, '')} [${l.t}]: ${l.x.replace(/«|»/g, '')}`);
     if (m.mastery) L.push(`${abName('mastery', m.mastery.n)} [I]: ${m.mastery.x}`);
+    if (S.crew.length) { L.push('', 'LACAIOS E TENENTES'); for (const t of S.crew) L.push(U.plainLine(t)); }
     if (S.note) L.push(S.note);
     return L.join('\n');
   }
@@ -462,6 +465,22 @@
     }).join('')}</ol>`;
   }
   const todoHtml = need => (need.length ? `<div class="flow-todo"><span class="flow-todo-l">Ainda falta</span><ul>${need.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '');
+  // the antagonist's own minions and lieutenants: copies from the threat bank (the environment keeps its own)
+  function crewHtml(m) {
+    const bank = window.THREAT_LIB.all(), mine = new Set(S.crew.map(t => t.id)), avail = bank.filter(t => !mine.has(t.id)), fs = window.THREAT_LIB.folders();
+    const opt = t => `<option value="${t.id}">${esc((t.name.trim() || 'sem nome') + ' · ' + U.TK()[t.kind].name.toLowerCase() + ' ' + t.die)}</option>`;
+    const groups = [['', avail.filter(t => !t.folder)]].concat(fs.map(f => [f.name, avail.filter(t => t.folder === f.id)])).filter(g => g[1].length);
+    const card = t => {
+      const b = window.THREAT_LIB.get(t.id), stale = b && JSON.stringify([b.name, b.kind, b.die, b.desc, b.tactics, b.abs, b.portrait]) !== JSON.stringify([t.name, t.kind, t.die, t.desc, t.tactics, t.abs, t.portrait]);
+      return `<div class="ab ant picked env-tw env-th" data-crew="${t.id}"><div class="ab-top"><span class="ab-name"${tipA(U.tip(t))}>${esc(t.name.trim() || 'Ameaça sem nome')}</span><span class="pill">${U.TK()[t.kind].name} ${esc(t.die)}</span><button type="button" class="linkbtn danger env-del" data-a="crewDel" data-id="${t.id}">Remover do antagonista</button></div>
+        ${U.sheet(t)}<div class="env-row"><button type="button" class="btn small" data-a="crewMesa" data-id="${t.id}">Adicionar à Mesa do Mestre</button>${!b ? `<button type="button" class="btn small ghost" data-a="crewSave" data-id="${t.id}">Salvar no banco</button>` : stale ? `<button type="button" class="btn small ghost" data-a="crewRefresh" data-id="${t.id}">Atualizar do banco</button>` : ''}<span class="muted env-note" data-mesa="${t.id}">${!b ? 'Esta ameaça ainda não está no banco.' : stale ? 'O banco tem uma versão diferente desta ameaça.' : ''}</span></div></div>`;
+    };
+    return `<div class="panel no-print" id="crew"><h3>Lacaios e tenentes do antagonista</h3>
+      <p class="muted env-note">Os que <b>ele</b> traz para a cena (os do ambiente ficam na Oficina de Ambiente). Vêm do banco de ameaças, a terceira oficina do Mestre, e ficam aqui como <b>cópia</b>. Na Mesa, entra um lacaio por campeão (${m.N}) e metade disso de tenentes.</p>
+      ${S.crew.map(card).join('') || '<p class="muted">Nenhum lacaio ou tenente ainda.</p>'}
+      <div class="env-row"><label class="field"><span>Adicionar do banco de ameaças</span><select data-crewadd><option value="">${avail.length ? 'Escolha uma ameaça…' : bank.length ? 'Todas as ameaças do banco já estão aqui' : 'O banco está vazio'}</option>${groups.map(([n, l]) => n ? `<optgroup label="${esc(n)}">${l.map(opt).join('')}</optgroup>` : l.map(opt).join('')).join('')}</select></label>
+        <a class="btn small ghost" href="ameacas.html">${ico('compass')} Abrir o banco de ameaças</a></div></div>`;
+  }
   function stageHtml(m) {
     const i = Math.min(stepIdx(S.step), reach(m)), s = STEPS[i];
     if (S.step !== s.id) { S.step = s.id; }
@@ -475,6 +494,7 @@
           <div class="flow-body">${need.length ? `<div class="flow-todo"><span class="flow-todo-l">Ainda falta ou está fora da regra</span><ul>${need.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
             <div class="export-row"><button class="btn primary" data-a="pdf"${m.hp == null ? ' disabled' : ''}>${ico('download')} Exportar PDF da ficha</button><button class="btn" data-a="print"${m.hp == null ? ' disabled' : ''}>${ico('print')} Imprimir</button><button class="btn" data-a="export">${ico('file')} Exportar .json</button><button class="btn" data-a="copy"${m.hp == null ? ' disabled' : ''}>Copiar como texto</button><button class="btn" data-a="toTable"${m.hp == null ? ' disabled' : ''}>Adicionar à Mesa do Mestre${m.hp != null ? ' (Vida ' + m.hp + ')' : ''}</button></div>
             <div id="pdf-status"></div></div></section>
+        ${crewHtml(m)}
         ${footer(i, m).replace(/<div class="next-wrap">[\s\S]*$/, '</div>')}</div>
         <div class="panel" id="sheet-preview">${sheetHtml(m)}</div>`;
     }
@@ -609,6 +629,10 @@
     if (el.classList.contains('dis') || el.classList.contains('disabled')) return;   // the limit of abilities (or a blocked card) is a real limit
     if (el.classList.contains('is-disabled')) { const f = $('#stage .flow-todo'); if (f) { f.scrollIntoView({ block: 'center', behavior: 'smooth' }); f.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }], { duration: 240 }); } return; }
     const m = model();
+    if (a === 'crewDel') { S.crew = S.crew.filter(t => t.id !== el.dataset.id); save(); render(); return; }
+    if (a === 'crewSave') { const t = S.crew.find(x => x.id === el.dataset.id); if (t) { window.THREAT_LIB.put(t); save(); render(); } return; }
+    if (a === 'crewRefresh') { const t = S.crew.find(x => x.id === el.dataset.id), b = t && window.THREAT_LIB.get(t.id); if (b) { Object.assign(t, JSON.parse(JSON.stringify(Object.assign({}, b, { folder: undefined })))); save(); render(); } return; }
+    if (a === 'crewMesa') { const t = S.crew.find(x => x.id === el.dataset.id); if (t) { const r = U.toTable(t, m.N), n = $(`[data-mesa="${t.id}"]`); if (n) n.textContent = r; } return; }
     if (a === 'socketOpen') { ui.socket = el.getAttribute('aria-expanded') === 'true' ? '' : el.dataset.bind; render(); return; }
     if (a === 'socket') {
       const [f, i] = el.dataset.bind.split('.'); ui.socket = null;
@@ -694,6 +718,7 @@
     });
     document.addEventListener('change', ev => {
       const el = ev.target;
+      if (el.dataset && el.dataset.crewadd !== undefined) { const c = el.value && window.THREAT_LIB.copyOf(el.value); if (c && !S.crew.some(t => t.id === c.id)) { S.crew.push(c); save(); render(); } return; }
       if (el.id === 'portrait-file') { loadPortrait(el.files[0]); el.value = ''; return; }
       if (el.id === 'import-file') { const f = el.files[0]; el.value = ''; if (!f) return; const r = new FileReader(); r.onload = () => importJson(String(r.result)); r.readAsText(f); return; }
       const b = el.dataset && el.dataset.b;
@@ -721,9 +746,10 @@
     const raw = (() => { try { return sessionStorage.getItem(GMKEY); } catch (e) { return null; } })();
     const payload = await window.GM_UNSEAL.openRaw(raw);
     if (!payload) return false;
-    window.GM_UNSEAL.run(payload, ['gm-villain-data']);
+    window.GM_UNSEAL.run(payload, ['gm-villain-data', 'gm-env-data']);
     VD = window.GM_VDATA;
-    return !!VD;
+    if (VD && window.GM_ENVDATA) U = window.THREAT_LIB.ui(window.GM_ENVDATA, { esc, die, tipA });
+    return !!VD && !!U;
   }
   (async () => {
     const gate = $('#gate'), app = $('#app');
