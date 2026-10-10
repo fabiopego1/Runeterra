@@ -88,6 +88,11 @@
     if (key === 'overcome') return OVERCOME_OK(o.acts[k]);
     return true;
   });
+  // what it means for an environment to Defend or Overcome (pp. 158 and 242-243 of the rulebook)
+  const VERB_WARN = {
+    defend: `<b>Defender com um ambiente é exceção.</b> Defender protege alguém do próximo dano, e um ambiente não toma dano: por isso, na hora de jogar, o livro manda <b>Atrapalhar os campeões</b> em vez de Defender, mesmo quando a ideia é “defender o lar”. Só faz sentido quando a reviravolta <b>protege outras pessoas</b> da cena, como o “Campo Místico do Pacifismo” do livro: Defende quem não Atacou no último turno e Atrapalha os demais.`,
+    overcome: `<b>Superar com um ambiente é exceção.</b> Superar é um teste que pode dar “sucesso com reviravolta”, e um ambiente não tem um jogador do outro lado para sofrer essa reviravolta: por isso o livro diz que ambientes <b>normalmente não Superam</b>. A exceção é resolver <b>um desafio da cena</b>, como os “socorristas que chegam e resolvem um dos obstáculos restantes”. Só vale se houver um desafio ativo quando a reviravolta acontecer.`
+  };
   const withDie = d => `com ${/^dados/.test(dieWord(d)) ? 'os' : 'o'} ${dieWord(d)}`;
   const thCount = n => (n === 'one' ? '' : `dado ${n === 'min' ? 'Mín' : n === 'mid' ? 'Médio' : 'Máx'}`);
 
@@ -240,7 +245,7 @@
       cfg += o.acts.map((a, k) => {
         const pers = isPersist(o, fx, k), v = fx.verbs[k] || 'hinder';
         const verbs = verbsFor(o, fx, k).map(key => [key, VERBS[key]]);
-        return `<div class="cfg-l">Ação ${o.acts.length > 1 ? k + 1 + ': ' : ''}${v === 'overcome' ? 'um dos desafios restantes da cena' : esc(WHO_TXT[a.who])} ${esc(withDie(a.die))}${pers ? ' (persistente e exclusiva)' : ''}</div><div class="tchips" role="radiogroup">${verbs.map(([key, l]) => tchipB(`data-a="fxVerb" ${A} data-k="${k}" data-val="${key}"`, v === key, `<span>${l[0]}</span>`, `<h5>${l[0]}</h5>${window.GLOSSARY[{ attack: 'Attack', hinder: 'Hinder', boost: 'Boost', defend: 'Defend', overcome: 'Overcome' }[key]] || ''}${key === 'overcome' ? '<hr><small>Superar resolve um <b>desafio</b> da cena (um obstáculo), não atinge alvos. Serve para o ambiente resolver algo, como “os socorristas chegam”.</small>' : key === 'defend' ? '<hr><small>O livro recomenda Atrapalhar no lugar de Defender para os ambientes.</small>' : ''}`)).join('')}</div>`;
+        return `<div class="cfg-l">Ação ${o.acts.length > 1 ? k + 1 + ': ' : ''}${v === 'overcome' ? 'um dos desafios restantes da cena' : esc(WHO_TXT[a.who])} ${esc(withDie(a.die))}${pers ? ' (persistente e exclusiva)' : ''}</div><div class="tchips" role="radiogroup">${verbs.map(([key, l]) => tchipB(`data-a="fxVerb" ${A} data-k="${k}" data-val="${key}"`, v === key, `<span>${l[0]}</span>`, `<h5>${l[0]}</h5>${window.GLOSSARY[{ attack: 'Attack', hinder: 'Hinder', boost: 'Boost', defend: 'Defend', overcome: 'Overcome' }[key]] || ''}${VERB_WARN[key] ? `<hr><small>${VERB_WARN[key]}</small>` : ''}`)).join('')}</div>${VERB_WARN[v] ? `<div class="env-warn" role="note">${ico('warn')}<span>${VERB_WARN[v]}</span></div>` : ''}`;
       }).join('');
       if (o.persistOne) cfg += `<div class="cfg-l">Qual das ações é persistente e exclusiva?</div><div class="tchips" role="radiogroup">${o.acts.map((a, k) => tchipB(`data-a="fxPers" ${A} data-val="${k}"`, (fx.persistIdx || 0) === k, `<span>Ação ${k + 1}</span>`)).join('')}</div>`;
     }
