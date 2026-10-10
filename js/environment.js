@@ -155,7 +155,7 @@
   }
 
   // the game text of one effect; I = what the effect still lacks
-  function fxPlain(fx, z, s) {
+  function fxPlain(fx, z, s, html) {
     const I = [];
     if (fx.cat === 'advance') return { text: 'Avance o marcador de cena em um espaço.', I, dice: false };
     const o = getOpt(fx, z, s);
@@ -184,9 +184,10 @@
         if (!th) I.push(o.lt ? 'Escolha o tenente na biblioteca de ameaças.' : 'Escolha o lacaio na biblioteca de ameaças.');
         else if ((th.kind === 'lieutenant') !== !!o.lt) I.push('A ameaça escolhida não é do tipo que esta receita pede (' + (o.lt ? 'tenente' : 'lacaio') + ').');
         const nm = (th && th.name.trim()) || '…', d = th ? th.die : 'd6';
-        if (o.lt) text = `Adicione um tenente${o.strong ? ' mais poderoso que os demais da cena' : ''}: ${nm} (${d}).`;
-        else if (o.n === 'one') text = `Adicione um lacaio: ${nm} (${d}).`;
-        else { dice = true; text = `Adicione lacaios ${nm} (${d}) em quantidade igual ao ${dieWord(o.n)} do ambiente.`; }
+        const dd = html && th ? '' : ` (${d})`;   // on the sheet the linked name carries its die
+        if (o.lt) text = `Adicione um tenente${o.strong ? ' mais poderoso que os demais da cena' : ''}: ${nm}${dd}.`;
+        else if (o.n === 'one') text = `Adicione um lacaio: ${nm}${dd}.`;
+        else { dice = true; text = `Adicione lacaios ${nm}${dd} em quantidade igual ao ${dieWord(o.n)} do ambiente.`; }
       }
       if (o.other) { if (!fx.other.trim()) I.push('Descreva o outro efeito.'); text += ` Além disso: ${fx.other.trim() || '…'}.`; }
     } else {
@@ -209,8 +210,8 @@
     }
     return { text, I, dice };
   }
-  function twPlain(tw, z, s) {
-    const parts = tw.fx.map(f => fxPlain(f, z, s));
+  function twPlain(tw, z, s, html) {
+    const parts = tw.fx.map(f => fxPlain(f, z, s, html));
     const dice = parts.some(p => p.dice);
     return { text: (dice ? 'Role os dados do ambiente. ' : '') + parts.map(p => p.text).filter(Boolean).join(' '), I: parts.flatMap(p => p.I) };
   }
@@ -315,7 +316,7 @@
       <div class="env-prev" data-prev="${tw.id}">${prevHtml(z, s, tw)}</div></div>`;
   }
   function prevHtml(z, s, tw) {
-    const pl = twPlain(tw, z, s);
+    const pl = twPlain(tw, z, s, true);
     return `<b>Texto do jogo</b><div class="ab-text">${pl.text.trim() ? U.link(ruleHtml(pl.text)) : '<span class="muted">Escolha uma receita.</span>'}</div>`;
   }
   function fxBlock(z, s, tw, fx, i) {
@@ -391,7 +392,7 @@
     const imp = IMPACT(), v = DV(), title = esc(S.name || 'Ambiente sem nome'), ch = challengesOf();
     const zoneBlock = z => {
       const rows = ['minor', 'major'].flatMap(s => S.tw[z][s].map(tw => {
-        const pl = twPlain(tw, z, s);
+        const pl = twPlain(tw, z, s, true);
         return `<tr><td class="ic">${iconsFor(pl.text)}</td><td class="nm">${esc(tw.name || 'sem nome')}<small>${SEV[s]}</small></td><td class="ty">${s === 'major' ? 'M' : 'm'}</td><td class="gt">${U.link(ruleHtml(pl.text))}${usedThreats(tw).length ? `<div class="env-thr">${usedThreats(tw).map(thChip).join(' ')}</div>` : ''}${tw.desc.trim() ? `<div class="env-story">${U.rich(tw.desc.trim())}</div>` : ''}</td></tr>`;
       }));
       return `<div class="hs-zone ${z}"><div class="zlbl"${tipA(zoneTip(z))}>${ZN[z]}</div><table class="hs-ab-t"><tbody>${rows.join('') || '<tr><td class="gt muted">Nenhuma reviravolta ainda.</td></tr>'}</tbody></table></div>`;

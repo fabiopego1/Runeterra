@@ -649,7 +649,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
       await p.click(`${lastTw} >> .tchip[data-val=threat]`); await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
       ok(await p.$eval(`${lastTw} >> .tchip[data-a=fxThreat]`, e => /\+2 em Atacar inimigos voadores/.test(e.dataset.tip) && /Salvamento/.test(e.dataset.tip)), 'the threat chip shows the little sheet on hover');
       await p.click(`${lastTw} >> .tchip[data-a=fxThreat]`); });
-    ok(/Adicione um lacaio: Diabretes da Tempestade \(d?6\)/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'a threat effect picks the minion from the library');
+    ok(/Adicione um lacaio: Diabretes da Tempestade/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'a threat effect picks the minion from the library');
     await buildTw('green', 'minor', 'Campo de Pacifismo', async () => { await p.click(`${lastTw} >> .env-opts .ab >> nth=-1`); });
     ok(await p.$eval(`${lastTw} >> .env-warn`, e => /fora das tabelas/.test(e.textContent)) && /descreva o efeito personalizado/.test(await p.$eval('.flow-todo', e => e.textContent)), 'a custom recipe warns that it is outside the book\'s tables and asks for its text');
     await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Defenda quem não Atacou no último turno e Atrapalhe os demais');
@@ -658,6 +658,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     // a threat named in a twist's text is linked to its little sheet, and counts as used by the environment (its copy comes from the bank)
     await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Defenda quem não Atacou no último turno e Atrapalhe os demais. Saqueador Atirador observa de longe');
     ok(await p.$eval(`${lastTw} >> .env-prev`, e => !!e.querySelector('.th-ref') && /Saqueador Atirador/.test(e.querySelector('.th-ref').textContent)), 'a threat named in a custom text is linked to its sheet');
+    ok(await p.$eval(`${lastTw} >> .env-prev`, e => { const r = e.querySelector('.th-ref'); return !!r && !!r.nextElementSibling && r.nextElementSibling.matches('.die, [class*=die]'); }), 'a linked threat name carries its die');
     ok(await p.evaluate(() => JSON.parse(localStorage.getItem('runeterra-environment-v1')).threats.some(t => t.name === 'Saqueador Atirador')), 'and its copy comes into the environment');
     await buildTw('green', 'major', 'Socorro, Ele Me Pegou!');
     await p.click(`${lastTw} >> .env-opts .ab >> nth=2`);
