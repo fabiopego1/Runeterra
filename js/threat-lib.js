@@ -112,7 +112,7 @@
           if (n.parentElement && n.parentElement.closest('[data-tip]')) continue;
           re.lastIndex = 0; if (!re.test(n.nodeValue)) continue;
           const span = document.createElement('span');
-          span.innerHTML = n.nodeValue.split(re).map((part, i) => (i % 2 ? `<span class="term th-ref"${tipA(tip(byName[part.toLowerCase()]))}>${esc(part)}</span>` : esc(part))).join('');
+          span.innerHTML = n.nodeValue.split(re).map((part, i) => (i % 2 ? `<span class="term th-ref"${tipA(tip(byName[part.toLowerCase()]))}>${esc(part)}</span> ${die(byName[part.toLowerCase()].die, 'sm')}` : esc(part))).join('');
           n.replaceWith(...span.childNodes);
         }
         return box.innerHTML;
