@@ -3,7 +3,7 @@
    Used by gm.js (the password) and antagonist.js (the key the Screen keeps for the tab). */
 (() => {
   'use strict';
-  const ORDER = ['gm-flavour', 'gm-twists', 'gm-tools', 'gm-villain-data', 'gm-bullpen'];
+  const ORDER = ['gm-flavour', 'gm-twists', 'gm-tools', 'gm-villain-data', 'gm-env-data', 'gm-bullpen'];
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
   const parse = text => {
     try { const o = JSON.parse(text); if (o && o.v === 2) return o; } catch (e) { /* the old vault was plain HTML */ }

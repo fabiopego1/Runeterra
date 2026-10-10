@@ -34,6 +34,7 @@
       <a class="hbtn key" href="lore.html"${cur('lore')}><span data-ico="map"></span><span>Lore</span></a>
       <a class="hbtn key" href="regras.html"${cur('regras')}><span data-ico="codex"></span><span>Regras</span></a>
       <a class="hbtn key" href="antagonista.html" data-gm-only hidden title="Oficina de Antagonista (só atrás do Escudo do Mestre)"><span data-ico="lock"></span><span class="ant-long">Oficina de </span><span>Antagonista</span></a>
+      <a class="hbtn key" href="ambiente.html" data-gm-only hidden title="Oficina de Ambiente (só atrás do Escudo do Mestre)"><span data-ico="lock"></span><span class="ant-long">Oficina de </span><span>Ambiente</span></a>
       <span class="hsep" aria-hidden="true"></span>
       <div class="file-menu">
         <button class="hbtn" id="file-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="file-pop"><span data-ico="file"></span><span>Arquivo</span><span class="chev" data-ico="chevron"></span></button>

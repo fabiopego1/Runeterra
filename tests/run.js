@@ -512,6 +512,47 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(!(await p.$$eval('#stage .flow-todo li', e => e.some(x => /Focado/.test(x.textContent)))), 'two abilities on one power and one on another satisfy the Focused rule');
     await p.click('[data-a=roster]');
     ok(await p.$$eval('#roster .ro-item', e => e.length) === 1, 'the antagonist is in the roster');
+    // the Environment Workshop: traits, one die each, and the twists of each zone built from the rulebook's recipes
+    await p.goto(`${BASE}/ambiente.html`); await p.waitForSelector('#stage .panel');
+    ok(await p.$$eval('#nav .rail-item', e => e.length) === 6 && await p.$eval('#gate', e => e.hidden), 'the Environment Workshop opens with six chapters');
+    await p.fill('[data-b=name]', 'Tempestade sobre a Cidade da Torre'); await p.fill('[data-b=scope]', 'a cidade inteira'); await p.click('[data-a=next]');
+    for (let i = 0; i < 3; i++) await p.fill(`[data-b="traits.${i}.name"]`, ['Rifts Dimensionais', 'Distorções Horrendas', 'Caos Malévolo'][i]);
+    for (const [i, d] of ['d6', 'd6', 'd10'].entries()) await p.click(`.tchip[data-a=tdie][data-i="${i}"][data-val="${d}"]`);
+    ok(/Mín/.test(await p.$eval('.env-dice', e => e.textContent)), 'the three trait dice give the environment its Min, Mid and Max dice');
+    await p.click('[data-a=next]');
+    const lastTw = '[data-twcard] >> nth=-1';
+    const buildTw = async (z, sv, name, pick) => {
+      await p.click(`[data-a=twAdd][data-z=${z}][data-s=${sv}]`);
+      await p.fill(`${lastTw} >> input[data-f=name]`, name);
+      if (pick) await pick(); else await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
+    };
+    ok(await p.$eval('[data-a=next]', e => e.classList.contains('is-disabled')), 'a zone needs its twists before Continue');
+    await buildTw('green', 'minor', 'Um Rasgo se Abre');
+    ok(/Role os dados do ambiente\. Atrapalhe um alvo com o dado Médio\./.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'a recipe from the rulebook becomes the twist\'s game text');
+    await buildTw('green', 'minor', 'Ataque dos Diabretes', async () => {
+      await p.click(`${lastTw} >> .tchip[data-val=threat]`); await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
+      await p.fill(`${lastTw} >> input[data-f=tname]`, 'Diabretes da Tempestade'); });
+    await buildTw('green', 'major', 'Socorro, Ele Me Pegou!');
+    ok(await p.$$eval('[data-a=twAdd][data-s=major]', e => e.length) === 0, 'only one major twist per zone');
+    await p.click('[data-a=next]');
+    await buildTw('yellow', 'minor', 'O Toque da Vidente'); await buildTw('yellow', 'minor', 'Visão Turva');
+    await buildTw('yellow', 'major', 'Portal da Tempestade', async () => { await p.click(`${lastTw} >> .env-opts .ab >> nth=4`); });
+    ok(/persistente e exclusivo/.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'persistent and exclusive actions are written out');
+    await p.click('[data-a=next]');
+    await buildTw('red', 'minor', 'A Bandeira Pega Fogo'); await buildTw('red', 'minor', 'Mãos do Abismo');
+    await buildTw('red', 'major', 'Está Quase Aqui', async () => {
+      await p.click(`${lastTw} >> .tchip[data-val=challenge]`); await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
+      await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Rifts gigantes se abrem por toda a cidade'); });
+    await p.click('[data-a=next]'); await p.waitForSelector('#sheet-preview .hs-page');
+    ok(await p.$eval('#sheet-preview', e => /Tempestade sobre a Cidade da Torre/.test(e.textContent) && /Diabretes da Tempestade/.test(e.textContent) && /Rifts gigantes/.test(e.textContent)), 'the sheet lists the twists, the threat and the doomsday device');
+    ok(await p.$$eval('#sheet-preview [data-tip]', e => e.length) > 20, 'the environment sheet explains terms, dice and zones on hover');
+    const [dlE] = await Promise.all([p.waitForEvent('download'), p.click('.export-row [data-a=export]')]);
+    const jsonE = JSON.parse(fs.readFileSync(await dlE.path(), 'utf8'));
+    ok(jsonE.app === 'runeterra-environment' && jsonE.tw.green.minor.length === 2 && jsonE.tw.red.major.length === 1, 'the environment exports to .json');
+    const [pdfE] = await Promise.all([p.waitForEvent('download', { timeout: 60000 }), p.click('.export-row [data-a=pdf]')]);
+    ok(fs.readFileSync(await pdfE.path()).slice(0, 4).toString() === '%PDF', 'the environment sheet exports to PDF');
+    await p.click('[data-a=roster]');
+    ok(await p.$$eval('#roster .ro-item', e => e.length) === 1, 'the environment is in its roster');
     await p.context().close();
   } else console.log('skip GM Screen unlock (GM_PASSWORD not set)');
 
