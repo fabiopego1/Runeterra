@@ -1,5 +1,6 @@
 /* The Environment Workshop (ambiente.html): the Game Master's tool for building a scene environment, step by step.
-   Six chapters follow chapter 5 of the rulebook ("Creating Environments"): the place, three traits with a die each, and the
+   Seven chapters follow chapter 5 of the rulebook ("Creating Environments" and "Creating Minions and Lieutenants"): the place, three traits with a die each,
+   a library of threats (minions and lieutenants) and the
    twists of each scene zone (Green, Yellow, Red), each built from the rulebook's "Twist Strength Guidelines" tables.
    The tables themselves are sealed in the vault (gm-env-data); this page only holds the behaviour.
    Like the Antagonist Workshop it reuses the Champion Forge's look, tooltips and sheet, and is only reachable behind the
@@ -26,6 +27,7 @@
   const STEPS = [
     { id: 'concept', name: 'Conceito', sub: 'O lugar', title: 'Dê um lugar à cena', lede: 'O <b>nome</b> do ambiente já define a escala: um estádio, um quarteirão, uma cidade inteira, uma ilha, outra dimensão. Descreva o lugar e o clima que você quer passar à mesa.' },
     { id: 'traits', name: 'Traços', sub: 'Três características', title: 'Os três traços e seus dados', lede: 'Escolha <b>três traços</b>: características do ambiente, não ameaças (“Armamento Automatizado”, e não “Torreta”). Cada traço recebe um dado, e os três dados formam a reserva que o ambiente rola quando age.' },
+    { id: 'threats', name: 'Ameaças', sub: 'Lacaios e tenentes', title: 'A biblioteca de ameaças', lede: 'Monte aqui os <b>lacaios</b> e <b>tenentes</b> deste ambiente. Cada reviravolta que “adiciona uma ameaça” escolhe uma delas, e a ficha mostra todas. Você pode pular este capítulo se o ambiente não vai ter ameaças.' },
     { id: 'green', name: 'Zona Verde', sub: 'Estável', title: 'Reviravoltas da zona Verde', lede: 'A catástrofe do ambiente tem três fases: <b>Estável</b> (Verde), <b>em decadência</b> (Amarela) e <b>colapso</b> (Vermelha). Na Verde, o ambiente reúne forças: incômodos e estranhezas. Crie <b>duas ou três reviravoltas menores</b> e <b>uma maior</b>.' },
     { id: 'yellow', name: 'Zona Amarela', sub: 'Em decadência', title: 'Reviravoltas da zona Amarela', lede: 'Na Amarela, o ambiente fica sob tanto estresse quanto os campeões: os efeitos ficam mais fortes. Crie <b>duas ou três reviravoltas menores</b> e <b>uma maior</b>.' },
     { id: 'red', name: 'Zona Vermelha', sub: 'Colapso', title: 'Reviravoltas da zona Vermelha', lede: 'Na Vermelha, o ambiente colapsa e algo perigoso emerge. É aqui que entra o <b>dispositivo do fim do mundo</b>, se você quiser um. Crie <b>duas ou três reviravoltas menores</b> e <b>uma maior</b>.' },
@@ -34,6 +36,7 @@
   const GUIDE = {
     concept: '<p>Pense no lugar onde a cena acontece e no que ele faz <b>com todos</b>: um ambiente costuma machucar os campeões mais do que os antagonistas. Na maioria das cenas há um só ambiente; use dois apenas se o grupo foi totalmente separado.</p><p class="muted">Exemplo: “Tempestade Sobrenatural sobre a Cidade da Torre”: fendas dimensionais abrem e fecham pela cidade como nuvens.</p>',
     traits: '<p>Os traços aparecem sobretudo nas reviravoltas, por isso precisam ser <b>características gerais</b>: isso deixa você livre para descrever o que acontece. Dê o dado mais alto ao traço mais importante para o impacto do ambiente na cena.</p><p>Guia dos dados: <b>d4</b> mínimo, <b>d6</b> médio, <b>d8</b> desafiador, <b>d10</b> perigoso, <b>d12</b> catastrófico. Se estiver em dúvida, use d6 e d8. Não precisa equilibrar: um dado alto não exige um baixo.</p>',
+    threats: '<p><b>Lacaio</b>: ameaça frágil que age em grupo. Se falhar no salvamento, cai na hora; se passar, o dado cai um tamanho. <b>Tenente</b>: ameaça resistente. Passando no salvamento o dado fica igual; falhando, cai um tamanho. Dano de pelo menos o dobro do dado derrota o tenente na hora.</p><p>Lacaios com dado alto ficam perigosos em número: prefira dar <b>habilidades</b> (bônus de 1 a 3, o mais comum é 2) em vez de subir o dado. Lacaios têm no máximo duas habilidades; tenentes precisam de pelo menos uma. Quando o ambiente cria lacaios, a quantidade costuma ser a de campeões.</p>',
     zone: '<p>Cada reviravolta usa <b>os dados do ambiente</b>: o <b>Mín</b>, o <b>Médio</b> e o <b>Máx</b> da reserva de três dados. Escolha o tipo de efeito, a receita do livro para aquela zona e aquele peso (menor ou maior), e escreva o que acontece na história.</p><p>Como o ambiente rola <b>três dados</b>, você pode combinar até três efeitos numa reviravolta, cada um usando um dado diferente: é um jeito de deixar a Amarela e a Vermelha mais complicadas.</p><p class="muted">Só a reviravolta <b>maior</b> avança o marcador de cena, uma casa. Cada reviravolta maior vale uma vez por cena.</p>',
     finish: '<p>Na hora de jogar, o turno do ambiente é o turno do marcador de cena: <b>avance o marcador</b>, <b>ative as ameaças</b> que já estão em cena e então <b>introduza uma ameaça nova ou acione uma reviravolta</b> da zona atual. Ameaças novas só agem no turno seguinte.</p><p>Ambientes não Defendem nem Superam: use Atrapalhar contra os campeões.</p>'
   };
@@ -44,10 +47,11 @@
   const DIENAME = { min: 'dado Mín', mid: 'dado Médio', max: 'dado Máx', 'mid+min': 'dados Médio+Mín', 'max+min': 'dados Máx+Mín' };
 
   // ------------------------------------------------------------------ state
-  const newFx = () => ({ cat: 'basic', opt: '', verbs: [], persistIdx: 0, other: '', tname: '', tdie: 'd6', ctext: '' });
+  const newFx = () => ({ cat: 'basic', opt: '', verbs: [], persistIdx: 0, other: '', tid: '', ctext: '', tm: '2', tneed: 2, tcons: '' });
+  const newTh = () => ({ id: uid(), name: '', kind: 'minion', die: 'd6', desc: '', tactics: '', abs: [] });
   const newTw = () => ({ id: uid(), name: '', desc: '', fx: [newFx()] });
   const blankZones = () => ({ green: { minor: [], major: [] }, yellow: { minor: [], major: [] }, red: { minor: [], major: [] } });
-  const blank = () => ({ cid: uid(), name: '', scope: '', note: '', portrait: null, traits: [{ name: '', die: '' }, { name: '', die: '' }, { name: '', die: '' }], tw: blankZones(), play: { notes: [] }, step: 'concept', seen: {}, updated: 0 });
+  const blank = () => ({ cid: uid(), name: '', scope: '', note: '', portrait: null, heroes: 4, threats: [], traits: [{ name: '', die: '' }, { name: '', die: '' }, { name: '', die: '' }], tw: blankZones(), play: { notes: [] }, step: 'concept', seen: {}, updated: 0 });
   const read = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
   const normalize = o => {
     const b = blank(), s = Object.assign(b, o || {});
@@ -55,8 +59,25 @@
     s.tw = Object.assign(blankZones(), s.tw || {});
     for (const z of Object.keys(ZN)) s.tw[z] = Object.assign({ minor: [], major: [] }, s.tw[z]);
     s.traits = [0, 1, 2].map(i => Object.assign({ name: '', die: '' }, (s.traits || [])[i]));
+    s.threats = (Array.isArray(s.threats) ? s.threats : []).map(t => Object.assign(newTh(), t, { abs: Array.isArray(t && t.abs) ? t.abs.map(a => Object.assign({ t: 'custom', v: 2, x: '' }, a)) : [] }));
+    for (const z of Object.keys(ZN)) for (const sv of ['minor', 'major']) for (const tw of s.tw[z][sv]) tw.fx = (tw.fx || []).map(f => Object.assign(newFx(), f));
     return s;
   };
+  // threats typed straight into a twist (older saves) move into the library
+  const migrate = s => {
+    if (!ED) return s;
+    for (const z of Object.keys(ZN)) for (const sv of ['minor', 'major']) for (const tw of s.tw[z][sv]) for (const fx of tw.fx) {
+      if (fx.cat === 'threat' && !fx.tid && (fx.tname || '').trim()) {
+        const o = optsFor('threat', z, sv).find(x => x.id === fx.opt), kind = o && o.lt ? 'lieutenant' : 'minion', die = fx.tdie || 'd6';
+        let th = s.threats.find(t => t.name === fx.tname.trim() && t.kind === kind && t.die === die);
+        if (!th) { th = Object.assign(newTh(), { name: fx.tname.trim(), kind, die }); s.threats.push(th); }
+        fx.tid = th.id;
+      }
+      delete fx.tname; delete fx.tdie;
+    }
+    return s;
+  };
+  const hydrate = o => migrate(normalize(o));
   const rosterIds = () => { const r = read(ROSTER); return Array.isArray(r) ? r : []; };
   let S = normalize(read(KEY));
   const ui = { guide: {} };
@@ -93,6 +114,28 @@
     defend: `<b>Defender com um ambiente é exceção.</b> Defender protege alguém do próximo dano, e um ambiente não toma dano: por isso, na hora de jogar, o livro manda <b>Atrapalhar os campeões</b> em vez de Defender, mesmo quando a ideia é “defender o lar”. Só faz sentido quando a reviravolta <b>protege outras pessoas</b> da cena, como o “Campo Místico do Pacifismo” do livro: Defende quem não Atacou no último turno e Atrapalha os demais.`,
     overcome: `<b>Superar com um ambiente é exceção.</b> Superar é um teste que pode dar “sucesso com reviravolta”, e um ambiente não tem um jogador do outro lado para sofrer essa reviravolta: por isso o livro diz que ambientes <b>normalmente não Superam</b>. A exceção é resolver <b>um desafio da cena</b>, como os “socorristas que chegam e resolvem um dos obstáculos restantes”. Só vale se houver um desafio ativo quando a reviravolta acontecer.`
   };
+  const TK = () => ED.threatKinds;
+  const getTh = id => S.threats.find(t => t.id === id) || null;
+  const abTpl = id => ED.abilities.find(a => a.id === id);
+  const abText = a => { const t = abTpl(a.t); return t ? t.t(a.v, (a.x || '').trim()) : ''; };
+  const abName = a => { const t = abTpl(a.t); return t ? t.name : ''; };
+  const dieAtLeast = (d, m) => DIES.indexOf(d) >= DIES.indexOf(m);
+  function thIssues(th) {
+    const I = [], k = TK()[th.kind], who = `“${th.name.trim() || 'sem nome'}”: `;
+    if (!th.name.trim()) I.push(who + 'dê um nome à ameaça.');
+    if (th.kind === 'lieutenant' && !th.abs.length) I.push(who + 'um tenente precisa de pelo menos uma habilidade.');
+    if (th.abs.length > k.maxAb) I.push(who + `${k.name === 'Lacaio' ? 'lacaios têm' : 'tenentes têm'} no máximo ${k.maxAb} habilidades.`);
+    th.abs.forEach(a => { if (a.t === 'custom' && !(a.x || '').trim()) I.push(who + 'descreva a habilidade própria.'); });
+    return I;
+  }
+  // the little sheet of a threat, shown in hovers
+  function thTip(th) {
+    const k = TK()[th.kind];
+    return `<h5>${esc(th.name.trim() || 'Ameaça sem nome')} · ${k.name} ${esc(th.die)}</h5>${th.desc.trim() ? `<p>${esc(th.desc.trim())}</p>` : ''}<p><b>Salvamento.</b> ${esc(k.save)}</p>${th.abs.length ? `<ul>${th.abs.map(a => `<li><b>${esc(abName(a))}.</b> ${esc(abText(a))}</li>`).join('')}</ul>` : '<p class="muted">Sem habilidades: só age e leva dano.</p>'}${th.tactics.trim() ? `<p><i>Tática:</i> ${esc(th.tactics.trim())}</p>` : ''}`;
+  }
+  const thChip = th => `<span class="term env-thr-chip"${tipA(thTip(th))}>${esc(th.name.trim() || 'Ameaça sem nome')} ${die(th.die, 'sm')} <small class="muted">${TK()[th.kind].name.toLowerCase()}</small></span>`;
+  const timerOf = fx => ED.timers.find(x => x[0] === fx.tm) || ED.timers[1];
+  const timerWords = fx => { const t = timerOf(fx); return t[0] === 'zone' ? 'até a cena mudar de zona' : t[0] === '1' ? '1 caixinha' : `${t[0]} caixinhas`; };
   const withDie = d => `com ${/^dados/.test(dieWord(d)) ? 'os' : 'o'} ${dieWord(d)}`;
   const thCount = n => (n === 'one' ? '' : `dado ${n === 'min' ? 'Mín' : n === 'mid' ? 'Médio' : 'Máx'}`);
 
@@ -137,8 +180,10 @@
     } else if (fx.cat === 'threat') {
       if (o.restore) text = { minions: 'Restaure todos os lacaios ameaça à força total.', lieutenant: 'Restaure um tenente ameaça à força total.', all: 'Restaure todos os lacaios e tenentes ameaça à força total.' }[o.restore];
       else {
-        if (!fx.tname.trim()) I.push('Dê um nome à ameaça.');
-        const nm = fx.tname.trim() || '…', d = fx.tdie || 'd6';
+        const th = getTh(fx.tid);
+        if (!th) I.push(o.lt ? 'Escolha o tenente na biblioteca de ameaças.' : 'Escolha o lacaio na biblioteca de ameaças.');
+        else if ((th.kind === 'lieutenant') !== !!o.lt) I.push('A ameaça escolhida não é do tipo que esta receita pede (' + (o.lt ? 'tenente' : 'lacaio') + ').');
+        const nm = (th && th.name.trim()) || '…', d = th ? th.die : 'd6';
         if (o.lt) text = `Adicione um tenente${o.strong ? ' mais poderoso que os demais da cena' : ''}: ${nm} (${d}).`;
         else if (o.n === 'one') text = `Adicione um lacaio: ${nm} (${d}).`;
         else { dice = true; text = `Adicione lacaios ${nm} (${d}) em quantidade igual ao ${dieWord(o.n)} do ambiente.`; }
@@ -147,8 +192,15 @@
     } else {
       if (o.kind !== 'raise' && !fx.ctext.trim()) I.push(o.kind === 'doomsday' ? 'Descreva o dispositivo do fim do mundo.' : 'Descreva o desafio.');
       const c = fx.ctext.trim() || '…';
-      text = { simple: `Adicione um desafio simples: ${c}`, timed: `Adicione um desafio com cronômetro ou em várias etapas: ${c}`, raise: 'Aumente a dificuldade de um desafio existente.', doomsday: `Ative o dispositivo do fim do mundo: ${c}` }[o.kind];
+      text = { simple: `Adicione um desafio simples: ${c}`, timed: `Adicione um desafio com cronômetro (${timerWords(fx)}): ${c}`, raise: 'Aumente a dificuldade de um desafio existente.', doomsday: `Ative o dispositivo do fim do mundo: ${c}` }[o.kind];
       if (!/[.…]$/.test(text)) text += '.';
+      if (o.kind === 'timed') {
+        const n = Math.max(1, fx.tneed | 0);
+        text += timerOf(fx)[0] === 'zone' ? ' O cronômetro vale até a cena mudar de zona (o marcador de cena entrar na próxima zona).' : ' Marque uma caixinha por rodada, no turno do próprio desafio.';
+        text += ` Os campeões o resolvem com ${n} ${n === 1 ? 'sucesso' : 'sucessos'} em Superar.`;
+        if (!fx.tcons.trim()) I.push('Diga o que acontece se o tempo acabar.');
+        text += ` Se o tempo acabar: ${fx.tcons.trim() || '…'}${/[.…]$/.test(fx.tcons.trim()) ? '' : '.'}`;
+      }
       if (o.other) { if (!fx.other.trim()) I.push('Descreva o outro efeito.'); text += ` Além disso: ${fx.other.trim() || '…'}.`; }
     }
     return { text, I, dice };
@@ -172,6 +224,7 @@
       S.traits.forEach((t, i) => { if (!t.name.trim()) N.push(`Dê um nome ao traço ${i + 1}.`); if (!t.die) N.push(`Escolha o dado do traço ${i + 1}.`); });
       return N;
     }
+    if (id === 'threats') return S.threats.flatMap(thIssues);
     if (ZN[id]) {
       const z = S.tw[id];
       if (z.minor.length < 2) N.push(`Crie pelo menos duas reviravoltas menores (hoje há ${z.minor.length}).`);
@@ -179,7 +232,7 @@
       for (const s of ['minor', 'major']) for (const tw of z[s]) N.push(...twIssues(tw, id, s));
       return N;
     }
-    if (id === 'finish') return ['concept', 'traits', 'green', 'yellow', 'red'].flatMap(stepIssues);
+    if (id === 'finish') return ['concept', 'traits', 'threats', 'green', 'yellow', 'red'].flatMap(stepIssues);
     return N;
   }
   const stepIdx = id => STEPS.findIndex(s => s.id === id);
@@ -204,8 +257,37 @@
           <div class="tchips" role="radiogroup" aria-label="Dado do traço ${i + 1}">${ED.impact.map(([d, w]) => tchipB(`data-a="tdie" data-i="${i}" data-val="${d}"`, t.die === d, `${die(d, 'sm')}<span>${esc(w)}</span>`, `<h5>${d.toUpperCase()}: ${esc(w)}</h5>Impacto do traço na cena.`)).join('')}</div></div>`).join('')}</div>
         <div class="env-dice"><b>Os dados do ambiente</b> ${v ? `<span class="term"${tipA(window.GLOSSARY['Min die'] ? `<h5>Dado Mín</h5>${window.GLOSSARY['Min die']}` : 'O menor dos três dados.')}>Mín</span> ${die(v.min, 'sm')} <span class="term"${tipA(window.GLOSSARY['Mid die'] ? `<h5>Dado Médio</h5>${window.GLOSSARY['Mid die']}` : 'O dado do meio.')}>Médio</span> ${die(v.mid, 'sm')} <span class="term"${tipA(window.GLOSSARY['Max die'] ? `<h5>Dado Máx</h5>${window.GLOSSARY['Max die']}` : 'O maior dos três dados.')}>Máx</span> ${die(v.max, 'sm')}` : '<span class="muted">escolha os três dados</span>'}</div>`;
     }
+    if (id === 'threats') return threatsBody();
     if (ZN[id]) return zoneBody(id);
     return '';
+  }
+
+  // the threat library: minions and lieutenants, each with a die, a short description, abilities and tactics
+  const PERS_TIP = '<h5>Persistente e exclusivo</h5><b>Persistente</b>: o bônus ou a penalidade não some depois de um uso; dura até algo o remover, até alguém Superar para encerrá-lo ou, no máximo, até o fim da cena. <b>Exclusivo</b>: numa mesma rolagem só vale um bônus exclusivo e uma penalidade exclusiva. Isso vale só para bônus e penalidades (Fortalecer e Atrapalhar), não para dano.';
+  function threatsBody() {
+    const cards = S.threats.map(thCard).join('');
+    return `<div class="env-row"><label class="field"><span>Campeões na mesa</span><input type="number" min="1" max="8" data-b="heroes" value="${esc(S.heroes)}"></label>
+        <p class="muted env-note">Usado só no botão “Adicionar à Mesa do Mestre”: um grupo de lacaios tem um por campeão, e tenentes entram na metade (arredondada para cima).</p></div>
+      ${cards || '<p class="muted">Nenhuma ameaça ainda.</p>'}
+      <button type="button" class="btn small" data-a="thAdd">${ico('mark')} Adicionar lacaio ou tenente</button>`;
+  }
+  function thCard(th) {
+    const k = TK()[th.kind], A = `data-th="${th.id}"`;
+    const left = k.maxAb - th.abs.length;
+    const warn = th.kind === 'minion' && dieAtLeast(th.die, 'd10') ? `<div class="env-warn" role="note">${ico('warn')}<span><b>Lacaio com dado alto.</b> Lacaios d10 e d12 ficam mortais em grupo. O livro sugere manter o dado baixo e dar <b>habilidades</b> (bônus em ações ou salvamentos) para torná-los especiais. Se a ameaça é de verdade perigosa, faça dela um tenente.</span></div>` : th.kind === 'lieutenant' && th.die === 'd6' ? `<div class="env-warn" role="note">${ico('warn')}<span><b>Tenente d6.</b> É raro: tenentes costumam ir de d8 a d12.</span></div>` : '';
+    return `<div class="ab ant picked env-tw env-th" data-thcard="${th.id}">
+      <div class="ab-top"><span class="ab-name">${esc(th.name.trim() || 'Ameaça sem nome')}</span><span class="pill">${k.name} ${esc(th.die)}</span><button type="button" class="linkbtn danger env-del" data-a="thDel" ${A}>Remover</button></div>
+      <div class="env-fields"><label class="field"><span>Nome</span><input type="text" data-th="${th.id}" data-f="name" value="${esc(th.name)}" placeholder="Ex.: Diabretes da Tempestade"></label>
+        <label class="field"><span>Descrição (o que é e como ataca)</span><input type="text" data-th="${th.id}" data-f="desc" value="${esc(th.desc)}" placeholder="Uma frase: corpo a corpo ou à distância, o que o torna uma ameaça"></label></div>
+      <div class="env-row"><div><div class="cfg-l">Tipo</div><div class="tchips" role="radiogroup">${Object.keys(TK()).map(key => tchipB(`data-a="thKind" ${A} data-val="${key}"`, th.kind === key, `<span>${TK()[key].name}</span>`, `<h5>${TK()[key].name}</h5>${esc(TK()[key].save)}`)).join('')}</div></div>
+        <div><div class="cfg-l">Dado</div><div class="tchips" role="radiogroup">${k.dice.map(d => tchipB(`data-a="thDie" ${A} data-val="${d}"`, th.die === d, die(d, 'sm'))).join('')}</div></div></div>
+      <p class="muted env-note"><b>Salvamento.</b> ${esc(k.save)}</p>${warn}
+      <div class="cfg-l">Habilidades <small class="muted">(${th.kind === 'minion' ? '0 a 2' : '1 a 3'}; bônus de 1 a 3, o mais comum é 2)</small></div>
+      ${th.abs.map((a, i) => { const t = abTpl(a.t); return `<div class="env-ab"><div class="env-ab-h"><b>${esc(abName(a))}</b><span class="tchips" role="radiogroup" aria-label="Valor">${[1, 2, 3].map(v => tchipB(`data-a="thAbV" ${A} data-i="${i}" data-val="${v}"`, a.v === v, `<span>${v}</span>`)).join('')}</span><button type="button" class="linkbtn danger" data-a="thAbDel" ${A} data-i="${i}">Remover</button></div>
+        ${t && t.ph ? `<input type="text" data-th="${th.id}" data-ab="${i}" data-f="x" value="${esc(a.x)}" placeholder="${esc(t.ph)}" aria-label="Detalhe da habilidade">` : ''}<div class="ab-text">${esc(abText(a))}</div></div>`; }).join('')}
+      ${left > 0 ? `<label class="field"><span>Adicionar habilidade</span><select data-thadd="${th.id}"><option value="">Escolha…</option>${ED.abilities.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></label>` : ''}
+      <label class="field"><span>Tática (opcional)</span><input type="text" data-th="${th.id}" data-f="tactics" value="${esc(th.tactics)}" placeholder="Como age na cena, em uma frase"></label>
+      <div class="env-row"><button type="button" class="btn small" data-a="thMesa" ${A}>Adicionar à Mesa do Mestre</button><span class="muted env-note" data-mesa="${th.id}"></span></div></div>`;
   }
 
   // one zone: the minor twists and the major twist, each built from the rulebook's recipes
@@ -245,15 +327,23 @@
       cfg += o.acts.map((a, k) => {
         const pers = isPersist(o, fx, k), v = fx.verbs[k] || 'hinder';
         const verbs = verbsFor(o, fx, k).map(key => [key, VERBS[key]]);
-        return `<div class="cfg-l">Ação ${o.acts.length > 1 ? k + 1 + ': ' : ''}${v === 'overcome' ? 'um dos desafios restantes da cena' : esc(WHO_TXT[a.who])} ${esc(withDie(a.die))}${pers ? ' (persistente e exclusiva)' : ''}</div><div class="tchips" role="radiogroup">${verbs.map(([key, l]) => tchipB(`data-a="fxVerb" ${A} data-k="${k}" data-val="${key}"`, v === key, `<span>${l[0]}</span>`, `<h5>${l[0]}</h5>${window.GLOSSARY[{ attack: 'Attack', hinder: 'Hinder', boost: 'Boost', defend: 'Defend', overcome: 'Overcome' }[key]] || ''}${VERB_WARN[key] ? `<hr><small>${VERB_WARN[key]}</small>` : ''}`)).join('')}</div>${VERB_WARN[v] ? `<div class="env-warn" role="note">${ico('warn')}<span>${VERB_WARN[v]}</span></div>` : ''}`;
+        return `<div class="cfg-l">Ação ${o.acts.length > 1 ? k + 1 + ': ' : ''}${v === 'overcome' ? 'um dos desafios restantes da cena' : esc(WHO_TXT[a.who])} ${esc(withDie(a.die))}${pers ? ` <span class="term"${tipA(PERS_TIP)}>(persistente e exclusiva)</span>` : ''}</div><div class="tchips" role="radiogroup">${verbs.map(([key, l]) => tchipB(`data-a="fxVerb" ${A} data-k="${k}" data-val="${key}"`, v === key, `<span>${l[0]}</span>`, `<h5>${l[0]}</h5>${window.GLOSSARY[{ attack: 'Attack', hinder: 'Hinder', boost: 'Boost', defend: 'Defend', overcome: 'Overcome' }[key]] || ''}${VERB_WARN[key] ? `<hr><small>${VERB_WARN[key]}</small>` : ''}`)).join('')}</div>${VERB_WARN[v] ? `<div class="env-warn" role="note">${ico('warn')}<span>${VERB_WARN[v]}</span></div>` : ''}`;
       }).join('');
       if (o.persistOne) cfg += `<div class="cfg-l">Qual das ações é persistente e exclusiva?</div><div class="tchips" role="radiogroup">${o.acts.map((a, k) => tchipB(`data-a="fxPers" ${A} data-val="${k}"`, (fx.persistIdx || 0) === k, `<span>Ação ${k + 1}</span>`)).join('')}</div>`;
     }
     if (o && fx.cat === 'threat' && !o.restore) {
-      cfg += `<div class="env-row"><label class="field"><span>${o.lt ? 'Nome do tenente' : 'Nome da ameaça'}</span><input type="text" data-tw="${tw.id}" data-i="${i}" data-f="tname" value="${esc(fx.tname)}" placeholder="${o.lt ? 'Ex.: Cria Tentacular' : 'Ex.: Diabretes da Tempestade'}"></label>
-        <div><div class="cfg-l">Dado</div><div class="tchips" role="radiogroup">${DIES.filter(d => !o.lt || DIES.indexOf(d) >= 1).map(d => tchipB(`data-a="fxTdie" ${A} data-val="${d}"`, fx.tdie === d, die(d, 'sm'), `<h5>${d.toUpperCase()}</h5>${o.lt ? 'Tenentes costumam ir de d8 a d12.' : 'Lacaios: d4 a d12, conforme a ameaça.'}`)).join('')}</div></div></div>`;
+      const pool = S.threats.filter(t => (t.kind === 'lieutenant') === !!o.lt), cur = getTh(fx.tid);
+      cfg += pool.length ? `<div class="cfg-l">${o.lt ? 'Tenente' : 'Lacaio'} da biblioteca</div><div class="tchips" role="radiogroup">${pool.map(t => tchipB(`data-a="fxThreat" ${A} data-val="${t.id}"`, fx.tid === t.id, `<span>${esc(t.name.trim() || 'Sem nome')}</span>${die(t.die, 'sm')}`, thTip(t))).join('')}</div>`
+        : `<div class="env-warn" role="note">${ico('warn')}<span>Ainda não há ${o.lt ? 'nenhum tenente' : 'nenhum lacaio'} na biblioteca. <button type="button" class="linkbtn" data-a="go" data-i="${stepIdx('threats')}">Criar no capítulo Ameaças</button></span></div>`;
+      if (cur && !o.lt && o.n !== 'one' && cur.kind === 'minion' && dieAtLeast(cur.die, 'd10')) cfg += `<div class="env-warn" role="note">${ico('warn')}<span><b>${esc(cur.die)} em quantidade.</b> Vários lacaios ${esc(cur.die)} tiram muita Vida dos campeões de uma vez. Considere um dado menor com habilidades, ou um tenente.</span></div>`;
     }
     if (o && fx.cat === 'challenge' && o.kind !== 'raise') cfg += `<label class="field"><span>${o.kind === 'doomsday' ? 'O dispositivo do fim do mundo' : 'O desafio'}</span><input type="text" data-tw="${tw.id}" data-i="${i}" data-f="ctext" value="${esc(fx.ctext)}" placeholder="${o.kind === 'doomsday' ? 'Ex.: Fendas gigantes se abrem por toda a cidade' : 'Ex.: Resgatar os cidadãos antes do próximo turno do ambiente'}"></label>`;
+    if (o && fx.cat === 'challenge' && o.kind === 'timed') {
+      cfg += `<div class="cfg-l">Cronômetro <small class="muted">(uma caixinha marcada por rodada, no turno do próprio desafio)</small></div><div class="tchips" role="radiogroup">${ED.timers.map(t => tchipB(`data-a="fxTm" ${A} data-val="${t[0]}"`, fx.tm === t[0], `<span>${esc(t[1])}</span>`, `<h5>${esc(t[1])}</h5>${esc(t[2])}`)).join('')}</div>
+        <div class="cfg-l">Sucessos em Superar para resolver</div><div class="tchips" role="radiogroup">${[1, 2, 3, 4].map(n => tchipB(`data-a="fxNeed" ${A} data-val="${n}"`, fx.tneed === n, `<span>${n}</span>`)).join('')}</div>
+        <label class="field"><span>Se o tempo acabar…</span><input type="text" data-tw="${tw.id}" data-i="${i}" data-f="tcons" value="${esc(fx.tcons)}" placeholder="Ex.: o prédio desaba e todos na zona sofrem um Ataque com o dado Máx"></label>
+        <p class="muted env-note">Se a consequência for o fim do cenário, use o dispositivo do fim do mundo na reviravolta maior da zona Vermelha em vez de um cronômetro comum.</p>`;
+    }
     if (o && o.other) cfg += `<label class="field"><span>O outro efeito${o.other === 'any' || fx.cat !== 'basic' ? '' : ` (${esc(withDie(o.other))})`}</span><input type="text" data-tw="${tw.id}" data-i="${i}" data-f="other" value="${esc(fx.other)}" placeholder="Descreva o outro efeito"></label>`;
     return `<div class="env-fx"><div class="cfg-l env-fxh">Efeito ${i + 1}${tw.fx.length > 1 ? ` <button type="button" class="linkbtn danger" data-a="fxDel" ${A}>Remover efeito</button>` : ''}</div>${catChips}${opts}${cfg}</div>`;
   }
@@ -263,21 +353,23 @@
   const iconsFor = text => ICON_RE.filter(([, re]) => re.test(text)).map(([a]) => `<span class="act-ic act-${a.toLowerCase()}"${tipA(`<h5>Ícone de ${K().ICONS[a][1]}</h5>${window.GLOSSARY[a]}`)}>${K().ICONS[a][0]}</span>`).join('');
   const zoneTip = z => `<h5>Zona ${ZN[z]}</h5>${ZSTAGE[z]}. ${window.GLOSSARY[{ green: 'Green zone', yellow: 'Yellow zone', red: 'Red zone' }[z]] || ''}`;
   const lines = (path, list, n, label) => Array.from({ length: n }, (_, i) => `<input class="hs-line" type="text" data-b="${path}.${i}" value="${esc(list[i] || '')}" aria-label="${label} ${i + 1}">`).join('');
-  function threatsAndChallenges() {
-    const th = [], ch = [];
-    for (const z of Object.keys(ZN)) for (const s of ['minor', 'major']) for (const tw of S.tw[z][s]) for (const fx of tw.fx) {
-      const o = getOpt(fx, z, s);
-      if (fx.cat === 'threat' && o && !o.restore && fx.tname.trim()) th.push({ z, n: fx.tname.trim(), d: fx.tdie, lt: o.lt });
-      if (fx.cat === 'challenge' && o && fx.ctext.trim()) ch.push({ z, t: fx.ctext.trim(), kind: o.kind });
+  function challengesOf() {
+    const ch = [];
+    for (const z of Object.keys(ZN)) for (const sv of ['minor', 'major']) for (const tw of S.tw[z][sv]) for (const fx of tw.fx) {
+      const o = getOpt(fx, z, sv);
+      if (fx.cat === 'challenge' && o && fx.ctext.trim()) ch.push({ z, t: fx.ctext.trim(), kind: o.kind, timer: o.kind === 'timed' ? `cronômetro: ${timerWords(fx)} · ${Math.max(1, fx.tneed | 0)} ${(fx.tneed | 0) === 1 ? 'sucesso' : 'sucessos'} em Superar · se acabar: ${fx.tcons.trim() || '…'}` : '' });
     }
-    return { th, ch };
+    return ch;
   }
+  const thSheet = th => `<div class="env-thc"><div class="env-thc-h"><b>${esc(th.name.trim() || 'sem nome')}</b> ${die(th.die, 'sm')} <small class="muted">${TK()[th.kind].name.toLowerCase()}</small></div>
+    ${th.desc.trim() ? `<div class="env-thc-d">${esc(th.desc.trim())}</div>` : ''}${th.abs.map(a => `<div class="env-thc-a"><b>${esc(abName(a))}.</b> ${esc(abText(a))}</div>`).join('')}${th.tactics.trim() ? `<div class="env-thc-t"><i>Tática:</i> ${esc(th.tactics.trim())}</div>` : ''}<div class="env-thc-s"><i>Salvamento:</i> ${esc(TK()[th.kind].save)}</div></div>`;
+  const usedThreats = tw => tw.fx.map(f => (f.cat === 'threat' ? getTh(f.tid) : null)).filter(Boolean);
   function sheetHtml() {
-    const imp = IMPACT(), v = DV(), title = esc(S.name || 'Ambiente sem nome'), tc = threatsAndChallenges();
+    const imp = IMPACT(), v = DV(), title = esc(S.name || 'Ambiente sem nome'), ch = challengesOf();
     const zoneBlock = z => {
       const rows = ['minor', 'major'].flatMap(s => S.tw[z][s].map(tw => {
         const pl = twPlain(tw, z, s);
-        return `<tr><td class="ic">${iconsFor(pl.text)}</td><td class="nm">${esc(tw.name || 'sem nome')}<small>${SEV[s]}</small></td><td class="ty">${s === 'major' ? 'M' : 'm'}</td><td class="gt">${ruleHtml(pl.text)}${tw.desc.trim() ? `<div class="env-story">${esc(tw.desc.trim())}</div>` : ''}</td></tr>`;
+        return `<tr><td class="ic">${iconsFor(pl.text)}</td><td class="nm">${esc(tw.name || 'sem nome')}<small>${SEV[s]}</small></td><td class="ty">${s === 'major' ? 'M' : 'm'}</td><td class="gt">${ruleHtml(pl.text)}${usedThreats(tw).length ? `<div class="env-thr">${usedThreats(tw).map(thChip).join(' ')}</div>` : ''}${tw.desc.trim() ? `<div class="env-story">${esc(tw.desc.trim())}</div>` : ''}</td></tr>`;
       }));
       return `<div class="hs-zone ${z}"><div class="zlbl"${tipA(zoneTip(z))}>${ZN[z]}</div><table class="hs-ab-t"><tbody>${rows.join('') || '<tr><td class="gt muted">Nenhuma reviravolta ainda.</td></tr>'}</tbody></table></div>`;
     };
@@ -298,8 +390,8 @@
             <div class="hs-h" style="margin-top:10px">Turno do ambiente</div>
             <ol class="env-turn"><li>Avance o marcador de cena.</li><li>Ative as ameaças que já estão em cena.</li><li>Introduza uma ameaça nova <b>ou</b> acione uma reviravolta da zona atual.</li></ol></div>
         </div>
-        ${tc.th.length || tc.ch.length ? `<div class="hs-2"><div class="hs-card"><div class="hs-h">Ameaças deste ambiente</div>${tc.th.length ? tc.th.map(t => `<div class="hs-f">${esc(t.n)} ${die(t.d, 'sm')} <small class="muted">${t.lt ? 'tenente' : 'lacaio'} · ${ZN[t.z]}</small></div>`).join('') : '<span class="muted">Nenhuma</span>'}</div>
-          <div class="hs-card"><div class="hs-h">Desafios deste ambiente</div>${tc.ch.length ? tc.ch.map(c => `<div class="hs-f">${esc(c.t)} <small class="muted">${c.kind === 'doomsday' ? 'fim do mundo' : 'desafio'} · ${ZN[c.z]}</small></div>`).join('') : '<span class="muted">Nenhum</span>'}</div></div>` : ''}
+        ${S.threats.length ? `<div class="hs-card"><div class="hs-h">Ameaças deste ambiente</div><div class="env-thcs">${S.threats.map(thSheet).join('')}</div></div>` : ''}
+        ${ch.length ? `<div class="hs-card"><div class="hs-h">Desafios deste ambiente</div>${ch.map(c => `<div class="hs-f">${esc(c.t)} <small class="muted">${c.kind === 'doomsday' ? 'fim do mundo' : 'desafio'} · ${ZN[c.z]}</small>${c.timer ? `<div class="env-story">${esc(c.timer)}</div>` : ''}</div>`).join('')}</div>` : ''}
         <div class="hs-card"><div class="hs-h">Notas de mesa</div><div class="hs-notes">${lines('play.notes', S.play.notes, 8, 'Nota')}</div></div>
       </div>
       <div class="hs-page" id="hs-p2">
@@ -317,6 +409,8 @@
       L.push('', `ZONA ${ZN[z].toUpperCase()}`);
       for (const s of ['minor', 'major']) for (const tw of S.tw[z][s]) L.push(`${SEV[s]}: ${tw.name || 'sem nome'}${tw.desc ? ' (' + tw.desc + ')' : ''}: ${twPlain(tw, z, s).text}`);
     }
+    if (S.threats.length) { L.push('', 'AMEAÇAS'); for (const t of S.threats) L.push(`${t.name || 'sem nome'} (${TK()[t.kind].name.toLowerCase()} ${t.die})${t.desc ? ': ' + t.desc : ''}${t.abs.length ? ' · ' + t.abs.map(a => `${abName(a)}: ${abText(a)}`).join(' ') : ''}${t.tactics ? ' · Tática: ' + t.tactics : ''}`); }
+    const chs = challengesOf(); if (chs.length) { L.push('', 'DESAFIOS'); for (const c of chs) L.push(`${c.t} (${ZN[c.z]})${c.timer ? ' · ' + c.timer : ''}`); }
     if (S.note) L.push('', S.note);
     return L.join('\n');
   }
@@ -406,7 +500,7 @@
     if (!o || o.app !== 'runeterra-environment') { alert('Este arquivo não é de um ambiente da Oficina de Ambiente.'); return; }
     save();
     delete o.app; delete o.v;
-    S = normalize(o);
+    S = hydrate(o);
     const old = read(SLOT(S.cid));
     if (rosterIds().includes(S.cid) && old && old.updated > S.updated) S.cid = uid();
     save(); render({ top: true });
@@ -471,7 +565,17 @@
     fx.opt = optId; fx.persistIdx = 0;
     const o = getOpt(fx, z, s);
     if (o && fx.cat === 'basic') fx.verbs = o.acts.map((a, i) => (fx.verbs[i] && verbsFor(o, fx, i).includes(fx.verbs[i])) ? fx.verbs[i] : 'hinder');
-    if (o && fx.cat === 'threat' && o.lt && DIES.indexOf(fx.tdie) < 1) fx.tdie = 'd8';
+    if (fx.cat === 'threat') { const th = getTh(fx.tid); if (th && (th.kind === 'lieutenant') !== !!(o && o.lt)) fx.tid = ''; }
+  }
+  // sends a threat to the GM Table (Escudo): one minion per hero, half as many lieutenants (rounded up)
+  function sendToTable(th) {
+    const n = Math.max(1, Math.min(8, parseInt(S.heroes, 10) || 4)), count = th.kind === 'minion' ? n : Math.ceil(n / 2);
+    let T; try { T = JSON.parse(localStorage.getItem('runeterra-gm-table-v1')); } catch (e) { T = null; }
+    T = T && typeof T === 'object' ? T : {};
+    if (!Array.isArray(T.foes)) T.foes = [];
+    T.foes.push({ id: uid(), name: th.name.trim() || 'Ameaça', kind: th.kind, dice: Array(count).fill(th.die), sel: 0, out: 0, dmg: '', last: '' });
+    try { localStorage.setItem('runeterra-gm-table-v1', JSON.stringify(T)); } catch (e) { return 'Sem espaço neste navegador.'; }
+    return `Adicionado à Mesa: ${count} × ${th.die} (${count === 1 ? 'um' : count} ${th.kind === 'minion' ? 'lacaio' : 'tenente'}${count === 1 ? '' : 's'}).`;
   }
   function onClick(ev) {
     const t = ev.target;
@@ -481,6 +585,24 @@
     const a = el.dataset.a;
     if (el.classList.contains('is-disabled')) { const f = $('#stage .flow-todo'); if (f) { f.scrollIntoView({ block: 'center', behavior: 'smooth' }); f.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }], { duration: 240 }); } return; }
     const hit = el.dataset.id ? getTw(el.dataset.id) : null, fx = hit && el.dataset.i != null ? hit.tw.fx[+el.dataset.i] : null;
+    const th = el.dataset.th ? getTh(el.dataset.th) : null;
+    if (a === 'thAdd') { const n = newTh(); S.threats.push(n); save(); render(); const inp = $(`[data-thcard="${n.id}"] input[data-f="name"]`); if (inp) inp.focus(); return; }
+    if (a === 'thDel') {
+      if (th && confirm(`Remover a ameaça “${th.name.trim() || 'sem nome'}” da biblioteca? Ela some das reviravoltas que a usam.`)) {
+        S.threats = S.threats.filter(x => x.id !== th.id);
+        for (const z of Object.keys(ZN)) for (const sv of ['minor', 'major']) for (const tw of S.tw[z][sv]) for (const f of tw.fx) if (f.tid === th.id) f.tid = '';
+        save(); render();
+      }
+      return;
+    }
+    if (a === 'thKind' && th) { th.kind = el.dataset.val; const k = TK()[th.kind]; if (!k.dice.includes(th.die)) th.die = 'd8'; if (th.abs.length > k.maxAb) th.abs.length = k.maxAb; save(); render(); return; }
+    if (a === 'thDie' && th) { th.die = el.dataset.val; save(); render(); return; }
+    if (a === 'thAbV' && th) { th.abs[+el.dataset.i].v = +el.dataset.val; save(); render(); return; }
+    if (a === 'thAbDel' && th) { th.abs.splice(+el.dataset.i, 1); save(); render(); return; }
+    if (a === 'thMesa' && th) { const r = sendToTable(th); const m = $(`[data-mesa="${th.id}"]`); if (m) m.textContent = r; return; }
+    if (a === 'fxThreat' && fx) { fx.tid = el.dataset.val; save(); render(); return; }
+    if (a === 'fxTm' && fx) { fx.tm = el.dataset.val; save(); render(); return; }
+    if (a === 'fxNeed' && fx) { fx.tneed = +el.dataset.val; save(); render(); return; }
     if (a === 'tdie') { S.traits[+el.dataset.i].die = el.dataset.val; save(); render(); return; }
     if (a === 'twAdd') { const { z, s } = el.dataset; S.tw[z][s].push(newTw()); save(); render(); const inp = $(`[data-twcard="${S.tw[z][s][S.tw[z][s].length - 1].id}"] input[data-f="name"]`); if (inp) inp.focus(); return; }
     if (a === 'twDel') { if (hit && confirm(`Remover a reviravolta “${hit.tw.name.trim() || 'sem nome'}”?`)) { S.tw[hit.z][hit.s] = S.tw[hit.z][hit.s].filter(x => x.id !== hit.tw.id); save(); render(); } return; }
@@ -490,7 +612,6 @@
     if (a === 'fxOpt' && fx) { pickOpt(fx, hit.z, hit.s, el.dataset.val); save(); render(); return; }
     if (a === 'fxVerb' && fx) { fx.verbs[+el.dataset.k] = el.dataset.val; save(); render(); return; }
     if (a === 'fxPers' && fx) { fx.persistIdx = +el.dataset.val; const o = getOpt(fx, hit.z, hit.s); if (o) o.acts.forEach((x, i) => { if (!verbsFor(o, fx, i).includes(fx.verbs[i])) fx.verbs[i] = 'hinder'; }); save(); render(); return; }
-    if (a === 'fxTdie' && fx) { fx.tdie = el.dataset.val; save(); render(); return; }
     if (a === 'go') return go(+el.dataset.i);
     if (a === 'next') return go(stepIdx(S.step) + 1);
     if (a === 'back') return go(stepIdx(S.step) - 1);
@@ -503,7 +624,7 @@
     if (a === 'roster') { showRoster(); return; }
     if (a === 'rosterClose') { hideRoster(); return; }
     if (a === 'rosterNew') { save(); S = blank(); save(); hideRoster(); render({ top: true }); return; }
-    if (a === 'rosterOpen') { const c = read(SLOT(el.dataset.id)); if (c) { save(); S = normalize(c); save(); hideRoster(); render({ top: true }); } return; }
+    if (a === 'rosterOpen') { const c = read(SLOT(el.dataset.id)); if (c) { save(); S = hydrate(c); save(); hideRoster(); render({ top: true }); } return; }
     if (a === 'rosterDup') {
       save();
       const c = el.dataset.id === S.cid ? JSON.parse(JSON.stringify(S)) : read(SLOT(el.dataset.id));
@@ -536,6 +657,14 @@
         if (el.dataset.i != null && el.dataset.i !== '') hit.tw.fx[+el.dataset.i][el.dataset.f] = el.value; else hit.tw[el.dataset.f] = el.value;
         save(); light(el.dataset.tw); return;
       }
+      if (el.dataset && el.dataset.th) {
+        const th = getTh(el.dataset.th); if (!th) return;
+        if (el.dataset.ab != null) th.abs[+el.dataset.ab][el.dataset.f] = el.value; else th[el.dataset.f] = el.value;
+        save(); light();
+        const card = $(`[data-thcard="${th.id}"]`);
+        if (card) { const nm = card.querySelector('.ab-top .ab-name'); if (nm) nm.textContent = th.name.trim() || 'Ameaça sem nome'; if (el.dataset.ab != null) { const t = el.closest('.env-ab').querySelector('.ab-text'); if (t) t.textContent = abText(th.abs[+el.dataset.ab]); } }
+        return;
+      }
       const b = el.dataset && el.dataset.b;
       if (!b || el.tagName === 'SELECT') return;
       setPath(S, b, el.value);
@@ -543,6 +672,7 @@
     });
     document.addEventListener('change', ev => {
       const el = ev.target;
+      if (el.dataset && el.dataset.thadd) { const th = getTh(el.dataset.thadd); if (th && el.value && th.abs.length < TK()[th.kind].maxAb) { th.abs.push({ t: el.value, v: 2, x: '' }); save(); render(); } return; }
       if (el.id === 'portrait-file') { loadPortrait(el.files[0]); el.value = ''; return; }
       if (el.id === 'import-file') { const f = el.files[0]; el.value = ''; if (!f) return; const r = new FileReader(); r.onload = () => importJson(String(r.result)); r.readAsText(f); }
     });
@@ -565,6 +695,7 @@
     if (!payload) return false;
     window.GM_UNSEAL.run(payload, ['gm-env-data']);
     ED = window.GM_ENVDATA;
+    if (ED) S = migrate(S);
     return !!ED;
   }
   (async () => {
