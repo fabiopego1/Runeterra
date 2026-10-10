@@ -516,7 +516,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.goto(`${BASE}/ambiente.html`); await p.waitForSelector('#stage .panel');
     ok(await p.$$eval('#nav .rail-item', e => e.length) === 6 && await p.$eval('#gate', e => e.hidden), 'the Environment Workshop opens with six chapters');
     await p.fill('[data-b=name]', 'Tempestade sobre a Cidade da Torre'); await p.fill('[data-b=scope]', 'a cidade inteira'); await p.click('[data-a=next]');
-    for (let i = 0; i < 3; i++) await p.fill(`[data-b="traits.${i}.name"]`, ['Rifts Dimensionais', 'Distorções Horrendas', 'Caos Malévolo'][i]);
+    for (let i = 0; i < 3; i++) await p.fill(`[data-b="traits.${i}.name"]`, ['Fendas Dimensionais', 'Distorções Horrendas', 'Caos Malévolo'][i]);
     for (const [i, d] of ['d6', 'd6', 'd10'].entries()) await p.click(`.tchip[data-a=tdie][data-i="${i}"][data-val="${d}"]`);
     ok(/Mín/.test(await p.$eval('.env-dice', e => e.textContent)), 'the three trait dice give the environment its Min, Mid and Max dice');
     await p.click('[data-a=next]');
@@ -527,7 +527,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
       if (pick) await pick(); else await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
     };
     ok(await p.$eval('[data-a=next]', e => e.classList.contains('is-disabled')), 'a zone needs its twists before Continue');
-    await buildTw('green', 'minor', 'Um Rasgo se Abre');
+    await buildTw('green', 'minor', 'Uma Fenda se Abre');
     ok(/Role os dados do ambiente\. Atrapalhe um alvo com o dado Médio\./.test(await p.$eval(`${lastTw} >> .env-prev`, e => e.textContent)), 'a recipe from the rulebook becomes the twist\'s game text');
     await buildTw('green', 'minor', 'Ataque dos Diabretes', async () => {
       await p.click(`${lastTw} >> .tchip[data-val=threat]`); await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
@@ -542,9 +542,9 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await buildTw('red', 'minor', 'A Bandeira Pega Fogo'); await buildTw('red', 'minor', 'Mãos do Abismo');
     await buildTw('red', 'major', 'Está Quase Aqui', async () => {
       await p.click(`${lastTw} >> .tchip[data-val=challenge]`); await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
-      await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Rifts gigantes se abrem por toda a cidade'); });
+      await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Fendas gigantes se abrem por toda a cidade'); });
     await p.click('[data-a=next]'); await p.waitForSelector('#sheet-preview .hs-page');
-    ok(await p.$eval('#sheet-preview', e => /Tempestade sobre a Cidade da Torre/.test(e.textContent) && /Diabretes da Tempestade/.test(e.textContent) && /Rifts gigantes/.test(e.textContent)), 'the sheet lists the twists, the threat and the doomsday device');
+    ok(await p.$eval('#sheet-preview', e => /Tempestade sobre a Cidade da Torre/.test(e.textContent) && /Diabretes da Tempestade/.test(e.textContent) && /Fendas gigantes/.test(e.textContent)), 'the sheet lists the twists, the threat and the doomsday device');
     ok(await p.$$eval('#sheet-preview [data-tip]', e => e.length) > 20, 'the environment sheet explains terms, dice and zones on hover');
     const [dlE] = await Promise.all([p.waitForEvent('download'), p.click('.export-row [data-a=export]')]);
     const jsonE = JSON.parse(fs.readFileSync(await dlE.path(), 'utf8'));
