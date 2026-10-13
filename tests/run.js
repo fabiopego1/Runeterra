@@ -183,6 +183,9 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(popts.length > 5 && princ.every(x => !popts.includes(x)), 'Twist of Fate cannot swap in a principle you already have');
     await p.click('.step-footer [data-act=back]'); await p.waitForTimeout(100);
     ok(!!(await p.$('#flow-retcon-pick.current')), 'Back reopens the previous section of the chapter');
+    await p.click('[data-act=retcon][data-id=add-d6]'); await p.waitForTimeout(150);
+    ok(await p.$$eval('.qname-have', e => e.length === 2 && /Poderes que você já tem:/.test(e[0].textContent) && /Qualidades que você já tem:/.test(e[1].textContent) && /d\d+/.test(e[0].textContent)), 'Hidden Talent lists the powers and qualities you already have under the die to bind');
+    await p.click('.step-footer [data-act=back]'); await p.waitForTimeout(150);
     await p.click('[data-act=retcon][data-id=red-up]');
     await next();
     ok(await p.$eval('.hchoice', e => /Definitivo/.test(e.textContent)), 'rolling for Health warns it cannot be undone');

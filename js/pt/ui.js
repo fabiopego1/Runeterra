@@ -398,6 +398,8 @@ Object.assign(window.I18N.ui, {
  "Status dice": "Dados de status",
  "Other form": "Outra forma",
  "Qualities you already have:": "Para não repetir, suas qualidades atuais:",
+ "Powers you have now:": "Poderes que você já tem:",
+ "Qualities you have now:": "Qualidades que você já tem:",
  "Confirm": "Confirmar",
  "{n} chosen": "{n} escolhida(s)",
  "{n} abilities": "{n} habilidades",

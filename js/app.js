@@ -1077,7 +1077,7 @@
   // the tray splits into a Powers block and a Qualities block, each with its own colour.
   const kindOf = k => (TRAIT[k] ? TRAIT[k].kind : '');
   const kindTag = k => `<span class="sock-kind k-${k}">${tr(k)}</span>`;
-  function socket({ bind, d, mark, cur, groups, empty, note, freed, hint, auto = true }) {
+  function socket({ bind, d, mark, cur, groups, empty, note, after, freed, hint, auto = true }) {
     // open options first: inside each group, then groups, then the Powers/Qualities blocks
     const open1 = i => !i.locked;
     groups = groups.map(g => ({ ...g, items: g.items.filter(open1).concat(g.items.filter(i => !open1(i))) }))
@@ -1110,7 +1110,7 @@
       <div class="sock-row">${gem}<span class="sock-arrow" aria-hidden="true"><i>${tr('becomes')}</i></span>
       <button class="sock-slot" data-act="socketOpen" data-bind="${bind}" aria-expanded="${open}">${face}${open || !cur ? `<span class="sock-cta">${tr(open ? 'Close' : 'Choose')}</span>` : ''}</button>
 </div>
-      ${note ? `<div class="note">${esc(note)}</div>` : ''}${tray}</div>`;
+      ${note ? `<div class="note">${esc(note)}</div>` : ''}${after || ''}${tray}</div>`;
   }
 
   // ------------------------------------------------------------------ guided flow
@@ -1586,7 +1586,9 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         }
         if (rc.type === 'add-d6') {
           const keys = Object.values(CATS).flatMap(def => def.items.map(i => i[0])).filter(k => TRAIT[k] && !B[k]);
-          return socket({ bind: 'retcon.key', d: 'd6', cur: rc.key, groups: traitGroups(keys, k => traitItem(k)), empty: tr('Bind this d6 to any power or quality') });
+          // what you already have, so the new d6 goes somewhere that adds something
+          const have = (kind, label) => { const l = traitsOf(kind); return l.length ? `<p class="qname-have">${label} ${l.map(k => `<span>${esc(traitName(k))} ${B[k].die}</span>`).join(', ')}</p>` : ''; };
+          return socket({ bind: 'retcon.key', d: 'd6', cur: rc.key, groups: traitGroups(keys, k => traitItem(k)), empty: tr('Bind this d6 to any power or quality'), after: have('power', tr('Powers you have now:')) + have('quality', tr('Qualities you have now:')) });
         }
         if (rc.type === 'change-principle') {
           const mine = [st.bg.principle, st.arch.principle];   // your current principles can't be taken again
