@@ -1072,6 +1072,12 @@
     return Object.entries(G).map(([c, items]) => ({ label: catName(c), items }));
   };
   const traitItem = (k, extra = {}) => ({ k, name: traitName(k), ...extra });
+  // a trait the champion got in an earlier chapter: shown locked, with where it came from, instead of vanishing from the list
+  const STAGE_OF = { Origin: 'Origin', Source: 'Power Source', Path: 'Path', Temperament: 'Temperament', 'Twist of Fate': 'Twist of Fate' };
+  const stageOf = t => [...new Set((t.src || []).map(x => { const b = x.replace(/ \(.*\)$/, ''); return tr(STAGE_OF[b] || b); }))].join(' + ');
+  const ownedItem = (k, have) => (have && have[k]
+    ? traitItem(k, { locked: tr('You already have this trait ({die}), gained in {stage}.', { die: have[k].die, stage: stageOf(have[k]) }), sub: `${have[k].die} · ${stageOf(have[k])}` })
+    : traitItem(k));
   // One die and the trait it becomes, read left to right: [d10] becomes → [Medicine · QUALITY].
   // An empty slot asks the question in words. When a die may become either a power or a quality,
   // the tray splits into a Powers block and a Qualities block, each with its own colour.
@@ -1105,7 +1111,7 @@
         const gs = groups.filter(g => g.items.length && kindOf(g.items[0].k) === k);
         return gs.length ? `<div class="tray-kind k-${k}"><div class="tray-kind-h">${kindTag(k)}<span>${tr(k === 'power' ? 'Powers: what makes you extraordinary.' : 'Qualities: what you know how to do.')}</span></div>${gs.map(groupHtml).join('')}</div>` : '';
       }).join('');
-    const tray = open ? `<div class="tray${both ? ' both' : ''}" role="group" aria-label="${esc(ask)}">${filter}${body}${cur ? `<button class="linkbtn tray-clear" data-act="socket" data-bind="${bind}" data-val="">${tr('Unbind this die')}</button>` : ''}</div>` : '';
+    const tray = open ? `<div class="tray${both ? ' both' : ''}" role="group" aria-label="${esc(ask)}">${cur ? `<button class="linkbtn tray-clear" data-act="socket" data-bind="${bind}" data-val="">${tr('Unbind this die')}</button>` : ''}${filter}${body}</div>` : '';
     return `<div class="socket${cur ? ' filled' : ''}${open ? ' open' : ''}${freed ? ' freed' : ''}">
       <div class="sock-row">${gem}<span class="sock-arrow" aria-hidden="true"><i>${tr('becomes')}</i></span>
       <button class="sock-slot" data-act="socketOpen" data-bind="${bind}" aria-expanded="${open}">${face}${open || !cur ? `<span class="sock-cta">${tr(open ? 'Close' : 'Choose')}</span>` : ''}</button>
@@ -1325,8 +1331,8 @@
         const cands = sortTraits(B.filter(t => t.die === 'd6')).map(t => t.key);
         return `<p>${esc(ex.text)}</p>${socket({ bind: 'ps.extra.key', d: 'd8', cur: e.key, groups: traitGroups(cands, k => traitItem(k, { after: 'd6 → d8' })), empty: tr('Raise which d6 to d8?') })}`;
       }
-      const keys = expand(p.opts).filter(k => !(R.before.psExtra || {})[k]);
-      return `<p>${esc(ex.text)}</p><p class="muted">${tr('You have no d6 powers, so instead add a new power from the list at d6.')}</p>${socket({ bind: 'ps.extra.key', d: 'd6', cur: e.key, groups: traitGroups(keys, k => traitItem(k)), empty: tr('Bind this d6 to a new power') })}`;
+      const keys = expand(p.opts);
+      return `<p>${esc(ex.text)}</p><p class="muted">${tr('You have no d6 powers, so instead add a new power from the list at d6.')}</p>${socket({ bind: 'ps.extra.key', d: 'd6', cur: e.key, groups: traitGroups(keys, k => ownedItem(k, R.before.psExtra)), empty: tr('Bind this d6 to a new power') })}`;
     }
     if (ex.type !== 'cosmos') return `<p>${esc(ex.text)}</p><p class="muted">${tr('Nothing to choose here: this bonus shows up in the Path chapter.')}</p>`;
     const pw = Object.values(R.before.psExtra || {}).filter(t => TRAIT[t.key].kind === 'power');
@@ -1377,8 +1383,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
             <li>${tr('Every die left over goes to qualities.')}</li></ul>
           ${assignHtml(R.slots.arch, optKeys, R.before.archetype, 'arch', tr('Assign each die:'), R.slots.training || [], shape.req ? expand(shape.req.any) : [], tr('Your Path does not offer this.'))}
           ${p.id === 'training' ? `<p style="margin-top:12px">${tr('From your <b>{src}</b> source: one extra quality from this Path\'s list at {die}.', { src: esc(p.rt), die: die('d8') })}</p>${assignHtml(R.slots.training, expand(shape.quals), R.before.archetype, 'arch', tr('Training bonus quality:'), R.slots.arch || [], [], tr('Training gives one of your Path\'s qualities.'), 'quality')}` : ''}
-          ${shape.extra ? `<p style="margin-top:12px">${esc(shape.extra.text)}</p>${socket({ bind: 'arch.extra.key', d: shape.extra.die, cur: st.arch.extra.key, groups: traitGroups(expand(shape.extra.opts).filter(k => !R.before.archetype[k]), k => traitItem(k)), empty: tr('Bind this {die} to a trait', { die: shape.extra.die }) })}` : ''}
-          ${a.modular && R.modExtra ? `<p style="margin-top:12px">${tr('Stance Masters need at least four powers — add {n} {die} power(s):', { n: R.modExtra, die: die('d6') })}</p>` + Array.from({ length: R.modExtra }, (_, i) => socket({ bind: `arch.extra.m${i}`, d: 'd6', cur: st.arch.extra['m' + i], groups: traitGroups(allOf('power').filter(k => !R.before.personality[k] || k === st.arch.extra['m' + i]), k => traitItem(k, { taken: Object.keys(st.arch.extra).some(x => x !== 'm' + i && /^m\d/.test(x) && st.arch.extra[x] === k) ? tr('on another d6') : '' })), empty: tr('Bind this d6 to any power') })).join('') : ''}
+          ${shape.extra ? `<p style="margin-top:12px">${esc(shape.extra.text)}</p>${socket({ bind: 'arch.extra.key', d: shape.extra.die, cur: st.arch.extra.key, groups: traitGroups(expand(shape.extra.opts), k => ownedItem(k, R.before.archetype)), empty: tr('Bind this {die} to a trait', { die: shape.extra.die }) })}` : ''}
+          ${a.modular && R.modExtra ? `<p style="margin-top:12px">${tr('Stance Masters need at least four powers — add {n} {die} power(s):', { n: R.modExtra, die: die('d6') })}</p>` + Array.from({ length: R.modExtra }, (_, i) => socket({ bind: `arch.extra.m${i}`, d: 'd6', cur: st.arch.extra['m' + i], groups: traitGroups(allOf('power'), k => (R.before.personality[k] && k !== st.arch.extra['m' + i]) ? ownedItem(k, R.before.personality) : traitItem(k, { taken: Object.keys(st.arch.extra).some(x => x !== 'm' + i && /^m\d/.test(x) && st.arch.extra[x] === k) ? tr('on another d6') : '' })), empty: tr('Bind this d6 to any power') })).join('') : ''}
           ${shape.healthAlt ? `<p class="sc">${tr('When determining Health you may use {what} instead of an Athletic power or Mental quality.', { what: esc(shape.healthAlt.map(c => (PT ? 'um ' : 'a ') + catPhrase(c)).join(PT ? ' ou ' : ' or ')) })}</p>` : ''}
           ${shape.extraRed && !a.modular ? `<p class="sc">${tr('As a {path}, the Red abilities {list} are added to your options in the Ultimates step.', { path: esc(shape.rt), list: esc(shape.extraRed.map(abName).join(', ')) })}</p>` : ''}`;
       },
@@ -1585,10 +1591,10 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
             (warn ? `<div class="rc-warn"><b>${tr('This swap breaks your Ultimates:')}</b><ul>${warn}</ul></div>` : '');
         }
         if (rc.type === 'add-d6') {
-          const keys = Object.values(CATS).flatMap(def => def.items.map(i => i[0])).filter(k => TRAIT[k] && !B[k]);
+          const keys = Object.values(CATS).flatMap(def => def.items.map(i => i[0])).filter(k => TRAIT[k]);
           // what you already have, so the new d6 goes somewhere that adds something
           const have = (kind, label) => { const l = traitsOf(kind); return l.length ? `<p class="qname-have">${label} ${l.map(k => `<span>${esc(traitName(k))} ${B[k].die}</span>`).join(', ')}</p>` : ''; };
-          return socket({ bind: 'retcon.key', d: 'd6', cur: rc.key, groups: traitGroups(keys, k => traitItem(k)), empty: tr('Bind this d6 to any power or quality'), after: have('power', tr('Powers you have now:')) + have('quality', tr('Qualities you have now:')) });
+          return socket({ bind: 'retcon.key', d: 'd6', cur: rc.key, groups: traitGroups(keys, k => ownedItem(k, B)), empty: tr('Bind this d6 to any power or quality'), after: have('power', tr('Powers you have now:')) + have('quality', tr('Qualities you have now:')) });
         }
         if (rc.type === 'change-principle') {
           const mine = [st.bg.principle, st.arch.principle];   // your current principles can't be taken again

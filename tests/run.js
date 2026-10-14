@@ -185,6 +185,8 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(!!(await p.$('#flow-retcon-pick.current')), 'Back reopens the previous section of the chapter');
     await p.click('[data-act=retcon][data-id=add-d6]'); await p.waitForTimeout(150);
     ok(await p.$$eval('.qname-have', e => e.length === 2 && /Poderes que você já tem:/.test(e[0].textContent) && /Qualidades que você já tem:/.test(e[1].textContent) && /d\d+/.test(e[0].textContent)), 'Hidden Talent lists the powers and qualities you already have under the die to bind');
+    if (!(await p.$('.tray'))) await p.click('.sock-slot');
+    ok(await p.$$eval('.tray .rune.locked', e => e.length > 0 && e.every(x => /d\d+ · \S/.test((x.querySelector('.rune-sub') || {}).textContent || ''))), 'Hidden Talent shows the traits you already have as locked, with the die and the chapter that gave them');
     await p.click('.step-footer [data-act=back]'); await p.waitForTimeout(150);
     await p.click('[data-act=retcon][data-id=red-up]');
     await next();

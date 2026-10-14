@@ -399,6 +399,7 @@ Object.assign(window.I18N.ui, {
  "Other form": "Outra forma",
  "Qualities you already have:": "Para não repetir, suas qualidades atuais:",
  "Powers you have now:": "Poderes que você já tem:",
+ "You already have this trait ({die}), gained in {stage}.": "Você já tem este traço ({die}), adquirido em: {stage}.",
  "Qualities you have now:": "Qualidades que você já tem:",
  "Confirm": "Confirmar",
  "{n} chosen": "{n} escolhida(s)",
