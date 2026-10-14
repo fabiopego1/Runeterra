@@ -644,6 +644,10 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(await p.$eval('[data-thcard] >> nth=0', e => /Atualizar do banco/.test(e.textContent)), 'when the bank has a newer version, the copy offers to refresh');
     await p.click('[data-thcard] >> nth=0 >> [data-a=thRefresh]');
     ok(await p.$eval('[data-thcard] >> nth=0 >> .env-thc', e => /Versão nova no banco/.test(e.textContent)), 'refreshing brings the bank\'s version into the environment');
+    await p.evaluate(() => { const T = JSON.parse(localStorage.getItem('runeterra-threat-lib-v1')); T.items.forEach(t => { t.tactics = 'Tática nova'; }); localStorage.setItem('runeterra-threat-lib-v1', JSON.stringify(T)); });
+    await p.reload(); await p.waitForSelector('#stage .panel');
+    await p.click('[data-a=thRefreshAll]');
+    ok(await p.$eval('[data-refreshnote]', e => /atualizadas/.test(e.textContent)) && await p.$$eval('[data-thcard] .env-thc-t', e => e.length > 0 && e.every(x => /Tática nova/.test(x.textContent))), 'one button refreshes every threat of the environment from the bank');
     await p.click('[data-a=next]');
     const lastTw = '[data-twcard] >> nth=-1';
     const buildTw = async (z, sv, name, pick) => {
@@ -710,10 +714,15 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     const [dlE] = await Promise.all([p.waitForEvent('download'), p.click('.export-row [data-a=export]')]);
     const jsonE = JSON.parse(fs.readFileSync(await dlE.path(), 'utf8'));
     ok(jsonE.app === 'runeterra-environment' && jsonE.tw.green.minor.length === 3 && jsonE.tw.red.major.length === 1, 'the environment exports to .json');
+    ok(Array.isArray(jsonE.threats) && jsonE.threats.length >= 2 && jsonE.threats.every(t => t.name && Array.isArray(t.abs)), 'the environment .json carries its threats, so a shared environment is not empty');
     const [pdfE] = await Promise.all([p.waitForEvent('download', { timeout: 60000 }), p.click('.export-row [data-a=pdf]')]);
     ok(fs.readFileSync(await pdfE.path()).slice(0, 4).toString() === '%PDF', 'the environment sheet exports to PDF');
     await p.click('[data-a=roster]');
     ok(await p.$$eval('#roster .ro-item', e => e.length) === 1, 'the environment is in its roster');
+    await p.evaluate(() => localStorage.setItem('runeterra-threat-lib-v1', JSON.stringify({ folders: [], items: [] })));
+    await p.setInputFiles('#import-file', { name: 'amb.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(jsonE)) });
+    await p.waitForTimeout(400);
+    ok(await p.evaluate(n => JSON.parse(localStorage.getItem('runeterra-threat-lib-v1')).items.length >= n, jsonE.threats.length), 'importing that .json brings its threats into the bank too');
     // an older environment that carries its threats inside gets them saved into the bank on opening
     await p.evaluate(() => { localStorage.setItem('runeterra-threat-lib-v1', JSON.stringify({ folders: [], items: [] })); const E = JSON.parse(localStorage.getItem('runeterra-environment-v1')); E.threats = [{ id: 'old1', name: 'Saqueador Atirador', kind: 'minion', die: 'd6', desc: 'À distância', tactics: '', abs: [{ t: 's-twist', v: 2, x: '' }] }]; localStorage.setItem('runeterra-environment-v1', JSON.stringify(E)); });
     await p.goto(`${BASE}/ambiente.html`); await p.waitForSelector('#stage .panel');
