@@ -146,6 +146,13 @@
       g.hidden = n === 0; any = any || n > 0;
     });
     document.querySelector('.page-empty').hidden = any;
+    // the contents list follows the search: only what is still on the page, so every link in it works
+    const pageToc = document.querySelector('.page-toc');
+    pageToc.querySelectorAll('li').forEach(li => {
+      const t = document.getElementById(li.querySelector('a').getAttribute('href').slice(1));
+      li.hidden = !!q && !(t && !t.closest('[hidden]'));
+    });
+    pageToc.querySelectorAll('.toc-group').forEach(g => { g.hidden = !!q && ![...g.querySelectorAll('li')].some(li => !li.hidden); });
   });
 
   // Galleries: drawn on first open; tabs switch the category; a picture opens larger with its text.

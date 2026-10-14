@@ -862,7 +862,7 @@ RELOCATE = {
     '04SH049': ('freljord', 'creatures'),  # Poro Destinado
     '04SH049T1': ('freljord', 'creatures'),  # Poro Venerado
     '04SH009': ('shurima', 'baccai'),  # Baccai Enfurecido
-    '06SH005': ('shurima', 'baccai'),  # Baccai Esquecido
+    '06SH005': ('ionia', 'shadow'),  # Baccai Esquecido (amigo de Rhaast: história ligada a Kayn e à Ordem das Sombras)
     '04SH002': ('shurima', 'baccai'),  # Ceifeiro Baccai
     '06SH037': ('shurima', 'baccai'),  # Definharra Baccai
     '04SH081': ('shurima', 'baccai'),  # Fiandeira Baccai
