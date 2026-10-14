@@ -281,7 +281,8 @@
         <p class="muted env-note">Usado só no botão “Adicionar à Mesa do Mestre”: um grupo de lacaios tem um por campeão, e tenentes entram na metade (arredondada para cima).</p></div>
       ${S.threats.map(thCard).join('') || '<p class="muted">Nenhuma ameaça neste ambiente ainda.</p>'}
       <div class="env-row"><label class="field"><span>Adicionar do banco de ameaças</span><select data-thbank><option value="">${avail.length ? 'Escolha uma ameaça…' : bank.length ? 'Todas as ameaças do banco já estão aqui' : 'O banco está vazio'}</option>${groups.map(([n, l]) => n ? `<optgroup label="${esc(n)}">${l.map(opt).join('')}</optgroup>` : l.map(opt).join('')).join('')}</select></label>
-        <a class="btn small ghost" href="ameacas.html">${ico('compass')} Abrir o banco de ameaças</a></div>
+        <a class="btn small ghost" href="ameacas.html">${ico('compass')} Abrir o banco de ameaças</a>
+        ${S.threats.length ? `<button type="button" class="btn small" data-a="thRefreshAll">Atualizar todas as ameaças do banco</button>` : ''}<span class="muted env-note" data-refreshnote>${esc(ui.refreshNote || '')}</span></div>
       <p class="muted env-note">As ameaças vêm do banco (a terceira oficina do Mestre). Aqui fica uma <b>cópia</b>: se você editar a ameaça no banco, use “Atualizar do banco” para trazer a versão nova.</p>`;
   }
   function thCard(th) {
@@ -621,6 +622,7 @@
       }
       return;
     }
+    if (a === 'thRefreshAll') { const n = THREAT_LIB.refresh(S.threats); ui.refreshNote = n ? `${n} ${n === 1 ? 'ameaça atualizada' : 'ameaças atualizadas'} com a versão do banco.` : 'Todas as ameaças já estão iguais às do banco.'; if (n) save(); render(); ui.refreshNote = ''; return; }
     if (a === 'thSave' && th) { THREAT_LIB.put(th); save(); render(); return; }
     if (a === 'thRefresh' && th) { const b = THREAT_LIB.get(th.id); if (b) { Object.assign(th, JSON.parse(JSON.stringify(Object.assign({}, b, { folder: undefined })))); save(); render(); } return; }
     if (a === 'thMesa' && th) { const r = U.toTable(th, S.heroes); const m = $(`[data-mesa="${th.id}"]`); if (m) m.textContent = r; return; }

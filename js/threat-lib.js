@@ -42,6 +42,15 @@
     delFolder(id) { const l = load(); l.folders = l.folders.filter(f => f.id !== id); l.items.forEach(t => { if (t.folder === id) t.folder = ''; }); save(l); },
     // adds the threats an environment or an antagonist already carries that the bank does not know yet (older sheets)
     adopt(list) { const l = load(); let n = 0; for (const t of list || []) if (t && t.id && !l.items.some(x => x.id === t.id)) { const c = normItem(clone(t)); c.updated = Date.now(); l.items.push(c); n++; } if (n) save(l); return n; },
+    // brings the bank's current version into every copy (same id) that differs from it; returns how many changed
+    refresh(list) {
+      const l = load(); let n = 0;
+      for (const t of list || []) {
+        const b = l.items.find(x => x.id === t.id);
+        if (b && !same(b, t)) { Object.assign(t, clone(Object.assign({}, b, { folder: undefined }))); delete t.folder; n++; }
+      }
+      return n;
+    },
     copyOf: id => { const t = api.get(id); return t ? clone(Object.assign({}, t, { folder: '', portrait: t.portrait })) : null; },
 
     // files: one threat per .json, or a library .json that carries several threats and the folders they sit in

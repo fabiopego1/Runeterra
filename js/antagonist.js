@@ -479,7 +479,8 @@
       <p class="muted env-note">Os que <b>ele</b> traz para a cena (os do ambiente ficam na Oficina de Ambiente). Vêm do banco de ameaças, a terceira oficina do Mestre, e ficam aqui como <b>cópia</b>. Na Mesa, entra um lacaio por campeão (${m.N}) e metade disso de tenentes.</p>
       ${S.crew.map(card).join('') || '<p class="muted">Nenhum lacaio ou tenente ainda.</p>'}
       <div class="env-row"><label class="field"><span>Adicionar do banco de ameaças</span><select data-crewadd><option value="">${avail.length ? 'Escolha uma ameaça…' : bank.length ? 'Todas as ameaças do banco já estão aqui' : 'O banco está vazio'}</option>${groups.map(([n, l]) => n ? `<optgroup label="${esc(n)}">${l.map(opt).join('')}</optgroup>` : l.map(opt).join('')).join('')}</select></label>
-        <a class="btn small ghost" href="ameacas.html">${ico('compass')} Abrir o banco de ameaças</a></div></div>`;
+        <a class="btn small ghost" href="ameacas.html">${ico('compass')} Abrir o banco de ameaças</a>
+        ${S.crew.length ? `<button type="button" class="btn small" data-a="crewRefreshAll">Atualizar todas as ameaças do banco</button>` : ''}<span class="muted env-note" data-refreshnote>${esc(ui.refreshNote || '')}</span></div></div>`;
   }
   function stageHtml(m) {
     const i = Math.min(stepIdx(S.step), reach(m)), s = STEPS[i];
@@ -629,6 +630,7 @@
     if (el.classList.contains('dis') || el.classList.contains('disabled')) return;   // the limit of abilities (or a blocked card) is a real limit
     if (el.classList.contains('is-disabled')) { const f = $('#stage .flow-todo'); if (f) { f.scrollIntoView({ block: 'center', behavior: 'smooth' }); f.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }], { duration: 240 }); } return; }
     const m = model();
+    if (a === 'crewRefreshAll') { const n = window.THREAT_LIB.refresh(S.crew); ui.refreshNote = n ? `${n} ${n === 1 ? 'ameaça atualizada' : 'ameaças atualizadas'} com a versão do banco.` : 'Todas as ameaças já estão iguais às do banco.'; if (n) save(); render(); ui.refreshNote = ''; return; }
     if (a === 'crewDel') { S.crew = S.crew.filter(t => t.id !== el.dataset.id); save(); render(); return; }
     if (a === 'crewSave') { const t = S.crew.find(x => x.id === el.dataset.id); if (t) { window.THREAT_LIB.put(t); save(); render(); } return; }
     if (a === 'crewRefresh') { const t = S.crew.find(x => x.id === el.dataset.id), b = t && window.THREAT_LIB.get(t.id); if (b) { Object.assign(t, JSON.parse(JSON.stringify(Object.assign({}, b, { folder: undefined })))); save(); render(); } return; }
