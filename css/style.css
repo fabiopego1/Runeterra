@@ -1863,3 +1863,6 @@ body.ro-lock { overflow: hidden; }
 
 .th-ref { border-bottom: 1px dotted var(--gold); cursor: help; color: var(--gold-hi); }
 .socket > .qname-have:last-of-type { margin-bottom: 1.6rem; }
+
+/* Lore search: hidden means hidden, whatever display the element has */
+.page-body [hidden], .page-toc [hidden] { display: none !important; }
