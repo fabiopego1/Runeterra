@@ -396,6 +396,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.fill('.page-search', ''); await p.waitForTimeout(200);
     ok(await loreVisible() === loreAll, 'clearing the search brings everything back');
     ok(await p.evaluate(() => { const G = window.LORE_GALLERY, has = (r, g) => (G[r].groups.find(x => x.id === g) || { items: [] }).items.some(i => i.n === 'Baccai Esquecido'); return has('ionia', 'shadow') && !has('shurima', 'baccai'); }), 'Baccai Esquecido belongs to the Ordem das Sombras (Ionia), not to the Baccai of Shurima');
+    ok(await p.evaluate(() => { const G = window.LORE_GALLERY, has = r => G[r].creatures.some(i => i.n === 'Pedregurso Ranzinza'); return has('shurima') && !has('nazumah'); }), 'Pedregurso Ranzinza is a creature of Shurima, not of Nazumah');
     // Region galleries: Grupos, Ambientes e Criaturas (only for the regions that have one), drawn when opened
     ok(!!(await p.$('#r-demacia details.rg')) && !!(await p.$('#r-void details.rg')) && !!(await p.$('#r-ixtal details.rg')) && !!(await p.$('#r-nazumah details.rg')), 'every region has an inspiration gallery, Nazumah included');
     await p.click('#r-noxus details.rg summary'); await p.waitForTimeout(200);

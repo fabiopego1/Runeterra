@@ -329,7 +329,7 @@ FORCE_REGION = {
     'void': ["Rek'Sai", "Xer'sai Caller", "Xer'sai Dunebreaker", "Xer'sai Hatchling", "Xerxa'Reth, The Undertitan", 'Dune Swallower',
              'Void Abomination', 'Hive Herald', "Kai'Sa", 'Belvethi Elder', 'Voidling', 'Void Blaster', 'Void Gate', 'Camouflaged Horror',
              'Xenotype Researchers', 'Stasis Statue'],
-    'nazumah': ['Grumpy Rockbear'],
+    'nazumah': [],
     'runeterra': ['Spectral Rider', 'Commander Ledros', 'Duskrider', 'Camavoran Soldier', 'Camavoran Dragon', 'Deathless Knight',
                   'Erastin, the Disgraced', 'The Iron Conquest'],
     'ixtal': ['Nidalee', 'Packmother Nidalee', 'Pakaa Cub', 'Pakaa Protector', 'Avenging Vastaya', 'Shadow in the Brush', 'Bushwhack Trap', 'Neeko', 'Malphite'],
@@ -971,6 +971,7 @@ RELOCATE = {
     '06SH051': ('shurima', 'taliyah'),  # Pastora de Pedregursos
     '05SH015': ('shurima', 'xerath'),  # Vidente das Areias
     '04SH042': ('shurima', 'creatures'),  # Pedregurso Hibernado
+    '04SH090': ('shurima', 'creatures'),  # Pedregurso Ranzinza
     'u65e3c56b81': ('shurima', 'creatures'),  # No Topo dos Dormuns
     '04SH011': ('shurima', 'time'),  # Pesquisadoras de Xenótipo
     '05BW004': ('targon', 'marai'),  # Avatar das Marés
