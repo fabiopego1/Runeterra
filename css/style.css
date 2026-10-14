@@ -1862,3 +1862,4 @@ body.ro-lock { overflow: hidden; }
 .th-bar .th-move { max-width: none; min-width: 15rem; }
 
 .th-ref { border-bottom: 1px dotted var(--gold); cursor: help; color: var(--gold-hi); }
+.socket > .qname-have:last-of-type { margin-bottom: 1.6rem; }
