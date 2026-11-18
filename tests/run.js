@@ -708,9 +708,10 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
       await p.click(`${lastTw} >> .tchip[data-val=challenge]`); await p.click(`${lastTw} >> .env-opts .ab >> nth=0`);
       await p.fill(`${lastTw} >> input[data-f=ctext]`, 'Fendas gigantes se abrem por toda a cidade'); });
     await p.click('[data-a=next]'); await p.waitForSelector('#sheet-preview .hs-page');
-    ok(await p.$$eval('#sheet-preview .env-thr-chip', e => e.some(x => /Saqueador Atirador/.test(x.textContent))) && await p.$$eval('#sheet-preview .env-thc-h', e => e.some(x => /Saqueador Atirador/.test(x.textContent))), 'a threat named in a twist\'s text shows up under that twist and in the sheet\'s threat list');
+    ok(!(await p.$('#sheet-preview .env-thr-chip')) && await p.$$eval('#sheet-preview .env-thc-h', e => e.some(x => /Saqueador Atirador/.test(x.textContent))) && await p.$$eval('#sheet-preview td.gt .th-ref', e => e.some(x => /Saqueador Atirador/.test(x.textContent))), 'a threat named in a twist is linked in the sheet, with no repeated list under the twist, and is in the sheet\'s threat list');
+    ok(await p.$eval('#sheet-preview', e => !/Adicione (um|lacaios)/.test(e.textContent) && !/Desafios deste ambiente/.test(e.textContent)), 'the sheet reads as a finished sheet: no "Adicione…" of the builder and no separate challenge list');
     ok(await p.$eval('#sheet-preview', e => /Locais da cena/.test(e.textContent) && /Porão do Estádio/.test(e.textContent)), 'the sheet lists the places');
-    ok(await p.$eval('#sheet-preview', e => /Tempestade sobre a Cidade da Torre/.test(e.textContent) && /Diabretes da Tempestade/.test(e.textContent) && /Fendas gigantes/.test(e.textContent) && /Cria Tentacular/.test(e.textContent) && /cronômetro: 3 caixinhas/.test(e.textContent)), 'the sheet lists the twists, the threat library, the timed challenge and the doomsday device');
+    ok(await p.$eval('#sheet-preview', e => /Tempestade sobre a Cidade da Torre/.test(e.textContent) && /Diabretes da Tempestade/.test(e.textContent) && /Fendas gigantes/.test(e.textContent) && /Cria Tentacular/.test(e.textContent) && /Desafio com cronômetro \(3 caixinhas\)/.test(e.textContent)), 'the sheet lists the twists, the threat library, the timed challenge');
     ok(await p.$$eval('#sheet-preview [data-tip]', e => e.length) > 20, 'the environment sheet explains terms, dice and zones on hover');
     const [dlE] = await Promise.all([p.waitForEvent('download'), p.click('.export-row [data-a=export]')]);
     const jsonE = JSON.parse(fs.readFileSync(await dlE.path(), 'utf8'));
@@ -782,6 +783,22 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     }
     ok(!big.length, `every picture is within its size budget${big.length ? ': ' + big.join(', ') : ''}`);
     ok(!dupSrc.length && !dupFile.length, `no picture is used twice${dupSrc.length || dupFile.length ? ': ' + dupSrc.concat(dupFile).join(', ') : ''}`);
+  }
+  // Principle names and texts the user asked to change, and the element's article on the sheet
+  {
+    const p = await newPage();
+    await p.goto(`${BASE}/index.html`);
+    ok(await p.evaluate(() => { const L = window.PRINCIPLE_LORE; return L.exorcism[0] === 'Princípio do Exorcista' && L.undead[0] === 'Princípio do Morto-vivo' && !/Névoa|Sentinela/.test(L.exorcism[1] + L.undead[1]) && JSON.stringify(window.TRAIT_CATEGORIES).includes('até magias lançadas'); }), 'Exorcist and Undead principles have their new names and generic descriptions; Ranged Combat mentions spells');
+    await p.setInputFiles('#import-file', { name: 'c.json', mimeType: 'application/json', buffer: Buffer.from(FIXTURE) }).catch(() => {});
+    await p.waitForTimeout(600);
+    const names = {};
+    for (const el of ['Fogo', 'Sombras', 'Água', 'Luz']) {
+      await p.evaluate(el => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.bg.principle = 'energy-element'; s.pch = Object.assign({}, s.pch, { bg: el }); localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); }, el);
+      await p.goto(`${BASE}/ficha.html`); await p.waitForTimeout(400);
+      names[el] = await p.$$eval('.pr-row .nm', e => e.map(x => x.textContent.replace(/\s+/g, ' ').trim())[0]);
+    }
+    ok(names['Fogo'] === 'Princípio do Fogo' && names['Sombras'] === 'Princípio das Sombras' && names['Água'] === 'Princípio da Água' && names['Luz'] === 'Princípio da Luz', 'the sheet gives the element principle its article (do Fogo, das Sombras, da Água, da Luz)');
+    await p.context().close();
   }
   errors.forEach(e => console.log('     ', e));
   // The header is the same on every page: Campeões, Ficha, Lore, Regras and Arquivo; only the Forja button comes and goes.
