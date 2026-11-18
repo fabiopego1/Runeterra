@@ -260,6 +260,8 @@
 
   // Rules text shown to the player: pt-BR version of the same text when Portuguese is on (tokens stay in English).
   const ruleSrc = s => (PT && window.I18N.text[s]) || s;
+  // the principle texts keep the book's [energy/element] placeholder: pt shows it translated, like [poder] and [qualidade]
+  const rpText = t => (PT ? String(t || '').replace(/\[energy\/element\]/g, '[energia/elemento]') : String(t || ''));
   const TOKEN_PT = { 'power': 'poder', 'quality': 'qualidade', 'power/quality': 'poder/qualidade', 'Self Control power': 'poder de Autocontrole', 'Psychic power': 'poder Psíquico', 'Mental quality': 'qualidade Mental', 'Signature Vehicle': 'Montaria Emblemática', 'Signature Weaponry': 'Arma Emblemática', 'a power gained from your archetype': 'um poder ganho do seu Caminho', 'a quality gained from your archetype': 'uma qualidade ganha do seu Caminho', 'energy/element': 'energia/elemento', 'element/energy': 'elemento/energia', 'elemental/energy': 'elemental/energia', 'element': 'elemento', 'basic action': 'ação básica', 'actions': 'ações', 'action': 'ação',
     'element/energy you have a related power for': 'elemento/energia de um poder que você tem', 'energy/element you have a related power for': 'energia/elemento de um poder que você tem', 'physical or energy': 'físico ou de energia', 'Boost or Hinder': 'Fortaleça ou Atrapalhe', 'choose two basic actions': 'escolha duas ações básicas', 'any Physical or Mental quality': 'qualquer qualidade Física ou Mental' };
   const tokenLabel = br => (PT && TOKEN_PT[br]) || br;
@@ -1013,18 +1015,18 @@
     const r = regionDef();
     const items = list.map(p => {
       const lore = window.PRINCIPLE_LORE[p.id] || [p.name, ''];
-      const t = `<h5>${esc(lore[0])}</h5>` + (lore[1] ? `<b>${tr('In Runeterra:')}</b> ${esc(lore[1])}` : esc(p.rp));
+      const t = `<h5>${esc(lore[0])}</h5>` + (lore[1] ? `<b>${tr('In Runeterra:')}</b> ${esc(lore[1])}` : esc(rpText(p.rp)));
       const pp = peopleDef();
       const fits = (pp && pp.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${tr('Suggestion')}: ${esc(pp.name)}</span>` : '') + (r && r.pr.includes(p.id) ? ` <span class="fit-inline">${ico('mark')}${tr('Suggestion')}: ${esc(r.name)}</span>` : '');
       return `<button class="principle${p.id === cur ? ' selected' : ''}${p.id === other ? ' taken' : ''}" data-act="principle" data-slot="${slot}" data-id="${p.id}"${tip(t)}${p.id === other ? ' disabled' : ''}>` +
-        `<div class="pn">${esc(lore[0])}${fits}</div><div class="po">${esc(tr(p.cat))}</div><div class="ph">${esc(p.rp)}</div></button>`;
+        `<div class="pn">${esc(lore[0])}${fits}</div><div class="po">${esc(tr(p.cat))}</div><div class="ph">${esc(rpText(p.rp))}</div></button>`;
     }).join('');
     let detail = '';
     const p = PRINCIPLES.find(x => x.id === cur);
     if (p) {
       const needsEl = p.id === 'energy-element';
       detail = `<div class="detail"><h4>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</h4>` +
-        `<p><b>${tr('During roleplaying:')}</b> ${esc(p.rp)}</p><p><b>${tr('Minor twist:')}</b> <em>${esc(p.minor)}</em><br><b>${tr('Major twist:')}</b> <em>${esc(p.major)}</em></p>` +
+        `<p><b>${tr('During roleplaying:')}</b> ${esc(rpText(p.rp))}</p><p><b>${tr('Minor twist:')}</b> <em>${esc(p.minor)}</em><br><b>${tr('Major twist:')}</b> <em>${esc(p.major)}</em></p>` +
         `<div class="ab green picked"><div class="ab-top"><span class="ab-name">${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</span><span class="pill green">${tr('green')}</span><span class="ab-type"${tip(`<h5>${tr('Type: {t}', { t: p.type })}</h5>${window.ABILITY_TYPES[p.type]}`)}>${p.type}</span></div><div class="ab-text">${rulesText(p.ability, { ch: { 'energy/element': st.pch[slot] } })}</div></div>` +
         (needsEl ? `<div class="ab-cfg"><div class="cfg-l">${tr('Your element')}</div>${valueChips(`pch.${slot}`, CATS['P:elemental'].items.map(i => i[2]), st.pch[slot])}</div>` : '') +
         `</div>`;
@@ -1547,9 +1549,9 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   // A principle as a card with its name, where it came from and what it is for.
   function principleInfoCard(p, { slot, on, act, tag } = {}) {
     const lore = window.PRINCIPLE_LORE[p.id] || [p.name, ''];
-    const t = `<h5>${esc(lore[0])}</h5>${esc(p.rp)}<br><b>${tr('Minor twist:')}</b> <em>${esc(p.minor)}</em><br><b>${tr('Major twist:')}</b> <em>${esc(p.major)}</em>`;
+    const t = `<h5>${esc(lore[0])}</h5>${esc(rpText(p.rp))}<br><b>${tr('Minor twist:')}</b> <em>${esc(p.minor)}</em><br><b>${tr('Major twist:')}</b> <em>${esc(p.major)}</em>`;
     return `<button type="button" class="principle${on ? ' selected' : ''}" data-act="${act}" data-id="${slot || p.id}"${tip(t)}>` +
-      `<div class="pn">${esc(lore[0])}${tag ? ` <span class="muted">(${esc(tag)})</span>` : ''}</div><div class="po">${esc(tr(p.cat))}</div><div class="ph">${esc(p.rp.replace(/\[energy\/element\]/g, PT ? 'seu elemento' : 'your element'))}</div></button>`;
+      `<div class="pn">${esc(lore[0])}${tag ? ` <span class="muted">(${esc(tag)})</span>` : ''}</div><div class="po">${esc(tr(p.cat))}</div><div class="ph">${esc(PT ? rpText(p.rp) : p.rp.replace(/\[energy\/element\]/g, 'your element'))}</div></button>`;
   }
   // One New Technique slot: an empty slot opens a menu with every ability you have (with its text);
   // a chosen one shows as a card with the row of powers/qualities it may use now.
@@ -1819,7 +1821,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         + sel('to', tr('For'), Object.entries(byCat).map(([c, ps]) => `<optgroup label="${esc(tr(c))}">${ps.map(p => opt(p.id, prName(p.id), E.to)).join('')}</optgroup>`).join(''));
       if (E.to === 'energy-element') form += `<label class="field"><span>${tr('Energy or element')}</span><input type="text" data-evo="el" value="${esc(E.el || '')}" placeholder="${tr('e.g. fire, Hextech, shadow')}"></label>`;
       const p = PRINCIPLES.find(x => x.id === E.to);
-      if (p) note = `<b>${esc(prName(p.id))}</b> · ${esc(p.rp)}`;
+      if (p) note = `<b>${esc(prName(p.id))}</b> · ${esc(rpText(p.rp))}`;
       ok = !!(cur.some(x => x.slot === E.from) && p && (E.to !== 'energy-element' || (E.el || '').trim()));
     } else {
       const list = evoAbilityChoices();
@@ -1944,7 +1946,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
     return n;
   };
-  const principleText = (x, s) => String(s).replace(/\[energy\/element\]/g, st.pch[x.slot] || '[energy/element]');
+  const principleText = (x, s) => String(s).replace(/\[energy\/element\]/g, st.pch[x.slot] || (PT ? '[energia/elemento]' : '[energy/element]'));
 
   // Rows of the official sheet: green / principles / yellow / red / out
   function sheetRows(R) {

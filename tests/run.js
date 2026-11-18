@@ -108,6 +108,7 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.waitForTimeout(0);
     ok(await p.$eval('#tour h4', e => e.textContent.includes('Princípio')), 'the principle guide waits for the principle section');
     await p.click('#tour [data-act=tourOk]');
+    ok(await p.$eval('[data-act=principle][data-id=energy-element]', e => !/energy\/element/.test(e.textContent + e.dataset.tip) && /\[energia\/elemento\]/.test(e.textContent)), 'the Element principle card shows its placeholder in Portuguese ([energia/elemento]), never in English');
     const origHover = await p.$eval('[data-act=principle][data-id=magic]', e => e.dataset.tip);
     ok(!/Reviravolta|Habilidade verde|Green ability|Durante a interpretação/i.test(origHover) && /Em Runeterra/.test(origHover), 'principle hover shows only the Runeterra text');
     await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.tour.on = false; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
