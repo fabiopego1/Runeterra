@@ -1935,9 +1935,13 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     });
   }
   const sheetTraitName = k => (k === 'rp-quality' && st.pers.qname ? st.pers.qname : traitName(k));
+  const EL_ART = { cold: 'do', cosmic: 'do', electricity: 'da', fire: 'do', infernal: 'das', nuclear: 'da', radiant: 'da', sonic: 'da', water: 'da', weather: 'do' };
   const principleShort = x => {
     let n = (window.PRINCIPLE_LORE[x.id] || [x.p.name])[0].replace(/^Principle of /, '').replace(/^Princípio /, '');   // pt keeps its article: "do Destino"
-    if (x.id === 'energy-element') n = st.pch[x.slot] || n;
+    if (x.id === 'energy-element') {
+      const v = st.pch[x.slot];   // pt: "Princípio do Fogo", "da Luz", "das Sombras" (the article follows the element)
+      if (v) n = PT ? `${EL_ART[elementKey(v)] || 'de'} ${v}` : v;
+    }
     return n;
   };
   const principleText = (x, s) => String(s).replace(/\[energy\/element\]/g, st.pch[x.slot] || '[energy/element]');

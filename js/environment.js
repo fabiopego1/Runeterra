@@ -184,16 +184,18 @@
         if (!th) I.push(o.lt ? 'Escolha o tenente na biblioteca de ameaças.' : 'Escolha o lacaio na biblioteca de ameaças.');
         else if ((th.kind === 'lieutenant') !== !!o.lt) I.push('A ameaça escolhida não é do tipo que esta receita pede (' + (o.lt ? 'tenente' : 'lacaio') + ').');
         const nm = (th && th.name.trim()) || '…', d = th ? th.die : 'd6';
-        const dd = html && th ? '' : ` (${d})`;   // on the sheet the linked name carries its die
-        if (o.lt) text = `Adicione um tenente${o.strong ? ' mais poderoso que os demais da cena' : ''}: ${nm}${dd}.`;
-        else if (o.n === 'one') text = `Adicione um lacaio: ${nm}${dd}.`;
-        else { dice = true; text = `Adicione lacaios ${nm}${dd} em quantidade igual ao ${dieWord(o.n)} do ambiente.`; }
+        const dd = (html === true || html === 'sheet') && th ? '' : ` (${d})`;   // where the name is linked, the link carries its die
+        const clean = html === 'sheet' || html === 'copy';   // the sheet and the copied text read as a finished sheet, without the "Adicione…" of the builder
+        if (o.lt) text = `${clean ? 'Tenente' : 'Adicione um tenente'}${o.strong ? ' mais poderoso que os demais da cena' : ''}: ${nm}${dd}.`;
+        else if (o.n === 'one') text = `${clean ? 'Lacaio' : 'Adicione um lacaio'}: ${nm}${dd}.`;
+        else { dice = true; text = `${clean ? 'Lacaios' : 'Adicione lacaios'} ${nm}${dd} em quantidade igual ao ${dieWord(o.n)} do ambiente.`; }
       }
       if (o.other) { if (!fx.other.trim()) I.push('Descreva o outro efeito.'); text += ` Além disso: ${fx.other.trim() || '…'}.`; }
     } else {
       if (o.kind !== 'raise' && !fx.ctext.trim()) I.push(o.kind === 'doomsday' ? 'Descreva o dispositivo do fim do mundo.' : 'Descreva o desafio.');
       const c = fx.ctext.trim() || '…';
-      text = { custom: `Adicione um desafio personalizado: ${c}`, simple: `Adicione um desafio simples: ${c}`, timed: `Adicione um desafio com cronômetro (${timerWords(fx)}): ${c}`, raise: 'Aumente a dificuldade de um desafio existente.', doomsday: `Ative o dispositivo do fim do mundo: ${c}` }[o.kind];
+      const cl = html === 'sheet' || html === 'copy';
+      text = { custom: cl ? `Desafio: ${c}` : `Adicione um desafio personalizado: ${c}`, simple: cl ? `Desafio: ${c}` : `Adicione um desafio simples: ${c}`, timed: cl ? `Desafio com cronômetro (${timerWords(fx)}): ${c}` : `Adicione um desafio com cronômetro (${timerWords(fx)}): ${c}`, raise: 'Aumente a dificuldade de um desafio existente.', doomsday: `Ative o dispositivo do fim do mundo: ${c}` }[o.kind];
       if (!/[.…]$/.test(text)) text += '.';
       if (o.kind !== 'raise') {
         if (getPl(fx.cwhere)) text += ` O desafio fica em ${plName(fx.cwhere)}.`;
@@ -369,14 +371,6 @@
   const iconsFor = text => ICON_RE.filter(([, re]) => re.test(text)).map(([a]) => `<span class="act-ic act-${a.toLowerCase()}"${tipA(`<h5>Ícone de ${K().ICONS[a][1]}</h5>${window.GLOSSARY[a]}`)}>${K().ICONS[a][0]}</span>`).join('');
   const zoneTip = z => `<h5>Zona ${ZN[z]}</h5>${ZSTAGE[z]}. ${window.GLOSSARY[{ green: 'Green zone', yellow: 'Yellow zone', red: 'Red zone' }[z]] || ''}`;
   const lines = (path, list, n, label) => Array.from({ length: n }, (_, i) => `<input class="hs-line" type="text" data-b="${path}.${i}" value="${esc(list[i] || '')}" aria-label="${label} ${i + 1}">`).join('');
-  function challengesOf() {
-    const ch = [];
-    for (const z of Object.keys(ZN)) for (const sv of ['minor', 'major']) for (const tw of S.tw[z][sv]) for (const fx of tw.fx) {
-      const o = getOpt(fx, z, sv);
-      if (fx.cat === 'challenge' && o && fx.ctext.trim()) ch.push({ z, t: fx.ctext.trim(), kind: o.kind, timer: timedOn(o, fx) ? `cronômetro: ${timerWords(fx)} · ${Math.max(1, fx.tneed | 0)} ${(fx.tneed | 0) === 1 ? 'sucesso' : 'sucessos'} em Superar · se acabar: ${fx.tcons.trim() || '…'}` : '' });
-    }
-    return ch;
-  }
   // every threat the environment can name: its own copies first, then the bank
   const envPool = () => { const seen = new Set(S.threats.map(t => t.id)); return S.threats.concat(THREAT_LIB.all().filter(t => !seen.has(t.id))); };
   const fxTexts = tw => tw.fx.map(f => [f.other, f.ctext, f.tcons].join(' ')).join(' ');
@@ -388,13 +382,12 @@
     for (const t of U.find(text, THREAT_LIB.all())) if (!have.has(t.id)) { S.threats.push(THREAT_LIB.copyOf(t.id)); have.add(t.id); added = true; }
     return added;
   }
-  const usedThreats = tw => { const out = tw.fx.map(f => (f.cat === 'threat' ? getTh(f.tid) : null)).filter(Boolean); for (const t of U.find(fxTexts(tw), S.threats)) if (!out.includes(t)) out.push(t); return out; };
   function sheetHtml() {
-    const imp = IMPACT(), v = DV(), title = esc(S.name || 'Ambiente sem nome'), ch = challengesOf();
+    const imp = IMPACT(), v = DV(), title = esc(S.name || 'Ambiente sem nome');
     const zoneBlock = z => {
       const rows = ['minor', 'major'].flatMap(s => S.tw[z][s].map(tw => {
-        const pl = twPlain(tw, z, s, true);
-        return `<tr><td class="ic">${iconsFor(pl.text)}</td><td class="nm">${esc(tw.name || 'sem nome')}<small>${SEV[s]}</small></td><td class="ty">${s === 'major' ? 'M' : 'm'}</td><td class="gt">${U.link(ruleHtml(pl.text))}${usedThreats(tw).length ? `<div class="env-thr">${usedThreats(tw).map(thChip).join(' ')}</div>` : ''}${tw.desc.trim() ? `<div class="env-story">${U.rich(tw.desc.trim())}</div>` : ''}</td></tr>`;
+        const pl = twPlain(tw, z, s, 'sheet');
+        return `<tr><td class="ic">${iconsFor(pl.text)}</td><td class="nm">${esc(tw.name || 'sem nome')}<small>${SEV[s]}</small></td><td class="ty">${s === 'major' ? 'M' : 'm'}</td><td class="gt">${U.link(ruleHtml(pl.text))}${tw.desc.trim() ? `<div class="env-story">${U.rich(tw.desc.trim())}</div>` : ''}</td></tr>`;
       }));
       return `<div class="hs-zone ${z}"><div class="zlbl"${tipA(zoneTip(z))}>${ZN[z]}</div><table class="hs-ab-t"><tbody>${rows.join('') || '<tr><td class="gt muted">Nenhuma reviravolta ainda.</td></tr>'}</tbody></table></div>`;
     };
@@ -418,7 +411,6 @@
         </div>
         ${S.places.length ? `<div class="hs-card"><div class="hs-h"${tipA('<h5>Locais</h5>Os lugares da cena. Um local não tem ficha de jogo: serve para dizer onde ficam heróis, ameaças e desafios.')}>Locais da cena</div>${S.places.map(x => `<div class="hs-f">${esc(x.name.trim() || 'sem nome')}</div>`).join('')}</div>` : ''}
         ${S.threats.length ? `<div class="hs-card"><div class="hs-h">Ameaças deste ambiente</div><div class="env-thcs">${S.threats.map(U.sheet).join('')}</div></div>` : ''}
-        ${ch.length ? `<div class="hs-card"><div class="hs-h">Desafios deste ambiente</div>${ch.map(c => `<div class="hs-f">${U.rich(c.t)} <small class="muted">${c.kind === 'doomsday' ? 'fim do mundo' : 'desafio'} · ${ZN[c.z]}</small>${c.timer ? `<div class="env-story">${esc(c.timer)}</div>` : ''}</div>`).join('')}</div>` : ''}
         <div class="hs-card"><div class="hs-h">Notas de mesa</div><div class="hs-notes">${lines('play.notes', S.play.notes, 8, 'Nota')}</div></div>
       </div>
       <div class="hs-page" id="hs-p2">
@@ -434,11 +426,10 @@
     if (v) L.push(`Dados do ambiente: Mín ${v.min}, Médio ${v.mid}, Máx ${v.max}`);
     for (const z of Object.keys(ZN)) {
       L.push('', `ZONA ${ZN[z].toUpperCase()}`);
-      for (const s of ['minor', 'major']) for (const tw of S.tw[z][s]) L.push(`${SEV[s]}: ${tw.name || 'sem nome'}${tw.desc ? ' (' + tw.desc + ')' : ''}: ${twPlain(tw, z, s).text}`);
+      for (const s of ['minor', 'major']) for (const tw of S.tw[z][s]) L.push(`${SEV[s]}: ${tw.name || 'sem nome'}${tw.desc ? ' (' + tw.desc + ')' : ''}: ${twPlain(tw, z, s, 'copy').text}`);
     }
     if (S.places.length) L.push('', 'LOCAIS: ' + S.places.map(x => x.name || 'sem nome').join(', '));
     if (S.threats.length) { L.push('', 'AMEAÇAS'); for (const t of S.threats) L.push(U.plainLine(t)); }
-    const chs = challengesOf(); if (chs.length) { L.push('', 'DESAFIOS'); for (const c of chs) L.push(`${c.t} (${ZN[c.z]})${c.timer ? ' · ' + c.timer : ''}`); }
     if (S.note) L.push('', S.note);
     return L.join('\n');
   }

@@ -85,7 +85,7 @@
     // Esotérico
     destiny: ['Que presságio de má sorte, um corvo, um eclipse ou uma estrela cadente, você acabou de testemunhar?', 'Que profecia sobre você acabou de se cumprir, do pior jeito possível?'],
     'energy-element': ['Que elemento oposto ao seu está enfraquecendo seus poderes agora?', 'Que fonte de poder do seu elemento está sufocando você, ou fugindo do seu controle?'],
-    exorcism: ['Que rastro da Névoa Negra ou de outro reino te distraiu e te fez perder o foco?', 'Que espectro, espírito ou cria do Vazio atravessou para este mundo porque você falhou?'],
+    exorcism: ['Que rastro de outro reino ou de uma presença sobrenatural te distraiu e te fez perder o foco?', 'Que demônio, espírito ou criatura sobrenatural atravessou para este mundo porque você falhou?'],
     fauna: ['Que instinto de fera tomou conta de você na hora errada?', 'Que animal, espírito ou matilha agora te vê como rival, e não como parente?'],
     flora: ['Que raiz, espinho ou flor está crescendo fora do seu controle?', 'Que floresta, jardim ou terra sagrada a natureza está tomando de volta, e quem sofre com isso?'],
     future: ['Que visão do futuro te distraiu no pior momento?', 'Que futuro terrível você vislumbrou começou a se tornar realidade por causa das suas ações?'],
@@ -95,7 +95,7 @@
     sea: ['Que dificuldade a vida em terra firme, longe do mar, está te causando agora?', 'O mar veio cobrar o que é dele. Que tempestade, criatura ou maré está chegando por sua causa?'],
     space: ['Que vertigem, frio ou falta de ar das alturas te pegou desprevenido?', 'Que força celestial ou Aspecto de Targon te arrastou para longe, ou está te chamando para o alto?'],
     'time-traveler': ['Que costume desta era te deixou perdido, ou te fez passar vergonha?', 'Que eco da sua era perdida está bagunçando o presente, ou apagando você dele?'],
-    undead: ['Como sua natureza de espectro assustou quem estava por perto?', 'Como a Névoa Negra está te puxando de volta, e o que você perde do mundo dos vivos?'],
+    undead: ['Como sua natureza morta-viva assustou quem estava por perto?', 'Como o que te trouxe de volta está te puxando de novo, e o que você perde do mundo dos vivos?'],
     // Maestria
     clockwork: ['Que engrenagem, mola ou ferramenta de precisão acabou de quebrar?', 'Que mecanismo que você construiu ou consertou foi parar nas mãos erradas?'],
     gearhead: ['Que aparelho acabou de soltar faísca e entrar em curto?', 'Que máquina saiu de controle e agora ameaça todo mundo por perto?'],
