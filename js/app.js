@@ -2000,12 +2000,31 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       return out.join('');
     };
     // an ability that uses a trait kept to one form works only in that form
-    const abForm = r => {
-      if (!splitOn()) return '';
-      const sp = st.arch.split || {}, fs = new Set([r.entry && r.entry.trait, r.entry && r.entry.trait2].filter(k => k && TRAIT[k]).map(k => sp[k]).filter(f => f && f !== 'both'));
-      return fs.size === 1 ? ` <small class="hs-form-tag"${tip(tr(fs.has('civ') ? 'Only in your civilian form' : 'Only in your heroic form'))}>${tr(fs.has('civ') ? 'civil' : 'heroic')}</small>` : '';
+    // Divided + Split Form: the forms an ability can be used in, from the traits it uses (none restricted: both forms)
+    const formsOf = r => {
+      if (!splitOn()) return null;
+      const sp = st.arch.split || {};
+      return new Set([r.entry && r.entry.trait, r.entry && r.entry.trait2].filter(k => k && TRAIT[k]).map(k => sp[k]).filter(f => f && f !== 'both'));
     };
-    const abRow = (r, zone) => `<tr><td class="ic">${iconHtml(r.text)}</td><td class="nm">${esc(r.name)}${r.renamed ? origTag(r.base) : ''}${abForm(r)}</td><td class="ty"${tip(window.ABILITY_TYPES[r.type] || '')}>${esc(r.type)}</td><td class="gt">${rulesText(r.text, r.entry)}</td></tr>`;
+    const abForm = r => {
+      const fs = formsOf(r);
+      if (!fs || !fs.size) return '';
+      if (fs.size > 1) return ` <small class="hs-form-tag warn"${tip(tr('Uses traits kept to different forms, so it cannot be used in either form.'))}>${tr('conflict')}</small>`;
+      return ` <small class="hs-form-tag"${tip(tr(fs.has('civ') ? 'Only in your civilian form' : 'Only in your heroic form'))}>${tr(fs.has('civ') ? 'civil' : 'heroic')}</small>`;
+    };
+    // a summary of each form: its traits and the abilities it can use
+    const formsCard = () => {
+      if (!splitOn()) return '';
+      const sp = st.arch.split || {}, all = ['green', 'yellow', 'red'].flatMap(z => rows[z]), traits = powers.concat(quals);
+      const col = (f, label) => {
+        const ts = traits.filter(t => t.key === 'rp-quality' || sp[t.key] === 'both' || sp[t.key] === f).map(t => esc(t.key === 'rp-quality' && st.pers.qname ? st.pers.qname : traitName(t.key)));
+        const as = all.filter(r => { const fs = formsOf(r); return fs.size === 0 || (fs.size === 1 && fs.has(f)); }).map(r => esc(r.name));
+        return `<div class="hs-forms-col"><div class="hs-sd-h">${label}</div><div class="hs-fl"><b>${tr('Traits')}</b> ${ts.join(', ') || '—'}</div><div class="hs-fl"><b>${tr('Abilities')}</b> ${as.join(', ') || '—'}</div></div>`;
+      };
+      const bad = all.filter(r => formsOf(r).size > 1).map(r => esc(r.name));
+      return `<div class="hs-forms"><div class="hs-h">${tr('Forms')}</div><div class="hs-forms-cols">${col('civ', tr('Civilian form'))}${col('her', tr('Heroic form'))}</div>${bad.length ? `<div class="hs-fl warn">${tr('Conflict')}: ${bad.join(', ')} — ${tr('Uses traits kept to different forms, so it cannot be used in either form.')}</div>` : ''}</div>`;
+    };
+    const abRow = (r, zone) => `<tr${formsOf(r) && formsOf(r).size > 1 ? ' class="conflict"' : ''}><td class="ic">${iconHtml(r.text)}</td><td class="nm">${esc(r.name)}${r.renamed ? origTag(r.base) : ''}${abForm(r)}</td><td class="ty"${tip(window.ABILITY_TYPES[r.type] || '')}>${esc(r.type)}</td><td class="gt">${rulesText(r.text, r.entry)}</td></tr>`;
     const emptyRows = (n, have) => Array.from({ length: Math.max(0, n - have) }, () => '<tr><td class="ic"></td><td class="nm">&nbsp;</td><td class="ty"></td><td class="gt"></td></tr>').join('');
     const prRow = (x, r) => `<tr class="pr-row"><td class="ic">${iconHtml(x.p.ability)}</td><td class="nm"><small class="po-lbl">${tr('Principle of')}</small> ${esc(principleShort(x))}</td><td class="ty">${esc(x.p.type)}</td><td class="gt">${rulesText(x.p.ability, { ch: { 'energy/element': st.pch[x.slot] } })}</td></tr>`;
     const check = (path, val, label) => `<input type="checkbox" class="hs-chk" data-bind="${path}" data-live="1"${val ? ' checked' : ''} aria-label="${esc(label)}">`;
@@ -2050,6 +2069,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
             <div class="hs-track hs-noexport" role="group" aria-label="${tr('Adjust Health')}"><button type="button" data-act="hpStep" data-d="-1" aria-label="${tr('Lose 1 Health')}">−</button><button type="button" data-act="hpStep" data-d="1" aria-label="${tr('Recover 1 Health')}">+</button><button type="button" data-act="hpStep" data-d="max" aria-label="${tr('Back to full Health')}"${tip(tr('Back to full Health'))}>${ico('reset')}</button></div>
             <div class="hs-znow z-${zNow}">${ZNAME[zNow]}</div>` : BLANK}</div>
         </div>
+        ${formsCard()}
         <div class="hs-h" style="margin-top:12px">${tr('Abilities')}</div>
         ${zone('green', tr('Green zone'), rows.green.map(r => abRow(r)).join('') + emptyRows(5, rows.green.length) + pr.map(x => prRow(x)).join(''))}
         ${zone('yellow', tr('Yellow zone'), rows.yellow.map(r => abRow(r)).join('') + emptyRows(5, rows.yellow.length))}
