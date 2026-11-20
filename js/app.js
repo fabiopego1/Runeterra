@@ -525,11 +525,13 @@
   // block: { traitKey: why } for traits that this choice may not repeat (shown greyed out and not selectable).
 
   // The same choice as a row of chips: every option in view, with its die, instead of a closed dropdown.
+  // while choosing which trait an ability uses, Divided heroes see which form each trait belongs to
+  const chipForm = k => { if (!splitOn()) return ''; const f = (st.arch.split || {})[k]; return f ? `<small class="hs-form-tag">${tr(f === 'both' ? 'both forms' : f === 'civ' ? 'civil' : 'heroic')}</small>` : ''; };
   function traitChips(bind, keys, sel, block = {}) {
     if (!keys.length) return '';
     return `<div class="tchips" role="radiogroup">${keys.map(k => {
       const no = block[k] && k !== sel, t = R0.T[k];
-      return `<button type="button" class="tchip${k === sel ? ' on' : ''}" role="radio" aria-checked="${k === sel}" data-act="setBind" data-bind="${bind}" data-val="${k}"${no ? ' disabled' : ''}${tip(traitTip(k) + (no ? `<hr><small>${esc(block[k])}</small>` : ''))}>${t ? die(t.die, 'sm') : ''}<span>${esc(traitName(k))}</span><small>${tr(TRAIT[k].kind)}</small></button>`;
+      return `<button type="button" class="tchip${k === sel ? ' on' : ''}" role="radio" aria-checked="${k === sel}" data-act="setBind" data-bind="${bind}" data-val="${k}"${no ? ' disabled' : ''}${tip(traitTip(k) + (no ? `<hr><small>${esc(block[k])}</small>` : ''))}>${t ? die(t.die, 'sm') : ''}<span>${esc(traitName(k))}</span><small>${tr(TRAIT[k].kind)}</small>${chipForm(k)}</button>`;
     }).join('')}</div>`;
   }
   const valueChips = (bind, vals, sel, label = x => x) => `<div class="tchips" role="radiogroup">${vals.map(v => `<button type="button" class="tchip${v === sel ? ' on' : ''}" role="radio" aria-checked="${v === sel}" data-act="setBind" data-bind="${bind}" data-val="${esc(v)}"><span>${esc(label(v))}</span></button>`).join('')}</div>`;
@@ -1986,6 +1988,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       const p2 = st.pers.id2 && byId(window.PERSONALITIES, st.pers.id2);
       return `<hr><div class="sc-line">${tr('Status dice')}</div>${zoneDice(pe.status)}` + (p2 ? `<div class="sc-line">${tr('Other form')}: ${esc(p2.rt)}</div>${zoneDice(p2.status)}` : '');
     };
+    const pe0 = persDef(), pe2 = st.pers.id2 && st.pers.id2 !== st.pers.id ? byId(window.PERSONALITIES, st.pers.id2) : null;   // the Temperaments behind the two status columns of a Divided hero
     const attr = (label, v) => `<div class="hs-f"><span class="hs-l">${label}</span>${esc(v || '')}</div>`;
     // keeps the paragraphs and line breaks typed in the Legend chapter
     const attrML = (label, v) => `<div class="hs-f"><span class="hs-l">${label}</span><span class="hs-ml">${esc((v || '').trim())}</span></div>`;
@@ -1996,7 +1999,13 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       while (out.length < n) out.push('<tr><td>&nbsp;</td><td class="dt"></td></tr>');
       return out.join('');
     };
-    const abRow = (r, zone) => `<tr><td class="ic">${iconHtml(r.text)}</td><td class="nm">${esc(r.name)}${r.renamed ? origTag(r.base) : ''}</td><td class="ty"${tip(window.ABILITY_TYPES[r.type] || '')}>${esc(r.type)}</td><td class="gt">${rulesText(r.text, r.entry)}</td></tr>`;
+    // an ability that uses a trait kept to one form works only in that form
+    const abForm = r => {
+      if (!splitOn()) return '';
+      const sp = st.arch.split || {}, fs = new Set([r.entry && r.entry.trait, r.entry && r.entry.trait2].filter(k => k && TRAIT[k]).map(k => sp[k]).filter(f => f && f !== 'both'));
+      return fs.size === 1 ? ` <small class="hs-form-tag"${tip(tr(fs.has('civ') ? 'Only in your civilian form' : 'Only in your heroic form'))}>${tr(fs.has('civ') ? 'civil' : 'heroic')}</small>` : '';
+    };
+    const abRow = (r, zone) => `<tr><td class="ic">${iconHtml(r.text)}</td><td class="nm">${esc(r.name)}${r.renamed ? origTag(r.base) : ''}${abForm(r)}</td><td class="ty"${tip(window.ABILITY_TYPES[r.type] || '')}>${esc(r.type)}</td><td class="gt">${rulesText(r.text, r.entry)}</td></tr>`;
     const emptyRows = (n, have) => Array.from({ length: Math.max(0, n - have) }, () => '<tr><td class="ic"></td><td class="nm">&nbsp;</td><td class="ty"></td><td class="gt"></td></tr>').join('');
     const prRow = (x, r) => `<tr class="pr-row"><td class="ic">${iconHtml(x.p.ability)}</td><td class="nm"><small class="po-lbl">${tr('Principle of')}</small> ${esc(principleShort(x))}</td><td class="ty">${esc(x.p.type)}</td><td class="gt">${rulesText(x.p.ability, { ch: { 'energy/element': st.pch[x.slot] } })}</td></tr>`;
     const check = (path, val, label) => `<input type="checkbox" class="hs-chk" data-bind="${path}" data-live="1"${val ? ' checked' : ''} aria-label="${esc(label)}">`;
@@ -2032,10 +2041,10 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       </div>
       <div class="hs-page" id="hs-p2">
         <div class="hs-card hs-3"><div><div class="hs-h">${tr('Alias')}</div>${esc(i.alias || '')}</div><div><div class="hs-h">${tr('Hero Name')}</div>${esc(i.name || '')}</div><div><div class="hs-h">${tr('Player')}</div>${esc(i.player || '')}</div></div>
-        <div class="hs-stats">
+        <div class="hs-stats${R.status2 ? ' split2' : ''}">
           <table class="hs-traits"><thead><tr><th>${tr('Powers')}</th><th>${tr('Die')}</th></tr></thead><tbody>${traitRows(powers, 6)}</tbody></table>
           <table class="hs-traits"><thead><tr><th>${tr('Qualities')}</th><th>${tr('Die')}</th></tr></thead><tbody>${traitRows(quals, 6)}</tbody></table>
-          <div class="hs-status"><div class="hs-h"${tip(window.GLOSSARY['status die'])}>${tr('Status Dice')}</div>${R.status ? ['Green', 'Yellow', 'Red'].map((z, n) => `<div class="hs-sd ${z.toLowerCase()}${zNow === z.toLowerCase() ? ' current' : ''}"><small>${tr(z)}</small>${die(R.status[n])}${R.status2 ? `<span class="hs-sd2"${tip(tr('Status die of your other form'))}>${die(R.status2[n], 'sm')}</span>` : ''}</div>`).join('') : BLANK}${R.status2 ? `<div class="hs-sd-note">${tr('Big die: main form. Small die: other form.')}</div>` : ''}</div>
+          <div class="hs-status"><div class="hs-h"${tip(window.GLOSSARY['status die'])}>${tr('Status Dice')}</div>${R.status ? (R.status2 ? `<div class="hs-sd-cols">${[[R.status, tr('Main form'), pe0 && pe0.rt], [R.status2, tr('Other form'), pe2 && pe2.rt]].map(([arr, lbl, who]) => `<div class="hs-sd-col"><div class="hs-sd-h"${who ? tip(`<h5>${esc(lbl)}</h5>${tr('Temperament')}: ${esc(who)}`) : ''}>${lbl}</div>${['Green', 'Yellow', 'Red'].map((z, n) => `<div class="hs-sd ${z.toLowerCase()}${zNow === z.toLowerCase() ? ' current' : ''}"><small>${tr(z)}</small>${die(arr[n])}</div>`).join('')}</div>`).join('')}</div>` : ['Green', 'Yellow', 'Red'].map((z, n) => `<div class="hs-sd ${z.toLowerCase()}${zNow === z.toLowerCase() ? ' current' : ''}"><small>${tr(z)}</small>${die(R.status[n])}</div>`).join('')) : BLANK}</div>
           <div class="hs-hr"><div class="hs-h"${tip(window.GLOSSARY.Health)}>${tr('Health Range')}</div>${h ? `<div class="burst g${zNow === 'green' ? ' now' : ''}">${tr('Green')}<b>${h.green[0]}–${h.green[1]}</b></div><div class="burst y${zNow === 'yellow' ? ' now' : ''}">${tr('Yellow')}<b>${h.yellow[0]}–${h.yellow[1]}</b></div><div class="burst r${zNow === 'red' ? ' now' : ''}">${tr('Red')}<b>${h.redR[0]}–1</b></div>
             <div class="burst c">${tr('Current')}<input type="text" inputmode="numeric" data-bind="play.current" data-live="1" value="${esc(curHealth(h))}" aria-label="${tr('Current Health')}"></div>
             <div class="hs-track hs-noexport" role="group" aria-label="${tr('Adjust Health')}"><button type="button" data-act="hpStep" data-d="-1" aria-label="${tr('Lose 1 Health')}">−</button><button type="button" data-act="hpStep" data-d="1" aria-label="${tr('Recover 1 Health')}">+</button><button type="button" data-act="hpStep" data-d="max" aria-label="${tr('Back to full Health')}"${tip(tr('Back to full Health'))}>${ico('reset')}</button></div>
