@@ -243,7 +243,7 @@
     everyman: ['Princípio da Pessoa Comum', 'Só uma pessoa normal metida em algo grande demais.'],
     family: ['Princípio da Família', 'Nas Grandes Casas, nos clãs e nas tribos, a família vem primeiro.'],
     mask: ['Princípio da Máscara', 'Um mago escondido em Demacia jamais pode ser descoberto.'],
-    sidekick: ['Princípio do Parceiro', 'Você está sempre onde a confusão acontece, como a turma do Ekko ou a sombra da Jinx.'],
+    sidekick: ['Princípio do Ajudante', 'Você parece sempre querer servir aos outros, ou é a mão direita de alguém: está sempre por perto, pronto para ajudar, como a turma do Ekko ou a sombra da Jinx.'],
     team: ['Princípio do Bando', 'Você tem um posto oficial: Xerifes de Piltover, Vanguarda Destemida, Garra do Inverno.'],
     underworld: ['Princípio do Submundo', 'Contatos em toda espelunca de Águas de Sentina e todo antro químico de Zaun.'],
     veteran: ['Princípio do Veterano', 'A invasão de Ionia, as Guerras Rúnicas, a Ruína: você já viu a guerra.'],
@@ -313,7 +313,7 @@
     ],
     archetype: [
       ['Caminho', 'Seu <b>estilo de luta</b>, como as funções de League of Legends: tanque, atirador, mago. Dá mais <b>poderes e qualidades</b>.', '.chapter'],
-      ['Regras do Caminho', 'Cada Caminho tem regras para os dados. Leia a lista acima deles antes de ligar.<span class="tour-ex">Combatente Corpo a Corpo: um dado precisa ir para a qualidade Combate Corpo a Corpo.</span>', '#flow-archetype-assign .rules-list || #flow-archetype-assign', '#flow-archetype-assign.current'],
+      ['Regras do Caminho', 'Cada Caminho tem regras para os dados. Leia a lista acima deles antes de ligar.<span class="tour-ex">Combatente: um dado precisa ir para a qualidade Combate Corpo a Corpo.</span>', '#flow-archetype-assign .rules-list || #flow-archetype-assign', '#flow-archetype-assign.current'],
       ['Poder ou qualidade', 'Aqui um dado pode virar <b>poder</b> ou <b>qualidade</b>. Algo que você já tem não pode ser escolhido de novo.', '#flow-archetype-assign .socket', '#flow-archetype-assign.current'],
       ['Habilidades Verdes', 'Sempre disponíveis. Marque as habilidades e clique no <b>poder ou qualidade</b> que cada uma usa.', '[id^="flow-archetype-g-"].current', '[id^="flow-archetype-g-"].current'],
       ['Segundo princípio', 'Outra coisa em que seu campeão acredita. Precisa ser <b>diferente</b> do primeiro.', '#flow-archetype-principle', '#flow-archetype-principle.current']

@@ -799,6 +799,12 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
       names[el] = await p.$$eval('.pr-row .nm', e => e.map(x => x.textContent.replace(/\s+/g, ' ').trim())[0]);
     }
     ok(names['Fogo'] === 'Princípio do Fogo' && names['Sombras'] === 'Princípio das Sombras' && names['Água'] === 'Princípio da Água' && names['Luz'] === 'Princípio da Luz', 'the sheet gives the element principle its article (do Fogo, das Sombras, da Água, da Luz)');
+    ok(await p.evaluate(() => { const N = id => window.ARCHETYPES.find(a => a.id === id).rt; return N('cqc') === 'Combatente' && N('elemental') === 'Elemental' && N('powerhouse') === 'Colosso (Tanque)' && window.PRINCIPLE_LORE.sidekick[0] === 'Princípio do Ajudante' && /mão direita/.test(window.PRINCIPLE_LORE.sidekick[1]) && /Atirador/.test(window.ARCHETYPES.find(a => a.id === 'blaster').lore); }), 'the Paths and the Sidekick principle have the new names (Combatente, Elemental, Colosso (Tanque), Ajudante) and the Blaster is set apart from the Marksman');
+    // a Divided hero's sheet: status dice in two columns, and abilities tagged with the form of the trait they use
+    await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.arch.id = 'divided'; s.arch.base = 'sorcerer'; s.pers.id2 = 'impulsive'; s.sel['arch-divafter'] = [{ name: 'Split Form' }]; s.arch.split = { cosmic: 'both', illusions: 'her', transmutation: 'civ', 'remote-viewing': 'both', flight: 'her', conviction: 'both', 'esoteric-lore': 'civ', 'magical-lore': 'her', history: 'both' }; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
+    await p.goto(`${BASE}/ficha.html`); await p.waitForTimeout(500);
+    ok(await p.$$eval('.hs-sd-cols .hs-sd-col', e => e.length) === 2 && await p.$$eval('.hs-sd-col', e => e.every(c => c.querySelectorAll('.hs-sd').length === 3)), 'a Divided hero\'s status dice are two separate columns (main form and other form), three zones each');
+    ok(await p.$$eval('.hs-ab-t .hs-form-tag', e => e.length) > 0 && await p.$$eval('.hs-traits .hs-form-tag', e => e.length) > 0, 'the sheet tags the traits and the abilities that belong to only one form');
     await p.context().close();
   }
   errors.forEach(e => console.log('     ', e));

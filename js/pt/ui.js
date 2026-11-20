@@ -397,6 +397,8 @@ Object.assign(window.I18N.ui, {
  "What is it about? A short description (up to {n} characters)": "Do que ela se trata? Uma descrição curta (até {n} caracteres)",
  "Status dice": "Dados de status",
  "Other form": "Outra forma",
+ "Main form": "Forma principal",
+ "both forms": "ambas as formas",
  "Qualities you already have:": "Para não repetir, suas qualidades atuais:",
  "Powers you have now:": "Poderes que você já tem:",
  "You already have this trait ({die}), gained in {stage}.": "Você já tem este traço ({die}), adquirido em: {stage}.",
