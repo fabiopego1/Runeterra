@@ -1880,3 +1880,7 @@ body.ro-lock { overflow: hidden; }
 .hs-fl b { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); margin-right: 0.347rem; }
 .hs-fl.warn, .hs-form-tag.warn { color: var(--warn); }
 .hs-ab-t tr.conflict td { opacity: .55; }
+
+.red-stale { margin: 0 0 1rem; padding: 0.7rem 0.9rem; border-left: 3px solid var(--warn); background: rgba(217, 171, 69, .08); }
+.red-stale b { color: #fff; }
+.red-stale .ab { margin-top: 0.5rem; }
