@@ -1869,3 +1869,14 @@ body.ro-lock { overflow: hidden; }
 
 /* Lore search: hidden means hidden, whatever display the element has */
 .page-body [hidden], .page-toc [hidden] { display: none !important; }
+
+/* Divided: summary of each form, and abilities that use traits of different forms */
+.hs-forms { margin-top: 0.74rem; }
+.hs-forms-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0.926rem; }
+.hs-forms-col { padding: 0 0.463rem; }
+.hs-forms-col + .hs-forms-col { border-left: 1px dashed var(--line-2); }
+.hs-forms-col .hs-sd-h { text-align: left; margin-bottom: 0.231rem; }
+.hs-fl { font-size: .78rem; line-height: 1.4; color: var(--text-2); margin: 0.174rem 0; }
+.hs-fl b { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); margin-right: 0.347rem; }
+.hs-fl.warn, .hs-form-tag.warn { color: var(--warn); }
+.hs-ab-t tr.conflict td { opacity: .55; }

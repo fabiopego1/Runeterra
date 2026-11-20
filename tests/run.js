@@ -804,7 +804,8 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.arch.id = 'divided'; s.arch.base = 'sorcerer'; s.pers.id2 = 'impulsive'; s.sel['arch-divafter'] = [{ name: 'Split Form' }]; s.arch.split = { cosmic: 'both', illusions: 'her', transmutation: 'civ', 'remote-viewing': 'both', flight: 'her', conviction: 'both', 'esoteric-lore': 'civ', 'magical-lore': 'her', history: 'both' }; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
     await p.goto(`${BASE}/ficha.html`); await p.waitForTimeout(500);
     ok(await p.$$eval('.hs-sd-cols .hs-sd-col', e => e.length) === 2 && await p.$$eval('.hs-sd-col', e => e.every(c => c.querySelectorAll('.hs-sd').length === 3)), 'a Divided hero\'s status dice are two separate columns (main form and other form), three zones each');
-    ok(await p.$$eval('.hs-sd-h', e => e.map(x => x.textContent.trim()).join('|')) === 'Forma normal|Forma especial', 'the columns are the normal (main) form and the special form');
+    ok(await p.$$eval('.hs-sd-cols .hs-sd-h', e => e.map(x => x.textContent.trim()).join('|')) === 'Forma normal|Forma especial', 'the columns are the normal (main) form and the special form');
+    ok(await p.$$eval('.hs-forms .hs-forms-col', e => e.length === 2 && /Ilusões/.test(e[1].textContent) && !/Ilusões/.test(e[0].textContent) && /Transmutação/.test(e[0].textContent) && !/Transmutação/.test(e[1].textContent) && /Cósmico/.test(e[0].textContent) && /Cósmico/.test(e[1].textContent)), 'the sheet summarises each form: traits kept to one form appear only there, shared traits in both');
     ok(await p.$$eval('.hs-ab-t .hs-form-tag', e => e.length) > 0 && await p.$$eval('.hs-traits .hs-form-tag', e => e.length) > 0, 'the sheet tags the traits and the abilities that belong to only one form');
     await p.context().close();
   }
