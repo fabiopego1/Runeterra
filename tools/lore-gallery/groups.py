@@ -772,6 +772,7 @@ RELOCATE = {
     '09IO055': ('ionia', 'spirits'),  # Fadinha Floral
     '05IO003': ('ionia', 'spirits'),  # Ancestral Sem Rumo
     '01NX034': ('freljord', 'creatures'),  # Poro Carinhoso
+    '01NX045': ('noxus', 'arena'),  # Desafiador Selvagem
     '06NX031': ('freljord', 'creatures'),  # Yeti Acorrentado
     '05NX005': ('noxus', 'crimson'),  # Belicista Ancestral
     '05NX016': ('noxus', 'crimson'),  # A Senhora do Sangue
