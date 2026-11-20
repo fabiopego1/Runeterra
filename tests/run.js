@@ -786,10 +786,30 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     ok(!big.length, `every picture is within its size budget${big.length ? ': ' + big.join(', ') : ''}`);
     ok(!dupSrc.length && !dupFile.length, `no picture is used twice${dupSrc.length || dupFile.length ? ': ' + dupSrc.concat(dupFile).join(', ') : ''}`);
   }
+  // An Ultimate chosen before the power behind it changed can still be removed
+  {
+    const p = await newPage();
+    await p.goto(`${BASE}/index.html`);
+    await p.setInputFiles('#import-file', { name: 'c.json', mimeType: 'application/json', buffer: Buffer.from(FIXTURE) }).catch(() => {});
+    await p.waitForTimeout(600);
+    await p.evaluate(() => {
+      const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')), T = window.ForgeDebug.traits();
+      const have = new Set(Object.values(T).map(t => window.TRAIT_CATEGORIES && Object.keys(window.TRAIT_CATEGORIES).find(c => window.TRAIT_CATEGORIES[c].items.some(i => i[0] === t.key))));
+      const cat = window.RED_ABILITIES.find(c => !have.has(c.cat) && c.list.length && !c.cat.startsWith('X:'));
+      s.sel.red = [{ name: cat.list[0].a, cat: cat.cat, use: cat.list[0].use || null, ch: {} }].concat((s.sel.red || []).slice(0, 1));
+      s.step = 'red'; s.maxStep = 10; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s));
+    });
+    await p.reload(); await p.waitForTimeout(800);
+    ok(await p.$$eval('.red-stale .ab', e => e.length) === 1, 'an Ultimate whose category the hero no longer has is listed apart, with a way out');
+    await p.click('.red-stale [data-act=redDrop]'); await p.waitForTimeout(200);
+    ok(!(await p.$('.red-stale')), 'removing it clears the warning');
+    await p.context().close();
+  }
   // Principle names and texts the user asked to change, and the element's article on the sheet
   {
     const p = await newPage();
     await p.goto(`${BASE}/index.html`);
+    ok(await p.evaluate(() => window.TRAIT_CATEGORIES['P:psychic'].items.find(i => i[0] === 'remote-viewing')[2] === 'Projeção Astral' || JSON.stringify(window.TRAIT_CATEGORIES).includes('Projeção Astral')), 'Visão Remota is now called Projeção Astral');
     ok(await p.evaluate(() => { const L = window.PRINCIPLE_LORE; return L.exorcism[0] === 'Princípio do Exorcista' && L.undead[0] === 'Princípio do Morto-vivo' && !/Névoa|Sentinela/.test(L.exorcism[1] + L.undead[1]) && JSON.stringify(window.TRAIT_CATEGORIES).includes('até magias lançadas'); }), 'Exorcist and Undead principles have their new names and generic descriptions; Ranged Combat mentions spells');
     await p.setInputFiles('#import-file', { name: 'c.json', mimeType: 'application/json', buffer: Buffer.from(FIXTURE) }).catch(() => {});
     await p.waitForTimeout(600);

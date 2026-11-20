@@ -1511,7 +1511,9 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     };
     const eligibleCats = cats.filter(c => c.cat.startsWith('X:') || Object.values(R.T).some(t => TRAIT[t.key].cat === c.cat && dn(t.die) >= 6));
     const lockedCats = cats.filter(c => !eligibleCats.includes(c));
-    return eligibleCats.map(catHtml).join('') +
+    // picks that no longer fit (the power behind them changed): the list above cannot show them, so they get their own way out
+    const stale = s.filter(e => redEntryIssues(e, R).length).map(e => `<div class="ab red picked stale"><div class="ab-top"><span class="ab-name">${esc(abName(e.name))}</span><button type="button" class="linkbtn danger" data-act="redDrop" data-key="${key}" data-name="${esc(e.name)}" data-cat="${esc(e.cat || '')}">${tr('Remove it')}</button></div><div class="ab-text">${esc(redEntryIssues(e, R)[0])}</div></div>`);
+    return (stale.length ? `<div class="red-stale" role="alert"><b>${tr('Chosen, but no longer available')}</b><p class="muted">${tr('These Ultimates no longer match the powers and qualities you have now. Remove them and pick others.')}</p>${stale.join('')}</div>` : '') + eligibleCats.map(catHtml).join('') +
       (lockedCats.length ? `<p class="muted"${tip(tr('You need a power or quality of these categories rated d6 or higher to take their Red abilities.'))}>${tr('Not available to you (you have no traits in these categories):')} ${lockedCats.map(c => esc(catLabel(c.cat))).join(', ')}.</p>` : '');
   }
 
@@ -2545,6 +2547,11 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     if (act === 'qok') { confirmQname(); return; }
     if (act === 'powerless') { st.arch.powerless = Object.assign({}, st.arch.powerless, { on: !!el.dataset.v }); render(); return; }
     if (act === 'pers2') { st.pers.id2 = el.dataset.id || null; render(); return; }
+    if (act === 'redDrop') {
+      const arr = st.sel[el.dataset.key] || [], i = arr.findIndex(e => e.name === el.dataset.name && (e.cat || '') === el.dataset.cat);
+      if (i >= 0) { arr.splice(i, 1); save(); render(); }
+      return;
+    }
     if (act === 'redCat') { const c = el.dataset.ok || el.dataset.cat, now = el.getAttribute('aria-expanded') === 'true'; ui.redOpen[c] = !now; render(); return; }
     if (act === 'setBind') { if (el.disabled) return; setPath(st, el.dataset.bind, el.dataset.val); hideTip(); render(); return; }
     if (act === 'flowGo') { ui.at[st.step] = +el.dataset.i; render(); return; }

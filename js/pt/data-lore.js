@@ -67,7 +67,7 @@
     illusions: ['Ilusões', 'Você tece imagens mentais convincentes.', 'As imagens espelhadas da LeBlanc; os disfarces da Neeko; a alucinação do Shaco.'],
     postcognition: ['Pós-cognição', 'Você vê visões do que aconteceu com uma pessoa, lugar ou objeto.', 'Ler as memórias deixadas numa ruína antiga.'],
     precognition: ['Precognição', 'Você vislumbra um futuro possível.', 'As visões da Karma; as profecias de um oráculo.'],
-    'remote-viewing': ['Visão Remota', 'Você projeta seus sentidos para outro lugar.', 'Uma jornada espiritual; os Kindred observando de longe.'],
+    'remote-viewing': ['Projeção Astral', 'Você projeta sua consciência para fora do corpo e percebe outro lugar.', 'Uma jornada espiritual; os Kindred observando de longe.'],
     suggestion: ['Sugestão', 'Você influencia mentes para que ajam segundo sua vontade.', 'O Encanto da Ahri; a sedução da Evelynn.'],
     telekinesis: ['Telecinese', 'Você move coisas com a mente.', 'As Esferas Sombrias da Syndra; as lâminas flutuantes da Irelia.'],
     telepathy: ['Telepatia', 'Você envia pensamentos e lê mentes.', 'O Tahm Kench sussurrando barganhas; os sussurros do Malzahar.'],
