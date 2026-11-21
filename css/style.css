@@ -1884,3 +1884,5 @@ body.ro-lock { overflow: hidden; }
 .red-stale { margin: 0 0 1rem; padding: 0.7rem 0.9rem; border-left: 3px solid var(--warn); background: rgba(217, 171, 69, .08); }
 .red-stale b { color: #fff; }
 .red-stale .ab { margin-top: 0.5rem; }
+.tchip.swap { opacity: .6; border-style: dashed; }
+.tchip.swap:hover { opacity: 1; border-color: var(--gold); }

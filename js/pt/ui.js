@@ -571,6 +571,8 @@ Object.assign(window.I18N.ui, {
  "A {die} quality that sums up your champion — your “high concept”. Examples: <em>Hextech Prodigy of the Academy</em>, <em>Last Kinkou of the Eastern Isles</em>, <em>Bilgewater's Luckiest Liar</em>.": "Uma qualidade {die} que resume seu campeão, o seu “conceito central”. Exemplos: <em>Prodígio Hextec da Academia</em>, <em>Último Kinkou das Ilhas Orientais</em>, <em>O Mentiroso Mais Sortudo de Águas de Sentina</em>.",
  "Type your Signature Quality, then press Enter": "Ex.: Última Lâmina da Guarda de Ferro",
  "Used when your champion is knocked out.": "Usada quando seu campeão é nocauteado.",
+ "click to swap them": "clique para trocá-los",
+ "click to take it": "clique para pegá-lo",
  "Uses": "Usa",
  "Upgrade one of your power or quality dice by one step (max {die}).": "Aumente um dos seus dados de poder ou qualidade em um tamanho (máx. {die}).",
  "Grow one die by a size": "Aumente um dado em um tamanho",

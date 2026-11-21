@@ -255,13 +255,13 @@
   }
 
   // the "Uses power" chips of an ability: the antagonist's own traits, each with the die it was given
-  const tchip = (attrs, on, disabled, k, m, why) => `<button type="button" class="tchip${on ? ' on' : ''}" role="radio" aria-checked="${on}" ${attrs}${disabled ? ' disabled' : ''}${tipA(K.traitTip(k) + (disabled && why ? `<hr><small>${esc(why)}</small>` : ''))}>${die(dieOf(k, m), 'sm')}<span>${esc(tShow(k))}</span><small>${tr(K.TRAIT[k].kind)}</small></button>`;
+  const tchip = (attrs, on, disabled, k, m, why, sw) => `<button type="button" class="tchip${on ? ' on' : ''}${disabled && sw ? ' swap' : ''}" role="radio" aria-checked="${on}" ${attrs}${disabled ? (sw ? ` data-swap="${esc(sw)}"` : ' disabled') : ''}${tipA(K.traitTip(k) + (disabled && why ? `<hr><small>${esc(why)}${sw ? ' — clique para trocá-los' : ''}</small>` : ''))}>${die(dieOf(k, m), 'sm')}<span>${esc(tShow(k))}</span><small>${tr(K.TRAIT[k].kind)}</small></button>`;
   // which traits a pick may not take, because of the approach's own rule
-  function blockFor(m, id) {
+  function blockFor(m, id, swap) {
     const block = {};
     if (!m.ap || !m.ap.rule || !id.startsWith('a:')) return block;
     const others = m.chosenA.filter(x => x.id !== id).map(x => ({ x, k: tokensOf(x.a.x).map(t => S.tk[x.id + '|' + t]).filter(Boolean)[0] })).filter(o => o.k);
-    if (m.ap.rule === 'all-diff') others.forEach(o => { block[o.k] = `usado por “${o.x.a.n}”`; });
+    if (m.ap.rule === 'all-diff') others.forEach(o => { block[o.k] = `usado por “${o.x.a.n}”`; if (swap) swap[o.k] = o.x.id + '|' + tokensOf(o.x.a.x).find(t => S.tk[o.x.id + '|' + t]); });
     if (m.ap.rule === 'two-one') {
       const counts = {}; others.forEach(o => { counts[o.k] = (counts[o.k] || 0) + 1; });
       const distinct = Object.keys(counts);
@@ -273,9 +273,9 @@
     let cfg = '';
     if (picked) {
       cfg = tokensOf(a.x).map(t => {
-        const cur = S.tk[id + '|' + t] || '', block = blockFor(m, id), keys = tokenKeys(t);
+        const cur = S.tk[id + '|' + t] || '', swap = {}, block = blockFor(m, id, swap), keys = tokenKeys(t);
         const what = t === 'poder' ? 'poder' : t === 'qualidade' ? 'qualidade' : t === 'energia/elemento' ? 'elemento ou energia' : 'poder ou qualidade';
-        const chips = keys.map(k => tchip(`data-a="tk" data-id="${esc(id)}" data-t="${esc(t)}" data-val="${esc(k)}"`, k === cur, !!block[k] && k !== cur, k, m, block[k])).join('');
+        const chips = keys.map(k => tchip(`data-a="tk" data-id="${esc(id)}" data-t="${esc(t)}" data-val="${esc(k)}"`, k === cur, !!block[k] && k !== cur, k, m, block[k], cur && swap[k] && tokenKeys(swap[k].split('|')[1]).includes(cur) ? swap[k] : '')).join('');
         const named = (t === 'qualidade' || t === 'poder/qualidade') && !S.rp.trim() ? `<small class="muted">A qualidade de interpretação aparece aqui quando você der um nome a ela, no capítulo Dados.</small>` : '';
         return `<div class="cfg-l">Usa ${what}</div>${keys.length ? `<div class="tchips" role="radiogroup">${chips}</div>` : '<small class="muted">Ainda não há um traço desse tipo: ligue os dados no capítulo Dados.</small>'}${named}`;
       }).join('');
@@ -645,7 +645,10 @@
       return applyChange(f, { i, value: el.dataset.val });
     }
     if (a === 'rpok') { if (rpReady()) { S.rpOk = true; save(); render(); } return; }
-    if (a === 'tk') return applyChange('tk', { id: el.dataset.id, t: el.dataset.t, value: el.dataset.val });
+    if (a === 'tk') {
+      if (el.dataset.swap) { const [hid, ht] = el.dataset.swap.split('|'); const cur = S.tk[el.dataset.id + '|' + el.dataset.t]; S.tk[hid + '|' + ht] = cur; delete S.tk[el.dataset.id + '|' + el.dataset.t]; }
+      return applyChange('tk', { id: el.dataset.id, t: el.dataset.t, value: el.dataset.val });
+    }
     if (a === 'ap' || a === 'arch') return applyChange(a, { value: el.dataset.v });
     if (a === 'ab') return applyChange('ab', { id: el.dataset.id, checked: !S.ab[el.dataset.id] });
     if (a === 'up') return applyChange('up', { id: el.dataset.id, checked: !S.up[el.dataset.id] });
