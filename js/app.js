@@ -262,6 +262,11 @@
   const ruleSrc = s => (PT && window.I18N.text[s]) || s;
   // the principle texts keep the book's [energy/element] placeholder: pt shows it translated, like [poder] and [qualidade]
   const rpText = t => (PT ? String(t || '').replace(/\[energy\/element\]/g, '[energia/elemento]') : String(t || ''));
+  // Principle of Dependence: the champion names what they depend on; the name goes into the principle's texts
+  const DEP_PHRASE = /(objeto da sua dependência|object of your dependence|coisa de que você depende)/g;
+  const depSub = (t, n) => (n ? String(t).replace(/\[(?:algo|something)\]/g, n).replace(DEP_PHRASE, `$1 (${n})`) : String(t));
+  const depHtml = (html, n) => (n ? String(html).replace(DEP_PHRASE, `$1 (${esc(n)})`) : String(html));
+  const depInput = slot => `<div class="ab-cfg"><div class="cfg-l">${tr('What do you depend on?')}</div><input type="text" class="dep-input" data-bind="pch.${slot}" data-live="1" maxlength="60" value="${esc(st.pch[slot] || '')}" placeholder="${tr('e.g. a relic, a potion, your sword')}"></div>`;
   const TOKEN_PT = { 'power': 'poder', 'quality': 'qualidade', 'power/quality': 'poder/qualidade', 'Self Control power': 'poder de Autocontrole', 'Psychic power': 'poder Psíquico', 'Mental quality': 'qualidade Mental', 'Signature Vehicle': 'Montaria Emblemática', 'Signature Weaponry': 'Arma Emblemática', 'a power gained from your archetype': 'um poder ganho do seu Caminho', 'a quality gained from your archetype': 'uma qualidade ganha do seu Caminho', 'energy/element': 'energia/elemento', 'element/energy': 'elemento/energia', 'elemental/energy': 'elemental/energia', 'element': 'elemento', 'basic action': 'ação básica', 'actions': 'ações', 'action': 'ação',
     'element/energy you have a related power for': 'elemento/energia de um poder que você tem', 'energy/element you have a related power for': 'energia/elemento de um poder que você tem', 'physical or energy': 'físico ou de energia', 'Boost or Hinder': 'Fortaleça ou Atrapalhe', 'choose two basic actions': 'escolha duas ações básicas', 'any Physical or Mental quality': 'qualquer qualidade Física ou Mental' };
   const tokenLabel = br => (PT && TOKEN_PT[br]) || br;
@@ -1028,9 +1033,10 @@
     if (p) {
       const needsEl = p.id === 'energy-element';
       detail = `<div class="detail"><h4>${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</h4>` +
-        `<p><b>${tr('During roleplaying:')}</b> ${esc(rpText(p.rp))}</p><p><b>${tr('Minor twist:')}</b> <em>${esc(p.minor)}</em><br><b>${tr('Major twist:')}</b> <em>${esc(p.major)}</em></p>` +
-        `<div class="ab green picked"><div class="ab-top"><span class="ab-name">${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</span><span class="pill green">${tr('green')}</span><span class="ab-type"${tip(`<h5>${tr('Type: {t}', { t: p.type })}</h5>${window.ABILITY_TYPES[p.type]}`)}>${p.type}</span></div><div class="ab-text">${rulesText(p.ability, { ch: { 'energy/element': st.pch[slot] } })}</div></div>` +
+        `<p><b>${tr('During roleplaying:')}</b> ${esc(p.id === 'dependence' ? depSub(rpText(p.rp), st.pch[slot]) : rpText(p.rp))}</p><p><b>${tr('Minor twist:')}</b> <em>${esc(depSub(p.minor, p.id === 'dependence' ? st.pch[slot] : ''))}</em><br><b>${tr('Major twist:')}</b> <em>${esc(depSub(p.major, p.id === 'dependence' ? st.pch[slot] : ''))}</em></p>` +
+        `<div class="ab green picked"><div class="ab-top"><span class="ab-name">${esc((window.PRINCIPLE_LORE[p.id] || [p.name])[0])}</span><span class="pill green">${tr('green')}</span><span class="ab-type"${tip(`<h5>${tr('Type: {t}', { t: p.type })}</h5>${window.ABILITY_TYPES[p.type]}`)}>${p.type}</span></div><div class="ab-text">${p.id === 'dependence' ? depHtml(rulesText(p.ability, { ch: { 'energy/element': st.pch[slot] } }), (st.pch[slot] || '').trim()) : rulesText(p.ability, { ch: { 'energy/element': st.pch[slot] } })}</div></div>` +
         (needsEl ? `<div class="ab-cfg"><div class="cfg-l">${tr('Your element')}</div>${valueChips(`pch.${slot}`, CATS['P:elemental'].items.map(i => i[2]), st.pch[slot])}</div>` : '') +
+        (p.id === 'dependence' ? depInput(slot) : '') +
         `</div>`;
     }
     return `<div class="principles">${items}</div>${detail}`;
@@ -1607,7 +1613,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
           const cur = [['bg', st.bg.principle, tr('Origin'), bgDef()], ['arch', st.arch.principle, tr('Path'), archDef()]];
           const from = cur.map(([slot, id, label, d]) => { const p = PRINCIPLES.find(x => x.id === id); return p ? principleInfoCard(p, { slot, on: rc.which === slot, act: 'retconWhich', tag: `${label}${d ? ': ' + d.rt : ''}` }) : ''; }).join('');
           const to = PRINCIPLES.filter(p => !mine.includes(p.id) || rc.principle === p.id).map(p => principleInfoCard(p, { on: rc.principle === p.id, act: 'retconPrinciple' })).join('');
-          const el = rc.principle === 'energy-element' && rc.which ? `<div class="ab-cfg"><div class="cfg-l">${tr('Your element')}</div>${valueChips(`pch.${rc.which}`, CATS['P:elemental'].items.map(i => i[2]), st.pch[rc.which])}</div>` : '';
+          const el = rc.principle === 'energy-element' && rc.which ? `<div class="ab-cfg"><div class="cfg-l">${tr('Your element')}</div>${valueChips(`pch.${rc.which}`, CATS['P:elemental'].items.map(i => i[2]), st.pch[rc.which])}</div>` : (rc.principle === 'dependence' && rc.which ? depInput(rc.which) : '');
           return `<h4 class="rc-h">${tr('Which principle do you give up?')}</h4><div class="principles">${from}</div>` +
             `<h4 class="rc-h">${tr('Which principle takes its place? (any category)')}</h4><div class="principles">${to}</div>${el}`;
         }
@@ -1766,6 +1772,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       from = prName(cur.id); to = prName(E.to);
       st.evo.principles[E.from] = E.to;
       if (E.to === 'energy-element') { st.pch[E.from] = E.el.trim(); to += ` (${st.pch[E.from]})`; }
+      else if (E.to === 'dependence') { st.pch[E.from] = (E.el || '').trim(); if (st.pch[E.from]) to += ` (${st.pch[E.from]})`; }
+      else delete st.pch[E.from];
     } else if (E.tab === 'ability') {
       const x = evoAbilityChoices().find(y => y.iid === E.from);
       if (!x || !evoAbilityOptions(x).includes(E.to)) return;
@@ -1823,6 +1831,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       PRINCIPLES.filter(p => !cur.some(x => x.id === p.id)).forEach(p => (byCat[p.cat] = byCat[p.cat] || []).push(p));
       form = sel('from', tr('Swap'), cur.map(x => opt(x.slot, prName(x.id), E.from)).join(''))
         + sel('to', tr('For'), Object.entries(byCat).map(([c, ps]) => `<optgroup label="${esc(tr(c))}">${ps.map(p => opt(p.id, prName(p.id), E.to)).join('')}</optgroup>`).join(''));
+      if (E.to === 'dependence') form += `<label class="field"><span>${tr('What do you depend on?')}</span><input type="text" data-evo="el" value="${esc(E.el || '')}" placeholder="${tr('e.g. a relic, a potion, your sword')}"></label>`;
       if (E.to === 'energy-element') form += `<label class="field"><span>${tr('Energy or element')}</span><input type="text" data-evo="el" value="${esc(E.el || '')}" placeholder="${tr('e.g. fire, Hextech, shadow')}"></label>`;
       const p = PRINCIPLES.find(x => x.id === E.to);
       if (p) note = `<b>${esc(prName(p.id))}</b> · ${esc(rpText(p.rp))}`;
@@ -1871,7 +1880,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
   // Chapter IX lore guide: one card per choice, each with questions that help write the biography.
   function loreGuide() {
     const r = regionDef(), b = bgDef(), p = psDef(), a = archDef(), pe = persDef();
-    const fill = (t, slot) => String(t || '').replace(/\[([^\]]+)\]/g, (m, k) => (k === 'energy/element' && st.pch[slot]) || tokenLabel(k));
+    const fill = (t, slot) => String(t || '').replace(/\[([^\]]+)\]/g, (m, k) => (k === 'energy/element' && st.pch[slot]) || ((k === 'algo' || k === 'something') && st.pch[slot]) || tokenLabel(k));
     const C = [];
     const pp = peopleDef();
     if (pp) C.push({ kicker: tr('People'), title: pp.name, text: esc(pp.lore), color: pp.color, link: 'lore.html#races',
@@ -1950,7 +1959,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     }
     return n;
   };
-  const principleText = (x, s) => String(s).replace(/\[energy\/element\]/g, st.pch[x.slot] || (PT ? '[energia/elemento]' : '[energy/element]'));
+  const principleText = (x, s) => { const t = String(s).replace(/\[energy\/element\]/g, st.pch[x.slot] || (PT ? '[energia/elemento]' : '[energy/element]')); return x.id === 'dependence' ? depSub(t, (st.pch[x.slot] || '').trim()) : t; };
 
   // Rows of the official sheet: green / principles / yellow / red / out
   function sheetRows(R) {
@@ -2028,13 +2037,13 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
     };
     const abRow = (r, zone) => `<tr${formsOf(r) && formsOf(r).size > 1 ? ' class="conflict"' : ''}><td class="ic">${iconHtml(r.text)}</td><td class="nm">${esc(r.name)}${r.renamed ? origTag(r.base) : ''}${abForm(r)}</td><td class="ty"${tip(window.ABILITY_TYPES[r.type] || '')}>${esc(r.type)}</td><td class="gt">${rulesText(r.text, r.entry)}</td></tr>`;
     const emptyRows = (n, have) => Array.from({ length: Math.max(0, n - have) }, () => '<tr><td class="ic"></td><td class="nm">&nbsp;</td><td class="ty"></td><td class="gt"></td></tr>').join('');
-    const prRow = (x, r) => `<tr class="pr-row"><td class="ic">${iconHtml(x.p.ability)}</td><td class="nm"><small class="po-lbl">${tr('Principle of')}</small> ${esc(principleShort(x))}</td><td class="ty">${esc(x.p.type)}</td><td class="gt">${rulesText(x.p.ability, { ch: { 'energy/element': st.pch[x.slot] } })}</td></tr>`;
+    const prRow = (x, r) => `<tr class="pr-row"><td class="ic">${iconHtml(x.p.ability)}</td><td class="nm"><small class="po-lbl">${tr('Principle of')}</small> ${esc(principleShort(x))}</td><td class="ty">${esc(x.p.type)}</td><td class="gt">${x.id === 'dependence' ? depHtml(rulesText(x.p.ability, { ch: { 'energy/element': st.pch[x.slot] } }), (st.pch[x.slot] || '').trim()) : rulesText(x.p.ability, { ch: { 'energy/element': st.pch[x.slot] } })}</td></tr>`;
     const check = (path, val, label) => `<input type="checkbox" class="hs-chk" data-bind="${path}" data-live="1"${val ? ' checked' : ''} aria-label="${esc(label)}">`;
     const zone = (cls, label, body) => `<div class="hs-zone ${cls}${zLocked(cls) ? ' locked' : ''}${zNow === cls ? ' now' : ''}"><div class="zlbl">${label}</div><table class="hs-ab-t">${zLocked(cls) ? `<caption class="zlock">${ico('lock')} ${zNow === 'out' ? tr('Out of the fight: only your Out action is available.') : tr('Unlocked when your Health reaches the {z}.', { z: ZNAME[cls].toLowerCase() })}</caption>` : ''}<thead><tr><th>${tr('Icon')}</th><th>${tr('Name')}</th><th>${tr('Type')}</th><th>${tr('Game text')}</th></tr></thead><tbody>${body}</tbody></table></div>`;
     const principleCol = x => x ? `<div class="hs-pr"><div class="hs-pr-h">${tr('Principle of')} <b>${esc(principleShort(x))}</b> <small class="muted">${esc(tr(x.p.cat))}</small></div>
       <div class="hs-pr-s"><span class="hs-l">${tr('During roleplaying')}</span>${esc(principleText(x, x.p.rp))}</div>
-      <div class="hs-pr-s"><span class="hs-l">${tr('Minor twist')}</span>${esc(x.p.minor)}</div>
-      <div class="hs-pr-s"><span class="hs-l">${tr('Major twist')}</span>${esc(x.p.major)}</div></div>` : `<div class="hs-pr"><div class="hs-pr-h">${tr('Principle of')} …</div></div>`;
+      <div class="hs-pr-s"><span class="hs-l">${tr('Minor twist')}</span>${esc(principleText(x, x.p.minor))}</div>
+      <div class="hs-pr-s"><span class="hs-l">${tr('Major twist')}</span>${esc(principleText(x, x.p.major))}</div></div>` : `<div class="hs-pr"><div class="hs-pr-h">${tr('Principle of')} …</div></div>`;
     return `<div class="hero-sheet">
       <div class="hs-page" id="hs-p1">
         <div class="hs-top">
@@ -2614,7 +2623,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       if (cfg && cfg.getBoundingClientRect().bottom > window.innerHeight - 16) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       return;
     }
-    if (act === 'principle') { ui.advance = !(el.dataset.id === 'energy-element'); if (el.dataset.slot === 'bg') st.bg.principle = el.dataset.id; else st.arch.principle = el.dataset.id; ui.expand['pr-' + el.dataset.slot] = false; ui.lastPick[st.step] = 'pr-' + el.dataset.slot; render(); return; }
+    if (act === 'principle') { const cur = el.dataset.slot === 'bg' ? st.bg.principle : st.arch.principle; if (cur !== el.dataset.id) st.pch[el.dataset.slot] = ''; ui.advance = !(el.dataset.id === 'energy-element' || el.dataset.id === 'dependence'); if (el.dataset.slot === 'bg') st.bg.principle = el.dataset.id; else st.arch.principle = el.dataset.id; ui.expand['pr-' + el.dataset.slot] = false; ui.lastPick[st.step] = 'pr-' + el.dataset.slot; render(); return; }
     if (act === 'divMethod') { ui.advance = true; st.arch.divMethod = el.dataset.id; delete st.sel['arch-divmethod']; render(); return; }
     if (act === 'minionForm') {
       const f = st.arch.minionForms = st.arch.minionForms || [];
@@ -2630,7 +2639,7 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       render(); return;
     }
     if (act === 'retconWhich') { st.retcon.which = el.dataset.id; render(); return; }
-    if (act === 'retconPrinciple') { st.retcon.principle = el.dataset.id; render(); return; }
+    if (act === 'retconPrinciple') { if (st.retcon.principle !== el.dataset.id && st.retcon.which) st.pch[st.retcon.which] = ''; st.retcon.principle = el.dataset.id; render(); return; }
     if (act === 'retcon') {
       const was = st.retcon.type;
       st.retcon = { type: was === el.dataset.id ? null : el.dataset.id }; ui.advance = true; ui.rcOpen = null;

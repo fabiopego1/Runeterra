@@ -217,7 +217,7 @@
     dependence: ['Princípio da Dependência', 'Você precisa de algo: um coração hextec, uma relíquia, Cintilante...'],
     equality: ['Princípio da Igualdade', 'Pelos becos de Zaun, pelos nascidos com magia, pelos oprimidos.'],
     'great-power': ['Princípio do Grande Poder', 'Sua magia assusta até você, como a luz ofuscante da Lux ou as esferas da Syndra.'],
-    hero: ['Princípio do Campeão', 'Você tem a vocação de proteger os outros.'],
+    hero: ['Princípio do Herói', 'Você tem a vocação de proteger os outros.'],
     honor: ['Princípio da Honra', 'Códigos demacianos, votos ionianos, juramentos freljordianos.'],
     justice: ['Princípio da Justiça', 'Sempre atento à injustiça e a quem a cometeu.'],
     liberty: ['Princípio da Liberdade', 'As correntes do Sylas foram quebradas; nenhuma mente consegue te prender.'],
