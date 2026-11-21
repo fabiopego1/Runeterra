@@ -386,7 +386,7 @@ window.ARCHETYPES = [
   { n: 14, id: 'minion-maker', sc: 'Minion-Maker', rt: 'Summoner', role: 'Summoner / Conjurer',
     lore: 'You never fight alone: turrets, Maidens of the Mist, snapping plants or a very large burning bear.',
     champs: 'Heimerdinger, Yorick, Zyra, Annie',
-    powers: ['duplication', 'inventions', 'part-detachment', 'robotics', 'P:elemental', 'P:materials'], quals: ['Q:information', 'Q:mental'], remPowers: 'oneOrMore',
+    powers: ['animal-control', 'duplication', 'inventions', 'part-detachment', 'robotics', 'P:elemental', 'P:materials'], quals: ['Q:information', 'Q:mental'], remPowers: 'oneOrMore',
     green: { rules: { kind: 'power' }, count: 2, fixed: true, diff: true, list: ['Make Minion', 'Power Up'], note: 'You gain both, each using a different power.' },
     yellow: { count: 1, list: ['Minion Formation', 'Rapid Deployment', 'Upgrade Minion'] },
     extraRed: ['Construction Focus', 'Swarm Combat', 'Sacrifice'],
