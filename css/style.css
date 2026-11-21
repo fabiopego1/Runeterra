@@ -711,7 +711,8 @@ input[type=checkbox]:hover:not(:disabled) { border-color: var(--gold); }
 .hs-top { display: grid; grid-template-columns: minmax(9.259rem, 34%) 1fr; gap: 1.042rem; }
 .hs-idblock { display: grid; gap: 0.347rem; }
 .hs-portrait { background: var(--ink-0); display: grid; place-items: center; min-height: 15.046rem; overflow: hidden; box-shadow: inset 0 0 0 1px var(--gold-lo); clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); }
-.hs-portrait img { width: 100%; height: 100%; object-fit: cover; }
+.hs-portrait { position: relative; }
+.hs-portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }   /* the img box is the frame itself, so the PDF crops exactly like the screen */
 /* the sheet portrait keeps a portrait-photo shape (3:4) instead of stretching to the height of the column beside it */
 .hs-left { display: flex; flex-direction: column; gap: 0.694rem; }
 /* the inspiration points fill whatever height the description column leaves under the portrait */
