@@ -270,7 +270,10 @@
             const k = Math.max(r.width / im.width, r.height / im.height);      // object-fit: cover
             const w = im.width * k, h = im.height * k;
             page.pushOperators(L.pushGraphicsState(), L.rectangle(X(r.left), Y(r.bottom), r.width * PX, r.height * PX), L.clip(), L.endPath());
-            page.drawImage(im, { x: X(r.left + (r.width - w) / 2), y: Y(r.top + (r.height + h) / 2), width: w * PX, height: h * PX });
+            // object-position (default 50% 50%): where the cropped picture is anchored inside its frame
+            const op = (cs(img).objectPosition || '50% 50%').split(' ').map(v => v.endsWith('%') ? parseFloat(v) / 100 : v === '0px' ? 0 : 0.5);
+            const fx = isNaN(op[0]) ? 0.5 : op[0], fy = isNaN(op[1]) ? 0.5 : op[1];
+            page.drawImage(im, { x: X(r.left - (w - r.width) * fx), y: Y(r.top - (h - r.height) * fy + h), width: w * PX, height: h * PX });
             page.pushOperators(L.popGraphicsState());
           } catch (e) { /* unsupported image: leave the frame empty */ }
         };
