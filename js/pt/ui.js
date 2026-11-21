@@ -402,6 +402,8 @@ Object.assign(window.I18N.ui, {
  "Qualities you already have:": "Para não repetir, suas qualidades atuais:",
  "Powers you have now:": "Poderes que você já tem:",
  "Remove it": "Remover",
+ "What do you depend on?": "Do que você depende?",
+ "e.g. a relic, a potion, your sword": "Ex.: um amuleto, um remédio, sua espada",
  "Chosen, but no longer available": "Escolhidas, mas que não valem mais",
  "These Ultimates no longer match the powers and qualities you have now. Remove them and pick others.": "Estas Supremas não combinam mais com os poderes e qualidades que você tem agora. Remova-as e escolha outras.",
  "You already have this trait ({die}), gained in {stage}.": "Você já tem este traço ({die}), adquirido em: {stage}.",

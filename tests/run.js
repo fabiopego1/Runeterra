@@ -820,6 +820,16 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
       names[el] = await p.$$eval('.pr-row .nm', e => e.map(x => x.textContent.replace(/\s+/g, ' ').trim())[0]);
     }
     ok(names['Fogo'] === 'Princípio do Fogo' && names['Sombras'] === 'Princípio das Sombras' && names['Água'] === 'Princípio da Água' && names['Luz'] === 'Princípio da Luz', 'the sheet gives the element principle its article (do Fogo, das Sombras, da Água, da Luz)');
+    // Principle of Dependence: the hero names it (Twist of Fate shows the field) and the name reaches the sheet
+    await p.goto(`${BASE}/index.html`);
+    await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.step = 'retcon'; s.maxStep = 10; s.retcon = { type: 'change-principle', which: 'bg', principle: 'dependence' }; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
+    await p.reload(); await p.waitForTimeout(500);
+    await p.click('.flow-sec:has-text("Detalhes da escolha") .flow-head'); await p.waitForTimeout(200);
+    ok(!!(await p.$('.dep-input')), 'the Twist of Fate asks what the Dependence principle depends on');
+    await p.fill('.dep-input', 'Espada Longa'); await p.waitForTimeout(200);
+    await p.goto(`${BASE}/ficha.html`); await p.waitForTimeout(400);
+    ok(await p.$$eval('.hs-pr', e => e.some(x => /Você depende de Espada Longa/.test(x.textContent) && /coisa de que você depende \(Espada Longa\)/.test(x.textContent))) && await p.$$eval('.pr-row .gt', e => e.some(x => /objeto da sua dependência \(Espada Longa\)/.test(x.textContent))), 'the named dependence appears in the principle\'s text, twists and ability on the sheet');
+    ok(await p.evaluate(() => window.PRINCIPLE_LORE.hero[0] === 'Princípio do Herói'), 'the Champion principle is now the Hero principle');
     ok(await p.evaluate(() => { const N = id => window.ARCHETYPES.find(a => a.id === id).rt; return N('cqc') === 'Combatente' && N('elemental') === 'Elemental' && N('powerhouse') === 'Colosso' && window.PRINCIPLE_LORE.sidekick[0] === 'Princípio do Ajudante' && /mão direita/.test(window.PRINCIPLE_LORE.sidekick[1]) && /laser/.test(window.ARCHETYPES.find(a => a.id === 'blaster').lore) && !/Atirador|Disparador|Elemental/.test(window.ARCHETYPES.find(a => a.id === 'sorcerer').lore) && /tomos/.test(window.ARCHETYPES.find(a => a.id === 'sorcerer').lore) && !/Disparador|Atirador/.test(window.ARCHETYPES.find(a => a.id === 'elemental').lore); }), 'the Paths and the Sidekick principle have the new names (Combatente, Elemental, Colosso, Ajudante) the Blaster covers lasers and explosives, and the Sorcerer is learned magic, with no comparison to the other Paths');
     // a Divided hero's sheet: status dice in two columns, and abilities tagged with the form of the trait they use
     await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.arch.id = 'divided'; s.arch.base = 'sorcerer'; s.pers.id2 = 'impulsive'; s.sel['arch-divafter'] = [{ name: 'Split Form' }]; s.arch.split = { cosmic: 'both', illusions: 'her', transmutation: 'civ', 'remote-viewing': 'both', flight: 'her', conviction: 'both', 'esoteric-lore': 'civ', 'magical-lore': 'her', history: 'both' }; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
