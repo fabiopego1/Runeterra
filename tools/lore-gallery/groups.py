@@ -1042,6 +1042,7 @@ RELOCATE = {
     '03BW002': ('bilgewater', 'underworld'),  # Lagarto Boêmio
     'lkarthus': ('shadow-isles', 'specters'),  # Karthus
     '07SH040': ('ixtal', 'creatures'),  # Porcouriço
+    '07NX033': ('ixtal', 'creatures'),  # Courósseo de Três Caudas
     '07SH043': ('ixtal', 'creatures'),  # Parofante Grandioso
     '07SH044': ('ixtal', 'creatures'),  # Aurora Alucinati
     'ufe00d1b066': ('ionia', 'dancers'),  # A Grande Resistência
