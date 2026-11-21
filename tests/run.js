@@ -210,6 +210,10 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.fill('textarea[data-bind="info.costume"]', 'Manto negro.\n\nLâmina rúnica'); await p.waitForTimeout(200);
     ok(await p.$$eval('.rail-item.locked', e => e.length) === 0, 'every chapter unlocked at the end');
     ok(!!(await p.$('[data-act=pdf]')), 'PDF export available');
+    // a tall portrait is cropped to the 3:4 frame (the picture's own box is the frame, so the PDF crops the same way)
+    await p.evaluate(() => { const c = document.createElement('canvas'); c.width = 277; c.height = 700; const x = c.getContext('2d'); x.fillStyle = '#c33'; x.fillRect(0, 0, 277, 700); const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); s.info.portrait = c.toDataURL('image/jpeg'); localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
+    await p.reload(); await p.waitForTimeout(300);
+    ok(await p.evaluate(() => { const f = document.querySelector('.hs-left > .hs-portrait'), i = f && f.querySelector('img'); if (!i) return false; const a = f.getBoundingClientRect(), b = i.getBoundingClientRect(); return Math.abs(a.height - b.height) < 1 && Math.abs(a.width - b.width) < 1 && Math.abs(a.width / a.height - 0.75) < 0.02; }), 'a tall portrait stays inside the 3:4 frame');
     const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 60000 }), p.click('[data-act=pdf]')]);
     const pdf = path.join(require('os').tmpdir(), 'forja-test.pdf');
     await dl.saveAs(pdf);

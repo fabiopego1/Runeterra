@@ -260,6 +260,10 @@
 
         const drawImage = async (img, r) => {
           try {
+            // a picture taller than its overflow:hidden frame is cropped by that frame
+            for (let a = img.parentElement; a && a !== document.body; a = a.parentElement) {
+              if (cs(a).overflow === 'hidden') { const f = a.getBoundingClientRect(); const l = Math.max(r.left, f.left), t = Math.max(r.top, f.top), rr = Math.min(r.right, f.right), bb = Math.min(r.bottom, f.bottom); if (rr - l < r.width - 1 || bb - t < r.height - 1) r = { left: f.left, top: f.top, right: f.right, bottom: f.bottom, width: f.width, height: f.height }; break; }
+            }
             const src = img.currentSrc || img.src;
             const bytes = src.startsWith('data:') ? src : await (await fetch(src)).arrayBuffer();
             const im = /^data:image\/png|\.png$/i.test(src) ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
