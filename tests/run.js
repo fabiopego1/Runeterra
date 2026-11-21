@@ -921,8 +921,14 @@ const ok = (cond, msg) => { console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`); if 
     await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('runeterra-forge-v1')); Object.assign(s.arch, { assign: { a0: 'sig-weapon', a1: 'swimming', a2: 'intuition' }, principle: 'powerless' }); s.sel['arch-green'] = [{ name: 'Deflect', ch: {} }, { name: 'Repair', ch: {}, trait: 'sig-weapon' }, { name: 'Living Bulwark', ch: {}, trait: 'swimming' }]; localStorage.setItem('runeterra-forge-v1', JSON.stringify(s)); });
     await p.reload(); await p.waitForTimeout(300);
     await p.click('#flow-archetype-g-arch-green .flow-head'); await p.waitForTimeout(200);
-    const chip = (n, k) => p.$eval(`.tchip[data-bind="sel.arch-green.${n}.trait"][data-val="${k}"]`, b => b.disabled);
+    const chip = (n, k) => p.$eval(`.tchip[data-bind="sel.arch-green.${n}.trait"][data-val="${k}"]`, b => b.disabled || b.classList.contains('swap'));
     ok(await chip(2, 'sig-weapon') && await chip(1, 'swimming') && !(await chip(2, 'swimming')) && !(await chip(2, 'intuition')), 'with Deflect picked, the other two Armored abilities cannot repeat a power');
+    // a power taken by another ability can be claimed anyway: the two abilities trade their powers
+    const gt = () => p.evaluate(() => window.ForgeDebug.state().sel['arch-green'].map(e => e.trait || '').join());
+    const before = await gt();
+    await p.click('.tchip.swap[data-bind="sel.arch-green.2.trait"]'); await p.waitForTimeout(150);
+    const parts = before.split(','), now = (await gt()).split(',');
+    ok(now[2] === parts[1] && now[1] === parts[2] && now[0] === parts[0], 'clicking a power held by another ability swaps the two powers');
     await p.context().close();
   }
   // Special cases from the book: Divided's second Temperament and Split Form (p.95), Modular's Powerless Mode (p.96).

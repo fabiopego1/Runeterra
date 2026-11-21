@@ -143,6 +143,7 @@
     }
   }
 
+  const getPath = (obj, path) => path.split('.').reduce((o, p) => o == null ? o : o[p], obj);
   function setPath(obj, path, val) {
     const parts = path.split('.');
     let o = obj;
@@ -532,11 +533,12 @@
   // The same choice as a row of chips: every option in view, with its die, instead of a closed dropdown.
   // while choosing which trait an ability uses, Divided heroes see which form each trait belongs to
   const chipForm = k => { if (!splitOn()) return ''; const f = (st.arch.split || {})[k]; return f ? `<small class="hs-form-tag">${tr(f === 'both' ? 'both forms' : f === 'civ' ? 'civil' : 'heroic')}</small>` : ''; };
-  function traitChips(bind, keys, sel, block = {}) {
+  // swap: { traitKey: bindOfTheOtherChoice } for blocked traits that may be taken anyway: the other choice gets this one's current trait.
+  function traitChips(bind, keys, sel, block = {}, swap = {}) {
     if (!keys.length) return '';
     return `<div class="tchips" role="radiogroup">${keys.map(k => {
-      const no = block[k] && k !== sel, t = R0.T[k];
-      return `<button type="button" class="tchip${k === sel ? ' on' : ''}" role="radio" aria-checked="${k === sel}" data-act="setBind" data-bind="${bind}" data-val="${k}"${no ? ' disabled' : ''}${tip(traitTip(k) + (no ? `<hr><small>${esc(block[k])}</small>` : ''))}>${t ? die(t.die, 'sm') : ''}<span>${esc(traitName(k))}</span><small>${tr(TRAIT[k].kind)}</small>${chipForm(k)}</button>`;
+      const no = block[k] && k !== sel, t = R0.T[k], sw = no && swap[k];
+      return `<button type="button" class="tchip${k === sel ? ' on' : ''}${sw ? ' swap' : ''}" role="radio" aria-checked="${k === sel}" data-act="setBind" data-bind="${bind}" data-val="${k}"${sw ? ` data-swap="${swap[k]}"` : no ? ' disabled' : ''}${tip(traitTip(k) + (no ? `<hr><small>${esc(block[k])}${sw ? ' — ' + esc(tr(sel ? 'click to swap them' : 'click to take it')) : ''}</small>` : ''))}>${t ? die(t.die, 'sm') : ''}<span>${esc(traitName(k))}</span><small>${tr(TRAIT[k].kind)}</small>${chipForm(k)}</button>`;
     }).join('')}</div>`;
   }
   const valueChips = (bind, vals, sel, label = x => x) => `<div class="tchips" role="radiogroup">${vals.map(v => `<button type="button" class="tchip${v === sel ? ' on' : ''}" role="radio" aria-checked="${v === sel}" data-act="setBind" data-bind="${bind}" data-val="${esc(v)}"><span>${esc(label(v))}</span></button>`).join('')}</div>`;
@@ -960,7 +962,7 @@
       if (al.req.kind !== 'none' && !reqFixed) {
         const what = al.req.kind === 'any' ? tr('power or quality') : al.req.cat ? catPhrase(al.req.cat) : tr(al.req.kind);
         const catOn2 = ctx.cat && al.req.second && (ctx.cat[0] === 'Q' ? 'quality' : 'power') === al.req.second;
-        cfg += `<div class="cfg-l">${tr('Uses {what}', { what })}${ctx.cat && !catOn2 ? ' (' + esc(catName(ctx.cat)) + ')' : ''}</div>${traitChips(`${base}.trait`, al.keys, entry.trait, ctx.block || {})}`;
+        cfg += `<div class="cfg-l">${tr('Uses {what}', { what })}${ctx.cat && !catOn2 ? ' (' + esc(catName(ctx.cat)) + ')' : ''}</div>${traitChips(`${base}.trait`, al.keys, entry.trait, ctx.block || {}, ctx.swap || {})}`;
         if (!al.keys.length) cfg += `<small class="muted">${tr('You have no eligible trait yet.')}</small>`;
       }
       if (reqFixed) cfg += `<small class="muted">${tr('Uses {what}', { what: esc(traitName(reqFixed)) })}${unavailable ? tr(' — which you don\'t have!') : ''}</small>`;
@@ -998,9 +1000,15 @@
       g.list.map(n => {
         const i = s.findIndex(e => e.name === n);
         // Groups that need a different power/quality per ability (or different from the Green ones) block repeats up front.
-        const block = {};
-        if (g.diff) s.forEach((e, j) => { if (j !== i && e.trait && usesTrait(e.name)) block[e.trait] = tr('used by {ab}', { ab: abName(e.name) }); });
-        if (g.rules && g.rules.notGreen) (st.sel['arch-green'] || []).forEach(e => { if (e.trait && usesTrait(e.name)) block[e.trait] = tr('used by {ab}', { ab: abName(e.name) }); });
+        const block = {}, swap = {}, cur = i >= 0 ? s[i].trait : null;
+        // the one holding a blocked trait can take this ability's current one instead (if it may use it)
+        const hold = (e, j, grp) => {
+          block[e.trait] = tr('used by {ab}', { ab: abName(e.name) });
+          const ok = !cur || allowedTraits(R, e.name, { pool: groupPool(grp, R), use: groupUse(grp, R), powersOnly: grp.powersOnly }).keys.includes(cur);
+          if (ok && i >= 0) swap[e.trait] = `sel.${grp.key}.${j}.trait`;
+        };
+        if (g.diff) s.forEach((e, j) => { if (j !== i && e.trait && usesTrait(e.name)) hold(e, j, g); });
+        if (g.rules && g.rules.notGreen) { const gg = groups().find(x => x.key === 'arch-green'); if (gg) (st.sel['arch-green'] || []).forEach((e, j) => { if (e.trait && usesTrait(e.name)) hold(e, j, gg); }); }
         // "At least N different powers": once the other picks can no longer reach N on their own, this one must bring a new power.
         const md = g.rules && g.rules.minDistinct;
         if (md) {
@@ -1008,9 +1016,9 @@
           const others = s.filter((e, j) => j !== i && usesTrait(e.name));
           const have = new Set(others.map(e => e.trait).filter(k => k && kindOk(k)));
           const open = (g.count - s.length - (i < 0 ? 1 : 0)) + others.filter(e => !e.trait).length;
-          if (have.size + open < md) others.forEach(e => { if (e.trait && kindOk(e.trait)) block[e.trait] = tr('used by {ab}: these abilities need at least {n} different powers', { ab: abName(e.name), n: md }); });
+          if (have.size + open < md) others.forEach(e => { if (e.trait && kindOk(e.trait)) { const j = s.indexOf(e), had = swap[e.trait]; block[e.trait] = tr('used by {ab}: these abilities need at least {n} different powers', { ab: abName(e.name), n: md }); if (cur && kindOk(cur) && allowedTraits(R, e.name, { pool: groupPool(g, R), use: groupUse(g, R), powersOnly: g.powersOnly }).keys.includes(cur)) swap[e.trait] = `sel.${g.key}.${j}.trait`; else if (had) delete swap[e.trait]; } });
         }
-        return abilityCard(g, n, s[i], i >= 0, R, { idx: i, powersOnly: g.powersOnly, use: groupUse(g, R), pool: groupPool(g, R), block });
+        return abilityCard(g, n, s[i], i >= 0, R, { idx: i, powersOnly: g.powersOnly, use: groupUse(g, R), pool: groupPool(g, R), block, swap });
       }).join('') + '</div></div>';
   }
 
@@ -1419,8 +1427,8 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
         const pows = sortTraits(owned(R, 'power')).map(t => t.key);
         return `<p>${tr('If your champion could be cut off from their power (a Hextech suit, a relic that can be taken away), you may add a <b>Powerless Mode</b>: one of your powers at {d6} and another at {d10}. In this mode you can only use your <b>principle</b> abilities.', { d6: die('d6', 'sm'), d10: die('d10', 'sm') })}</p>
           <div class="tchips"><button type="button" class="tchip${pl.on ? ' on' : ''}" data-act="powerless" data-v="1">${tr('Add a Powerless Mode')}</button><button type="button" class="tchip${pl.on ? '' : ' on'}" data-act="powerless" data-v="">${tr('No Powerless Mode')}</button></div>
-          ${pl.on ? `<div class="ab-cfg"><div class="cfg-l">${tr('Power at {die}', { die: 'd6' })}</div>${traitChips('arch.powerless.a', pows, pl.a, pl.b ? { [pl.b]: tr('used at d10') } : {})}
-          <div class="cfg-l">${tr('Power at {die}', { die: 'd10' })}</div>${traitChips('arch.powerless.b', pows, pl.b, pl.a ? { [pl.a]: tr('used at d6') } : {})}</div>` : ''}`;
+          ${pl.on ? `<div class="ab-cfg"><div class="cfg-l">${tr('Power at {die}', { die: 'd6' })}</div>${traitChips('arch.powerless.a', pows, pl.a, pl.b ? { [pl.b]: tr('used at d10') } : {}, pl.b ? { [pl.b]: 'arch.powerless.b' } : {})}
+          <div class="cfg-l">${tr('Power at {die}', { die: 'd10' })}</div>${traitChips('arch.powerless.b', pows, pl.b, pl.a ? { [pl.a]: tr('used at d6') } : {}, pl.a ? { [pl.a]: 'arch.powerless.a' } : {})}</div>` : ''}`;
       },
       notes: () => `<p class="muted">${tr(a.modular ? 'Record which powers/dice each mode uses (this goes on your auxiliary sheet).' : 'Record which powers/dice each form uses (this goes on your auxiliary sheet).')}</p><textarea data-bind="arch.notes" data-live="1">${esc(st.arch.notes)}</textarea>`,
       principle: () => principleHtml('arch', archPrincipleCat(), R) + `<p class="muted" style="margin-top:10px">${tr('Next step: your Temperament, rolled with {dice}.', { dice: die('d10', 'sm') + die('d10', 'sm') })}</p>`
@@ -2562,7 +2570,11 @@ ${assignHtml(R.slots.ps, optKeys, R.before.powersource, 'ps', tr('Assign each di
       return;
     }
     if (act === 'redCat') { const c = el.dataset.ok || el.dataset.cat, now = el.getAttribute('aria-expanded') === 'true'; ui.redOpen[c] = !now; render(); return; }
-    if (act === 'setBind') { if (el.disabled) return; setPath(st, el.dataset.bind, el.dataset.val); hideTip(); render(); return; }
+    if (act === 'setBind') {
+      if (el.disabled) return;
+      if (el.dataset.swap) { const cur = getPath(st, el.dataset.bind); setPath(st, el.dataset.swap, cur || ''); }
+      setPath(st, el.dataset.bind, el.dataset.val); hideTip(); render(); return;
+    }
     if (act === 'flowGo') { ui.at[st.step] = +el.dataset.i; render(); return; }
     if (act === 'next') {
       if (flowNext()) return;
